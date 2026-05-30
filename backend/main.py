@@ -16,6 +16,10 @@ from fastapi.openapi.utils import get_openapi
 from shared.core.config import get_settings
 from shared.core.middleware import RequestIDMiddleware, TenantContextMiddleware, ObservabilityMiddleware
 from shared.core.exceptions import AIROSException
+from shared.core.caching import cache_manager
+from shared.core.ratelimit import rate_limiter
+from shared.core.health import health_checker
+from shared.core.validation import ValidationMiddleware
 
 settings = get_settings()
 
@@ -77,6 +81,7 @@ app = FastAPI(
 )
 
 # Middleware
+app.add_middleware(ValidationMiddleware)
 app.add_middleware(ObservabilityMiddleware)
 app.add_middleware(TenantContextMiddleware)
 app.add_middleware(RequestIDMiddleware)
@@ -101,7 +106,14 @@ async def airos_exception_handler(request: Request, exc: AIROSException):
 # Health check
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "version": settings.APP_VERSION, "service": "unified-api"}
+    checks = await health_checker.check_all()
+    overall_status = "healthy" if all(c["status"] == "healthy" for c in checks.values()) else "degraded"
+    return {
+        "status": overall_status,
+        "version": settings.APP_VERSION,
+        "service": "unified-api",
+        "checks": checks,
+    }
 
 
 @app.get("/", include_in_schema=False)
@@ -199,5 +211,7 @@ include_router_safe(app, "apps.compliance_automation_service.main", "router", "/
 include_router_safe(app, "apps.ai_evaluation_service.main", "router", "/api/v1/ai-evaluation", ["AI Evaluation"])
 include_router_safe(app, "apps.talent_intelligence_service.main", "router", "/api/v1/talent-intelligence", ["Talent Intelligence"])
 include_router_safe(app, "apps.workflow_automation_service.main", "router", "/api/v1/workflow-automation", ["Workflow Automation"])
+include_router_safe(app, "apps.sso_service.main", "router", "/api/v1/sso", ["SSO"])
+include_router_safe(app, "apps.innovation_service.main", "router", "/api/v1/innovations", ["Innovation"])
 
 print("All routers loaded!")

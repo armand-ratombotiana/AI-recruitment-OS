@@ -158,3 +158,32 @@ async def enable_mfa():
 )
 async def verify_mfa(code: str = "000000"):
     return MFAVerifyResponse()
+
+
+# ── SSO Response Models ────────────────────────────────────────────────────────
+
+class SSOLoginResponse(BaseModel):
+    access_token: str = Field(..., description="JWT access token")
+    refresh_token: str = Field(..., description="Refresh token")
+    token_type: str = Field(default="bearer", description="Token type")
+    provider: str = Field(..., description="SSO provider name")
+    is_new_user: bool = Field(default=False, description="Whether this is a new user")
+
+
+# ── SSO Endpoints ──────────────────────────────────────────────────────────────
+
+@router.post(
+    "/sso/{provider}",
+    response_model=SSOLoginResponse,
+    tags=["Auth"],
+    summary="Login via SSO provider",
+    description="Authenticate using Google, LinkedIn, Microsoft, or Apple SSO.",
+)
+async def sso_login(provider: str, code: str, redirect_uri: str):
+    """Login via SSO provider."""
+    return SSOLoginResponse(
+        access_token=f"sso_token_{provider}",
+        refresh_token=f"sso_refresh_{provider}",
+        provider=provider,
+        is_new_user=False,
+    )
