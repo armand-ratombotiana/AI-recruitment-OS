@@ -67,7 +67,7 @@ class APIKey(SQLModel, table=True):
     user_id: str = SQLField(index=True)
     name: str
     key_hash: str
-    scopes: str = "[]"  # JSON array
+    scopes: str = "[]"
     last_used_at: datetime | None = None
     expires_at: datetime | None = None
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
@@ -79,7 +79,7 @@ class Credential(SQLModel, table=True):
 
     id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     user_id: str = SQLField(index=True)
-    provider: str  # "local", "google", "github", "saml"
+    provider: str
     provider_user_id: str | None = None
     access_token: str | None = None
     refresh_token: str | None = None
@@ -88,6 +88,7 @@ class Credential(SQLModel, table=True):
 
 
 # --- API Schemas ---
+
 
 class UserCreate(BaseModel):
     email: EmailStr

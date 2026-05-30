@@ -1,23 +1,18 @@
+"""Prompt management for AI-ROS."""
 from __future__ import annotations
-
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any
-
 
 @dataclass
 class PromptVersion:
     version: int
     template: str
     variables: list[str]
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     performance_score: float | None = None
     usage_count: int = 0
-    avg_tokens: float = 0.0
-
 
 class PromptManager:
-    def __init__(self) -> None:
+    def __init__(self):
         self._prompts: dict[str, list[PromptVersion]] = {}
         self._active: dict[str, int] = {}
 
@@ -45,39 +40,14 @@ class PromptManager:
             template = template.replace(f"{{{key}}}", value)
         return template
 
-    def set_active(self, name: str, version: int) -> None:
-        self._active[name] = version
-
-    def record_usage(self, name: str, tokens: int) -> None:
-        pv = self.get(name)
-        if pv:
-            pv.usage_count += 1
-            pv.avg_tokens = (pv.avg_tokens * (pv.usage_count - 1) + tokens) / pv.usage_count
-
-
 DEFAULT_PROMPTS = {
-    "resume_parsing": (
-        "Extract structured data from this resume text. Return JSON with: "
-        "contact (email, phone, location), summary, experience (array of "
-        "{title, company, start_date, end_date, description, skills_used}), "
-        "education (array of {degree, institution, year}), skills (array of names). "
-        "Resume text:\n{resume_text}"
-    ),
-    "skill_extraction": (
-        "Extract technical and soft skills from the following text. "
-        "For each skill provide: name, category (programming_language/framework/tool/soft_skill), "
-        "confidence (0.0-1.0). Text:\n{text}"
-    ),
-    "seniority_estimation": (
-        "Estimate seniority level for this candidate profile. "
-        "Consider: years of experience, role progression, technical depth, leadership indicators. "
-        "Output JSON: {seniority_level, confidence, reasoning, key_indicators}. "
-        "Profile:\n{profile}"
-    ),
-    "hiring_recommendation": (
-        "Based on all evaluations, generate a hiring recommendation. "
-        "Candidate: {candidate_name}, Role: {job_title}. "
-        "Evaluations: {evaluations_json}. "
-        "Output JSON: {recommendation, confidence, summary, strengths, concerns, reasoning}."
-    ),
+    "resume_parsing": "Extract structured data from this resume text. Return JSON with contact, summary, experience, education, skills.",
+    "skill_extraction": "Extract technical and soft skills from the following text.",
+    "seniority_estimation": "Estimate seniority level for this candidate profile.",
+    "hiring_recommendation": "Generate a hiring recommendation based on all evaluations.",
+    "interview_question": "Generate interview questions for this role and candidate.",
 }
+
+prompt_manager = PromptManager()
+for name, template in DEFAULT_PROMPTS.items():
+    prompt_manager.register(name, template, [])

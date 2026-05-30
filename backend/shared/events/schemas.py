@@ -19,22 +19,22 @@ EVENT_TYPES = {
     # Candidate events
     "candidate.created": "Candidate created",
     "candidate.updated": "Candidate updated",
-    "candidate.enriched": "Candidate enriched",
-    "candidate.ranked": "Candidate ranked",
+    "candidate.enriched": "Candidate enriched via AI",
+    "candidate.ranked": "Candidate ranked by AI",
 
     # Resume events
     "resume.uploaded": "Resume uploaded",
-    "resume.parsed": "Resume parsed",
-    "resume.embedded": "Resume embedded",
+    "resume.parsed": "Resume parsed by AI",
+    "resume.embedded": "Resume embedded for vector search",
 
     # Job events
-    "job.created": "Job created",
-    "job.updated": "Job updated",
-    "job.opened": "Job opened",
+    "job.created": "Job posting created",
+    "job.updated": "Job posting updated",
+    "job.opened": "Job opened for applications",
 
     # Application events
     "application.submitted": "Application submitted",
-    "application.stage_changed": "Application stage changed",
+    "application.stage_changed": "Application moved to new stage",
 
     # Interview events
     "interview.scheduled": "Interview scheduled",
@@ -42,14 +42,14 @@ EVENT_TYPES = {
     "interview.completed": "Interview completed",
 
     # Evaluation events
-    "evaluation.started": "Evaluation started",
-    "evaluation.completed": "Evaluation completed",
-    "evaluation.explained": "Evaluation explained",
+    "evaluation.started": "AI evaluation started",
+    "evaluation.completed": "AI evaluation completed",
+    "evaluation.explained": "Evaluation explanation generated",
 
     # PPE events
     "ppe.session_created": "PPE session created",
-    "ppe.code_executed": "Code executed",
-    "ppe.evaluated": "PPE evaluated",
+    "ppe.code_executed": "Code executed in sandbox",
+    "ppe.evaluated": "PPE evaluation completed",
 
     # Workflow events
     "workflow.triggered": "Workflow triggered",
@@ -65,5 +65,5 @@ EVENT_TYPES = {
     "notification.delivered": "Notification delivered",
 
     # Analytics events
-    "analytics.metric_collected": "Metric collected",
+    "analytics.metric_collected": "Analytics metric collected",
 }

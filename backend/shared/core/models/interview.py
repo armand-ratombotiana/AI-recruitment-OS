@@ -58,7 +58,7 @@ class InterviewSession(SQLModel, table=True):
     tenant_id: str = SQLField(index=True)
     started_at: datetime | None = None
     ended_at: datetime | None = None
-    transcript: str | None = None  # JSON
+    transcript: str | None = None
     recording_url: str | None = None
     ai_agent_id: str | None = None
     agent_model: str | None = None
@@ -73,9 +73,9 @@ class InterviewQuestion(SQLModel, table=True):
     session_id: str = SQLField(index=True)
     tenant_id: str = SQLField(index=True)
     question_text: str
-    question_type: str  # "technical", "behavioral", "follow_up"
+    question_type: str
     candidate_answer: str | None = None
-    ai_evaluation: str | None = None  # JSON
+    ai_evaluation: str | None = None
     score: float | None = None
     order_index: int = 0
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
@@ -94,15 +94,16 @@ class InterviewFeedback(SQLModel, table=True):
     technical_score: float | None = None
     communication_score: float | None = None
     cultural_fit_score: float | None = None
-    strengths: str | None = None  # JSON
-    weaknesses: str | None = None  # JSON
+    strengths: str | None = None
+    weaknesses: str | None = None
     recommendation: str | None = None
     notes: str | None = None
-    reasoning_trace: str | None = None  # JSON
+    reasoning_trace: str | None = None
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # --- API Schemas ---
+
 
 class InterviewCreate(BaseModel):
     application_id: str

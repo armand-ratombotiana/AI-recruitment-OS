@@ -28,7 +28,7 @@ export default function LoginPage() {
     const redirectUri = `${window.location.origin}/auth/callback/${provider}`;
     try {
       const { api } = await import('@/services/api/client');
-      const data = await api.getSSOAuthUrl(provider, redirectUri);
+      const data = await api.getSSOAuthorizeUrl(provider, redirectUri);
       window.location.href = data.authorization_url;
     } catch {
       setError('SSO provider unavailable');

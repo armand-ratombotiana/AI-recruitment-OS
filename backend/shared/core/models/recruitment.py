@@ -95,6 +95,7 @@ class Application(SQLModel, table=True):
 
 # --- API Schemas ---
 
+
 class JobCreate(BaseModel):
     title: str = Field(min_length=1, max_length=300)
     description: str = Field(min_length=1)

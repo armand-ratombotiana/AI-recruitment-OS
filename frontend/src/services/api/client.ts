@@ -26,7 +26,6 @@ class APIClient {
     return response.json();
   }
 
-  // Auth
   async login(email: string, password: string) {
     const data = await this.request<{ access_token: string }>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     this.setToken(data.access_token);
@@ -40,20 +39,18 @@ class APIClient {
     this.setToken(null);
   }
 
-  // SSO
   async getSSOProviders() {
-    return this.request<{ providers: any[] }>('/auth/providers');
+    return this.request<any>('/sso/providers');
   }
   async getSSOAuthorizeUrl(provider: string, redirectUri: string) {
-    return this.request<any>(`/auth/providers/${provider}/authorize`, { params: { redirect_uri: redirectUri } });
+    return this.request<any>(`/sso/providers/${provider}/authorize`, { params: { redirect_uri: redirectUri } });
   }
-  async ssoCallback(provider: string, code: string, redirectUri: string) {
-    const data = await this.request<any>(`/auth/sso/${provider}`, { method: 'POST', body: JSON.stringify({ code, redirect_uri: redirectUri }) });
+  async ssoLogin(provider: string, code: string, redirectUri: string) {
+    const data = await this.request<any>(`/sso/providers/${provider}/callback`, { method: 'POST', body: JSON.stringify({ provider, code, redirect_uri: redirectUri }) });
     this.setToken(data.access_token);
     return data;
   }
 
-  // Candidates
   async listCandidates(params?: Record<string, string>) {
     return this.request<{ data: any[]; total: number }>('/candidates/', { params });
   }
@@ -73,7 +70,6 @@ class APIClient {
     return this.request<any>(`/candidates/${id}/match`, { method: 'POST' });
   }
 
-  // Jobs
   async listJobs(params?: Record<string, string>) {
     return this.request<{ data: any[]; total: number }>('/jobs/', { params });
   }
@@ -84,7 +80,6 @@ class APIClient {
     return this.request<any>('/jobs', { method: 'POST', body: JSON.stringify(data) });
   }
 
-  // Interviews
   async listInterviews(params?: Record<string, string>) {
     return this.request<{ data: any[]; total: number }>('/interviews/', { params });
   }
@@ -98,7 +93,6 @@ class APIClient {
     return this.request<any>(`/interviews/${id}/complete`, { method: 'POST' });
   }
 
-  // PPE
   async createPPESession(data: any) {
     return this.request<any>('/ppe/sessions', { method: 'POST', body: JSON.stringify(data) });
   }
@@ -115,7 +109,6 @@ class APIClient {
     return this.request<any>('/ppe/problems');
   }
 
-  // AI
   async listAIAgents() {
     return this.request<{ data: any[] }>('/ai/agents');
   }
@@ -123,7 +116,6 @@ class APIClient {
     return this.request<any>('/ai/orchestrate', { method: 'POST', body: JSON.stringify(data) });
   }
 
-  // Analytics
   async getDashboard(timeRange: string = '7d') {
     return this.request<any>('/analytics/dashboard', { params: { time_range: timeRange } });
   }
@@ -134,7 +126,6 @@ class APIClient {
     return this.request<any>('/analytics/ai-performance');
   }
 
-  // Workflows
   async listWorkflows() {
     return this.request<{ data: any[] }>('/workflows/');
   }
@@ -142,57 +133,27 @@ class APIClient {
     return this.request<any>('/workflows', { method: 'POST', body: JSON.stringify(data) });
   }
 
-  // Notifications
   async listNotifications() {
     return this.request<{ data: any[] }>('/notifications/');
   }
-  async markNotificationRead(id: string) {
-    return this.request<any>(`/notifications/${id}/read`, { method: 'PUT' });
-  }
 
-  // Compliance
   async getComplianceStatus() {
     return this.request<any>('/compliance/status');
   }
 
-  // Billing
   async getSubscription() {
     return this.request<any>('/billing/subscription');
   }
-  async listInvoices() {
-    return this.request<any>('/billing/invoices');
-  }
 
-  // Search
   async searchCandidates(query: string) {
     return this.request<any>('/search/candidates', { method: 'POST', body: JSON.stringify({ query }) });
   }
-  async searchJobs(query: string) {
-    return this.request<any>('/search/jobs', { method: 'POST', body: JSON.stringify({ query }) });
-  }
 
-  // Innovation
   async detectBias(text: string) {
-    return this.request<any>('/innovation/bias-detection', { method: 'POST', body: JSON.stringify({ text }) });
+    return this.request<any>('/innovations/bias-detection', { method: 'POST', body: JSON.stringify({ text }) });
   }
   async predictSuccess(candidateId: string, jobId: string) {
-    return this.request<any>('/innovation/predict-success', { method: 'POST', body: JSON.stringify({ candidate_id: candidateId, job_id: jobId }) });
-  }
-  async getSkillsGap(candidateId: string, jobId: string) {
-    return this.request<any>('/innovation/skills-gap', { method: 'POST', body: JSON.stringify({ candidate_id: candidateId, job_id: jobId }) });
-  }
-
-  // SSO (alternative endpoints)
-  async getSSOProvidersList() {
-    return this.request<any>('/sso/providers');
-  }
-  async getSSOAuthUrl(provider: string, redirectUri: string) {
-    return this.request<any>(`/sso/providers/${provider}/authorize`, { params: { redirect_uri: redirectUri } });
-  }
-  async ssoLogin(provider: string, code: string, redirectUri: string) {
-    const data = await this.request<any>(`/sso/providers/${provider}/callback`, { method: 'POST', body: JSON.stringify({ provider, code, redirect_uri: redirectUri }) });
-    this.setToken(data.access_token);
-    return data;
+    return this.request<any>('/innovations/predict-success', { method: 'POST', body: JSON.stringify({ candidate_id: candidateId, job_id: jobId }) });
   }
 }
 

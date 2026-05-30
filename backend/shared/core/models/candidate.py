@@ -60,11 +60,11 @@ class CandidateProfile(SQLModel, table=True):
     summary: str | None = None
     seniority_level: str | None = None
     years_experience: int | None = None
-    education: str | None = None  # JSON
-    certifications: str | None = None  # JSON
-    languages: str | None = None  # JSON
-    domains: str | None = None  # JSON
-    raw_profile: str | None = None  # JSON
+    education: str | None = None
+    certifications: str | None = None
+    languages: str | None = None
+    domains: str | None = None
+    raw_profile: str | None = None
     embedding_id: str | None = None
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
@@ -105,11 +105,12 @@ class ExperienceEntry(SQLModel, table=True):
     end_date: str | None = None
     is_current: bool = False
     location: str | None = None
-    skills_used: str = "[]"  # JSON
+    skills_used: str = "[]"
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # --- API Schemas ---
+
 
 class CandidateCreate(BaseModel):
     email: str

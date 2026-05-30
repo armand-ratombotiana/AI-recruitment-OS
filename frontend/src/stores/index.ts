@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { api, APIError } from '@/services/api/client';
 
-// Auth Store
 interface AuthState {
   user: any | null;
   isAuthenticated: boolean;
@@ -56,7 +55,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   clearError: () => set({ error: null }),
 }));
 
-// Candidate Store
 interface CandidateState {
   candidates: any[];
   total: number;
@@ -135,7 +133,6 @@ export const useCandidateStore = create<CandidateState>((set) => ({
   },
 }));
 
-// Job Store
 interface JobState {
   jobs: any[];
   total: number;
@@ -145,7 +142,6 @@ interface JobState {
   fetchJobs: (params?: Record<string, string>) => Promise<void>;
   fetchJob: (id: string) => Promise<void>;
   createJob: (data: any) => Promise<any>;
-  searchJobs: (query: string) => Promise<void>;
 }
 
 export const useJobStore = create<JobState>((set) => ({
@@ -177,18 +173,8 @@ export const useJobStore = create<JobState>((set) => ({
     set((s) => ({ jobs: [result, ...s.jobs], total: s.total + 1 }));
     return result;
   },
-  searchJobs: async (query) => {
-    set({ isLoading: true });
-    try {
-      const res = await api.searchJobs(query);
-      set({ jobs: res.data || res.results || [], total: res.total || 0, isLoading: false });
-    } catch (err: any) {
-      set({ error: err.message, isLoading: false });
-    }
-  },
 }));
 
-// Interview Store
 interface InterviewState {
   interviews: any[];
   total: number;
@@ -233,7 +219,6 @@ export const useInterviewStore = create<InterviewState>((set) => ({
   },
 }));
 
-// Analytics Store
 interface AnalyticsState {
   dashboard: any;
   pipeline: any;
@@ -280,7 +265,6 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   },
 }));
 
-// PPE Store
 interface PPEState {
   problems: any[];
   currentSession: any | null;
@@ -329,7 +313,6 @@ export const usePPEStore = create<PPEState>((set) => ({
   },
 }));
 
-// Workflow Store
 interface WorkflowState {
   workflows: any[];
   isLoading: boolean;
@@ -358,13 +341,11 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
   },
 }));
 
-// Notification Store
 interface NotificationState {
   notifications: any[];
   unreadCount: number;
   isLoading: boolean;
   fetchNotifications: () => Promise<void>;
-  markRead: (id: string) => Promise<void>;
 }
 
 export const useNotificationStore = create<NotificationState>((set) => ({
@@ -383,16 +364,8 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       });
     } catch {}
   },
-  markRead: async (id) => {
-    await api.markNotificationRead(id);
-    set((s) => ({
-      notifications: s.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
-      unreadCount: Math.max(0, s.unreadCount - 1),
-    }));
-  },
 }));
 
-// AI Store
 interface AIState {
   agents: any[];
   orchestrationResult: any | null;
@@ -401,7 +374,6 @@ interface AIState {
   orchestrate: (data: any) => Promise<any>;
   detectBias: (text: string) => Promise<any>;
   predictSuccess: (candidateId: string, jobId: string) => Promise<any>;
-  getSkillsGap: (candidateId: string, jobId: string) => Promise<any>;
 }
 
 export const useAIStore = create<AIState>((set) => ({
@@ -428,34 +400,22 @@ export const useAIStore = create<AIState>((set) => ({
   },
   detectBias: async (text) => api.detectBias(text),
   predictSuccess: async (candidateId, jobId) => api.predictSuccess(candidateId, jobId),
-  getSkillsGap: async (candidateId, jobId) => api.getSkillsGap(candidateId, jobId),
 }));
 
-// Billing Store
 interface BillingState {
   subscription: any;
-  invoices: any[];
   isLoading: boolean;
   fetchSubscription: () => Promise<void>;
-  fetchInvoices: () => Promise<void>;
 }
 
 export const useBillingStore = create<BillingState>((set) => ({
   subscription: null,
-  invoices: [],
   isLoading: false,
   fetchSubscription: async () => {
     set({ isLoading: true });
     try {
       const data = await api.getSubscription();
       set({ subscription: data, isLoading: false });
-    } catch {}
-  },
-  fetchInvoices: async () => {
-    set({ isLoading: true });
-    try {
-      const res = await api.listInvoices();
-      set({ invoices: res.data || res, isLoading: false });
     } catch {}
   },
 }));

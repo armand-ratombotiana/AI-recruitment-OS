@@ -35,7 +35,7 @@ class Evaluation(SQLModel, table=True):
     tokens_consumed: int = 0
     reasoning_trace: str | None = None
     explanation: str | None = None
-    dimensions: str | None = None  # JSON
+    dimensions: str | None = None
     benchmark_id: str | None = None
     started_at: datetime | None = None
     completed_at: datetime | None = None
@@ -63,7 +63,7 @@ class Benchmark(SQLModel, table=True):
     tenant_id: str = SQLField(index=True)
     name: str
     level: str
-    dimension_averages: str  # JSON
+    dimension_averages: str
     sample_size: int = 0
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -73,6 +73,7 @@ from shared.core.models.pair_programming import CodingSession, CodeSnapshot, Exe
 
 
 # --- API Schemas ---
+
 
 class EvaluationCreate(BaseModel):
     candidate_id: str

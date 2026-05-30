@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from typing import Any, Generic, TypeVar
-from sqlalchemy import select, func, desc
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func
 from sqlmodel import SQLModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 ModelType = TypeVar("ModelType", bound=SQLModel)
 
@@ -27,15 +27,35 @@ class BaseRepository(Generic[ModelType]):
         tenant_id: str | None = None,
         skip: int = 0,
         limit: int = 100,
+        filters: dict[str, Any] | None = None,
     ) -> list[ModelType]:
         stmt = select(self.model)
         if tenant_id and hasattr(self.model, "tenant_id"):
             stmt = stmt.where(self.model.tenant_id == tenant_id)
+        if filters:
+            for key, value in filters.items():
+                if hasattr(self.model, key) and value is not None:
+                    stmt = stmt.where(getattr(self.model, key) == value)
         if hasattr(self.model, "created_at"):
-            stmt = stmt.order_by(desc(self.model.created_at))
+            stmt = stmt.order_by(self.model.created_at.desc())
         stmt = stmt.offset(skip).limit(limit)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
+
+    async def count(
+        self,
+        tenant_id: str | None = None,
+        filters: dict[str, Any] | None = None,
+    ) -> int:
+        stmt = select(func.count()).select_from(self.model)
+        if tenant_id and hasattr(self.model, "tenant_id"):
+            stmt = stmt.where(self.model.tenant_id == tenant_id)
+        if filters:
+            for key, value in filters.items():
+                if hasattr(self.model, key) and value is not None:
+                    stmt = stmt.where(getattr(self.model, key) == value)
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
 
     async def create(self, obj_in: dict[str, Any]) -> ModelType:
         db_obj = self.model(**obj_in)
@@ -44,8 +64,13 @@ class BaseRepository(Generic[ModelType]):
         await self.session.refresh(db_obj)
         return db_obj
 
-    async def update(self, id: str, obj_in: dict[str, Any]) -> ModelType | None:
-        db_obj = await self.get(id)
+    async def update(
+        self,
+        id: str,
+        obj_in: dict[str, Any],
+        tenant_id: str | None = None,
+    ) -> ModelType | None:
+        db_obj = await self.get(id, tenant_id)
         if not db_obj:
             return None
         for key, value in obj_in.items():
@@ -56,17 +81,10 @@ class BaseRepository(Generic[ModelType]):
         await self.session.refresh(db_obj)
         return db_obj
 
-    async def delete(self, id: str) -> bool:
-        db_obj = await self.get(id)
+    async def delete(self, id: str, tenant_id: str | None = None) -> bool:
+        db_obj = await self.get(id, tenant_id)
         if not db_obj:
             return False
         await self.session.delete(db_obj)
         await self.session.flush()
         return True
-
-    async def count(self, tenant_id: str | None = None) -> int:
-        stmt = select(func.count()).select_from(self.model)
-        if tenant_id and hasattr(self.model, "tenant_id"):
-            stmt = stmt.where(self.model.tenant_id == tenant_id)
-        result = await self.session.execute(stmt)
-        return result.scalar_one()
