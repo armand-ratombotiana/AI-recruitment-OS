@@ -1,89 +1,55 @@
-{{/*
-AI-ROS Helm Chart — values.yaml
-*/}}
 replicaCount:
   api: 3
-  worker: 3
   frontend: 2
+  worker: 2
 
 image:
-  repository: <account-id>.dkr.ecr.us-east-1.amazonaws.com/airos
-  tag: "latest"
-  pullPolicy: Always
-
-imageFrontend:
-  repository: <account-id>.dkr.ecr.us-east-1.amazonaws.com/airos-frontend
-  tag: "latest"
-  pullPolicy: Always
+  repository: airos
+  tag: latest
+  pullPolicy: IfNotPresent
 
 ingress:
   enabled: true
   className: nginx
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
-    - host: app.airos.com
+    - host: airos.example.com
       paths:
-        - path: /api
-          pathType: Prefix
-          service: airos-api-gateway
-          port: 8000
-        - path: /ws
-          pathType: Prefix
-          service: airos-api-gateway
-          port: 8000
         - path: /
           pathType: Prefix
-          service: airos-frontend
-          port: 3000
   tls:
     - secretName: airos-tls
-      hosts: [app.airos.com]
+      hosts:
+        - airos.example.com
 
 resources:
   api:
-    requests: { cpu: 250m, memory: 512Mi }
-    limits: { cpu: 1000m, memory: 1Gi }
-  worker:
-    requests: { cpu: 500m, memory: 1Gi }
-    limits: { cpu: 2000m, memory: 2Gi }
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
   frontend:
-    requests: { cpu: 100m, memory: 128Mi }
-    limits: { cpu: 500m, memory: 512Mi }
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
 autoscaling:
   enabled: true
-  minReplicas: { api: 3, worker: 2 }
-  maxReplicas: { api: 20, worker: 10 }
-  targetCPU: 70
-
-env:
-  ENVIRONMENT: production
-  DATABASE_URL: "postgresql+asyncpg://airos:$(DB_PASSWORD)@airos-postgresql:5432/airos"
-  REDIS_URL: "redis://airos-redis-master:6379/0"
-  CELERY_BROKER_URL: "redis://airos-redis-master:6379/1"
-  CELERY_RESULT_BACKEND: "redis://airos-redis-master:6379/2"
-  KAFKA_BOOTSTRAP_SERVERS: "airos-kafka:9092"
-  OTEL_EXPORTER_OTLP_ENDPOINT: "http://airos-jaeger:4317"
-
-secrets:
-  SECRET_KEY: ""
-  ENCRYPTION_KEY: ""
-  DB_PASSWORD: ""
-  OPENAI_API_KEY: ""
-  ANTHROPIC_API_KEY: ""
+  minReplicas:
+    api: 3
+    frontend: 2
+  maxReplicas:
+    api: 20
+    frontend: 10
 
 postgresql:
   enabled: true
   auth:
-    postgresPassword: ""
-    database: airos
+    postgresPassword: changeme
 
 redis:
   enabled: true
-
-monitoring:
-  prometheus: { enabled: true }
-  grafana: { enabled: true }
-  jaeger: { enabled: true }
