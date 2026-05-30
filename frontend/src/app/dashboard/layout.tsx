@@ -6,12 +6,18 @@ import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: '📊' },
+  { name: 'Recruiter', href: '/dashboard/recruiter', icon: '🏠' },
   { name: 'Candidates', href: '/dashboard/candidates', icon: '👥' },
   { name: 'Jobs', href: '/dashboard/jobs', icon: '💼' },
   { name: 'Interviews', href: '/dashboard/interviews', icon: '🎥' },
+  { name: 'Pipeline', href: '/dashboard/pipeline', icon: '🔄' },
+  { name: 'Matching', href: '/dashboard/matching', icon: '🎯' },
+  { name: 'Schedule', href: '/dashboard/schedule', icon: '📅' },
   { name: 'PPE Coding', href: '/dashboard/ppe', icon: '💻' },
+  { name: 'AI Copilot', href: '/dashboard/ai-copilot', icon: '🤖' },
   { name: 'Analytics', href: '/dashboard/analytics', icon: '📈' },
   { name: 'Workflows', href: '/dashboard/workflows', icon: '⚡' },
+  { name: 'Reports', href: '/dashboard/reports', icon: '📋' },
   { name: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
 ];
 
@@ -20,7 +26,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sidebar */}
       <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200">
         <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-6">
           <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center">
@@ -48,9 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
       </aside>
 
-      {/* Main content */}
       <div className="pl-64">
-        {/* Top bar */}
         <header className="sticky top-0 z-40 h-16 bg-white border-b border-gray-200 flex items-center px-6">
           <div className="flex-1">
             <div className="relative max-w-md">
@@ -72,7 +75,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </header>
 
-        {/* Page content */}
         <main className="p-6">{children}</main>
       </div>
     </div>

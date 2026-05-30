@@ -1,4 +1,4 @@
-"""Compliance Service — GDPR/SOC2 compliance, policy management, audit logging, consent tracking, and data retention."""
+"""Compliance Service — GDPR, SOC2, ISO27001 compliance."""
 from __future__ import annotations
 
 from fastapi import APIRouter
@@ -8,53 +8,42 @@ from pydantic import BaseModel, Field
 # ── Request Models ──────────────────────────────────────────────────────────────
 
 class PolicyCreateRequest(BaseModel):
-    name: str = Field(..., min_length=1, max_length=255, description="Policy name")
-    type: str = Field(..., description="data_retention | access_control | encryption | audit | consent | data_processing")
+    name: str = Field(..., description="Policy name")
+    type: str = Field(..., description="data_retention | access_control | encryption | privacy | security")
     description: str = Field(default="", description="Policy description")
-    rules: dict = Field(default_factory=dict, description="Policy rules configuration")
+    rules: dict | None = Field(None, description="Policy rules configuration")
 
     model_config = {"json_schema_extra": {"examples": [
-        {"name": "GDPR Data Retention", "type": "data_retention",
-         "description": "Auto-delete candidate data after 2 years", "rules": {"retention_days": 730}}
+        {"name": "New Policy", "type": "data_retention", "description": "Defines data retention periods"}
     ]}}
 
 
-class PolicyUpdateRequest(BaseModel):
-    name: str | None = Field(None, description="Policy name")
-    description: str | None = Field(None, description="Policy description")
-    status: str | None = Field(None, description="active | inactive | archived")
-    rules: dict | None = Field(None, description="Policy rules configuration")
-
-
-class ConsentRequest(BaseModel):
+class ConsentRecordRequest(BaseModel):
     candidate_id: str = Field(..., description="Candidate ID")
-    consent_type: str = Field(..., description="data_processing | marketing | third_party_sharing | storage")
-    granted: bool = Field(default=True, description="Whether consent is granted")
+    type: str = Field(..., description="data_processing | marketing | analytics | third_party")
+    granted: bool = Field(..., description="Whether consent was granted")
     purpose: str | None = Field(None, description="Purpose of data processing")
-    expiry: str | None = Field(None, description="Consent expiry date (ISO 8601)")
-
-
-class ConsentRevokeRequest(BaseModel):
-    consent_id: str = Field(..., description="Consent record to revoke")
-    reason: str | None = Field(None, description="Reason for revocation")
+    ip_address: str | None = Field(None, description="IP address when consent was recorded")
 
 
 class DataExportRequest(BaseModel):
     candidate_id: str = Field(..., description="Candidate to export data for")
-    format: str = Field(default="json", description="json | csv")
+    format: str = Field(default="json", description="json | csv | pdf")
+    include_sections: list[str] | None = Field(None, description="Specific data sections to export")
 
 
 class DataDeletionRequest(BaseModel):
     candidate_id: str = Field(..., description="Candidate to delete data for")
-    reason: str = Field(default="user_request", description="Reason: user_request | retention_policy | compliance_order")
-    confirm: bool = Field(..., description="Confirmation flag required for deletion")
+    reason: str = Field(default="user_request", description="user_request | retention_expired | legal_hold")
+    confirm: bool = Field(..., description="Confirmation of deletion request")
 
 
-class RetentionRuleRequest(BaseModel):
-    data_type: str = Field(..., description="Type of data (candidate_resume | interview_recording | audit_log)")
-    retention_days: int = Field(..., ge=1, description="Number of days to retain data")
-    action: str = Field(default="delete", description="delete | anonymize | archive")
-    auto_apply: bool = Field(default=True, description="Automatically apply retention rule")
+class AuditLogCreateRequest(BaseModel):
+    action: str = Field(..., description="Action performed")
+    actor: str = Field(..., description="User or system performing action")
+    resource: str = Field(..., description="Resource type affected")
+    resource_id: str | None = Field(None, description="Specific resource ID")
+    details: dict | None = Field(None, description="Additional details")
 
 
 # ── Response Models ─────────────────────────────────────────────────────────────
@@ -64,28 +53,27 @@ class HealthResponse(BaseModel):
     service: str = "compliance"
 
 
-class PolicySummary(BaseModel):
+class FrameworkStatus(BaseModel):
+    status: str
+    score: int
+
+
+class ComplianceStatusResponse(BaseModel):
+    overall_status: str
+    frameworks: dict[str, FrameworkStatus]
+
+
+class PolicyInfo(BaseModel):
     id: str
     name: str
-    status: str
     type: str
-    created_at: str
+    status: str
+    description: str
 
 
 class PolicyListResponse(BaseModel):
-    data: list[PolicySummary]
+    data: list[PolicyInfo]
     total: int
-
-
-class PolicyDetailResponse(BaseModel):
-    id: str
-    name: str
-    type: str
-    description: str
-    status: str
-    rules: dict
-    created_at: str
-    updated_at: str
 
 
 class PolicyCreateResponse(BaseModel):
@@ -93,49 +81,30 @@ class PolicyCreateResponse(BaseModel):
     created: bool = True
 
 
-class PolicyUpdateResponse(BaseModel):
-    id: str
-    updated: bool = True
-
-
-class PolicyDeleteResponse(BaseModel):
-    id: str
-    deleted: bool = True
-
-
-class ConsentRecord(BaseModel):
+class ConsentInfo(BaseModel):
     id: str
     candidate_id: str
-    consent_type: str
+    type: str
     granted: bool
-    purpose: str | None = None
-    recorded_at: str
-    expiry: str | None = None
-
-
-class ConsentResponse(BaseModel):
-    id: str
-    recorded: bool = True
+    date: str
 
 
 class ConsentListResponse(BaseModel):
-    data: list[ConsentRecord]
+    data: list[ConsentInfo]
     total: int
 
 
-class ConsentRevokeResponse(BaseModel):
+class ConsentRecordResponse(BaseModel):
     id: str
-    revoked: bool = True
+    recorded: bool = True
 
 
 class AuditLogEntry(BaseModel):
     id: str
     action: str
     actor: str
-    resource_type: str
-    resource_id: str
-    details: dict = Field(default_factory=dict)
     timestamp: str
+    resource: str
 
 
 class AuditLogResponse(BaseModel):
@@ -143,46 +112,51 @@ class AuditLogResponse(BaseModel):
     total: int
 
 
+class RetentionPolicy(BaseModel):
+    data_type: str
+    retention_days: int
+    auto_delete: bool
+
+
+class DataRetentionResponse(BaseModel):
+    policies: list[RetentionPolicy]
+
+
 class DataExportResponse(BaseModel):
     export_id: str
-    status: str = "processing"
-    estimated_completion: str
+    status: str
+    format: str
 
 
 class DataDeletionResponse(BaseModel):
     deletion_id: str
-    status: str = "scheduled"
-    scheduled_date: str
+    status: str
+    estimated_completion: str
 
 
-class RetentionRuleResponse(BaseModel):
-    id: str
-    data_type: str
-    retention_days: int
-    action: str
-    auto_apply: bool
-    last_applied: str | None = None
+class ConsentValidationResponse(BaseModel):
+    candidate_id: str
+    consent_type: str
+    is_valid: bool
+    granted: bool
+    recorded_at: str | None = None
 
 
-class RetentionRuleListResponse(BaseModel):
-    data: list[RetentionRuleResponse]
+class ComplianceCheckResponse(BaseModel):
+    check_id: str
+    framework: str
+    status: str
+    passed: int
+    failed: int
     total: int
 
 
-class RetentionRuleCreateResponse(BaseModel):
-    id: str
-    created: bool = True
-
-
-class ComplianceStatusResponse(BaseModel):
-    gdpr_compliant: bool
-    soc2_compliant: bool
-    last_audit: str
-    active_policies: int
-    pending_reviews: int
-    data_retention_days: int
-    consents_active: int
-    pending_deletions: int
+class ComplianceReportResponse(BaseModel):
+    report_id: str
+    period: str
+    overall_score: int
+    frameworks: dict[str, dict]
+    generated_at: str
 
 
 # ── Router ──────────────────────────────────────────────────────────────────────
@@ -195,138 +169,162 @@ async def health():
     return HealthResponse()
 
 
-# ── Policy Management ──────────────────────────────────────────────────────────
+# ── Compliance Status ──────────────────────────────────────────────────────────
 
-@router.get("/policies", response_model=PolicyListResponse, tags=["Compliance"], summary="List compliance policies")
-async def list_policies():
-    return PolicyListResponse(data=[
-        PolicySummary(id="p1", name="GDPR Data Retention", status="active", type="data_retention", created_at="2024-01-01"),
-        PolicySummary(id="p2", name="SOC2 Access Control", status="active", type="access_control", created_at="2024-01-01"),
-        PolicySummary(id="p3", name="Consent Management", status="active", type="consent", created_at="2024-06-15"),
-        PolicySummary(id="p4", name="Data Processing Agreement", status="active", type="data_processing", created_at="2024-03-10"),
-    ], total=4)
-
-
-@router.get("/policies/{policy_id}", response_model=PolicyDetailResponse, tags=["Compliance"],
-            summary="Get policy details")
-async def get_policy(policy_id: str):
-    return PolicyDetailResponse(
-        id=policy_id, name="GDPR Data Retention", type="data_retention",
-        description="Auto-delete candidate data after retention period",
-        status="active", rules={"retention_days": 730, "action": "delete", "data_types": ["resume", "profile"]},
-        created_at="2024-01-01T00:00:00Z", updated_at="2025-01-01T00:00:00Z",
+@router.get("/status", response_model=ComplianceStatusResponse, tags=["Compliance"],
+            summary="Get compliance status",
+            description="Retrieve overall compliance status across GDPR, SOC2, and ISO27001 frameworks.")
+async def get_status():
+    return ComplianceStatusResponse(
+        overall_status="compliant",
+        frameworks={
+            "gdpr": FrameworkStatus(status="compliant", score=95),
+            "soc2": FrameworkStatus(status="compliant", score=92),
+            "iso27001": FrameworkStatus(status="in_progress", score=78),
+        },
     )
 
 
+# ── Policies ───────────────────────────────────────────────────────────────────
+
+@router.get("/policies", response_model=PolicyListResponse, tags=["Compliance"], summary="List compliance policies",
+            description="Retrieve all active compliance policies including data retention, access control, and encryption.")
+async def list_policies():
+    return PolicyListResponse(data=[
+        PolicyInfo(id="p1", name="Data Retention Policy", type="data_retention", status="active",
+                   description="Defines data retention periods for different data types"),
+        PolicyInfo(id="p2", name="Access Control Policy", type="access_control", status="active",
+                   description="Defines role-based access control rules"),
+        PolicyInfo(id="p3", name="Encryption Policy", type="encryption", status="active",
+                   description="Defines encryption standards for data at rest and in transit"),
+    ], total=3)
+
+
 @router.post("/policies", response_model=PolicyCreateResponse, tags=["Compliance"],
-             summary="Create compliance policy")
+             summary="Create compliance policy",
+             description="Create a new compliance policy for the organization.")
 async def create_policy(data: PolicyCreateRequest):
     return PolicyCreateResponse(id="p_new")
 
 
-@router.put("/policies/{policy_id}", response_model=PolicyUpdateResponse, tags=["Compliance"],
-            summary="Update compliance policy")
-async def update_policy(policy_id: str, data: PolicyUpdateRequest):
-    return PolicyUpdateResponse(id=policy_id)
+# ── Consent Management ─────────────────────────────────────────────────────────
 
-
-@router.delete("/policies/{policy_id}", response_model=PolicyDeleteResponse, tags=["Compliance"],
-               summary="Delete compliance policy")
-async def delete_policy(policy_id: str):
-    return PolicyDeleteResponse(id=policy_id)
-
-
-# ── Consent Tracking ───────────────────────────────────────────────────────────
-
-@router.get("/consent", response_model=ConsentListResponse, tags=["Compliance"],
-            summary="List consent records",
-            description="Retrieve all consent records, optionally filtered by candidate.")
-async def list_consents(candidate_id: str | None = None):
+@router.get("/consent", response_model=ConsentListResponse, tags=["Compliance"], summary="List consent records",
+            description="Retrieve all candidate consent records including data processing and marketing consent.")
+async def list_consent():
     return ConsentListResponse(data=[
-        ConsentRecord(id="c1", candidate_id="cand_1", consent_type="data_processing", granted=True,
-                      purpose="Recruitment evaluation", recorded_at="2025-01-15T10:00:00Z", expiry="2027-01-15"),
-        ConsentRecord(id="c2", candidate_id="cand_1", consent_type="marketing", granted=False,
-                      purpose="Newsletter", recorded_at="2025-01-15T10:00:00Z"),
+        ConsentInfo(id="c1", candidate_id="c1", type="data_processing", granted=True, date="2025-01-15"),
+        ConsentInfo(id="c2", candidate_id="c2", type="marketing", granted=False, date="2025-01-16"),
     ], total=2)
 
 
-@router.post("/consent", response_model=ConsentResponse, tags=["Compliance"], summary="Record consent",
-             description="Record a candidate's consent for data processing or sharing.")
-async def record_consent(data: ConsentRequest):
-    return ConsentResponse(id="consent_new")
+@router.post("/consent", response_model=ConsentRecordResponse, tags=["Compliance"],
+             summary="Record consent",
+             description="Record a new consent decision from a candidate with timestamp and IP logging.")
+async def record_consent(data: ConsentRecordRequest):
+    return ConsentRecordResponse(id="consent_new")
 
 
-@router.post("/consent/revoke", response_model=ConsentRevokeResponse, tags=["Compliance"],
-             summary="Revoke consent",
-             description="Revoke a previously granted consent record.")
-async def revoke_consent(data: ConsentRevokeRequest):
-    return ConsentRevokeResponse(id=data.consent_id)
+@router.get("/consent/validate", response_model=ConsentValidationResponse, tags=["Compliance"],
+            summary="Validate consent",
+            description="Check if a candidate has valid consent for a specific processing purpose.")
+async def validate_consent(candidate_id: str, consent_type: str):
+    return ConsentValidationResponse(
+        candidate_id=candidate_id,
+        consent_type=consent_type,
+        is_valid=True,
+        granted=True,
+        recorded_at="2025-01-15T10:30:00Z",
+    )
 
 
-# ── Audit Logging ──────────────────────────────────────────────────────────────
+# ── Audit Log ──────────────────────────────────────────────────────────────────
 
 @router.get("/audit-log", response_model=AuditLogResponse, tags=["Compliance"], summary="Get audit log",
-            description="Retrieve the compliance audit trail of system actions.")
-async def get_audit_log(limit: int = 50):
+            description="Retrieve system audit log entries for compliance tracking and investigation.")
+async def get_audit_log():
     return AuditLogResponse(data=[
         AuditLogEntry(id="a1", action="candidate.created", actor="user@acme.com",
-                      resource_type="candidate", resource_id="c1", details={"source": "manual"},
-                      timestamp="2025-01-20T10:00:00Z"),
+                      timestamp="2025-01-20T10:00:00Z", resource="candidate"),
         AuditLogEntry(id="a2", action="interview.completed", actor="ai_agent",
-                      resource_type="interview", resource_id="i1", details={"score": 0.87},
-                      timestamp="2025-01-20T11:00:00Z"),
-        AuditLogEntry(id="a3", action="consent.granted", actor="candidate@email.com",
-                      resource_type="consent", resource_id="c1", details={"type": "data_processing"},
-                      timestamp="2025-01-20T12:00:00Z"),
-        AuditLogEntry(id="a4", action="data.exported", actor="hr@acme.com",
-                      resource_type="candidate", resource_id="c2", details={"format": "json"},
-                      timestamp="2025-01-20T13:00:00Z"),
-    ], total=4)
+                      timestamp="2025-01-20T11:00:00Z", resource="interview"),
+    ], total=2)
+
+
+@router.post("/audit-log", response_model=AuditLogEntry, tags=["Compliance"],
+             summary="Create audit log entry",
+             description="Create a new audit log entry for compliance tracking.")
+async def create_audit_log(data: AuditLogCreateRequest):
+    return AuditLogEntry(
+        id="a_new",
+        action=data.action,
+        actor=data.actor,
+        timestamp="2025-01-20T12:00:00Z",
+        resource=data.resource,
+    )
+
+
+# ── Data Retention ─────────────────────────────────────────────────────────────
+
+@router.get("/data-retention", response_model=DataRetentionResponse, tags=["Compliance"],
+            summary="Get data retention policies",
+            description="Retrieve data retention configuration for different data types.")
+async def get_retention():
+    return DataRetentionResponse(policies=[
+        RetentionPolicy(data_type="candidate_resumes", retention_days=365, auto_delete=True),
+        RetentionPolicy(data_type="interview_transcripts", retention_days=730, auto_delete=True),
+        RetentionPolicy(data_type="audit_logs", retention_days=2555, auto_delete=False),
+    ])
 
 
 # ── Data Export & Deletion ─────────────────────────────────────────────────────
 
-@router.post("/data-export", response_model=DataExportResponse, tags=["Compliance"], summary="Export candidate data",
-             description="Generate a GDPR-compliant data export for a candidate.")
+@router.post("/data-export", response_model=DataExportResponse, tags=["Compliance"],
+             summary="Request data export",
+             description="Request a GDPR-compliant data export for a candidate in JSON, CSV, or PDF format.")
 async def export_data(data: DataExportRequest):
-    return DataExportResponse(export_id="export_new", estimated_completion="2025-01-20T10:05:00Z")
+    return DataExportResponse(export_id="export_new", status="processing", format=data.format)
 
 
 @router.post("/data-deletion", response_model=DataDeletionResponse, tags=["Compliance"],
              summary="Request data deletion",
-             description="Initiate a GDPR right-to-be-forgotten deletion request.")
-async def request_data_deletion(data: DataDeletionRequest):
-    return DataDeletionResponse(deletion_id="del_new", scheduled_date="2025-01-21T00:00:00Z")
+             description="Request GDPR-compliant data deletion (right to be forgotten) for a candidate.")
+async def request_deletion(data: DataDeletionRequest):
+    return DataDeletionResponse(
+        deletion_id="del_new",
+        status="processing",
+        estimated_completion="2025-02-01",
+    )
 
 
-# ── Data Retention Rules ───────────────────────────────────────────────────────
+# ── Compliance Checks & Reports ────────────────────────────────────────────────
 
-@router.get("/retention-rules", response_model=RetentionRuleListResponse, tags=["Compliance"],
-            summary="List retention rules")
-async def list_retention_rules():
-    return RetentionRuleListResponse(data=[
-        RetentionRuleResponse(id="rr1", data_type="candidate_resume", retention_days=730,
-                              action="delete", auto_apply=True, last_applied="2025-01-01"),
-        RetentionRuleResponse(id="rr2", data_type="interview_recording", retention_days=365,
-                              action="anonymize", auto_apply=True, last_applied="2025-01-01"),
-        RetentionRuleResponse(id="rr3", data_type="audit_log", retention_days=2555,
-                              action="archive", auto_apply=False),
-    ], total=3)
-
-
-@router.post("/retention-rules", response_model=RetentionRuleCreateResponse, tags=["Compliance"],
-             summary="Create retention rule")
-async def create_retention_rule(data: RetentionRuleRequest):
-    return RetentionRuleCreateResponse(id="rr_new")
+@router.post("/check", response_model=ComplianceCheckResponse, tags=["Compliance"],
+             summary="Run compliance check",
+             description="Run a compliance check against a specific framework (GDPR, SOC2, ISO27001).")
+async def run_compliance_check(framework: str = "gdpr"):
+    return ComplianceCheckResponse(
+        check_id="check_new",
+        framework=framework,
+        status="passed",
+        passed=45,
+        failed=2,
+        total=47,
+    )
 
 
-# ── Compliance Status ──────────────────────────────────────────────────────────
-
-@router.get("/status", response_model=ComplianceStatusResponse, tags=["Compliance"], summary="Get compliance status",
-            description="Overview of current compliance posture (GDPR, SOC2).")
-async def get_compliance_status():
-    return ComplianceStatusResponse(
-        gdpr_compliant=True, soc2_compliant=True, last_audit="2025-01-15",
-        active_policies=4, pending_reviews=1, data_retention_days=730,
-        consents_active=142, pending_deletions=3,
+@router.get("/reports", response_model=ComplianceReportResponse, tags=["Compliance"],
+            summary="Get compliance report",
+            description="Generate a compliance report for a given period with framework scores.")
+async def get_compliance_report(period: str = "2025-01"):
+    return ComplianceReportResponse(
+        report_id="report_new",
+        period=period,
+        overall_score=88,
+        frameworks={
+            "gdpr": {"status": "compliant", "score": 95},
+            "soc2": {"status": "compliant", "score": 92},
+            "iso27001": {"status": "in_progress", "score": 78},
+        },
+        generated_at="2025-01-20T12:00:00Z",
     )

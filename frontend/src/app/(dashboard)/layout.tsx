@@ -6,13 +6,17 @@ import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: '📊' },
+  { name: 'Recruiter', href: '/dashboard/recruiter', icon: '🏠' },
   { name: 'Candidates', href: '/dashboard/candidates', icon: '👥' },
   { name: 'Jobs', href: '/dashboard/jobs', icon: '💼' },
   { name: 'Interviews', href: '/dashboard/interviews', icon: '🎥' },
+  { name: 'Pipeline', href: '/pipeline', icon: '🔄' },
   { name: 'Matching', href: '/matching', icon: '🎯' },
   { name: 'Schedule', href: '/schedule', icon: '📅' },
   { name: 'PPE Coding', href: '/dashboard/ppe', icon: '💻' },
+  { name: 'AI Copilot', href: '/ai-copilot', icon: '🤖' },
   { name: 'Analytics', href: '/dashboard/analytics', icon: '📈' },
+  { name: 'Workflows', href: '/workflows', icon: '⚡' },
   { name: 'Settings', href: '/settings', icon: '⚙️' },
 ];
 

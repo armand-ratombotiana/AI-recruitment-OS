@@ -10,7 +10,11 @@ export default function FeaturesPage() {
     { name: 'Analytics', route: '/dashboard/analytics', description: 'Recruitment analytics' },
     { name: 'Workflows', route: '/dashboard/workflows', description: 'Workflow automation' },
     { name: 'Settings', route: '/dashboard/settings', description: 'System settings' },
-    { name: 'AI Copilot', route: '/ai-interview', description: 'AI recruiting assistant' },
+    { name: 'Pipeline', route: '/dashboard/pipeline', description: 'Candidate pipeline board' },
+    { name: 'Matching', route: '/dashboard/matching', description: 'AI candidate-job matching' },
+    { name: 'Schedule', route: '/dashboard/schedule', description: 'Interview scheduling' },
+    { name: 'AI Copilot', route: '/dashboard/ai-copilot', description: 'AI recruiting assistant' },
+    { name: 'Reports', route: '/dashboard/reports', description: 'Recruitment reports' },
   ];
 
   return (

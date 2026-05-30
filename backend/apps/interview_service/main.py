@@ -1,130 +1,61 @@
-"""Interview Service — Interview scheduling, status management, and feedback."""
-from __future__ import annotations
-
+"""Interview Service — Complete interview management."""
 from fastapi import APIRouter
-from pydantic import BaseModel, Field
-
-
-# ── Request Models ──────────────────────────────────────────────────────────────
-
-class InterviewCreateRequest(BaseModel):
-    candidate_id: str = Field(..., description="Candidate ID")
-    job_id: str = Field(..., description="Job ID")
-    interview_type: str = Field(..., description="pair_programming | system_design | hr_screening | technical")
-    scheduled_at: str = Field(..., description="ISO 8601 datetime", examples=["2025-01-20T14:00:00Z"])
-    is_ai_interview: bool = Field(default=True, description="Whether AI conducts the interview")
-
-
-class FeedbackRequest(BaseModel):
-    rating: int = Field(..., ge=1, le=5, description="Overall rating (1-5)")
-    notes: str = Field(default="", description="Interviewer notes")
-    recommendation: str = Field(default="neutral", description="strong_hire | hire | neutral | no_hire | strong_no_hire")
-
-
-# ── Response Models ─────────────────────────────────────────────────────────────
-
-class HealthResponse(BaseModel):
-    status: str = "healthy"
-    service: str = "interview"
-
-
-class InterviewSummary(BaseModel):
-    id: str
-    candidate_id: str
-    job_id: str
-    interview_type: str
-    status: str
-    scheduled_at: str | None = None
-    is_ai_interview: bool
-
-
-class InterviewListResponse(BaseModel):
-    data: list[InterviewSummary]
-    total: int
-
-
-class InterviewDetailResponse(BaseModel):
-    id: str
-    candidate_id: str
-    job_id: str
-    interview_type: str
-    status: str
-    is_ai_interview: bool
-    scheduled_at: str | None = None
-
-
-class InterviewCreateResponse(BaseModel):
-    id: str
-    created: bool = True
-
-
-class InterviewStartResponse(BaseModel):
-    id: str
-    status: str = "in_progress"
-    started_at: str
-
-
-class InterviewCompleteResponse(BaseModel):
-    id: str
-    status: str = "completed"
-    completed_at: str
-
-
-class InterviewFeedbackResponse(BaseModel):
-    id: str
-    feedback_submitted: bool = True
-
-
-# ── Router ──────────────────────────────────────────────────────────────────────
+from pydantic import BaseModel
+from typing import Optional
 
 router = APIRouter()
 
+class InterviewCreate(BaseModel):
+    candidate_id: str
+    job_id: str
+    interview_type: str
+    scheduled_at: Optional[str] = None
+    is_ai_interview: bool = True
 
-@router.get("/health", response_model=HealthResponse, tags=["Interviews"], summary="Interview service health check")
+@router.get("/health")
 async def health():
-    return HealthResponse()
+    return {"status": "healthy", "service": "interview"}
 
+@router.get("/")
+async def list_interviews(candidate_id: str = None, job_id: str = None):
+    interviews = [
+        {"id": "i1", "candidate_id": "c1", "job_id": "j1", "type": "pair_programming", "status": "scheduled", "scheduled_at": "2025-01-20T14:00:00Z", "is_ai_interview": True, "interviewer": "PPE Agent"},
+        {"id": "i2", "candidate_id": "c2", "job_id": "j2", "type": "system_design", "status": "completed", "scheduled_at": "2025-01-19T10:00:00Z", "is_ai_interview": True, "interviewer": "System Design Agent"},
+        {"id": "i3", "candidate_id": "c3", "job_id": "j1", "type": "hr_screening", "status": "in_progress", "scheduled_at": "2025-01-20T11:00:00Z", "is_ai_interview": True, "interviewer": "HR Agent"},
+    ]
+    if candidate_id:
+        interviews = [i for i in interviews if i["candidate_id"] == candidate_id]
+    if job_id:
+        interviews = [i for i in interviews if i["job_id"] == job_id]
+    return {"data": interviews, "total": len(interviews)}
 
-@router.get("/", response_model=InterviewListResponse, tags=["Interviews"], summary="List interviews",
-            description="Retrieve a paginated list of interviews with optional filters.")
-async def list_interviews():
-    return InterviewListResponse(data=[
-        InterviewSummary(id="i1", candidate_id="c1", job_id="j1", interview_type="pair_programming",
-                         status="scheduled", scheduled_at="2025-01-20T14:00:00Z", is_ai_interview=True),
-        InterviewSummary(id="i2", candidate_id="c2", job_id="j2", interview_type="system_design",
-                         status="completed", is_ai_interview=True),
-        InterviewSummary(id="i3", candidate_id="c3", job_id="j1", interview_type="hr_screening",
-                         status="in_progress", is_ai_interview=True),
-    ], total=3)
-
-
-@router.get("/{interview_id}", response_model=InterviewDetailResponse, tags=["Interviews"], summary="Get interview details")
+@router.get("/{interview_id}")
 async def get_interview(interview_id: str):
-    return InterviewDetailResponse(
-        id=interview_id, candidate_id="c1", job_id="j1", interview_type="pair_programming",
-        status="scheduled", is_ai_interview=True, scheduled_at="2025-01-20T14:00:00Z",
-    )
+    return {"id": interview_id, "candidate_id": "c1", "job_id": "j1", "type": "pair_programming", "status": "scheduled", "scheduled_at": "2025-01-20T14:00:00Z", "is_ai_interview": True, "interviewer": "PPE Agent", "duration_minutes": 60}
 
+@router.post("/")
+async def create_interview(data: InterviewCreate):
+    return {"id": "i_new", "candidate_id": data.candidate_id, "job_id": data.job_id, "type": data.interview_type, "status": "scheduled", "created": True}
 
-@router.post("/", response_model=InterviewCreateResponse, tags=["Interviews"], summary="Schedule interview",
-             description="Schedule a new interview for a candidate.")
-async def create_interview():
-    return InterviewCreateResponse(id="i_new")
-
-
-@router.post("/{interview_id}/start", response_model=InterviewStartResponse, tags=["Interviews"],
-             summary="Start interview", description="Transition interview status to in_progress.")
+@router.post("/{interview_id}/start")
 async def start_interview(interview_id: str):
-    return InterviewStartResponse(id=interview_id, started_at="2025-01-20T14:00:00Z")
+    return {"id": interview_id, "status": "in_progress", "started_at": "2025-01-20T14:00:00Z"}
 
-
-@router.post("/{interview_id}/complete", response_model=InterviewCompleteResponse, tags=["Interviews"],
-             summary="Complete interview", description="Mark interview as completed and trigger evaluation.")
+@router.post("/{interview_id}/complete")
 async def complete_interview(interview_id: str):
-    return InterviewCompleteResponse(id=interview_id, completed_at="2025-01-20T15:00:00Z")
+    return {"id": interview_id, "status": "completed", "completed_at": "2025-01-20T15:00:00Z"}
 
-
-@router.post("/{interview_id}/feedback", response_model=InterviewFeedbackResponse, tags=["Interviews"],
-             summary="Submit interview feedback")
+@router.post("/{interview_id}/feedback")
 async def submit_feedback(interview_id: str):
-    return InterviewFeedbackResponse(id=interview_id)
+    return {"id": interview_id, "feedback_submitted": True, "overall_score": 8.2}
+
+@router.get("/{interview_id}/transcript")
+async def get_transcript(interview_id: str):
+    return {"interview_id": interview_id, "transcript": [
+        {"role": "interviewer", "content": "Tell me about your experience with distributed systems.", "timestamp": "2025-01-20T14:00:00Z"},
+        {"role": "candidate", "content": "I have 8 years of experience building scalable backend systems...", "timestamp": "2025-01-20T14:01:00Z"},
+    ], "total_messages": 2}
+
+@router.get("/{interview_id}/analytics")
+async def get_interview_analytics(interview_id: str):
+    return {"interview_id": interview_id, "analytics": {"duration_minutes": 60, "questions_asked": 12, "candidate_talk_time": 0.65, "interviewer_talk_time": 0.35, "communication_score": 8.5, "technical_score": 7.8}}
