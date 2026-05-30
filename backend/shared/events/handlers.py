@@ -1,30 +1,19 @@
+"""Event handler registry for AI-ROS."""
 from __future__ import annotations
-from typing import Callable
+from typing import Any, Callable
 from shared.events.schemas import EventEnvelope
+from shared.events.dispatcher import dispatcher
 
-class EventDispatcher:
-    def __init__(self):
-        self._handlers: dict[str, list[Callable]] = {}
-    def register(self, event_type: str, handler: Callable):
-        self._handlers.setdefault(event_type, []).append(handler)
-    async def dispatch(self, event: EventEnvelope):
-        for handler in self._handlers.get(event.event_type, []):
-            try:
-                await handler(event)
-            except Exception:
-                pass
+async def handle_candidate_created(event: EventEnvelope):
+    print(f"Candidate created: {event.payload}")
 
-class _EventStore:
-    def __init__(self):
-        self._events: list[EventEnvelope] = []
+async def handle_resume_parsed(event: EventEnvelope):
+    print(f"Resume parsed: {event.payload}")
 
-    def append(self, event: EventEnvelope) -> None:
-        self._events.append(event)
+async def handle_interview_completed(event: EventEnvelope):
+    print(f"Interview completed: {event.payload}")
 
-    def get_all(self) -> list[EventEnvelope]:
-        return list(self._events)
-
-    def clear(self) -> None:
-        self._events.clear()
-
-event_store = _EventStore()
+# Register handlers
+dispatcher.register("candidate.created", handle_candidate_created)
+dispatcher.register("resume.parsed", handle_resume_parsed)
+dispatcher.register("interview.completed", handle_interview_completed)

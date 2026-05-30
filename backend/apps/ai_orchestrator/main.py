@@ -84,7 +84,9 @@ async def list_agents():
         AgentSummary(id="a2", type="skill_extraction", status="idle", tasks_completed=142),
         AgentSummary(id="a3", type="candidate_profiling", status="processing", tasks_completed=98),
         AgentSummary(id="a4", type="ppe_evaluation", status="idle", tasks_completed=67),
-    ], total=4)
+        AgentSummary(id="a5", type="hr_interview", status="idle", tasks_completed=89),
+        AgentSummary(id="a6", type="technical_interview", status="idle", tasks_completed=76),
+    ], total=6)
 
 
 @router.get("/agents/{agent_id}", response_model=AgentDetailResponse, tags=["AI"], summary="Get agent details")
