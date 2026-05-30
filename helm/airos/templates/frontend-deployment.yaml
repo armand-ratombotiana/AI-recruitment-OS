@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-frontend
+  labels:
+    app: airos
+    component: frontend
+spec:
+  replicas: {{ .Values.replicaCount.frontend }}
+  selector:
+    matchLabels:
+      app: airos
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: airos
+        component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.image.repository }}-frontend:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 3000
+              name: http
+          resources:
+            requests:
+              cpu: {{ .Values.resources.frontend.requests.cpu }}
+              memory: {{ .Values.resources.frontend.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.frontend.limits.cpu }}
+              memory: {{ .Values.resources.frontend.limits.memory }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10

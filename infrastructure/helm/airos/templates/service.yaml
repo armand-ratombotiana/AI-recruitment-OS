@@ -1,0 +1,36 @@
+{{/*
+AI-ROS Helm Chart — Service template
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-api
+  labels:
+    app: airos
+    component: api
+spec:
+  selector:
+    app: airos
+    component: api
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-frontend
+  labels:
+    app: airos
+    component: frontend
+spec:
+  selector:
+    app: airos
+    component: frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
+      name: http
+  type: ClusterIP

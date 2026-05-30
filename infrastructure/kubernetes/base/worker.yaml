@@ -1,0 +1,317 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airos-worker-default
+  labels:
+    app: airos-worker
+    queue: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: airos-worker
+      queue: default
+  template:
+    metadata:
+      labels:
+        app: airos-worker
+        queue: default
+    spec:
+      containers:
+        - name: celery-worker
+          image: airos-backend:latest
+          command:
+            - celery
+            - -A
+            - shared.events.celery_app
+            - worker
+            - --loglevel=info
+            - --concurrency=4
+            - --queues=default
+            - --hostname=default-worker@%h
+          env:
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: celery-broker-url
+            - name: CELERY_RESULT_BACKEND
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: celery-result-backend
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: redis-url
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:9092"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - shared.events.celery_app
+                - inspect
+                - ping
+                - --timeout=5
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - shared.events.celery_app
+                - inspect
+                - ping
+                - --timeout=5
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airos-worker-ai
+  labels:
+    app: airos-worker
+    queue: ai
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: airos-worker
+      queue: ai
+  template:
+    metadata:
+      labels:
+        app: airos-worker
+        queue: ai
+    spec:
+      containers:
+        - name: celery-worker-ai
+          image: airos-backend:latest
+          command:
+            - celery
+            - -A
+            - shared.events.celery_app
+            - worker
+            - --loglevel=info
+            - --concurrency=2
+            - --queues=ai
+            - --hostname=ai-worker@%h
+          env:
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: celery-broker-url
+            - name: CELERY_RESULT_BACKEND
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: celery-result-backend
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: database-url
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: openai-api-key
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:9092"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+          livenessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - shared.events.celery_app
+                - inspect
+                - ping
+                - --timeout=5
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - shared.events.celery_app
+                - inspect
+                - ping
+                - --timeout=5
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airos-worker-notification
+  labels:
+    app: airos-worker
+    queue: notification
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: airos-worker
+      queue: notification
+  template:
+    metadata:
+      labels:
+        app: airos-worker
+        queue: notification
+    spec:
+      containers:
+        - name: celery-worker-notification
+          image: airos-backend:latest
+          command:
+            - celery
+            - -A
+            - shared.events.celery_app
+            - worker
+            - --loglevel=info
+            - --concurrency=4
+            - --queues=notification
+            - --hostname=notification-worker@%h
+          env:
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: celery-broker-url
+            - name: CELERY_RESULT_BACKEND
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: celery-result-backend
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: database-url
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: smtp-host
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: smtp-password
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - shared.events.celery_app
+                - inspect
+                - ping
+                - --timeout=5
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - shared.events.celery_app
+                - inspect
+                - ping
+                - --timeout=5
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airos-beat
+  labels:
+    app: airos-beat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airos-beat
+  template:
+    metadata:
+      labels:
+        app: airos-beat
+    spec:
+      containers:
+        - name: celery-beat
+          image: airos-backend:latest
+          command:
+            - celery
+            - -A
+            - shared.events.celery_app
+            - beat
+            - --loglevel=info
+            - --schedule=/tmp/celerybeat-schedule
+          env:
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: celery-broker-url
+            - name: CELERY_RESULT_BACKEND
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: celery-result-backend
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: beat-schedule
+              mountPath: /tmp
+      volumes:
+        - name: beat-schedule
+          emptyDir: {}

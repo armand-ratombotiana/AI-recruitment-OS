@@ -1,0 +1,91 @@
+# =============================================================================
+# Kubernetes Base — Worker Deployments
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airos-celery-worker
+  namespace: airos
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: airos
+      component: celery-worker
+  template:
+    metadata:
+      labels:
+        app: airos
+        component: celery-worker
+    spec:
+      containers:
+        - name: worker
+          image: airos-api:latest
+          command: ["celery", "-A", "shared.events.celery_app", "worker", "-l", "info", "-c", "4"]
+          envFrom:
+            - configMapRef:
+                name: airos-config
+            - secretRef:
+                name: airos-secrets
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airos-celery-beat
+  namespace: airos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airos
+      component: celery-beat
+  template:
+    metadata:
+      labels:
+        app: airos
+        component: celery-beat
+    spec:
+      containers:
+        - name: beat
+          image: airos-api:latest
+          command: ["celery", "-A", "shared.events.celery_app", "beat", "-l", "info"]
+          envFrom:
+            - configMapRef:
+                name: airos-config
+            - secretRef:
+                name: airos-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: airos-celery-worker
+  namespace: airos
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: airos-celery-worker
+  minReplicas: 2
+  maxReplicas: 15
+  metrics:
+    - type: External
+      external:
+        metric:
+          name: celery_queue_length
+        target:
+          type: AverageValue
+          averageValue: "10"

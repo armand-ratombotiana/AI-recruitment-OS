@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-api-pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: airos
+      component: api

@@ -1,0 +1,56 @@
+{{/*
+AI-ROS Helm Chart — Deployment template
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-api
+  labels:
+    app: airos
+    component: api
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount.api }}
+  selector:
+    matchLabels:
+      app: airos
+      component: api
+  template:
+    metadata:
+      labels:
+        app: airos
+        component: api
+    spec:
+      serviceAccountName: {{ .Release.Name }}-api
+      containers:
+        - name: api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-config
+            - secretRef:
+                name: {{ .Release.Name }}-secrets
+          resources:
+            requests:
+              cpu: {{ .Values.resources.api.requests.cpu }}
+              memory: {{ .Values.resources.api.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.api.limits.cpu }}
+              memory: {{ .Values.resources.api.limits.memory }}
+          livenessProbe:
+            httpGet: { path: /health, port: 8000 }
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet: { path: /health, port: 8000 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 5"]
+      terminationGracePeriodSeconds: 30

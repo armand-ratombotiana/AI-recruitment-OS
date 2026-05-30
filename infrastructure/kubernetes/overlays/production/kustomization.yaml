@@ -1,0 +1,213 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: airos-production
+
+namePrefix: prod-
+commonLabels:
+  environment: production
+  managed-by: kustomize
+
+resources:
+  - ../../base/frontend.yaml
+  - ../../base/worker.yaml
+  - ../../base/kafka.yaml
+  - ../../base/elasticsearch.yaml
+  - ../../base/monitoring.yaml
+  - namespace.yaml
+
+patches:
+  - target:
+      kind: Deployment
+      name: airos-frontend
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 3
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 500m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 512Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 1Gi
+  - target:
+      kind: Deployment
+      name: airos-worker-default
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 5
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 1Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 2000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 2Gi
+  - target:
+      kind: Deployment
+      name: airos-worker-ai
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 5
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 2000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 2Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 4000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 4Gi
+  - target:
+      kind: Deployment
+      name: airos-worker-notification
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 3
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 500m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 512Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 1Gi
+  - target:
+      kind: Kafka
+      name: airos-kafka
+    patch: |
+      - op: replace
+        path: /spec/kafka/storage/volumes/0/size
+        value: 200Gi
+      - op: replace
+        path: /spec/zookeeper/storage/size
+        value: 50Gi
+      - op: replace
+        path: /spec/kafka/resources/requests/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/kafka/resources/requests/memory
+        value: 2Gi
+      - op: replace
+        path: /spec/kafka/resources/limits/cpu
+        value: 2000m
+      - op: replace
+        path: /spec/kafka/resources/limits/memory
+        value: 4Gi
+  - target:
+      kind: StatefulSet
+      name: elasticsearch
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 5
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 2000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 4Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 4000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 8Gi
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: 500Gi
+  - target:
+      kind: Deployment
+      name: prometheus
+      namespace: monitoring
+    patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 2Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 2000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 4Gi
+  - target:
+      kind: Deployment
+      name: grafana
+      namespace: monitoring
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 2
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 500m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 1Gi
+  - target:
+      kind: Deployment
+      name: jaeger
+      namespace: monitoring
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 2
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 500m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 1Gi
+
+configMapGenerator:
+  - name: airos-production-config
+    literals:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+      - API_URL=http://airos-api:8000
+      - DATABASE_URL=postgresql://airos:${DB_PASSWORD}@postgres:5432/airos_production
+      - REDIS_URL=redis://redis:6379/0
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - SENTRY_DSN=${SENTRY_DSN}
+      - ENABLE_METRICS=true
+      - ENABLE_TRACING=true
+
+secretGenerator:
+  - name: airos-production-secrets
+    type: Opaque
+    literals:
+      - nextauth-secret=${NEXTAUTH_SECRET}
+      - celery-broker-url=redis://redis:6379/1
+      - celery-result-backend=redis://redis:6379/2
+      - database-url=postgresql://airos:${DB_PASSWORD}@postgres:5432/airos_production
+      - redis-url=redis://redis:6379/0
+      - openai-api-key=${OPENAI_API_KEY}
+      - smtp-host=${SMTP_HOST}
+      - smtp-password=${SMTP_PASSWORD}
+      - elastic-password=${ELASTIC_PASSWORD}
+      - transport-ssl-passphrase=${TRANSPORT_SSL_PASSPHRASE}

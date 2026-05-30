@@ -1,0 +1,33 @@
+# =============================================================================
+# AI-ROS Backend — Development Requirements
+# =============================================================================
+-r requirements.txt
+
+# Testing
+pytest==8.3.4
+pytest-asyncio==0.25.0
+pytest-cov==6.0.0
+pytest-mock==3.14.0
+pytest-xdist==3.5.0
+pytest-timeout==2.3.1
+faker==33.1.0
+httpx==0.28.1
+aiosqlite==0.20.0
+
+# Linting & Formatting
+ruff==0.8.6
+mypy==1.14.1
+pre-commit==4.0.1
+
+# Type stubs
+types-redis==5.2.0
+types-requests==2.32.0
+
+# Documentation
+mkdocs==1.6.1
+mkdocs-material==9.5.49
+mkdocstrings[python]==0.27.0
+
+# Jupyter (for exploration)
+jupyter==1.1.1
+ipython==8.31.0

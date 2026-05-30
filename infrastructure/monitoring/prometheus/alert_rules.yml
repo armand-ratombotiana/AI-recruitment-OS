@@ -1,0 +1,29 @@
+groups:
+  - name: airos_alerts
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{job="airos-api", status=~"5.."}[5m])) / sum(rate(http_requests_total{job="airos-api"}[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High API error rate"
+          description: "API error rate is above 5% for 5 minutes"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="airos-api"}[5m])) by (le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API latency"
+          description: "P95 latency is above 2 seconds for 5 minutes"
+
+      - alert: ServiceDown
+        expr: up{job="airos-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API service is down"
+          description: "API service has been unreachable for 1 minute"

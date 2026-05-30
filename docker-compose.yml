@@ -1,0 +1,179 @@
+services:
+  # ===========================================
+  # INFRASTRUCTURE SERVICES
+  # ===========================================
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: airos-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: airos
+      POSTGRES_USER: airos
+      POSTGRES_PASSWORD: airos_dev_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airos"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - airos-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: airos-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - airos-net
+
+  # ===========================================
+  # APPLICATION SERVICES
+  # ===========================================
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: airos-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://airos:airos_dev_password@postgres:5432/airos
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=dev-secret-key-change-in-production-min-32-chars!!
+      - ENCRYPTION_KEY=dev-encryption-key-change-in-production-32!!
+      - OPENAI_API_KEY=sk-placeholder
+      - ENVIRONMENT=development
+      - DEBUG=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - airos-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: airos-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const http = require('http'); http.get('http://localhost:3000', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - airos-net
+
+  # ===========================================
+  # MONITORING SERVICES
+  # ===========================================
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: airos-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - airos-net
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: airos-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./infrastructure/monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - airos-net
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: airos-jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - airos-net
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: airos-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./infrastructure/monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - airos-net
+
+# ===========================================
+# VOLUMES
+# ===========================================
+volumes:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+
+# ===========================================
+# NETWORKS
+# ===========================================
+networks:
+  airos-net:
+    driver: bridge

@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airos-frontend
+  labels:
+    app: airos-frontend
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: airos-frontend
+  template:
+    metadata:
+      labels:
+        app: airos-frontend
+        tier: frontend
+    spec:
+      containers:
+        - name: airos-frontend
+          image: airos-frontend:latest
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: airos-config
+                  key: api-url
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: airos-secrets
+                  key: nextauth-secret
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: airos-frontend
+  labels:
+    app: airos-frontend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app: airos-frontend
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airos-config
+data:
+  api-url: "http://airos-api:8000"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: airos-frontend
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - app.airos.io
+      secretName: airos-frontend-tls
+  rules:
+    - host: app.airos.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: airos-frontend
+                port:
+                  number: 3000

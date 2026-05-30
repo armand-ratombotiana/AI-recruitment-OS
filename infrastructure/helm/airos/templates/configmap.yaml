@@ -1,0 +1,28 @@
+{{/*
+AI-ROS Helm Chart — ConfigMap and Secret templates
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  ENVIRONMENT: {{ .Values.env.ENVIRONMENT | quote }}
+  DATABASE_URL: {{ .Values.env.DATABASE_URL | quote }}
+  REDIS_URL: {{ .Values.env.REDIS_URL | quote }}
+  CELERY_BROKER_URL: {{ .Values.env.CELERY_BROKER_URL | quote }}
+  CELERY_RESULT_BACKEND: {{ .Values.env.CELERY_RESULT_BACKEND | quote }}
+  KAFKA_BOOTSTRAP_SERVERS: {{ .Values.env.KAFKA_BOOTSTRAP_SERVERS | quote }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.env.OTEL_EXPORTER_OTLP_ENDPOINT | quote }}
+  APP_NAME: "AI-ROS"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-secrets
+type: Opaque
+stringData:
+  SECRET_KEY: {{ .Values.secrets.SECRET_KEY | quote }}
+  ENCRYPTION_KEY: {{ .Values.secrets.ENCRYPTION_KEY | quote }}
+  DB_PASSWORD: {{ .Values.secrets.DB_PASSWORD | quote }}
+  OPENAI_API_KEY: {{ .Values.secrets.OPENAI_API_KEY | quote }}
+  ANTHROPIC_API_KEY: {{ .Values.secrets.ANTHROPIC_API_KEY | quote }}

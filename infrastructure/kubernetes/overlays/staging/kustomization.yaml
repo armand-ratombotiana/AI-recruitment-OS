@@ -1,0 +1,179 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: airos-staging
+
+namePrefix: staging-
+commonLabels:
+  environment: staging
+  managed-by: kustomize
+
+resources:
+  - ../../base/frontend.yaml
+  - ../../base/worker.yaml
+  - ../../base/kafka.yaml
+  - ../../base/elasticsearch.yaml
+  - ../../base/monitoring.yaml
+  - namespace.yaml
+
+patches:
+  - target:
+      kind: Deployment
+      name: airos-frontend
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 100m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 128Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 250m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 256Mi
+  - target:
+      kind: Deployment
+      name: airos-worker-default
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 250m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 256Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 500m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 512Mi
+  - target:
+      kind: Deployment
+      name: airos-worker-ai
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 500m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 512Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 1Gi
+  - target:
+      kind: Deployment
+      name: airos-worker-notification
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 100m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 128Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 250m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 256Mi
+  - target:
+      kind: Kafka
+      name: airos-kafka
+    patch: |
+      - op: replace
+        path: /spec/kafka/replicas
+        value: 1
+      - op: replace
+        path: /spec/kafka/storage/volumes/0/size
+        value: 10Gi
+      - op: replace
+        path: /spec/zookeeper/replicas
+        value: 1
+      - op: replace
+        path: /spec/zookeeper/storage/size
+        value: 5Gi
+  - target:
+      kind: StatefulSet
+      name: elasticsearch
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 500m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 1Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 2Gi
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: 20Gi
+  - target:
+      kind: Deployment
+      name: prometheus
+      namespace: monitoring
+    patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 250m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 512Mi
+  - target:
+      kind: Deployment
+      name: grafana
+      namespace: monitoring
+    patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 100m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 256Mi
+
+configMapGenerator:
+  - name: airos-staging-config
+    literals:
+      - NODE_ENV=staging
+      - LOG_LEVEL=debug
+      - API_URL=http://airos-api-staging:8000
+      - DATABASE_URL=postgresql://airos:staging@postgres-staging:5432/airos_staging
+      - REDIS_URL=redis://redis-staging:6379/0
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-staging:9092
+      - ELASTICSEARCH_URL=http://elasticsearch-staging:9200
+
+secretGenerator:
+  - name: airos-staging-secrets
+    type: Opaque
+    literals:
+      - nextauth-secret=staging-nextauth-secret-change-me
+      - celery-broker-url=redis://redis-staging:6379/1
+      - celery-result-backend=redis://redis-staging:6379/2
+      - database-url=postgresql://airos:staging@postgres-staging:5432/airos_staging
+      - redis-url=redis://redis-staging:6379/0
+      - openai-api-key=sk-staging-openai-key
+      - smtp-host=smtp.mailtrap.io
+      - smtp-password=staging-smtp-password

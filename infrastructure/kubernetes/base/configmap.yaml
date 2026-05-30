@@ -1,0 +1,30 @@
+# =============================================================================
+# Kubernetes Base — ConfigMap and Secrets
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airos-config
+  namespace: airos
+data:
+  ENVIRONMENT: "production"
+  APP_NAME: "AI-ROS"
+  DATABASE_URL: "postgresql+asyncpg://airos:$(DB_PASSWORD)@airos-postgresql:5432/airos"
+  REDIS_URL: "redis://airos-redis-master:6379/0"
+  CELERY_BROKER_URL: "redis://airos-redis-master:6379/1"
+  CELERY_RESULT_BACKEND: "redis://airos-redis-master:6379/2"
+  KAFKA_BOOTSTRAP_SERVERS: "airos-kafka:9092"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://airos-jaeger:4317"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airos-secrets
+  namespace: airos
+type: Opaque
+stringData:
+  SECRET_KEY: "CHANGE_ME_IN_PRODUCTION"
+  ENCRYPTION_KEY: "CHANGE_ME_IN_PRODUCTION"
+  DB_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
+  OPENAI_API_KEY: "CHANGE_ME"
+  ANTHROPIC_API_KEY: "CHANGE_ME"
