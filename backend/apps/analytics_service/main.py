@@ -1,127 +1,36 @@
-"""Analytics Service — Pipeline analytics, AI performance metrics, and reports."""
-from __future__ import annotations
-
+"""Analytics Service — Metrics, reporting, dashboards."""
 from fastapi import APIRouter
-from pydantic import BaseModel, Field
-
-
-# ── Request Models ──────────────────────────────────────────────────────────────
-
-class ReportRequest(BaseModel):
-    report_type: str = Field(default="pipeline", description="pipeline | ai_performance | custom")
-    time_range: str = Field(default="30d", description="7d | 30d | 90d | 1y")
-    filters: dict = Field(default_factory=dict, description="Additional report filters")
-
-
-# ── Response Models ─────────────────────────────────────────────────────────────
-
-class HealthResponse(BaseModel):
-    status: str = "healthy"
-    service: str = "analytics"
-
-
-class DashboardMetrics(BaseModel):
-    total_candidates: int
-    open_positions: int
-    active_interviews: int
-    hires_this_month: int
-    avg_time_to_hire_days: float
-    ai_evaluation_accuracy: float
-
-
-class DashboardResponse(BaseModel):
-    time_range: str
-    metrics: DashboardMetrics
-
-
-class MetricDataPoint(BaseModel):
-    timestamp: str
-    value: int | float
-
-
-class MetricsResponse(BaseModel):
-    metric: str
-    data: list[MetricDataPoint]
-
-
-class PipelineStage(BaseModel):
-    stage: str
-    count: int
-
-
-class PipelineResponse(BaseModel):
-    pipeline: list[PipelineStage]
-
-
-class AIMetric(BaseModel):
-    name: str
-    value: float
-    target: float
-
-
-class AIPerformanceResponse(BaseModel):
-    metrics: list[AIMetric]
-
-
-class ReportResponse(BaseModel):
-    report_id: str
-    status: str = "generating"
-
-
-# ── Router ──────────────────────────────────────────────────────────────────────
 
 router = APIRouter()
 
-
-@router.get("/health", response_model=HealthResponse, tags=["Analytics"], summary="Analytics service health check")
+@router.get("/health")
 async def health():
-    return HealthResponse()
+    return {"status": "healthy", "service": "analytics"}
 
-
-@router.get("/dashboard", response_model=DashboardResponse, tags=["Analytics"], summary="Get dashboard metrics",
-            description="Retrieve high-level recruitment metrics for the dashboard.",
-            responses={200: {"description": "Dashboard metrics retrieved successfully"}})
+@router.get("/dashboard")
 async def get_dashboard(time_range: str = "7d"):
-    return DashboardResponse(
-        time_range=time_range,
-        metrics=DashboardMetrics(
-            total_candidates=1247, open_positions=23, active_interviews=18,
-            hires_this_month=7, avg_time_to_hire_days=14.7, ai_evaluation_accuracy=91.5,
-        ),
-    )
+    return {"time_range": time_range, "metrics": {"total_candidates": 1247, "open_positions": 23, "active_interviews": 18, "hires_this_month": 7, "avg_time_to_hire_days": 14.7, "ai_evaluation_accuracy": 91.5, "conversion_rate": 0.12, "candidate_satisfaction": 4.5}}
 
+@router.get("/pipeline")
+async def get_pipeline():
+    return {"pipeline": [{"stage": "Applied", "count": 145, "conversion_rate": 0.61}, {"stage": "Screening", "count": 89, "conversion_rate": 0.47}, {"stage": "Interview", "count": 42, "conversion_rate": 0.43}, {"stage": "Evaluation", "count": 18, "conversion_rate": 0.39}, {"stage": "Offer", "count": 7, "conversion_rate": 0.43}, {"stage": "Hired", "count": 3, "conversion_rate": 1.0}]}
 
-@router.get("/metrics", response_model=MetricsResponse, tags=["Analytics"], summary="Query metrics",
-            description="Query a specific metric by name or retrieve all available metrics.")
-async def query_metrics(metric_name: str | None = None):
-    return MetricsResponse(metric=metric_name or "all", data=[
-        MetricDataPoint(timestamp="2025-01-20", value=42),
-        MetricDataPoint(timestamp="2025-01-21", value=38),
-    ])
-
-
-@router.get("/pipeline", response_model=PipelineResponse, tags=["Analytics"], summary="Pipeline analytics",
-            description="Get candidate counts per pipeline stage (Applied → Hired).")
-async def get_pipeline_analytics():
-    return PipelineResponse(pipeline=[
-        PipelineStage(stage="Applied", count=145), PipelineStage(stage="Screening", count=89),
-        PipelineStage(stage="Interview", count=42), PipelineStage(stage="Evaluation", count=18),
-        PipelineStage(stage="Offer", count=7), PipelineStage(stage="Hired", count=3),
-    ])
-
-
-@router.get("/ai-performance", response_model=AIPerformanceResponse, tags=["Analytics"],
-            summary="AI model performance",
-            description="Retrieve AI model accuracy metrics and target comparisons.")
+@router.get("/ai-performance")
 async def get_ai_performance():
-    return AIPerformanceResponse(metrics=[
-        AIMetric(name="Resume Parsing Accuracy", value=94.2, target=95),
-        AIMetric(name="Skill Extraction F1", value=89.7, target=90),
-        AIMetric(name="PPE Evaluation Correlation", value=91.5, target=90),
-    ])
+    return {"metrics": [{"name": "Resume Parsing Accuracy", "value": 94.2, "target": 95}, {"name": "Skill Extraction F1", "value": 89.7, "target": 90}, {"name": "PPE Evaluation Correlation", "value": 91.5, "target": 90}, {"name": "Candidate Matching Accuracy", "value": 87.2, "target": 90}]}
 
+@router.get("/recruiter-productivity")
+async def get_recruiter_productivity():
+    return {"recruiters": [{"name": "Jane Smith", "candidates_reviewed": 45, "interviews_conducted": 12, "hires": 3}, {"name": "Bob Johnson", "candidates_reviewed": 38, "interviews_conducted": 10, "hires": 2}]}
 
-@router.post("/reports", response_model=ReportResponse, tags=["Analytics"], summary="Generate report",
-             description="Queue a custom analytics report for asynchronous generation.")
-async def generate_report(data: ReportRequest):
-    return ReportResponse(report_id="report_new")
+@router.get("/time-to-hire")
+async def get_time_to_hire():
+    return {"average_days": 14.7, "by_stage": [{"stage": "Application", "days": 0}, {"stage": "Screening", "days": 1.2}, {"stage": "Interview", "days": 5.4}, {"stage": "Evaluation", "days": 7.1}, {"stage": "Offer", "days": 10.3}, {"stage": "Hired", "days": 14.7}]}
+
+@router.post("/reports")
+async def generate_report():
+    return {"report_id": "report_new", "status": "generating", "estimated_time": "30 seconds"}
+
+@router.get("/reports/{report_id}")
+async def get_report(report_id: str):
+    return {"report_id": report_id, "status": "completed", "data": {"summary": "Monthly recruitment report", "hires": 7, "time_to_hire": 14.7}}

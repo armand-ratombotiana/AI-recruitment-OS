@@ -5,17 +5,17 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: '📊' },
-  { name: 'Recruiter', href: '/dashboard/recruiter', icon: '🏠' },
-  { name: 'Candidates', href: '/dashboard/candidates', icon: '👥' },
-  { name: 'Jobs', href: '/dashboard/jobs', icon: '💼' },
-  { name: 'Interviews', href: '/dashboard/interviews', icon: '🎥' },
+  { name: 'Dashboard', href: '/', icon: '📊' },
+  { name: 'Recruiter', href: '/recruiter', icon: '🏠' },
+  { name: 'Candidates', href: '/candidates', icon: '👥' },
+  { name: 'Jobs', href: '/jobs', icon: '💼' },
+  { name: 'Interviews', href: '/interviews', icon: '🎥' },
   { name: 'Pipeline', href: '/pipeline', icon: '🔄' },
   { name: 'Matching', href: '/matching', icon: '🎯' },
   { name: 'Schedule', href: '/schedule', icon: '📅' },
-  { name: 'PPE Coding', href: '/dashboard/ppe', icon: '💻' },
+  { name: 'PPE Coding', href: '/ppe', icon: '💻' },
   { name: 'AI Copilot', href: '/ai-copilot', icon: '🤖' },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: '📈' },
+  { name: 'Analytics', href: '/analytics', icon: '📈' },
   { name: 'Workflows', href: '/workflows', icon: '⚡' },
   { name: 'Settings', href: '/settings', icon: '⚙️' },
 ];

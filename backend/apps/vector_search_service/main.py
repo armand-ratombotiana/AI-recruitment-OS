@@ -26,12 +26,8 @@ async def generate_embedding():
 
 @router.get("/embeddings/{embedding_id}")
 async def get_embedding(embedding_id: str):
-    return {"id": embedding_id, "dimension": 3072, "model": "text-embedding-3-large"}
+    return {"id": embedding_id, "dimension": 3072}
 
 @router.post("/similarity")
 async def similarity_search():
     return {"query": "python backend", "results": [{"id": "c1", "score": 0.95}], "total": 1}
-
-@router.post("/embeddings/batch")
-async def batch_embeddings():
-    return {"embeddings_created": 5, "total_tokens": 1500}

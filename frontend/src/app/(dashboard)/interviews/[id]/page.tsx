@@ -10,20 +10,19 @@ export default function InterviewDetailPage({ params }: { params: { id: string }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchInterview = async () => {
+      try {
+        const data = await api.listInterviews();
+        const found = data.data?.find((i: any) => i.id === params.id);
+        setInterview(found || null);
+      } catch (e) {
+        console.error('Failed to load interview');
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchInterview();
-  }, []);
-
-  const fetchInterview = async () => {
-    try {
-      const data = await api.listInterviews();
-      const found = data.data?.find((i: any) => i.id === params.id);
-      setInterview(found || null);
-    } catch (e) {
-      console.error('Failed to load interview');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [params.id]);
 
   if (loading) return <p className="text-gray-500">Loading interview details...</p>;
   if (!interview) return <p className="text-gray-500">Interview not found</p>;
@@ -31,7 +30,7 @@ export default function InterviewDetailPage({ params }: { params: { id: string }
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <a href="/dashboard/interviews" className="text-gray-400 hover:text-gray-600">← Back</a>
+        <a href="/interviews" className="text-gray-400 hover:text-gray-600">← Back</a>
         <div>
           <h1 className="text-2xl font-bold">Interview Details</h1>
           <p className="text-gray-500">{interview.candidate?.name || 'Unknown'} — {interview.job?.title || 'Unknown Position'}</p>

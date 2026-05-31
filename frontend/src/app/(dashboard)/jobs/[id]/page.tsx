@@ -10,19 +10,18 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        const data = await api.getJob(params.id);
+        setJob(data);
+      } catch (e) {
+        console.error('Failed to load job');
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchJob();
-  }, []);
-
-  const fetchJob = async () => {
-    try {
-      const data = await api.getJob(params.id);
-      setJob(data);
-    } catch (e) {
-      console.error('Failed to load job');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [params.id]);
 
   if (loading) return <p className="text-gray-500">Loading job details...</p>;
   if (!job) return <p className="text-gray-500">Job not found</p>;
@@ -30,7 +29,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <a href="/dashboard/jobs" className="text-gray-400 hover:text-gray-600">← Back</a>
+        <a href="/jobs" className="text-gray-400 hover:text-gray-600">← Back</a>
         <div>
           <h1 className="text-2xl font-bold">{job.title}</h1>
           <p className="text-gray-500">{job.department} • {job.location}</p>
