@@ -31,19 +31,17 @@ export default function LoginPage() {
       const data = await api.getSSOAuthorizeUrl(provider, redirectUri);
       window.location.href = data.authorization_url;
     } catch {
-      setError('SSO provider unavailable');
+      setError(`SSO with ${provider} is not configured yet`);
     }
   };
 
   return (
     <div className="min-h-screen flex">
       {/* Left panel - branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-blue-800 items-center justify-center p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-600 items-center justify-center p-12">
         <div className="max-w-md text-white">
           <div className="flex items-center gap-3 mb-8">
-            <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center">
-              <span className="text-xl font-bold">AI</span>
-            </div>
+            <img src="/logo.svg" alt="AI-ROS" className="h-12 w-12" />
             <span className="text-2xl font-bold">AI-ROS</span>
           </div>
           <h1 className="text-4xl font-bold mb-4">AI-Native Recruitment</h1>
@@ -72,9 +70,7 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center">
-              <span className="text-lg font-bold text-white">AI</span>
-            </div>
+            <img src="/logo.svg" alt="AI-ROS" className="h-10 w-10" />
             <span className="text-xl font-bold">AI-ROS</span>
           </div>
 
@@ -128,7 +124,9 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* SSO Buttons - All 4 providers */}
           <div className="grid grid-cols-2 gap-3">
+            {/* Google */}
             <button
               onClick={() => handleSSO('google')}
               type="button"
@@ -142,15 +140,44 @@ export default function LoginPage() {
               </svg>
               Google
             </button>
+
+            {/* Microsoft */}
             <button
-              onClick={() => handleSSO('github')}
+              onClick={() => handleSSO('microsoft')}
               type="button"
               className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-sm"
             >
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd"/>
+              <svg className="h-5 w-5" viewBox="0 0 24 24">
+                <path d="M11.4 24H0V12.6L11.4 0H24v11.4L12.6 24H11.4z" fill="#F25022"/>
+                <path d="M11.4 0H0v11.4h11.4V0z" fill="#7FBA00"/>
+                <path d="M24 0H12.6v11.4H24V0z" fill="#00A4EF"/>
+                <path d="M11.4 24H0V12.6h11.4V24z" fill="#FFB900"/>
               </svg>
-              GitHub
+              Microsoft
+            </button>
+
+            {/* LinkedIn */}
+            <button
+              onClick={() => handleSSO('linkedin')}
+              type="button"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-sm"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="#0A66C2">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.677H9.351V9h3.414v1.561h.046c.475-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.056 0-1.13.92-2.056 2.063-2.056 1.14 0 2.063.926 2.063 2.056 0 1.13-.922 2.056-2.063 2.056zm.846 3.534H4.517V9h1.669v1.934zM22.225 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.677H13.16V9h3.414v1.561h.046c.475-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM6.688 7.433c-1.144 0-2.063-.926-2.063-2.056 0-1.13.92-2.056 2.063-2.056 1.14 0 2.063.926 2.063 2.056 0 1.13-.922 2.056-2.063 2.056zm.846 3.534H5.869V9h1.669v1.934z"/>
+              </svg>
+              LinkedIn
+            </button>
+
+            {/* Apple */}
+            <button
+              onClick={() => handleSSO('apple')}
+              type="button"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-sm"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-2.66 3.63-.52.65-.89.7-1.25.7-.35 0-1.07-.24-2.1-.71-.94-.48-1.77-.83-2.42-.83-.68 0-1.41.35-2.32.83-.92.48-1.65.74-2.2.74-.55 0-1.12-.26-1.85-.76C6.25 19.62 5.29 17.85 4.74 15.83c-.57-2.07-.86-4.14-.86-6.22 0-2.32.51-4.11 1.52-5.37 1.02-1.26 2.27-1.91 3.75-1.91 1.22 0 2.47.72 3.58.72 1.06 0 2.16-.77 3.55-.77 1.13 0 2.57.58 3.42 1.53-3.02 1.81-2.53 6.52.39 8.63.72 1.02 1.6 2.17 2.7 2.11.27-.01.73-.28 1.43-.54.68-.25 1.29-.36 1.82-.36.54 0 1.18.18 1.97.54.78.36 1.41.84 1.89 1.44-.75 2.3-1.97 4.16-3.65 5.57-1.46 1.24-2.66 1.97-3.6 2.11-.33.01-.94-.27-1.84-.54z"/>
+              </svg>
+              Apple
             </button>
           </div>
 
