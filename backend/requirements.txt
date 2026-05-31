@@ -1,4 +1,4 @@
-"""AI-Native Recruitment OS — Python Dependencies."""
+# AI-Native Recruitment OS — Python Dependencies
 
 # === Core Framework ===
 fastapi==0.115.6

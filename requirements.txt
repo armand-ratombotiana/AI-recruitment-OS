@@ -1,4 +1,4 @@
-"""AI-Native Recruitment OS — Python Dependencies."""
+# AI-Native Recruitment OS — Python Dependencies
 
 # === Core Framework ===
 fastapi==0.115.6
@@ -59,12 +59,12 @@ orjson==3.10.13
 tenacity==9.0.0
 structlog==24.4.0
 jinja2==3.1.5
+email-validator==2.1.0
 
 # === Testing ===
 pytest==8.3.4
 pytest-asyncio==0.25.0
 pytest-cov==6.0.0
-httpx==0.28.1
 faker==33.1.0
 
 # === Linting & Type Checking ===
