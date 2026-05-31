@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#2563eb" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="90" fill="url(#grad1)" filter="url(#shadow)"/>
+  
+  <!-- AI Brain pattern -->
+  <path d="M60 80 Q80 60 100 70 Q120 60 140 80 Q150 100 140 120 Q120 140 100 130 Q80 140 60 120 Q50 100 60 80Z" 
+        fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Neural connections -->
+  <circle cx="80" cy="90" r="6" fill="white" opacity="0.9"/>
+  <circle cx="120" cy="90" r="6" fill="white" opacity="0.9"/>
+  <circle cx="100" cy="110" r="6" fill="white" opacity="0.9"/>
+  <circle cx="70" cy="110" r="4" fill="white" opacity="0.7"/>
+  <circle cx="130" cy="110" r="4" fill="white" opacity="0.7"/>
+  
+  <!-- Connection lines -->
+  <line x1="80" y1="90" x2="120" y2="90" stroke="white" stroke-width="1.5" opacity="0.6"/>
+  <line x1="80" y1="90" x2="100" y2="110" stroke="white" stroke-width="1.5" opacity="0.6"/>
+  <line x1="120" y1="90" x2="100" y2="110" stroke="white" stroke-width="1.5" opacity="0.6"/>
+  <line x1="70" y1="110" x2="100" y2="110" stroke="white" stroke-width="1" opacity="0.4"/>
+  <line x1="130" y1="110" x2="100" y2="110" stroke="white" stroke-width="1" opacity="0.4"/>
+  
+  <!-- Text -->
+  <text x="100" y="155" text-anchor="middle" fill="white" font-family="system-ui, sans-serif" font-size="24" font-weight="bold">AI-ROS</text>
+</svg>
