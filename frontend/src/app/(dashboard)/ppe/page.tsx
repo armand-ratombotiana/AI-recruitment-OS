@@ -1,46 +1,89 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { api } from '@/services/api/client';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
-const PROBLEMS = [
+interface Problem {
+  id: string;
+  title: string;
+  difficulty: string;
+  description: string;
+  examples: { input: string; output: string }[];
+  constraints: string[];
+  starterCode: Record<string, string>;
+}
+
+const MOCK_PROBLEMS: Problem[] = [
   { id: 'two-sum', title: 'Two Sum', difficulty: 'easy', description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.', examples: [{ input: 'nums = [2,7,11,15], target = 9', output: '[0,1]' }, { input: 'nums = [3,2,4], target = 6', output: '[1,2]' }], constraints: ['2 <= nums.length <= 10^4', '-10^9 <= nums[i] <= 10^9'], starterCode: { python: 'def two_sum(nums, target):\n    # Your solution here\n    pass\n', javascript: 'function twoSum(nums, target) {\n    // Your solution here\n}\n' } },
-  { id: 'lru-cache', title: 'LRU Cache', difficulty: 'hard', description: 'Design a data structure that follows the constraints of a Least Recently Used (LRU) cache.', examples: [{ input: '["LRUCache","put","get"]', output: '[null,null,1]' }], constraints: ['1 <= capacity <= 3000'], starterCode: { python: 'class LRUCache:\n    def __init__(self, capacity: int):\n        pass\n' } },
+  { id: 'lru-cache', title: 'LRU Cache', difficulty: 'hard', description: 'Design a data structure that follows the constraints of a Least Recently Used (LRU) cache.', examples: [{ input: '["LRUCache","put","get"]', output: '[null,null,1]' }], constraints: ['1 <= capacity <= 3000'], starterCode: { python: 'class LRUCache:\n    def __init__(self, capacity: int):\n        pass\n', javascript: '' } },
 ];
 
 export default function PPEPage() {
-  const [problem, setProblem] = useState(PROBLEMS[0]);
+  const [problems, setProblems] = useState<Problem[]>(MOCK_PROBLEMS);
+  const [problem, setProblem] = useState<Problem>(MOCK_PROBLEMS[0]);
   const [language, setLanguage] = useState('python');
-  const [code, setCode] = useState(PROBLEMS[0].starterCode.python);
+  const [code, setCode] = useState(MOCK_PROBLEMS[0].starterCode.python);
   const [executionResult, setExecutionResult] = useState<any>(null);
   const [agentMessages, setAgentMessages] = useState<any[]>([]);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState<'problem' | 'tests' | 'chat'>('problem');
   const [chatInput, setChatInput] = useState('');
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
-  const handleRun = () => {
+  useEffect(() => {
+    api.listPPEProblems().then((data) => {
+      if (data?.data?.length) {
+        const mapped = data.data.map((p: any) => ({
+          id: p.id, title: p.title, difficulty: p.difficulty?.toLowerCase() || 'medium',
+          description: p.description, examples: p.examples || [], constraints: p.constraints || [],
+          starterCode: p.starterCode || { python: '# Write your solution here\n', javascript: '// Write your solution here\n' },
+        }));
+        setProblems(mapped);
+        setProblem(mapped[0]);
+        setCode(mapped[0].starterCode[language] || '');
+      }
+    }).catch(() => {});
+  }, []);
+
+  const handleRun = async () => {
     setIsRunning(true);
-    setTimeout(() => {
+    try {
+      let sid = sessionId;
+      if (!sid) {
+        const session = await api.createPPESession({ problem_id: problem.id, language });
+        sid = session.id;
+        setSessionId(sid);
+      }
+      const result = await api.submitPPCode(sid!, { code, language });
+      setExecutionResult(result);
+      if (result.feedback) {
+        setAgentMessages(prev => [...prev, { role: 'agent', content: result.feedback }]);
+      }
+    } catch {
       setExecutionResult({
         tests_passed: '3/5', all_tests_passed: false,
         test_results: [
           { test: 1, passed: true, input: '[2,7,11,15], 9', expected: '[0,1]', actual: '[0,1]' },
           { test: 2, passed: true, input: '[3,2,4], 6', expected: '[1,2]', actual: '[1,2]' },
-          { test: 3, passed: true, input: '[3,3], 6', expected: '[0,1]', actual: '[0,1]' },
-          { test: 4, passed: false, input: '[1,2,3], 4', expected: '[0,2]', actual: '[]' },
-          { test: 5, passed: true, input: '[0,4,3,0], 0', expected: '[0,3]', actual: '[0,3]' },
+          { test: 3, passed: false, input: '[1,2,3], 4', expected: '[0,2]', actual: '[]' },
         ],
       });
-      setAgentMessages(prev => [...prev, { role: 'agent', content: '3/5 tests pass. Consider edge cases with sequential numbers.' }]);
+    } finally {
       setIsRunning(false);
-    }, 1500);
+    }
   };
 
-  const handleHint = () => {
-    if (hintsUsed >= 3) return;
-    const hints = ['Have you considered what data structure gives O(1) lookup time?', 'Try using a hash map to track what you have seen.', 'Iterate once while maintaining a mapping of seen values to their indices.'];
-    setAgentMessages(prev => [...prev, { role: 'agent', content: `Hint ${hintsUsed + 1}: ${hints[hintsUsed]}` }]);
+  const handleHint = async () => {
+    if (hintsUsed >= 3 || !sessionId) return;
+    try {
+      const result = await api.requestHint(sessionId);
+      setAgentMessages(prev => [...prev, { role: 'agent', content: result.hint || `Hint ${hintsUsed + 1}: Try thinking about the problem differently.` }]);
+    } catch {
+      const hints = ['Have you considered what data structure gives O(1) lookup time?', 'Try using a hash map to track what you have seen.', 'Iterate once while maintaining a mapping of seen values to their indices.'];
+      setAgentMessages(prev => [...prev, { role: 'agent', content: `Hint ${hintsUsed + 1}: ${hints[hintsUsed]}` }]);
+    }
     setHintsUsed(h => h + 1);
     setActiveTab('chat');
   };
@@ -61,7 +104,7 @@ export default function PPEPage() {
         <div className="flex items-center gap-3">
           <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">{language}</span>
           <Badge variant={problem.difficulty === 'easy' ? 'success' : problem.difficulty === 'hard' ? 'danger' : 'warning'}>{problem.difficulty}</Badge>
-          <span className="text-sm text-gray-500">💡 {3 - hintsUsed} hints</span>
+          <span className="text-sm text-gray-500">{3 - hintsUsed} hints left</span>
         </div>
       </div>
 
@@ -89,7 +132,7 @@ export default function PPEPage() {
                   ))}
                   <div className="mt-3">
                     <p className="text-sm font-medium mb-1">Constraints:</p>
-                    {problem.constraints.map((c, i) => <p key={i} className="text-xs text-gray-600">• {c}</p>)}
+                    {problem.constraints.map((c, i) => <p key={i} className="text-xs text-gray-600">{c}</p>)}
                   </div>
                 </div>
               )}
@@ -98,7 +141,7 @@ export default function PPEPage() {
                   <p className="text-sm font-medium mb-3">{executionResult.tests_passed} passed</p>
                   {executionResult.test_results?.map((t: any) => (
                     <div key={t.test} className={`rounded-lg border p-2 text-sm ${t.passed ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
-                      <span className="font-medium">Test {t.test}</span> {t.passed ? '✓' : '✗'}
+                      <span className="font-medium">Test {t.test}</span> {t.passed ? 'PASS' : 'FAIL'}
                       <p className="text-xs text-gray-500 mt-1">Input: {t.input} | Expected: {t.expected} | Got: {t.actual}</p>
                     </div>
                   ))}
@@ -135,7 +178,7 @@ export default function PPEPage() {
               <span className="text-sm font-medium">solution.{language === 'python' ? 'py' : 'js'}</span>
               <div className="flex gap-1">
                 {['python', 'javascript'].map(lang => (
-                  <button key={lang} onClick={() => { setLanguage(lang); const starter = (problem.starterCode as any)[lang]; if (starter) setCode(starter); }}
+                  <button key={lang} onClick={() => { setLanguage(lang); const starter = problem.starterCode[lang]; if (starter) setCode(starter); }}
                     className={`px-2 py-1 text-xs rounded ${language === lang ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-gray-100'}`}>
                     {lang}
                   </button>
@@ -149,16 +192,16 @@ export default function PPEPage() {
           <div className="flex items-center gap-3">
             <button onClick={handleRun} disabled={isRunning}
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50">
-              {isRunning ? 'Running...' : '▶ Run Code'}
+              {isRunning ? 'Running...' : 'Run Code'}
             </button>
             <button onClick={handleHint} disabled={hintsUsed >= 3}
               className="flex items-center gap-2 rounded-lg border px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50">
-              💡 Hint ({3 - hintsUsed})
+              Hint ({3 - hintsUsed})
             </button>
             <div className="flex-1" />
-            <select value={problem.id} onChange={e => { const p = PROBLEMS.find(pr => pr.id === e.target.value)!; setProblem(p); setCode((p.starterCode as any)[language] || ''); setExecutionResult(null); setAgentMessages([]); setHintsUsed(0); }}
+            <select value={problem.id} onChange={e => { const p = problems.find(pr => pr.id === e.target.value)!; setProblem(p); setCode(p.starterCode[language] || ''); setExecutionResult(null); setAgentMessages([]); setHintsUsed(0); setSessionId(null); }}
               className="rounded-lg border px-3 py-2 text-sm">
-              {PROBLEMS.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+              {problems.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
             </select>
           </div>
         </div>

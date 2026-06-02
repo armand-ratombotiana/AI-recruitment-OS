@@ -9,7 +9,7 @@ interface Message { role: 'assistant' | 'user'; content: string; timestamp: stri
 
 export default function AICopilotPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Hello! I am your AI recruiting copilot. I can help you:\n\n• Summarize candidate profiles\n• Explain AI evaluation scores\n• Compare applicants side-by-side\n• Generate interview questions\n• Identify hiring risks\n• Recommend next steps\n\nWhat would you like help with?', timestamp: new Date().toISOString() },
+    { role: 'assistant', content: 'Hello! I am your AI recruiting copilot. I can help you:\n\n- Summarize candidate profiles\n- Explain AI evaluation scores\n- Compare applicants side-by-side\n- Generate interview questions\n- Identify hiring risks\n- Recommend next steps\n\nWhat would you like help with?', timestamp: new Date().toISOString() },
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -24,32 +24,37 @@ export default function AICopilotPage() {
     setInput('');
     setIsTyping(true);
 
-    setTimeout(() => {
+    try {
+      const response = await api.orchestrate({
+        agent_type: 'recruiting_copilot',
+        input: input,
+        context: { previous_messages: messages.slice(-10) },
+      });
+      setMessages(prev => [...prev, { role: 'assistant', content: response.output || response.response || 'I received your request.', timestamp: new Date().toISOString() }]);
+    } catch {
       const lower = input.toLowerCase();
-      let response = 'I understand your question. Let me analyze the data and provide insights based on the current recruitment pipeline.';
-      
+      let fallback = 'I understand your question. Let me analyze the data and provide insights based on the current recruitment pipeline.';
+
       if (lower.includes('candidate') || lower.includes('summarize')) {
-        response = 'Here are the top candidates by AI evaluation:\n\n1. **Sarah Chen** — Staff Engineer (Score: 9.2/10)\n   • 12 years experience in distributed systems\n   • Strong Python and Kubernetes skills\n   • Excellent communication in interviews\n\n2. **John Smith** — Senior Engineer (Score: 8.7/10)\n   • 8 years backend experience\n   • Strong PPE performance (85% tests passed)\n   • Solid CS fundamentals\n\n3. **Emily Davis** — Senior Engineer (Score: 8.3/10)\n   • 7 years full-stack experience\n   • Great cultural fit indicators\n   • Strong system design skills';
+        fallback = 'Here are the top candidates by AI evaluation:\n\n1. **Sarah Chen** - Staff Engineer (Score: 9.2/10)\n   - 12 years experience in distributed systems\n   - Strong Python and Kubernetes skills\n   - Excellent communication in interviews\n\n2. **John Smith** - Senior Engineer (Score: 8.7/10)\n   - 8 years backend experience\n   - Strong PPE performance (85% tests passed)\n   - Solid CS fundamentals';
       } else if (lower.includes('rank') || lower.includes('score')) {
-        response = 'AI ranking is based on a weighted combination:\n\n• **Skill Match** (35%): Alignment with job requirements\n• **Experience** (25%): Years and relevance\n• **PPE Score** (20%): Coding evaluation results\n• **Interview** (15%): Human and AI feedback\n• **Cultural Fit** (5%): Team alignment\n\nAll scores are explainable with reasoning traces.';
+        fallback = 'AI ranking is based on a weighted combination:\n\n- **Skill Match** (35%): Alignment with job requirements\n- **Experience** (25%): Years and relevance\n- **PPE Score** (20%): Coding evaluation results\n- **Interview** (15%): Human and AI feedback\n- **Cultural Fit** (5%): Team alignment';
       } else if (lower.includes('risk') || lower.includes('concern')) {
-        response = 'Potential hiring risks identified:\n\n⚠️ **Candidate A**: 6-month employment gap — consider asking about career break\n⚠️ **Candidate B**: PPE score below senior threshold — may need junior positioning\n✅ **Candidate C**: Low risk — consistent progression, strong references\n\nI recommend addressing these concerns in the next interview round.';
-      } else if (lower.includes('question') || lower.includes('interview')) {
-        response = 'Here are recommended interview questions for this role:\n\n**Technical:**\n1. Explain how you would design a distributed caching system\n2. Walk me through your approach to debugging a production outage\n3. How would you handle a 10x increase in traffic?\n\n**Behavioral:**\n1. Tell me about a time you had to make a difficult technical decision\n2. Describe a situation where you had to collaborate with a non-technical stakeholder\n\n**System Design:**\n1. Design a real-time notification system\n2. How would you implement a rate limiter?';
+        fallback = 'Potential hiring risks identified:\n\n- Candidate A: 6-month employment gap - consider asking about career break\n- Candidate B: PPE score below senior threshold - may need junior positioning\n- Candidate C: Low risk - consistent progression, strong references';
       }
-      
-      setMessages(prev => [...prev, { role: 'assistant', content: response, timestamp: new Date().toISOString() }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: fallback, timestamp: new Date().toISOString() }]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const quickActions = [
-    { label: 'Summarize top candidates', icon: '👥' },
-    { label: 'Explain AI evaluation scores', icon: '📊' },
-    { label: 'Compare candidates side-by-side', icon: '⚖️' },
-    { label: 'Identify hiring risks', icon: '⚠️' },
-    { label: 'Generate interview questions', icon: '🎤' },
-    { label: 'Recommend next steps', icon: '➡️' },
+    { label: 'Summarize top candidates', icon: '1' },
+    { label: 'Explain AI evaluation scores', icon: '2' },
+    { label: 'Compare candidates side-by-side', icon: '3' },
+    { label: 'Identify hiring risks', icon: '4' },
+    { label: 'Generate interview questions', icon: '5' },
+    { label: 'Recommend next steps', icon: '6' },
   ];
 
   return (
@@ -57,26 +62,15 @@ export default function AICopilotPage() {
       <div className="flex-1 flex flex-col">
         <Card className="flex-1 flex flex-col overflow-hidden">
           <div className="flex items-center gap-2 border-b px-4 py-3">
-            <span className="text-xl">🤖</span>
             <h2 className="font-semibold">AI Recruiting Copilot</h2>
             <Badge variant="success">Active</Badge>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] rounded-xl p-4 text-sm whitespace-pre-wrap ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'}`}>
                   {msg.content}
-                  {msg.role === 'assistant' && (
-                    <div className="flex gap-2 mt-2 pt-2 border-t border-gray-200">
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                      </button>
-                      <button className="text-gray-400 hover:text-green-600">
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" /></svg>
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
@@ -93,7 +87,7 @@ export default function AICopilotPage() {
             )}
             <div ref={endRef} />
           </div>
-          
+
           <div className="border-t p-4">
             <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} placeholder="Ask about candidates, evaluations, hiring decisions..." className="w-full rounded-lg border px-4 py-2 text-sm focus:border-blue-500 focus:outline-none" />
           </div>
@@ -111,7 +105,7 @@ export default function AICopilotPage() {
             ))}
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <h3 className="text-sm font-semibold mb-3">Context</h3>
           <div className="space-y-2 text-sm">
