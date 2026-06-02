@@ -1,5 +1,5 @@
 groups:
-  - name: airos_alerts
+  - name: airos_api_alerts
     rules:
       - alert: HighErrorRate
         expr: sum(rate(http_requests_total{job="airos-api", status=~"5.."}[5m])) / sum(rate(http_requests_total{job="airos-api"}[5m])) > 0.05
@@ -27,3 +27,68 @@ groups:
         annotations:
           summary: "API service is down"
           description: "API service has been unreachable for 1 minute"
+
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes{job="airos-api"} / 1024 / 1024 > 1024
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API memory usage"
+          description: "API memory usage is above 1GB"
+
+  - name: airos_infrastructure_alerts
+    rules:
+      - alert: PostgresDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database has been unreachable for 1 minute"
+
+      - alert: PostgresHighConnections
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High PostgreSQL connections"
+          description: "PostgreSQL has more than 80 active connections"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been unreachable for 1 minute"
+
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / 1024 / 1024 > 400
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is above 400MB"
+
+      - alert: HighDiskUsage
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage"
+          description: "Disk usage is above 85%"
+
+      - alert: ContainerRestarting
+        expr: increase(container_restart_count[1h]) > 3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container frequently restarting"
+          description: "Container {{ $labels.name }} has restarted more than 3 times in the last hour"

@@ -1,41 +1,58 @@
 """AI Evaluation Service — Multi-dimensional candidate evaluation."""
-from fastapi import APIRouter
-from pydantic import BaseModel
+from __future__ import annotations
 
+import uuid
+from datetime import datetime, timezone
+from typing import Any
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+
+
+# ── In-Memory Store ─────────────────────────────────────────────────────────────
+
+_evaluations: dict[str, dict[str, Any]] = {}
+
+
+# ── Request Models ──────────────────────────────────────────────────────────────
+
+class EvaluationRequest(BaseModel):
+    candidate_id: str = Field(..., description="Candidate identifier")
+    job_id: str | None = Field(None, description="Target job identifier")
+    evaluation_type: str = Field(default="comprehensive", description="Type of evaluation")
+
+
+class CompareRequest(BaseModel):
+    candidate_ids: list[str] = Field(..., min_length=2, description="Candidate IDs to compare")
+    job_id: str | None = Field(None, description="Target job identifier")
+
+
+# ── Response Models ─────────────────────────────────────────────────────────────
+
+class HealthResponse(BaseModel):
+    status: str = "healthy"
+    service: str = "ai-evaluation"
+
+
+# ── Router ──────────────────────────────────────────────────────────────────────
 
 router = APIRouter()
 
 
-class EvaluationRequest(BaseModel):
-    candidate_id: str
-    job_id: str | None = None
-    evaluation_type: str = "comprehensive"
-
-
-class EvaluationResult(BaseModel):
-    id: str
-    candidate_id: str
-    overall_score: float
-    dimensions: dict[str, float]
-    seniority_estimation: str
-    confidence: float
-    explanation: str
-    strengths: list[str]
-    weaknesses: list[str]
-    hiring_recommendation: str
-
-
-@router.get("/health")
+@router.get("/health", response_model=HealthResponse, tags=["AI Evaluation"])
 async def health():
-    return {"status": "healthy", "service": "ai-evaluation"}
+    return HealthResponse()
 
 
-@router.post("/evaluate")
+@router.post("/evaluate", tags=["AI Evaluation"], summary="Evaluate candidate")
 async def evaluate_candidate(data: EvaluationRequest):
-    """Run comprehensive AI evaluation on a candidate."""
-    return {
-        "id": "eval_123",
+    eval_id = f"eval_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc).isoformat()
+    result = {
+        "id": eval_id,
         "candidate_id": data.candidate_id,
+        "job_id": data.job_id,
+        "evaluation_type": data.evaluation_type,
         "overall_score": 8.2,
         "dimensions": {
             "technical_skills": 8.5,
@@ -50,26 +67,23 @@ async def evaluate_candidate(data: EvaluationRequest):
         "strengths": ["Strong Python expertise", "Good system design skills", "Excellent communication"],
         "weaknesses": ["Limited cloud experience", "Could improve on testing practices"],
         "hiring_recommendation": "hire",
+        "created_at": now,
     }
+    _evaluations[eval_id] = result
+    return result
 
 
-@router.get("/evaluations/{candidate_id}")
-async def get_candidate_evaluations(candidate_id: str):
-    """Get all evaluations for a candidate."""
-    return {
-        "candidate_id": candidate_id,
-        "evaluations": [
-            {"id": "eval_1", "type": "resume_screening", "score": 8.5, "date": "2025-01-15"},
-            {"id": "eval_2", "type": "skill_match", "score": 9.0, "date": "2025-01-16"},
-            {"id": "eval_3", "type": "interview", "score": 7.8, "date": "2025-01-18"},
-        ],
-        "average_score": 8.43,
-    }
+@router.get("/list", tags=["AI Evaluation"], summary="List all evaluations")
+async def list_evaluations():
+    items = list(_evaluations.values())
+    return {"data": items, "total": len(items)}
 
 
-@router.get("/evaluations/{evaluation_id}/explain")
+@router.get("/{evaluation_id}/explain", tags=["AI Evaluation"], summary="Explain evaluation score")
 async def explain_evaluation(evaluation_id: str):
-    """Get detailed explanation of evaluation reasoning."""
+    if evaluation_id not in _evaluations:
+        raise HTTPException(status_code=404, detail="Evaluation not found")
+    ev = _evaluations[evaluation_id]
     return {
         "evaluation_id": evaluation_id,
         "reasoning": {
@@ -90,22 +104,25 @@ async def explain_evaluation(evaluation_id: str):
     }
 
 
-@router.post("/compare")
-async def compare_candidates(candidate_ids: list[str], job_id: str | None = None):
-    """Compare multiple candidates for a role."""
+@router.post("/compare", tags=["AI Evaluation"], summary="Compare candidates")
+async def compare_candidates(data: CompareRequest):
+    comparison = []
+    for i, cid in enumerate(data.candidate_ids):
+        comparison.append({
+            "candidate_id": cid,
+            "overall_score": 8.5 - i * 0.3,
+            "rank": i + 1,
+            "strengths": ["Python", "System Design"] if i == 0 else ["Java", "Microservices"],
+        })
     return {
-        "comparison": [
-            {"candidate_id": "c1", "overall_score": 8.5, "rank": 1, "strengths": ["Python", "System Design"]},
-            {"candidate_id": "c2", "overall_score": 8.2, "rank": 2, "strengths": ["Java", "Microservices"]},
-        ],
-        "recommendation": "Candidate c1 is the strongest match for this role.",
+        "comparison": comparison,
+        "recommendation": f"Candidate {data.candidate_ids[0]} is the strongest match for this role.",
         "scoring_methodology": "Weighted multi-dimensional evaluation",
     }
 
 
-@router.get("/benchmarks")
+@router.get("/benchmarks", tags=["AI Evaluation"], summary="Get evaluation benchmarks")
 async def get_benchmarks():
-    """Get evaluation benchmarks by level."""
     return {
         "benchmarks": {
             "junior": {"min_score": 3.0, "max_score": 5.0, "avg_score": 4.2},

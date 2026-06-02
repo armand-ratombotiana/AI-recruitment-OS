@@ -1,18 +1,25 @@
 """Talent Intelligence Service — Market insights and analytics."""
+from __future__ import annotations
+
 from fastapi import APIRouter
+from pydantic import BaseModel
 
 
 router = APIRouter()
 
 
-@router.get("/health")
+class HealthResponse(BaseModel):
+    status: str = "healthy"
+    service: str = "talent-intelligence"
+
+
+@router.get("/health", response_model=HealthResponse, tags=["Talent Intelligence"])
 async def health():
-    return {"status": "healthy", "service": "talent-intelligence"}
+    return HealthResponse()
 
 
-@router.get("/market-insights")
+@router.get("/market", tags=["Talent Intelligence"], summary="Get talent market insights")
 async def get_market_insights():
-    """Get talent market insights."""
     return {
         "market": "tech",
         "insights": {
@@ -29,9 +36,8 @@ async def get_market_insights():
     }
 
 
-@router.get("/competitor-analysis")
+@router.get("/competitors", tags=["Talent Intelligence"], summary="Get competitor hiring analysis")
 async def get_competitor_analysis():
-    """Get competitor hiring analysis."""
     return {
         "competitors": [
             {"name": "TechCorp", "open_positions": 45, "avg_salary": 150000},
@@ -46,9 +52,8 @@ async def get_competitor_analysis():
     }
 
 
-@router.get("/salary-benchmarks")
+@router.get("/salary", tags=["Talent Intelligence"], summary="Get salary benchmarks for a role")
 async def get_salary_benchmarks(role: str = "software_engineer"):
-    """Get salary benchmarks for a role."""
     return {
         "role": role,
         "location": "San Francisco, CA",
@@ -63,9 +68,8 @@ async def get_salary_benchmarks(role: str = "software_engineer"):
     }
 
 
-@router.get("/talent-pool")
+@router.get("/pool", tags=["Talent Intelligence"], summary="Get talent pool analytics")
 async def get_talent_pool():
-    """Get talent pool analytics."""
     return {
         "total_candidates": 1247,
         "by_status": {"new": 234, "screening": 156, "interviewing": 89, "offered": 23, "hired": 45},

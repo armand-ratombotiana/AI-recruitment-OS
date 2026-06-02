@@ -1,7 +1,7 @@
 """WebSocket Service — Real-time collaboration via WebSocket connections."""
 from __future__ import annotations
 
-import asyncio
+import uuid
 from datetime import datetime, timezone
 from typing import Any
 
@@ -9,46 +9,66 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel, Field
 
 
-# ── Response Models ─────────────────────────────────────────────────────────────
+# ── In-Memory Store ─────────────────────────────────────────────────────────────
 
-class HealthResponse(BaseModel):
-    status: str = "healthy"
-    service: str = "websocket"
-    active_rooms: int
+_connections: dict[str, dict[str, Any]] = {}
+_broadcast_log: list[dict[str, Any]] = []
 
 
 # ── Connection Manager ──────────────────────────────────────────────────────────
 
 class ConnectionManager:
     def __init__(self):
-        self.rooms: dict[str, list[WebSocket]] = {}
+        self.active_connections: dict[str, WebSocket] = {}
 
-    async def connect(self, websocket: WebSocket, room_id: str):
+    async def connect(self, websocket: WebSocket, client_id: str):
         await websocket.accept()
-        if room_id not in self.rooms:
-            self.rooms[room_id] = []
-        self.rooms[room_id].append(websocket)
+        self.active_connections[client_id] = websocket
+        _connections[client_id] = {
+            "client_id": client_id,
+            "connected_at": datetime.now(timezone.utc).isoformat(),
+            "status": "connected",
+        }
 
-    def disconnect(self, websocket: WebSocket, room_id: str):
-        if room_id in self.rooms:
-            self.rooms[room_id] = [ws for ws in self.rooms[room_id] if ws != websocket]
+    def disconnect(self, client_id: str):
+        self.active_connections.pop(client_id, None)
+        if client_id in _connections:
+            _connections[client_id]["status"] = "disconnected"
+            _connections[client_id]["disconnected_at"] = datetime.now(timezone.utc).isoformat()
 
-    async def broadcast(self, room_id: str, message: dict[str, Any]):
-        if room_id in self.rooms:
-            for ws in self.rooms[room_id]:
-                try:
-                    await ws.send_json(message)
-                except Exception:
-                    pass
+    async def send_personal(self, client_id: str, message: dict[str, Any]):
+        ws = self.active_connections.get(client_id)
+        if ws:
+            try:
+                await ws.send_json(message)
+            except Exception:
+                pass
 
-    async def send_personal(self, websocket: WebSocket, message: dict[str, Any]):
-        try:
-            await websocket.send_json(message)
-        except Exception:
-            pass
+    async def broadcast(self, message: dict[str, Any]):
+        for client_id, ws in self.active_connections.items():
+            try:
+                await ws.send_json(message)
+            except Exception:
+                pass
 
 
 manager = ConnectionManager()
+
+
+# ── Request Models ──────────────────────────────────────────────────────────────
+
+class BroadcastRequest(BaseModel):
+    message: str = Field(..., min_length=1, description="Message to broadcast")
+    sender: str = Field(default="system", description="Sender identifier")
+    msg_type: str = Field(default="broadcast", description="Message type")
+
+
+# ── Response Models ─────────────────────────────────────────────────────────────
+
+class HealthResponse(BaseModel):
+    status: str = "healthy"
+    service: str = "websocket"
+    active_connections: int
 
 
 # ── Router ──────────────────────────────────────────────────────────────────────
@@ -56,155 +76,48 @@ manager = ConnectionManager()
 router = APIRouter()
 
 
-@router.get("/health", response_model=HealthResponse, tags=["WebSocket"], summary="WebSocket service health check")
+@router.get("/health", response_model=HealthResponse, tags=["WebSocket"])
 async def health():
-    return HealthResponse(active_rooms=len(manager.rooms))
+    return HealthResponse(active_connections=len(manager.active_connections))
 
 
-@router.websocket("/ws/ppe/{session_id}")
-async def ppe_websocket(websocket: WebSocket, session_id: str):
-    """WebSocket for PPE live coding collaboration.
-
-    ## Message Types (Client → Server)
-    | type | Description |
-    |------|-------------|
-    | `code_update` | Broadcast code changes to all participants |
-    | `execute` | Run submitted code against test cases |
-    | `request_hint` | Request an AI hint |
-    | `message` | Send a chat message |
-    | `heartbeat` | Keep-alive ping |
-
-    ## Message Types (Server → Client)
-    | type | Description |
-    |------|-------------|
-    | `code_sync` | Synced code state with cursor position |
-    | `execution_started` | Code execution initiated |
-    | `execution_result` | Test results and stdout/stderr |
-    | `hint` | AI-generated hint with remaining count |
-    | `agent_message` | Chat message from AI agent |
-    | `heartbeat` | Keep-alive pong |
-    """
-    room_id = f"ppe-{session_id}"
-    await manager.connect(websocket, room_id)
-
+@router.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: str):
+    """Generic WebSocket endpoint for real-time communication."""
+    await manager.connect(websocket, client_id)
     try:
         while True:
             data = await websocket.receive_json()
-            message_type = data.get("type", "")
-
-            if message_type == "code_update":
-                await manager.broadcast(room_id, {
-                    "type": "code_sync",
-                    "code": data.get("code", ""),
-                    "version": data.get("version", 0),
-                    "cursor": data.get("cursor", 0),
-                })
-
-            elif message_type == "execute":
-                await manager.send_personal(websocket, {
-                    "type": "execution_started",
-                    "message": "Executing code...",
-                })
-                await asyncio.sleep(1)
-                await manager.send_personal(websocket, {
-                    "type": "execution_result",
-                    "exit_code": 0,
-                    "stdout": "Hello, World!",
-                    "tests_passed": "3/5",
-                })
-
-            elif message_type == "request_hint":
-                await manager.send_personal(websocket, {
-                    "type": "hint",
-                    "message": "Have you considered using a hash map for O(1) lookup?",
-                    "hints_remaining": 2,
-                })
-
-            elif message_type == "message":
-                await manager.broadcast(room_id, {
-                    "type": "agent_message",
-                    "content": data.get("content", ""),
-                    "sender": "ai_agent",
-                })
-
-            elif message_type == "heartbeat":
-                await manager.send_personal(websocket, {"type": "heartbeat"})
-
-    except WebSocketDisconnect:
-        manager.disconnect(websocket, room_id)
-
-
-@router.websocket("/ws/interview/{session_id}")
-async def interview_websocket(websocket: WebSocket, session_id: str):
-    """WebSocket for AI interview sessions.
-
-    ## Message Types (Client → Server)
-    | type | Description |
-    |------|-------------|
-    | `chat_message` | Send a message to the AI interviewer |
-    | `heartbeat` | Keep-alive ping |
-
-    ## Message Types (Server → Client)
-    | type | Description |
-    |------|-------------|
-    | `chat_response` | AI interviewer response |
-    | `heartbeat` | Keep-alive pong |
-    """
-    room_id = f"interview-{session_id}"
-    await manager.connect(websocket, room_id)
-
-    try:
-        while True:
-            data = await websocket.receive_json()
-            message_type = data.get("type", "")
-
-            if message_type == "chat_message":
-                await manager.broadcast(room_id, {
-                    "type": "chat_response",
-                    "content": "AI Interviewer: Thank you for your response. Let me ask a follow-up question.",
-                    "sender": "ai_agent",
-                })
-
-            elif message_type == "heartbeat":
-                await manager.send_personal(websocket, {"type": "heartbeat"})
-
-    except WebSocketDisconnect:
-        manager.disconnect(websocket, room_id)
-
-
-@router.websocket("/ws/copilot/{tenant_id}")
-async def copilot_websocket(websocket: WebSocket, tenant_id: str):
-    """WebSocket for AI copilot real-time assistance.
-
-    ## Message Types (Client → Server)
-    | type | Description |
-    |------|-------------|
-    | `query` | Ask the copilot a question |
-    | `heartbeat` | Keep-alive ping |
-
-    ## Message Types (Server → Client)
-    | type | Description |
-    |------|-------------|
-    | `response` | Copilot answer with timestamp |
-    | `heartbeat` | Keep-alive pong |
-    """
-    room_id = f"copilot-{tenant_id}"
-    await manager.connect(websocket, room_id)
-
-    try:
-        while True:
-            data = await websocket.receive_json()
-            message_type = data.get("type", "")
-
-            if message_type == "query":
-                await manager.send_personal(websocket, {
-                    "type": "response",
-                    "content": f"Based on the data, here are my insights for: {data.get('query', '')}",
+            msg_type = data.get("type", "message")
+            if msg_type == "heartbeat":
+                await manager.send_personal(client_id, {"type": "heartbeat", "timestamp": datetime.now(timezone.utc).isoformat()})
+            elif msg_type == "message":
+                _broadcast_log.append({
+                    "sender": client_id, "content": data.get("content", ""),
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                 })
-
-            elif message_type == "heartbeat":
-                await manager.send_personal(websocket, {"type": "heartbeat"})
-
+                await manager.broadcast({"type": "message", "sender": client_id, "content": data.get("content", "")})
+            else:
+                await manager.send_personal(client_id, {"type": "ack", "received": msg_type})
     except WebSocketDisconnect:
-        manager.disconnect(websocket, room_id)
+        manager.disconnect(client_id)
+
+
+@router.post("/broadcast", tags=["WebSocket"], summary="Broadcast message to all connections")
+async def broadcast_message(data: BroadcastRequest):
+    now = datetime.now(timezone.utc).isoformat()
+    msg = {"type": data.msg_type, "sender": data.sender, "content": data.message, "timestamp": now}
+    _broadcast_log.append(msg)
+    await manager.broadcast(msg)
+    return {"broadcast": True, "recipients": len(manager.active_connections), "timestamp": now}
+
+
+@router.get("/connections", tags=["WebSocket"], summary="List active connections")
+async def list_connections():
+    items = list(_connections.values())
+    return {"data": items, "total": len(items), "active": len(manager.active_connections)}
+
+
+@router.get("/broadcast-log", tags=["WebSocket"], summary="Get broadcast log")
+async def get_broadcast_log():
+    return {"data": _broadcast_log[-50:], "total": len(_broadcast_log)}

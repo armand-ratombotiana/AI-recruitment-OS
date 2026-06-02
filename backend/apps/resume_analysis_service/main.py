@@ -1,9 +1,41 @@
 """Resume Analysis Service — AI-powered resume parsing and analysis."""
-from typing import Any
-from fastapi import APIRouter, UploadFile, File
-from pydantic import BaseModel
+from __future__ import annotations
 
-router = APIRouter()
+import uuid
+from typing import Any
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+
+
+# ── In-Memory Store ─────────────────────────────────────────────────────────────
+
+_analyses: dict[str, dict[str, Any]] = {}
+
+
+# ── Request Models ──────────────────────────────────────────────────────────────
+
+class AnalyzeRequest(BaseModel):
+    candidate_id: str = Field(..., description="Candidate identifier")
+    resume_text: str = Field(default="", description="Resume text content")
+    job_id: str | None = Field(None, description="Target job ID for matching")
+
+
+class ExtractRequest(BaseModel):
+    text: str = Field(..., description="Text to extract skills from")
+
+
+class CompareRequest(BaseModel):
+    candidate_id_1: str = Field(..., description="First candidate ID")
+    candidate_id_2: str = Field(..., description="Second candidate ID")
+
+
+# ── Response Models ─────────────────────────────────────────────────────────────
+
+class HealthResponse(BaseModel):
+    status: str = "healthy"
+    service: str = "resume-analysis"
+
 
 class ResumeAnalysisResult(BaseModel):
     candidate_id: str
@@ -14,15 +46,23 @@ class ResumeAnalysisResult(BaseModel):
     seniority_level: str
     confidence_score: float
 
-@router.get("/health")
-async def health():
-    return {"status": "healthy", "service": "resume-analysis"}
 
-@router.post("/analyze")
-async def analyze_resume(candidate_id: str):
-    """AI-powered resume analysis."""
-    return {
-        "candidate_id": candidate_id,
+# ── Router ──────────────────────────────────────────────────────────────────────
+
+router = APIRouter()
+
+
+@router.get("/health", response_model=HealthResponse, tags=["Resume Analysis"])
+async def health():
+    return HealthResponse()
+
+
+@router.post("/analyze", tags=["Resume Analysis"], summary="AI-powered resume analysis")
+async def analyze_resume(data: AnalyzeRequest):
+    analysis_id = f"ra_{uuid.uuid4().hex[:12]}"
+    result = {
+        "id": analysis_id,
+        "candidate_id": data.candidate_id,
         "analysis": {
             "skills": [
                 {"name": "Python", "proficiency": "expert", "years": 7, "evidence": "Used in multiple backend projects"},
@@ -38,13 +78,15 @@ async def analyze_resume(candidate_id: str):
             "seniority_level": "senior",
             "confidence_score": 0.89,
             "domain_expertise": ["backend", "infrastructure", "distributed-systems"],
-            "communication_indicators": ["clear_concise_resume", "quantified_achievements", "progressive_career_growth"]
-        }
+            "communication_indicators": ["clear_concise_resume", "quantified_achievements", "progressive_career_growth"],
+        },
     }
+    _analyses[analysis_id] = result
+    return result
 
-@router.post("/extract-skills")
-async def extract_skills(text: str):
-    """Extract skills from text."""
+
+@router.post("/extract", tags=["Resume Analysis"], summary="Extract skills from text")
+async def extract_skills(data: ExtractRequest):
     return {
         "skills": [
             {"name": "Python", "category": "programming_language", "confidence": 0.95},
@@ -52,19 +94,19 @@ async def extract_skills(text: str):
             {"name": "Kubernetes", "category": "devops", "confidence": 0.85},
             {"name": "System Design", "category": "soft_skill", "confidence": 0.80},
         ],
-        "total_skills": 4
+        "total_skills": 4,
     }
 
-@router.get("/comparison/{candidate_id_1}/{candidate_id_2}")
-async def compare_resumes(candidate_id_1: str, candidate_id_2: str):
-    """Compare two candidate resumes."""
+
+@router.post("/compare", tags=["Resume Analysis"], summary="Compare two resumes")
+async def compare_resumes(data: CompareRequest):
     return {
-        "candidate_1": {"id": candidate_id_1, "score": 8.5, "strengths": ["Python", "System Design"]},
-        "candidate_2": {"id": candidate_id_2, "score": 8.2, "strengths": ["Java", "Microservices"]},
+        "candidate_1": {"id": data.candidate_id_1, "score": 8.5, "strengths": ["Python", "System Design"]},
+        "candidate_2": {"id": data.candidate_id_2, "score": 8.2, "strengths": ["Java", "Microservices"]},
         "recommendation": "Candidate 1 has stronger backend expertise.",
         "detailed_comparison": {
             "skills_overlap": ["Python", "PostgreSQL"],
             "unique_to_1": ["Kubernetes", "System Design"],
             "unique_to_2": ["Java", "Spring Boot"],
-        }
+        },
     }

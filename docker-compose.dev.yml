@@ -6,34 +6,53 @@ services:
   postgres:
     image: pgvector/pgvector:pg16
     container_name: airos-postgres-dev
+    restart: unless-stopped
     ports: ["5432:5432"]
     environment:
       POSTGRES_DB: airos_dev
       POSTGRES_USER: airos
       POSTGRES_PASSWORD: dev_password
     volumes:
-      - ./scripts/db/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./scripts/db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U airos"]
+      test: ["CMD-SHELL", "pg_isready -U airos -d airos_dev"]
       interval: 5s
       timeout: 3s
       retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
     networks: [dev-net]
 
   redis:
     image: redis:7-alpine
     container_name: airos-redis-dev
+    restart: unless-stopped
     ports: ["6379:6379"]
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data_dev:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
     networks: [dev-net]
 
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: airos-kafka-dev
+    restart: unless-stopped
     depends_on: [zookeeper]
     ports: ["9092:9092"]
     environment:
@@ -44,22 +63,34 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
     networks: [dev-net]
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
     container_name: airos-zookeeper-dev
+    restart: unless-stopped
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
     networks: [dev-net]
 
   api:
     build:
       context: ./backend
-      dockerfile: ../docker/backend/Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: airos-api-dev
+    restart: unless-stopped
     ports: ["8000:8000"]
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level info
     environment:
       - DATABASE_URL=postgresql+asyncpg://airos:dev_password@postgres:5432/airos_dev
       - REDIS_URL=redis://redis:6379/0
@@ -76,13 +107,26 @@ services:
     volumes:
       - ./backend:/app
       - /app/.venv
+      - api_logs_dev:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "2.0"
     networks: [dev-net]
 
   celery-worker:
     build:
       context: ./backend
-      dockerfile: ../docker/backend/Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: airos-celery-worker-dev
+    restart: unless-stopped
     command: celery -A shared.events.celery_app worker -l info -Q default,ai,evaluation,ingestion,notification -c 2
     environment:
       - DATABASE_URL=postgresql+asyncpg://airos:dev_password@postgres:5432/airos_dev
@@ -98,13 +142,19 @@ services:
     volumes:
       - ./backend:/app
       - /app/.venv
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.5"
     networks: [dev-net]
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: ../docker/frontend/Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: airos-frontend-dev
+    restart: unless-stopped
     ports: ["3000:3000"]
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
@@ -112,8 +162,33 @@ services:
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const http = require('http'); http.get('http://localhost:3000', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))\""]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
     networks: [dev-net]
 
+# ===========================================
+# VOLUMES
+# ===========================================
+volumes:
+  postgres_data_dev:
+    driver: local
+  redis_data_dev:
+    driver: local
+  api_logs_dev:
+    driver: local
+
+# ===========================================
+# NETWORKS
+# ===========================================
 networks:
   dev-net:
     driver: bridge

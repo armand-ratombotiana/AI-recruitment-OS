@@ -81,6 +81,37 @@ async def health():
     return {"status": "healthy", "service": "notification"}
 
 
+@router.get("/preferences")
+async def get_preferences():
+    return PREFERENCES_DB["default"]
+
+
+@router.put("/preferences")
+async def update_preferences(data: PreferencesUpdate):
+    prefs = PREFERENCES_DB["default"]
+    if data.email is not None:
+        prefs["email"] = data.email
+    if data.push is not None:
+        prefs["push"] = data.push
+    if data.in_app is not None:
+        prefs["in_app"] = data.in_app
+    if data.sms is not None:
+        prefs["sms"] = data.sms
+    if data.digest_frequency is not None:
+        prefs["digest_frequency"] = data.digest_frequency
+    return prefs
+
+
+@router.post("/read-all")
+async def mark_all_read():
+    count = 0
+    for n in NOTIFICATIONS_DB.values():
+        if not n["read"]:
+            n["read"] = True
+            count += 1
+    return {"marked_read": count}
+
+
 @router.get("/")
 async def list_notifications(read: Optional[bool] = None, type: Optional[str] = None):
     notifications = list(NOTIFICATIONS_DB.values())
@@ -156,34 +187,3 @@ async def mark_read(notification_id: str):
         raise HTTPException(status_code=404, detail=f"Notification {notification_id} not found")
     notification["read"] = True
     return {"id": notification_id, "read": True}
-
-
-@router.post("/read-all")
-async def mark_all_read():
-    count = 0
-    for n in NOTIFICATIONS_DB.values():
-        if not n["read"]:
-            n["read"] = True
-            count += 1
-    return {"marked_read": count}
-
-
-@router.get("/preferences")
-async def get_preferences():
-    return PREFERENCES_DB["default"]
-
-
-@router.put("/preferences")
-async def update_preferences(data: PreferencesUpdate):
-    prefs = PREFERENCES_DB["default"]
-    if data.email is not None:
-        prefs["email"] = data.email
-    if data.push is not None:
-        prefs["push"] = data.push
-    if data.in_app is not None:
-        prefs["in_app"] = data.in_app
-    if data.sms is not None:
-        prefs["sms"] = data.sms
-    if data.digest_frequency is not None:
-        prefs["digest_frequency"] = data.digest_frequency
-    return prefs

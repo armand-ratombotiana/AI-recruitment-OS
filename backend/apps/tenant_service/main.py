@@ -1,21 +1,27 @@
 """Tenant Service — Multi-tenant organization management, settings, branding, and usage tracking."""
 from __future__ import annotations
 
-from datetime import datetime
-from fastapi import APIRouter
+import uuid
+from datetime import datetime, timezone
+from typing import Any
+
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
+
+
+# ── In-Memory Store ─────────────────────────────────────────────────────────────
+
+_tenants: dict[str, dict[str, Any]] = {}
+_tenant_settings: dict[str, dict[str, Any]] = {}
+_tenant_branding: dict[str, dict[str, Any]] = {}
 
 
 # ── Request Models ──────────────────────────────────────────────────────────────
 
 class TenantCreateRequest(BaseModel):
-    name: str = Field(..., min_length=1, max_length=255, description="Organization name", examples=["Acme Corp"])
-    slug: str = Field(..., min_length=1, max_length=100, description="URL-friendly identifier", examples=["acme"])
-    plan: str = Field(default="free", description="Subscription plan", examples=["enterprise"])
-
-    model_config = {"json_schema_extra": {"examples": [
-        {"name": "Acme Corp", "slug": "acme", "plan": "enterprise"}
-    ]}}
+    name: str = Field(..., min_length=1, max_length=255, description="Organization name")
+    slug: str = Field(..., min_length=1, max_length=100, description="URL-friendly identifier")
+    plan: str = Field(default="free", description="Subscription plan")
 
 
 class TenantUpdateRequest(BaseModel):
@@ -30,8 +36,6 @@ class TenantSettingsUpdateRequest(BaseModel):
     max_users: int | None = Field(None, ge=1, description="Maximum user seats")
     default_language: str | None = Field(None, description="Default UI language")
     timezone: str | None = Field(None, description="Tenant timezone")
-    allow_candidate_export: bool | None = Field(None, description="Allow exporting candidate data")
-    require_mfa: bool | None = Field(None, description="Require MFA for all users")
 
 
 class BrandingUpdateRequest(BaseModel):
@@ -49,192 +53,140 @@ class HealthResponse(BaseModel):
     service: str = "tenant"
 
 
-class TenantResponse(BaseModel):
-    id: str
-    name: str
-    slug: str
-    plan: str
-    status: str
-    created_at: str
-    updated_at: str
-
-
-class TenantCreateResponse(BaseModel):
-    id: str
-    name: str
-    slug: str
-    plan: str
-    created: bool = True
-
-
-class TenantUpdateResponse(BaseModel):
-    id: str
-    updated: bool = True
-
-
-class TenantDeleteResponse(BaseModel):
-    id: str
-    deleted: bool = True
-
-
-class TenantSummary(BaseModel):
-    id: str
-    name: str
-    slug: str
-    plan: str
-    status: str
-
-
-class TenantListResponse(BaseModel):
-    data: list[TenantSummary]
-    total: int
-
-
-class TenantSettingsResponse(BaseModel):
-    tenant_id: str
-    settings: dict = Field(default_factory=dict, description="Tenant settings key-value pairs")
-
-
-class BrandingResponse(BaseModel):
-    tenant_id: str
-    branding: dict = Field(default_factory=dict, description="Branding configuration")
-
-
-class TenantUsageResponse(BaseModel):
-    tenant_id: str
-    period: str
-    users_active: int
-    users_total: int
-    candidates: int
-    jobs: int
-    interviews: int
-    ai_tokens_used: int
-    storage_gb: float
-    api_calls: int
-
-
-class TenantUsageHistoryEntry(BaseModel):
-    period: str
-    users_active: int
-    candidates: int
-    jobs: int
-    ai_tokens_used: int
-    storage_gb: float
-
-
-class TenantUsageHistoryResponse(BaseModel):
-    tenant_id: str
-    history: list[TenantUsageHistoryEntry]
-
-
 # ── Router ──────────────────────────────────────────────────────────────────────
 
 router = APIRouter()
 
 
-@router.get("/health", response_model=HealthResponse, tags=["Tenants"], summary="Tenant service health check")
+@router.get("/health", response_model=HealthResponse, tags=["Tenants"])
 async def health():
     return HealthResponse()
 
 
-# ── CRUD Operations ────────────────────────────────────────────────────────────
-
-@router.get("/", response_model=TenantListResponse, tags=["Tenants"], summary="List tenants",
-            description="Retrieve all tenants for the current organization.")
+@router.get("/", tags=["Tenants"], summary="List tenants")
 async def list_tenants():
-    return TenantListResponse(data=[
-        TenantSummary(id="t1", name="Acme Corp", slug="acme", plan="enterprise", status="active"),
-        TenantSummary(id="t2", name="Beta Inc", slug="beta", plan="pro", status="active"),
-    ], total=2)
+    items = list(_tenants.values())
+    return {"data": items, "total": len(items)}
 
 
-@router.post("/", response_model=TenantCreateResponse, tags=["Tenants"], summary="Create tenant",
-             description="Provision a new tenant organization with default settings.")
+@router.post("/", tags=["Tenants"], summary="Create tenant")
 async def create_tenant(data: TenantCreateRequest):
-    return TenantCreateResponse(id="tenant_new", name=data.name, slug=data.slug, plan=data.plan)
+    tenant_id = f"t_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc).isoformat()
+    tenant = {
+        "id": tenant_id, "name": data.name, "slug": data.slug, "plan": data.plan,
+        "status": "active", "created_at": now, "updated_at": now,
+    }
+    _tenants[tenant_id] = tenant
+    _tenant_settings[tenant_id] = {
+        "tenant_id": tenant_id,
+        "settings": {"notifications": True, "ai_enabled": True, "max_users": 100, "default_language": "en", "timezone": "UTC"},
+    }
+    _tenant_branding[tenant_id] = {
+        "tenant_id": tenant_id,
+        "branding": {"primary_color": "#3b82f6", "logo_url": "/logo.svg", "company_name": data.name},
+    }
+    return {"id": tenant_id, "name": data.name, "slug": data.slug, "plan": data.plan, "created": True}
 
 
-@router.get("/{tenant_id}", response_model=TenantResponse, tags=["Tenants"], summary="Get tenant details")
+@router.get("/{tenant_id}", tags=["Tenants"], summary="Get tenant details")
 async def get_tenant(tenant_id: str):
-    return TenantResponse(
-        id=tenant_id, name="Acme Corp", slug="acme", plan="enterprise", status="active",
-        created_at="2024-01-01T00:00:00Z", updated_at="2025-01-20T10:00:00Z",
-    )
+    if tenant_id not in _tenants:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return _tenants[tenant_id]
 
 
-@router.put("/{tenant_id}", response_model=TenantUpdateResponse, tags=["Tenants"], summary="Update tenant")
+@router.put("/{tenant_id}", tags=["Tenants"], summary="Update tenant")
 async def update_tenant(tenant_id: str, data: TenantUpdateRequest):
-    return TenantUpdateResponse(id=tenant_id)
+    if tenant_id not in _tenants:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    now = datetime.now(timezone.utc).isoformat()
+    if data.name is not None:
+        _tenants[tenant_id]["name"] = data.name
+    if data.plan is not None:
+        _tenants[tenant_id]["plan"] = data.plan
+    if data.status is not None:
+        _tenants[tenant_id]["status"] = data.status
+    _tenants[tenant_id]["updated_at"] = now
+    return {"id": tenant_id, "updated": True}
 
 
-@router.delete("/{tenant_id}", response_model=TenantDeleteResponse, tags=["Tenants"], summary="Delete tenant",
-               description="Soft-delete a tenant and all associated data.")
+@router.delete("/{tenant_id}", tags=["Tenants"], summary="Delete tenant")
 async def delete_tenant(tenant_id: str):
-    return TenantDeleteResponse(id=tenant_id)
+    if tenant_id not in _tenants:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    del _tenants[tenant_id]
+    _tenant_settings.pop(tenant_id, None)
+    _tenant_branding.pop(tenant_id, None)
+    return {"id": tenant_id, "deleted": True}
 
 
-# ── Settings Management ────────────────────────────────────────────────────────
-
-@router.get("/{tenant_id}/settings", response_model=TenantSettingsResponse, tags=["Tenants"],
-            summary="Get tenant settings")
+@router.get("/{tenant_id}/settings", tags=["Tenants"], summary="Get tenant settings")
 async def get_tenant_settings(tenant_id: str):
-    return TenantSettingsResponse(tenant_id=tenant_id, settings={
-        "notifications": True, "ai_enabled": True, "max_users": 100,
-        "default_language": "en", "timezone": "UTC",
-        "allow_candidate_export": True, "require_mfa": False,
-    })
+    if tenant_id not in _tenant_settings:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return _tenant_settings[tenant_id]
 
 
-@router.put("/{tenant_id}/settings", response_model=TenantSettingsResponse, tags=["Tenants"],
-            summary="Update tenant settings")
+@router.put("/{tenant_id}/settings", tags=["Tenants"], summary="Update tenant settings")
 async def update_tenant_settings(tenant_id: str, data: TenantSettingsUpdateRequest):
-    return TenantSettingsResponse(tenant_id=tenant_id, settings={
-        "notifications": data.notifications if data.notifications is not None else True,
-        "ai_enabled": data.ai_enabled if data.ai_enabled is not None else True,
-        "max_users": data.max_users if data.max_users is not None else 100,
-    })
+    if tenant_id not in _tenant_settings:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    settings = _tenant_settings[tenant_id]["settings"]
+    if data.notifications is not None:
+        settings["notifications"] = data.notifications
+    if data.ai_enabled is not None:
+        settings["ai_enabled"] = data.ai_enabled
+    if data.max_users is not None:
+        settings["max_users"] = data.max_users
+    if data.default_language is not None:
+        settings["default_language"] = data.default_language
+    if data.timezone is not None:
+        settings["timezone"] = data.timezone
+    return _tenant_settings[tenant_id]
 
 
-# ── Branding Customization ─────────────────────────────────────────────────────
-
-@router.get("/{tenant_id}/branding", response_model=BrandingResponse, tags=["Tenants"],
-            summary="Get tenant branding")
+@router.get("/{tenant_id}/branding", tags=["Tenants"], summary="Get tenant branding")
 async def get_branding(tenant_id: str):
-    return BrandingResponse(tenant_id=tenant_id, branding={
-        "primary_color": "#3b82f6", "logo_url": "/logo.svg",
-        "company_name": "Acme Corp", "favicon_url": "/favicon.ico", "custom_css": "",
-    })
+    if tenant_id not in _tenant_branding:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return _tenant_branding[tenant_id]
 
 
-@router.put("/{tenant_id}/branding", response_model=BrandingResponse, tags=["Tenants"],
-            summary="Update tenant branding")
+@router.put("/{tenant_id}/branding", tags=["Tenants"], summary="Update tenant branding")
 async def update_branding(tenant_id: str, data: BrandingUpdateRequest):
-    return BrandingResponse(tenant_id=tenant_id, branding={
-        "primary_color": data.primary_color or "#3b82f6",
-        "logo_url": data.logo_url or "/logo.svg",
-        "company_name": data.company_name or "Acme Corp",
-    })
+    if tenant_id not in _tenant_branding:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    branding = _tenant_branding[tenant_id]["branding"]
+    if data.primary_color is not None:
+        branding["primary_color"] = data.primary_color
+    if data.logo_url is not None:
+        branding["logo_url"] = data.logo_url
+    if data.company_name is not None:
+        branding["company_name"] = data.company_name
+    if data.favicon_url is not None:
+        branding["favicon_url"] = data.favicon_url
+    if data.custom_css is not None:
+        branding["custom_css"] = data.custom_css
+    return _tenant_branding[tenant_id]
 
 
-# ── Usage Tracking ─────────────────────────────────────────────────────────────
-
-@router.get("/{tenant_id}/usage", response_model=TenantUsageResponse, tags=["Tenants"],
-            summary="Get tenant usage for current period",
-            description="Resource consumption metrics for the current billing period.")
+@router.get("/{tenant_id}/usage", tags=["Tenants"], summary="Get tenant usage")
 async def get_tenant_usage(tenant_id: str):
-    return TenantUsageResponse(
-        tenant_id=tenant_id, period="2025-01",
-        users_active=23, users_total=50, candidates=156, jobs=12,
-        interviews=42, ai_tokens_used=1250000, storage_gb=12.5, api_calls=84320,
-    )
+    return {
+        "tenant_id": tenant_id, "period": "2025-01",
+        "users_active": 23, "users_total": 50, "candidates": 156, "jobs": 12,
+        "interviews": 42, "ai_tokens_used": 1250000, "storage_gb": 12.5, "api_calls": 84320,
+    }
 
 
-@router.get("/{tenant_id}/usage/history", response_model=TenantUsageHistoryResponse, tags=["Tenants"],
-            summary="Get tenant usage history",
-            description="Historical usage data for trend analysis.")
+@router.get("/{tenant_id}/usage/history", tags=["Tenants"], summary="Get tenant usage history")
 async def get_tenant_usage_history(tenant_id: str):
-    return TenantUsageHistoryResponse(tenant_id=tenant_id, history=[
-        TenantUsageHistoryEntry(period="2025-01", users_active=23, candidates=156, jobs=12, ai_tokens_used=1250000, storage_gb=12.5),
-        TenantUsageHistoryEntry(period="2024-12", users_active=21, candidates=142, jobs=10, ai_tokens_used=1100000, storage_gb=11.8),
-        TenantUsageHistoryEntry(period="2024-11", users_active=19, candidates=128, jobs=8, ai_tokens_used=980000, storage_gb=10.2),
-    ])
+    return {
+        "tenant_id": tenant_id,
+        "history": [
+            {"period": "2025-01", "users_active": 23, "candidates": 156, "jobs": 12, "ai_tokens_used": 1250000, "storage_gb": 12.5},
+            {"period": "2024-12", "users_active": 21, "candidates": 142, "jobs": 10, "ai_tokens_used": 1100000, "storage_gb": 11.8},
+            {"period": "2024-11", "users_active": 19, "candidates": 128, "jobs": 8, "ai_tokens_used": 980000, "storage_gb": 10.2},
+        ],
+    }
