@@ -1,23 +1,29 @@
 """Alembic environment configuration for AI-ROS."""
 
 import asyncio
+import sys
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
-from src.config import get_settings
-from src.infrastructure.database.base import Base
+# Ensure backend is in path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
+
+from shared.core.config import get_settings
+from sqlmodel import SQLModel
 
 # Import all models so Alembic can detect them
-from src.domain.identity.models import *  # noqa
-from src.domain.candidate.models import *  # noqa
-from src.domain.recruitment.models import *  # noqa
-from src.domain.interview.models import *  # noqa
-from src.domain.evaluation.models import *  # noqa
-from src.domain.pair_programming.models import *  # noqa
-from src.domain.workflow.models import *  # noqa
+from shared.core.models.identity import *  # noqa
+from shared.core.models.candidate import *  # noqa
+from shared.core.models.recruitment import *  # noqa
+from shared.core.models.interview import *  # noqa
+from shared.core.models.evaluation import *  # noqa
+from shared.core.models.pair_programming import *  # noqa
+from shared.core.models.workflow import *  # noqa
+from shared.core.models.analytics import *  # noqa
 
 config = context.config
 settings = get_settings()
@@ -26,7 +32,7 @@ config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = Base.metadata
+target_metadata = SQLModel.metadata
 
 
 def run_migrations_offline() -> None:
@@ -59,7 +65,12 @@ async def run_async_migrations():
 
 
 def run_migrations_online() -> None:
-    asyncio.run(run_async_migrations())
+    try:
+        asyncio.run(run_async_migrations())
+    except RuntimeError:
+        # Already inside an event loop (e.g. Jupyter)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(run_async_migrations())
 
 
 if context.is_offline_mode():

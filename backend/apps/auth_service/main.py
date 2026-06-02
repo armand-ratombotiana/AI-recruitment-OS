@@ -1,8 +1,29 @@
 """Auth Service — Authentication, registration, MFA, and token management."""
 from __future__ import annotations
 
-from fastapi import APIRouter
+import hashlib
+import secrets
+from datetime import datetime, timedelta, timezone
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from shared.core.config import get_settings
+from shared.core.database import get_db_dependency
+from shared.core.models.identity import User, UserRole, UserStatus, Session
+from shared.core.security import (
+    hash_password,
+    verify_password,
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    hash_api_key,
+)
+
+
+settings = get_settings()
 
 
 # ── Request Models ──────────────────────────────────────────────────────────────
@@ -25,6 +46,10 @@ class LoginRequest(BaseModel):
     model_config = {"json_schema_extra": {"examples": [
         {"email": "user@acme.com", "password": "SecureP@ss123"}
     ]}}
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str = Field(..., description="Refresh token")
 
 
 class MFAVerifyRequest(BaseModel):
@@ -94,8 +119,42 @@ async def health():
     summary="Register a new user",
     description="Create a new user account. Returns the created user profile.",
 )
-async def register(data: RegisterRequest):
-    return RegisterResponse(id="user_new", email=data.email, full_name=data.full_name, role=data.role)
+async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db_dependency)):
+    # Check if user already exists
+    result = await db.execute(select(User).where(User.email == data.email))
+    existing = result.scalar_one_or_none()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A user with this email already exists",
+        )
+
+    # Map role string to enum
+    try:
+        role = UserRole(data.role)
+    except ValueError:
+        role = UserRole.CANDIDATE
+
+    # Create user with hashed password
+    user = User(
+        email=data.email,
+        full_name=data.full_name,
+        hashed_password=hash_password(data.password),
+        role=role,
+        status=UserStatus.ACTIVE,
+        tenant_id="default",
+    )
+    db.add(user)
+    await db.flush()
+    await db.refresh(user)
+
+    return RegisterResponse(
+        id=user.id,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role.value,
+        created=True,
+    )
 
 
 @router.post(
@@ -105,10 +164,54 @@ async def register(data: RegisterRequest):
     summary="Authenticate user",
     description="Verify credentials and return JWT access + refresh tokens.",
 )
-async def login(data: LoginRequest):
+async def login(data: LoginRequest, db: AsyncSession = Depends(get_db_dependency)):
+    # Find user by email
+    result = await db.execute(select(User).where(User.email == data.email))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
+        )
+
+    # Verify password
+    if not verify_password(data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
+        )
+
+    # Check user status
+    if user.status != UserStatus.ACTIVE:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is not active",
+        )
+
+    # Generate tokens
+    token_data = {"sub": user.id, "email": user.email, "role": user.role.value}
+    access_token = create_access_token(token_data)
+    refresh_token = create_refresh_token(token_data)
+
+    # Store session with refresh token hash
+    refresh_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+    session = Session(
+        user_id=user.id,
+        tenant_id=user.tenant_id,
+        refresh_token_hash=refresh_hash,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS),
+    )
+    db.add(session)
+
+    # Update last login
+    user.last_login_at = datetime.now(timezone.utc)
+    db.add(user)
+
     return LoginResponse(
-        access_token="eyJhbGciOiJIUzI1NiJ9.mock_token",
-        refresh_token="refresh_mock",
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
 
@@ -119,8 +222,55 @@ async def login(data: LoginRequest):
     summary="Refresh access token",
     description="Exchange a valid refresh token for a new access token.",
 )
-async def refresh():
-    return RefreshResponse(access_token="eyJhbGciOiJIUzI1NiJ9.new_token")
+async def refresh(data: RefreshRequest, db: AsyncSession = Depends(get_db_dependency)):
+    # Decode the refresh token
+    payload = decode_token(data.refresh_token)
+    if not payload or payload.get("type") != "refresh":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token",
+        )
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
+
+    # Find user
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user or user.status != UserStatus.ACTIVE:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive",
+        )
+
+    # Verify session exists and is not revoked
+    refresh_hash = hashlib.sha256(data.refresh_token.encode()).hexdigest()
+    session_result = await db.execute(
+        select(Session).where(
+            Session.user_id == user_id,
+            Session.refresh_token_hash == refresh_hash,
+            Session.revoked_at.is_(None),
+        )
+    )
+    session = session_result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session not found or revoked",
+        )
+
+    # Generate new access token
+    token_data = {"sub": user.id, "email": user.email, "role": user.role.value}
+    access_token = create_access_token(token_data)
+
+    return RefreshResponse(
+        access_token=access_token,
+        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
 
 
 @router.post(
@@ -130,7 +280,17 @@ async def refresh():
     summary="Logout user",
     description="Invalidate the current session and refresh token.",
 )
-async def logout():
+async def logout(data: RefreshRequest, db: AsyncSession = Depends(get_db_dependency)):
+    # Revoke the session
+    refresh_hash = hashlib.sha256(data.refresh_token.encode()).hexdigest()
+    result = await db.execute(
+        select(Session).where(Session.refresh_token_hash == refresh_hash)
+    )
+    session = result.scalar_one_or_none()
+    if session:
+        session.revoked_at = datetime.now(timezone.utc)
+        db.add(session)
+
     return LogoutResponse()
 
 
@@ -142,10 +302,14 @@ async def logout():
     description="Generate TOTP secret and QR code for multi-factor authentication setup.",
 )
 async def enable_mfa():
+    # Generate a random secret for TOTP
+    secret = secrets.token_hex(20).upper()
+    backup_codes = [secrets.token_hex(3) for _ in range(8)]
+
     return MFAEnableResponse(
-        secret="JBSWY3DPEHPK3PXP",
+        secret=secret,
         qr_code="data:image/png;base64,...",
-        backup_codes=["123456", "789012"],
+        backup_codes=backup_codes,
     )
 
 
@@ -156,8 +320,9 @@ async def enable_mfa():
     summary="Verify MFA code",
     description="Validate a TOTP code to complete MFA enrollment.",
 )
-async def verify_mfa(code: str = "000000"):
-    return MFAVerifyResponse()
+async def verify_mfa(data: MFAVerifyRequest):
+    # In production, this would validate the TOTP code
+    return MFAVerifyResponse(verified=True)
 
 
 # ── SSO Response Models ────────────────────────────────────────────────────────
@@ -181,6 +346,7 @@ class SSOLoginResponse(BaseModel):
 )
 async def sso_login(provider: str, code: str, redirect_uri: str):
     """Login via SSO provider."""
+    # In production, this would exchange the code with the SSO provider
     return SSOLoginResponse(
         access_token=f"sso_token_{provider}",
         refresh_token=f"sso_refresh_{provider}",

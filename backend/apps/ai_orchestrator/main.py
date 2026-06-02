@@ -1,113 +1,161 @@
 """AI Orchestrator — Multi-agent task routing and LLM management."""
 from __future__ import annotations
 
-from fastapi import APIRouter
+import uuid
+from datetime import datetime, timezone
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 
-# ── Request Models ──────────────────────────────────────────────────────────────
+AGENTS_DB: dict[str, dict] = {
+    "a1": {"id": "a1", "type": "resume_parsing", "status": "idle", "tasks_completed": 156, "description": "Parses and extracts structured data from resumes"},
+    "a2": {"id": "a2", "type": "skill_extraction", "status": "idle", "tasks_completed": 142, "description": "Identifies and categorizes skills from text"},
+    "a3": {"id": "a3", "type": "candidate_profiling", "status": "processing", "tasks_completed": 98, "description": "Builds comprehensive candidate profiles"},
+    "a4": {"id": "a4", "type": "ppe_evaluation", "status": "idle", "tasks_completed": 67, "description": "Evaluates code submissions in pair programming"},
+    "a5": {"id": "a5", "type": "hr_interview", "status": "idle", "tasks_completed": 89, "description": "Conducts behavioral HR interviews"},
+    "a6": {"id": "a6", "type": "technical_interview", "status": "idle", "tasks_completed": 76, "description": "Conducts technical assessment interviews"},
+}
+
+TASKS_DB: dict[str, dict] = {}
+
 
 class OrchestrateRequest(BaseModel):
-    task_type: str = Field(..., description="Task type (resume_parse, skill_extract, evaluate, match)")
-    input_data: dict = Field(default_factory=dict, description="Task input payload")
-    priority: str = Field(default="normal", description="low | normal | high | urgent")
-
-    model_config = {"json_schema_extra": {"examples": [
-        {"task_type": "resume_parse", "input_data": {"resume_id": "r1"}, "priority": "normal"}
-    ]}}
+    agent_type: str = Field(..., description="Agent type to use")
+    input: dict = Field(default_factory=dict, description="Input data for the agent")
+    context: Optional[dict] = Field(default=None, description="Additional context")
 
 
-class SubmitTaskRequest(BaseModel):
-    task_type: str = Field(..., description="Task type to execute")
-    payload: dict = Field(default_factory=dict, description="Task payload data")
+class CreateTaskRequest(BaseModel):
+    agent_type: str
+    payload: dict = Field(default_factory=dict)
 
-
-# ── Response Models ─────────────────────────────────────────────────────────────
-
-class HealthResponse(BaseModel):
-    status: str = "healthy"
-    service: str = "ai-orchestrator"
-
-
-class AgentSummary(BaseModel):
-    id: str
-    type: str
-    status: str
-    tasks_completed: int
-
-
-class AgentListResponse(BaseModel):
-    data: list[AgentSummary]
-    total: int
-
-
-class AgentDetailResponse(BaseModel):
-    id: str
-    type: str
-    status: str
-    tasks_completed: int
-    tokens_consumed: int
-
-
-class OrchestrateResponse(BaseModel):
-    task_id: str
-    status: str = "processing"
-    agents_assigned: list[str]
-
-
-class TaskSubmitResponse(BaseModel):
-    task_id: str
-    status: str = "queued"
-
-
-class TaskStatusResponse(BaseModel):
-    task_id: str
-    status: str
-    result: dict = Field(default_factory=dict)
-
-
-# ── Router ──────────────────────────────────────────────────────────────────────
 
 router = APIRouter()
 
 
-@router.get("/health", response_model=HealthResponse, tags=["AI"], summary="AI orchestrator health check")
+@router.get("/health")
 async def health():
-    return HealthResponse()
+    return {"status": "healthy", "service": "ai-orchestrator"}
 
 
-@router.get("/agents", response_model=AgentListResponse, tags=["AI"], summary="List AI agents",
-            description="Retrieve all registered AI agents and their current status.")
+@router.get("/agents")
 async def list_agents():
-    return AgentListResponse(data=[
-        AgentSummary(id="a1", type="resume_parsing", status="idle", tasks_completed=156),
-        AgentSummary(id="a2", type="skill_extraction", status="idle", tasks_completed=142),
-        AgentSummary(id="a3", type="candidate_profiling", status="processing", tasks_completed=98),
-        AgentSummary(id="a4", type="ppe_evaluation", status="idle", tasks_completed=67),
-        AgentSummary(id="a5", type="hr_interview", status="idle", tasks_completed=89),
-        AgentSummary(id="a6", type="technical_interview", status="idle", tasks_completed=76),
-    ], total=6)
+    return {
+        "agents": [
+            {"id": a["id"], "type": a["type"], "status": a["status"],
+             "tasks_completed": a["tasks_completed"], "description": a["description"]}
+            for a in AGENTS_DB.values()
+        ],
+        "total": len(AGENTS_DB),
+    }
 
 
-@router.get("/agents/{agent_id}", response_model=AgentDetailResponse, tags=["AI"], summary="Get agent details")
-async def get_agent(agent_id: str):
-    return AgentDetailResponse(id=agent_id, type="resume_parsing", status="idle", tasks_completed=156, tokens_consumed=125000)
-
-
-@router.post("/orchestrate", response_model=OrchestrateResponse, tags=["AI"], summary="Orchestrate AI task",
-             description="Submit a task to the AI orchestrator which routes it to the best-suited agent(s).")
+@router.post("/orchestrate")
 async def orchestrate(data: OrchestrateRequest):
-    return OrchestrateResponse(task_id="task_new", agents_assigned=["resume_agent", "skill_agent"])
+    agent = None
+    for a in AGENTS_DB.values():
+        if a["type"] == data.agent_type:
+            agent = a
+            break
+
+    if not agent:
+        raise HTTPException(status_code=404, detail=f"Agent type '{data.agent_type}' not found")
+
+    task_id = f"task_{uuid.uuid4().hex[:12]}"
+
+    response_map = {
+        "resume_parsing": {
+            "parsed_data": {"name": "Extracted Name", "skills": ["Python", "FastAPI"], "experience_years": 5},
+            "confidence": 0.94,
+        },
+        "skill_extraction": {
+            "skills": [{"name": "Python", "level": "expert"}, {"name": "SQL", "level": "intermediate"}],
+            "confidence": 0.89,
+        },
+        "candidate_profiling": {
+            "profile": {"seniority": "senior", "domain": "backend", "strengths": ["system design", "APIs"]},
+            "confidence": 0.87,
+        },
+        "ppe_evaluation": {
+            "score": 7.5, "tests_passed": "8/10", "recommendation": "hire",
+        },
+        "hr_interview": {
+            "scores": {"communication": 8, "culture_fit": 7, "motivation": 9},
+            "recommendation": "hire",
+        },
+        "technical_interview": {
+            "scores": {"coding": 8, "system_design": 7, "problem_solving": 8},
+            "recommendation": "hire",
+        },
+    }
+
+    result = response_map.get(data.agent_type, {"status": "processed"})
+
+    task = {
+        "id": task_id,
+        "agent_type": data.agent_type,
+        "agent_id": agent["id"],
+        "status": "completed",
+        "input": data.input,
+        "context": data.context,
+        "result": result,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "completed_at": datetime.now(timezone.utc).isoformat(),
+    }
+    TASKS_DB[task_id] = task
+    agent["tasks_completed"] += 1
+
+    return {
+        "task_id": task_id,
+        "status": "completed",
+        "agent_type": data.agent_type,
+        "result": result,
+    }
 
 
-@router.post("/tasks", response_model=TaskSubmitResponse, tags=["AI"], summary="Submit AI task",
-             description="Queue a task for asynchronous AI processing.")
-async def submit_task(data: SubmitTaskRequest):
-    return TaskSubmitResponse(task_id="task_new")
+@router.post("/tasks")
+async def create_task(data: CreateTaskRequest):
+    agent = None
+    for a in AGENTS_DB.values():
+        if a["type"] == data.agent_type:
+            agent = a
+            break
+
+    if not agent:
+        raise HTTPException(status_code=404, detail=f"Agent type '{data.agent_type}' not found")
+
+    task_id = f"task_{uuid.uuid4().hex[:12]}"
+    task = {
+        "id": task_id,
+        "agent_type": data.agent_type,
+        "agent_id": agent["id"],
+        "status": "queued",
+        "payload": data.payload,
+        "result": None,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "completed_at": None,
+    }
+    TASKS_DB[task_id] = task
+
+    return {
+        "task_id": task_id,
+        "status": "queued",
+        "agent_type": data.agent_type,
+    }
 
 
-@router.get("/tasks/{task_id}", response_model=TaskStatusResponse, tags=["AI"], summary="Get AI task status",
-            description="Check the status and result of an AI processing task.")
+@router.get("/tasks/{task_id}")
 async def get_task(task_id: str):
-    return TaskStatusResponse(task_id=task_id, status="completed",
-                              result={"candidates_processed": 5, "evaluations_generated": 3})
+    task = TASKS_DB.get(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+    return {
+        "task_id": task["id"],
+        "status": task["status"],
+        "agent_type": task["agent_type"],
+        "result": task["result"],
+        "created_at": task["created_at"],
+        "completed_at": task["completed_at"],
+    }

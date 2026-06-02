@@ -6,10 +6,15 @@ from shared.core.config import get_settings
 
 settings = get_settings()
 
+# Detect if we're using SQLite (for testing) to skip pool settings
+_is_sqlite = settings.DATABASE_URL.startswith("sqlite")
+
 engine = create_async_engine(
     settings.DATABASE_URL,
-    pool_size=settings.DATABASE_POOL_SIZE,
-    max_overflow=settings.DATABASE_MAX_OVERFLOW,
+    **({} if _is_sqlite else {
+        "pool_size": settings.DATABASE_POOL_SIZE,
+        "max_overflow": settings.DATABASE_MAX_OVERFLOW,
+    }),
     pool_pre_ping=True,
     echo=settings.DEBUG,
 )
@@ -21,10 +26,17 @@ def get_sync_engine() -> Any:
     global sync_engine
     if sync_engine is None:
         from sqlalchemy import create_engine
+        sync_url = settings.DATABASE_URL
+        if sync_url.startswith("sqlite+aiosqlite"):
+            sync_url = sync_url.replace("+aiosqlite", "")
+        elif sync_url.startswith("postgresql+asyncpg"):
+            sync_url = sync_url.replace("+asyncpg", "")
         sync_engine = create_engine(
-            settings.DATABASE_URL.replace("+asyncpg", ""),
-            pool_size=settings.DATABASE_POOL_SIZE,
-            max_overflow=settings.DATABASE_MAX_OVERFLOW,
+            sync_url,
+            **({} if _is_sqlite else {
+                "pool_size": settings.DATABASE_POOL_SIZE,
+                "max_overflow": settings.DATABASE_MAX_OVERFLOW,
+            }),
             pool_pre_ping=True,
             echo=settings.DEBUG,
         )
