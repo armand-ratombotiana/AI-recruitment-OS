@@ -14,10 +14,20 @@ modules = [
     "shared.core.database",
     "shared.core.security",
     "shared.core.repository",
+    "shared.core.caching",
+    "shared.core.ratelimit",
+    "shared.core.health",
+    "shared.core.validation",
+    "shared.core.models",
     "shared.ai.llm_router",
     "shared.ai.base_agent",
+    "shared.ai.memory",
+    "shared.ai.orchestrator",
+    "shared.ai.prompts",
+    "shared.ai.rag",
     "shared.events.schemas",
     "shared.events.handlers",
+    "shared.events.dispatcher",
     "shared.websocket.manager",
 ]
 
@@ -29,7 +39,7 @@ for mod in modules:
     except Exception as e:
         print(f"  [FAIL] {mod}: {e}")
 
-# Test service imports
+# Test ALL 25 service imports
 services = [
     "apps.auth_service.main",
     "apps.tenant_service.main",
@@ -46,6 +56,16 @@ services = [
     "apps.compliance_service.main",
     "apps.billing_service.main",
     "apps.vector_search_service.main",
+    "apps.websocket_service.main",
+    "apps.resume_analysis_service.main",
+    "apps.scheduling_service.main",
+    "apps.fraud_detection_service.main",
+    "apps.compliance_automation_service.main",
+    "apps.ai_evaluation_service.main",
+    "apps.talent_intelligence_service.main",
+    "apps.workflow_automation_service.main",
+    "apps.sso_service.main",
+    "apps.innovation_service.main",
 ]
 
 print("\nTesting service imports...")

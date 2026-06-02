@@ -59,7 +59,7 @@ services:
       dockerfile: ../docker/backend/Dockerfile.dev
     container_name: airos-api-dev
     ports: ["8000:8000"]
-    command: uvicorn apps.api_gateway.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     environment:
       - DATABASE_URL=postgresql+asyncpg://airos:dev_password@postgres:5432/airos_dev
       - REDIS_URL=redis://redis:6379/0

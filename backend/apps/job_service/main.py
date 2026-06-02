@@ -131,7 +131,7 @@ async def get_job(job_id: str):
 
 
 @router.post("/", response_model=JobCreateResponse, tags=["Jobs"], summary="Create job posting")
-async def create_job():
+async def create_job(data: JobCreateRequest):
     return JobCreateResponse(id="j_new")
 
 

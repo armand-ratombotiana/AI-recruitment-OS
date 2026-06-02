@@ -1,5 +1,15 @@
 """Innovation Service — Advanced AI features for recruitment."""
 from fastapi import APIRouter
+from pydantic import BaseModel, Field
+
+
+class BiasDetectionRequest(BaseModel):
+    text: str = Field(..., description="Text to analyze for bias")
+
+
+class PredictSuccessRequest(BaseModel):
+    candidate_id: str = Field(..., description="Candidate ID")
+    job_id: str = Field(..., description="Job ID")
 
 
 router = APIRouter()
@@ -11,8 +21,9 @@ async def health():
 
 
 @router.post("/bias-detection")
-async def detect_bias(text: str):
+async def detect_bias(data: BiasDetectionRequest):
     """Detect bias in job descriptions or candidate evaluations."""
+    text = data.text
     return {
         "text": text[:100] + "...",
         "bias_score": 0.15,
@@ -30,8 +41,10 @@ async def detect_bias(text: str):
 
 
 @router.post("/predict-success")
-async def predict_success(candidate_id: str, job_id: str):
+async def predict_success(data: PredictSuccessRequest):
     """Predict candidate success probability."""
+    candidate_id = data.candidate_id
+    job_id = data.job_id
     return {
         "candidate_id": candidate_id,
         "job_id": job_id,

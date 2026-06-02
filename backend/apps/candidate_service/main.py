@@ -162,7 +162,7 @@ async def get_candidate(candidate_id: str):
 
 @router.post("/", response_model=CandidateCreateResponse, tags=["Candidates"], summary="Create candidate",
              description="Create a new candidate profile.")
-async def create_candidate():
+async def create_candidate(data: CandidateCreateRequest):
     return CandidateCreateResponse(id="c_new")
 
 
