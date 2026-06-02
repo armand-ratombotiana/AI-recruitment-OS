@@ -9,6 +9,7 @@ export default function SchedulePage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchInterviews();
@@ -16,10 +17,12 @@ export default function SchedulePage() {
 
   const fetchInterviews = async () => {
     try {
+      setLoading(true);
+      setError('');
       const data = await api.listInterviews();
       setInterviews(data.data || []);
-    } catch (e) {
-      console.error('Failed to load interviews');
+    } catch (e: any) {
+      setError(e.message || 'Failed to load interviews');
     } finally {
       setLoading(false);
     }
@@ -42,6 +45,9 @@ export default function SchedulePage() {
           <h2 className="font-semibold">Schedule</h2>
           <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="rounded-lg border px-3 py-1.5 text-sm" />
         </div>
+        {error && (
+          <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700 mb-4">{error}</div>
+        )}
         {loading ? (
           <p className="text-gray-500">Loading schedule...</p>
         ) : (

@@ -49,12 +49,12 @@ export default function AICopilotPage() {
   };
 
   const quickActions = [
-    { label: 'Summarize top candidates', icon: '1' },
-    { label: 'Explain AI evaluation scores', icon: '2' },
-    { label: 'Compare candidates side-by-side', icon: '3' },
-    { label: 'Identify hiring risks', icon: '4' },
-    { label: 'Generate interview questions', icon: '5' },
-    { label: 'Recommend next steps', icon: '6' },
+    { label: 'Summarize top candidates', icon: '👤' },
+    { label: 'Explain AI evaluation scores', icon: '📊' },
+    { label: 'Compare candidates side-by-side', icon: '⚖️' },
+    { label: 'Identify hiring risks', icon: '⚠️' },
+    { label: 'Generate interview questions', icon: '💬' },
+    { label: 'Recommend next steps', icon: '🚀' },
   ];
 
   return (

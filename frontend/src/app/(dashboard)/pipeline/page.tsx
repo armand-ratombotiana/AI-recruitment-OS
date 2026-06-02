@@ -26,6 +26,7 @@ const STAGES = [
 export default function PipelinePage() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [draggedCandidate, setDraggedCandidate] = useState<Candidate | null>(null);
 
   useEffect(() => {
@@ -35,10 +36,11 @@ export default function PipelinePage() {
   const fetchCandidates = async () => {
     try {
       setLoading(true);
+      setError('');
       const data = await api.listCandidates();
       setCandidates(data.data || []);
-    } catch (e) {
-      console.error('Failed to load candidates');
+    } catch (e: any) {
+      setError(e.message || 'Failed to load candidates');
     } finally {
       setLoading(false);
     }
@@ -75,6 +77,10 @@ export default function PipelinePage() {
         <button onClick={fetchCandidates} className="text-sm text-blue-600 hover:text-blue-700">Refresh</button>
       </div>
 
+      {error && (
+        <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{error}</div>
+      )}
+
       <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: '500px' }}>
         {STAGES.map(stage => {
           const stageCandidates = getCandidatesByStage(stage.id);
@@ -106,7 +112,7 @@ export default function PipelinePage() {
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium text-sm">{candidate.full_name}</span>
-                        {candidate.match_score && (
+                        {candidate.match_score != null && (
                           <span className="text-xs font-medium text-blue-600">{Math.round(candidate.match_score * 100)}%</span>
                         )}
                       </div>
