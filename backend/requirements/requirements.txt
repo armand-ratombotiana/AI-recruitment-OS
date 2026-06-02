@@ -9,9 +9,9 @@ pydantic==2.10.4
 pydantic-settings==2.7.1
 
 # Auth
-python-jose[cryptography]==3.3.0
+python-jose[cryptography]==3.4.0
 passlib[bcrypt]==1.7.4
-python-multipart==0.0.20
+python-multipart==0.0.27
 
 # Database
 sqlalchemy[asyncio]==2.0.36
@@ -28,17 +28,17 @@ aiokafka==0.11.0
 # AI
 openai==1.58.1
 anthropic==0.42.0
-langchain==0.3.14
-langchain-openai==0.3.0
+langchain==0.3.30
+langchain-openai==1.1.14
 langchain-anthropic==0.3.4
-langgraph==0.2.60
+langgraph==1.0.10rc1
 tiktoken==0.8.0
 
 # Document Processing
 PyMuPDF==1.25.1
 python-docx==1.1.2
 pytesseract==0.3.13
-Pillow==11.1.0
+Pillow==12.2.0
 
 # Search
 elasticsearch[async]==8.17.0
@@ -56,12 +56,12 @@ opentelemetry-instrumentation-fastapi==0.50b0
 prometheus-client==0.21.1
 
 # Utilities
-orjson==3.10.13
+orjson==3.11.6
 tenacity==9.0.0
 structlog==24.4.0
 
 # Testing
-pytest==8.3.4
+pytest==9.0.3
 pytest-asyncio==0.25.0
 pytest-cov==6.0.0
 faker==33.1.0
