@@ -97,6 +97,20 @@ class MFAVerifyResponse(BaseModel):
     verified: bool = Field(default=True)
 
 
+class MeResponse(BaseModel):
+    id: str
+    email: str
+    full_name: str
+    role: str
+    status: str
+    avatar_url: str | None = None
+    phone: str | None = None
+    mfa_enabled: bool = False
+    tenant_id: str
+    created_at: datetime
+    last_login_at: datetime | None = None
+
+
 # ── Router ──────────────────────────────────────────────────────────────────────
 
 router = APIRouter()
@@ -199,12 +213,12 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db_dependency
         user_id=user.id,
         tenant_id=user.tenant_id,
         refresh_token_hash=refresh_hash,
-        expires_at=datetime.now(timezone.utc) + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS),
+        expires_at=(datetime.now(timezone.utc) + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)).replace(tzinfo=None),
     )
     db.add(session)
 
     # Update last login
-    user.last_login_at = datetime.now(timezone.utc)
+    user.last_login_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.add(user)
 
     return LoginResponse(
@@ -288,7 +302,7 @@ async def logout(data: RefreshRequest, db: AsyncSession = Depends(get_db_depende
     )
     session = result.scalar_one_or_none()
     if session:
-        session.revoked_at = datetime.now(timezone.utc)
+        session.revoked_at = datetime.now(timezone.utc).replace(tzinfo=None)
         db.add(session)
 
     return LogoutResponse()
@@ -336,6 +350,61 @@ class SSOLoginResponse(BaseModel):
 
 
 # ── SSO Endpoints ──────────────────────────────────────────────────────────────
+
+@router.get(
+    "/me",
+    response_model=MeResponse,
+    tags=["Auth"],
+    summary="Get current user",
+    description="Return the authenticated user's profile.",
+)
+async def get_current_user(authorization: str | None = None, db: AsyncSession = Depends(get_db_dependency)):
+    token = None
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization[7:]
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid authorization header",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    payload = decode_token(token)
+    if not payload or payload.get("type") != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    return MeResponse(
+        id=user.id,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role.value,
+        status=user.status.value,
+        avatar_url=user.avatar_url,
+        phone=user.phone,
+        mfa_enabled=user.mfa_enabled,
+        tenant_id=user.tenant_id,
+        created_at=user.created_at,
+        last_login_at=user.last_login_at,
+    )
+
 
 @router.post(
     "/sso/{provider}",

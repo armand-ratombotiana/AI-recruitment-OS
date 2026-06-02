@@ -46,8 +46,8 @@ class Interview(SQLModel, table=True):
     interviewer_id: str | None = None
     is_ai_interview: bool = False
     room_id: str | None = None
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class InterviewSession(SQLModel, table=True):
@@ -63,7 +63,7 @@ class InterviewSession(SQLModel, table=True):
     ai_agent_id: str | None = None
     agent_model: str | None = None
     total_tokens_used: int = 0
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class InterviewQuestion(SQLModel, table=True):
@@ -78,7 +78,7 @@ class InterviewQuestion(SQLModel, table=True):
     ai_evaluation: str | None = None
     score: float | None = None
     order_index: int = 0
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class InterviewFeedback(SQLModel, table=True):
@@ -99,7 +99,7 @@ class InterviewFeedback(SQLModel, table=True):
     recommendation: str | None = None
     notes: str | None = None
     reasoning_trace: str | None = None
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 # --- API Schemas ---

@@ -288,7 +288,7 @@ async def update_job(
     if preferred_val is not None:
         job.preferred_skills = json.dumps(preferred_val)
 
-    job.updated_at = datetime.now(timezone.utc)
+    job.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.add(job)
     await db.flush()
     return JobUpdateResponse(id=job_id, updated=True)

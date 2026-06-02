@@ -338,7 +338,7 @@ async def update_candidate(
     if status_val:
         candidate.status = CandidateStatus(status_val)
 
-    candidate.updated_at = datetime.now(timezone.utc)
+    candidate.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.add(candidate)
 
     # Update profile
@@ -354,7 +354,7 @@ async def update_candidate(
             profile.seniority_level = seniority_val
         if years_val is not None:
             profile.years_experience = years_val
-        profile.updated_at = datetime.now(timezone.utc)
+        profile.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
 
     await db.flush()
     return CandidateUpdateResponse(id=candidate_id, updated=True)

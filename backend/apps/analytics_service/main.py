@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import random
 from datetime import datetime, timezone
+from typing import Optional
 
 from fastapi import APIRouter
 
@@ -92,9 +93,6 @@ async def get_ai_performance(agent_type: Optional[str] = None):
         "metrics": metrics_data,
         "overall_score": round(sum(m["value"] for m in metrics_data) / len(metrics_data), 1) if metrics_data else 0,
     }
-
-
-from typing import Optional
 
 
 @router.get("/recruiter-productivity")

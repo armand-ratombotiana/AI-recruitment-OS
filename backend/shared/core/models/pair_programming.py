@@ -30,7 +30,7 @@ class CodingSession(SQLModel, table=True):
     total_test_cases_failed: int = 0
     hints_used: int = 0
     max_hints: int = 3
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class CodeSnapshot(SQLModel, table=True):
@@ -43,7 +43,7 @@ class CodeSnapshot(SQLModel, table=True):
     cursor_position: int | None = None
     version: int = 0
     created_by: str = "candidate"
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class ExecutionResult(SQLModel, table=True):
@@ -66,7 +66,7 @@ class ExecutionResult(SQLModel, table=True):
     passed_tests: int = 0
     failed_tests: int = 0
     timeout_exceeded: bool = False
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class PPEEvaluation(SQLModel, table=True):
@@ -103,4 +103,4 @@ class PPEEvaluation(SQLModel, table=True):
     weaknesses: str | None = None
     reasoning_trace: str | None = None
     benchmark_comparison: str | None = None
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))

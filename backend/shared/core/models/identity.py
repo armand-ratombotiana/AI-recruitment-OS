@@ -41,8 +41,8 @@ class User(SQLModel, table=True):
     mfa_enabled: bool = False
     mfa_secret: str | None = None
     last_login_at: datetime | None = None
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class Session(SQLModel, table=True):
@@ -55,7 +55,7 @@ class Session(SQLModel, table=True):
     user_agent: str | None = None
     ip_address: str | None = None
     expires_at: datetime
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     revoked_at: datetime | None = None
 
 
@@ -70,7 +70,7 @@ class APIKey(SQLModel, table=True):
     scopes: str = "[]"
     last_used_at: datetime | None = None
     expires_at: datetime | None = None
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     revoked_at: datetime | None = None
 
 
@@ -84,7 +84,7 @@ class Credential(SQLModel, table=True):
     access_token: str | None = None
     refresh_token: str | None = None
     expires_at: datetime | None = None
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 # --- API Schemas ---

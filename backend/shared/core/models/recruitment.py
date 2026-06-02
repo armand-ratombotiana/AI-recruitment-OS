@@ -61,8 +61,8 @@ class Job(SQLModel, table=True):
     pipeline_id: str | None = None
     embedding_id: str | None = None
     applicants_count: int = 0
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None).replace(tzinfo=None))
+    updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None).replace(tzinfo=None))
 
 
 class Pipeline(SQLModel, table=True):
@@ -74,7 +74,7 @@ class Pipeline(SQLModel, table=True):
     description: str | None = None
     stages: str = "[]"
     is_default: bool = False
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class Application(SQLModel, table=True):
@@ -89,8 +89,8 @@ class Application(SQLModel, table=True):
     status: ApplicationStatus = ApplicationStatus.APPLIED
     match_score: float | None = None
     resume_id: str | None = None
-    applied_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    applied_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 # --- API Schemas ---

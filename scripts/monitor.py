@@ -576,6 +576,21 @@ def check_disk_usage(threshold_percent: float = 85.0) -> CheckResult:
     )
 
 
+def check_http_service(name: str, url: str, timeout: float = 5.0) -> CheckResult:
+    resp, latency = _timed_get(url, timeout=timeout)
+    if resp is None:
+        return CheckResult(
+            name=name, status=Status.FAIL, details="Connection refused", latency_ms=latency
+        )
+    if resp.status_code == 200:
+        return CheckResult(
+            name=name, status=Status.OK, details=f"HTTP {resp.status_code}", latency_ms=latency
+        )
+    return CheckResult(
+        name=name, status=Status.WARN, details=f"HTTP {resp.status_code}", latency_ms=latency
+    )
+
+
 def run_monitor(
     backend_url: str,
     frontend_url: str,
@@ -588,82 +603,109 @@ def run_monitor(
     report.timestamp = datetime.now(timezone.utc).isoformat()
     report.hostname = socket.gethostname()
 
+    backend_health_url = backend_url.rstrip("/")
+    frontend_health_url = frontend_url.rstrip("/")
+
     checks = [
-        ("Backend Health", lambda: check_backend_health(backend_url, timeout)),
-        ("Backend Readiness", lambda: check_backend_readiness(backend_url, timeout)),
-        ("Frontend", lambda: check_frontend(frontend_url, timeout)),
-        ("Database", lambda: check_database(backend_url, timeout)),
-        ("Redis", lambda: check_redis(backend_url, timeout)),
-        ("Auth Login", lambda: check_auth_flow(backend_url, timeout)),
+        ("Backend Health", lambda: check_backend_health(backend_health_url, timeout)),
+        ("Backend Readiness", lambda: check_backend_readiness(backend_health_url, timeout)),
+        ("Frontend", lambda: check_frontend(frontend_health_url, timeout)),
+        ("Database", lambda: check_database(backend_health_url, timeout)),
+        ("Redis", lambda: check_redis(backend_health_url, timeout)),
+        ("Auth Login", lambda: check_auth_flow(backend_health_url, timeout)),
         (
             "GET /candidates",
             lambda: check_api_endpoint(
-                backend_url, "GET", "/api/v1/candidates/", "Candidates API", timeout=timeout
+                backend_health_url, "GET", "/api/v1/candidates/", "Candidates API", timeout=timeout
             ),
         ),
         (
             "GET /jobs",
             lambda: check_api_endpoint(
-                backend_url, "GET", "/api/v1/jobs/", "Jobs API", timeout=timeout
+                backend_health_url, "GET", "/api/v1/jobs/", "Jobs API", timeout=timeout
             ),
         ),
         (
             "GET /interviews",
             lambda: check_api_endpoint(
-                backend_url, "GET", "/api/v1/interviews/", "Interviews API", timeout=timeout
+                backend_health_url, "GET", "/api/v1/interviews/", "Interviews API", timeout=timeout
             ),
         ),
         (
             "GET /ppe/problems",
             lambda: check_api_endpoint(
-                backend_url, "GET", "/api/v1/ppe/problems", "PPE API", timeout=timeout
+                backend_health_url, "GET", "/api/v1/ppe/problems", "PPE API", timeout=timeout
             ),
         ),
         (
             "GET /ai/agents",
             lambda: check_api_endpoint(
-                backend_url, "GET", "/api/v1/ai/agents", "AI Agents API", timeout=timeout
+                backend_health_url, "GET", "/api/v1/ai/agents", "AI Agents API", timeout=timeout
             ),
         ),
         (
             "GET /analytics/dashboard",
             lambda: check_api_endpoint(
-                backend_url, "GET", "/api/v1/analytics/dashboard", "Analytics API", timeout=timeout
+                backend_health_url, "GET", "/api/v1/analytics/dashboard", "Analytics API", timeout=timeout
             ),
         ),
         (
             "GET /workflows",
             lambda: check_api_endpoint(
-                backend_url, "GET", "/api/v1/workflows/", "Workflows API", timeout=timeout
+                backend_health_url, "GET", "/api/v1/workflows/", "Workflows API", timeout=timeout
             ),
         ),
         (
             "GET /notifications",
             lambda: check_api_endpoint(
-                backend_url, "GET", "/api/v1/notifications/", "Notifications API", timeout=timeout
+                backend_health_url, "GET", "/api/v1/notifications/", "Notifications API", timeout=timeout
             ),
         ),
         (
             "GET /compliance/status",
             lambda: check_api_endpoint(
-                backend_url, "GET", "/api/v1/compliance/status", "Compliance API", timeout=timeout
+                backend_health_url, "GET", "/api/v1/compliance/status", "Compliance API", timeout=timeout
             ),
         ),
         (
             "GET /billing/subscription",
             lambda: check_api_endpoint(
-                backend_url, "GET", "/api/v1/billing/subscription", "Billing API", timeout=timeout
+                backend_health_url, "GET", "/api/v1/billing/subscription", "Billing API", timeout=timeout
             ),
         ),
         (
             "POST /search/candidates",
             lambda: check_api_endpoint(
-                backend_url,
+                backend_health_url,
                 "POST",
                 "/api/v1/search/candidates",
                 "Search API",
                 json_data={"query": "python"},
                 timeout=timeout,
+            ),
+        ),
+        (
+            "GET /tenants",
+            lambda: check_api_endpoint(
+                backend_health_url, "GET", "/api/v1/tenants/", "Tenants API", timeout=timeout
+            ),
+        ),
+        (
+            "GET /users",
+            lambda: check_api_endpoint(
+                backend_health_url, "GET", "/api/v1/users/", "Users API", timeout=timeout
+            ),
+        ),
+        (
+            "GET /resumes",
+            lambda: check_api_endpoint(
+                backend_health_url, "GET", "/api/v1/resumes/", "Resumes API", timeout=timeout
+            ),
+        ),
+        (
+            "GET /ws/health",
+            lambda: check_api_endpoint(
+                backend_health_url, "GET", "/api/v1/ws/health", "WebSocket API", timeout=timeout
             ),
         ),
         ("Docker Containers", lambda: check_docker_containers()),

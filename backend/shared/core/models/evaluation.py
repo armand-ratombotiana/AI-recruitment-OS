@@ -39,7 +39,7 @@ class Evaluation(SQLModel, table=True):
     benchmark_id: str | None = None
     started_at: datetime | None = None
     completed_at: datetime | None = None
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class EvaluationCriteria(SQLModel, table=True):
@@ -53,7 +53,7 @@ class EvaluationCriteria(SQLModel, table=True):
     weight: float = 1.0
     max_score: float = 10.0
     is_active: bool = True
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class Benchmark(SQLModel, table=True):
@@ -65,7 +65,7 @@ class Benchmark(SQLModel, table=True):
     level: str
     dimension_averages: str
     sample_size: int = 0
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 # Re-export pair programming models for backwards compatibility

@@ -357,13 +357,14 @@ Full API reference: [docs/API.md](docs/API.md)
 ### Running Tests
 
 ```bash
-make test-unit          # Unit tests
-make test-integration   # Integration tests
-make test               # All backend tests with coverage
-make test-frontend      # Frontend tests
-make test-e2e           # E2E tests
-make test-contract      # Contract tests
-make test-load          # Load tests (locust)
+make test                 # All backend tests with coverage
+make test-cov             # Run tests with coverage
+make test-frontend        # Frontend linting
+
+# Monitoring / health checks
+make check                # Run infrastructure health checks
+make check-json           # Run health checks with JSON output
+make check-continuous     # Run continuous monitoring (every 60s)
 ```
 
 ### Code Quality
@@ -407,29 +408,111 @@ make nuke          # Full cleanup (containers, volumes, images)
 
 ## Docker
 
+### Start / Stop
+
+```bash
+make up                    # Start all services (docker compose up -d)
+make down                  # Stop all services
+make down-clean            # Stop all services and remove volumes
+make logs                  # Tail logs from all services
+make logs-api              # Tail API logs only
+make status                # Show running container status
+make stats                 # Show container resource usage
+```
+
+### Docker Compose Commands
+
 ```bash
 docker compose up -d                                    # Start all
 docker compose up -d postgres redis prometheus grafana jaeger  # Infrastructure only
 docker compose -f docker-compose.dev.yml up --build     # Dev with hot reload
-docker compose logs -f api                              # View logs
+docker compose logs -f api                              # View API logs
 docker compose down                                     # Stop all
 docker compose down -v                                  # Stop + remove volumes
 docker compose build                                    # Build images
 bash scripts/backup.sh                                  # Backup data
 ```
 
-### Docker Services
+### Build & Clean
+
+```bash
+make build                 # Build all Docker images
+make build-no-cache        # Build all Docker images (no cache)
+make clean                 # Remove containers, networks, volumes, caches
+make clean-all             # Remove everything including images
+```
+
+## Docker Services
 
 | Service | Container | Port | Description |
 |---------|-----------|------|-------------|
 | PostgreSQL | airos-postgres | 5432 | Primary database (pgvector) |
 | Redis | airos-redis | 6379 | Cache & sessions |
-| API | airos-api | 8000 | FastAPI gateway |
+| API | airos-api | 8000 | FastAPI gateway (26 services) |
+| Celery Worker | airos-celery-worker | 8000 | Async task processor |
 | Frontend | airos-frontend | 3000 | Next.js app |
-| Prometheus | airos-prometheus | 9090 | Metrics |
-| Grafana | airos-grafana | 3001 | Dashboards |
-| Jaeger | airos-jaeger | 16686 | Tracing |
-| Alertmanager | airos-alertmanager | 9093 | Alerts |
+| Prometheus | airos-prometheus | 9090 | Metrics collection |
+| Grafana | airos-grafana | 3001 | Monitoring dashboards |
+| Jaeger | airos-jaeger | 16686 | Distributed tracing |
+| Alertmanager | airos-alertmanager | 9093 | Alert routing |
+
+### Architecture
+
+```
+                        +------------------+
+                        |    Frontend      |
+                        |   :3000 (Next.js)|
+                        +--------+---------+
+                                 |
+                        +--------v---------+
+                        |   API Gateway    |
+                        |   :8000 (FastAPI)|
+                        +--+-----+-----+--+
+                           |     |     |
+              +------------+     |     +------------+
+              |                  |                  |
+    +---------v-------+  +------v------+  +--------v-------+
+    | PostgreSQL      |  | Redis       |  | Celery Worker   |
+    | :5432 (pgvector)|  | :6379       |  | (5 queues)      |
+    +-----------------+  +-------------+  +-----------------+
+
+  +--------------------+  +------------------+  +-----------------+
+  | Prometheus :9090   |  | Grafana :3001    |  | Jaeger :16686   |
+  +--------------------+  +------------------+  +-----------------+
+  +--------------------+
+  | Alertmanager :9093 |
+  +--------------------+
+```
+
+### Backend Services (26 microservices under single API gateway)
+
+| Service | Prefix | Description |
+|---------|--------|-------------|
+| Auth | `/api/v1/auth` | Registration, login, MFA, SSO |
+| Tenants | `/api/v1/tenants` | Multi-tenant org management |
+| Users | `/api/v1/users` | User account management |
+| Candidates | `/api/v1/candidates` | CRUD, AI enrichment, skill extraction |
+| Resumes | `/api/v1/resumes` | Upload, parsing, re-parsing |
+| Jobs | `/api/v1/jobs` | Job postings, candidate matching |
+| Interviews | `/api/v1/interviews` | Scheduling, AI interviews, feedback |
+| PPE | `/api/v1/ppe` | Pair programming evaluation, live coding |
+| AI Orchestrator | `/api/v1/ai` | Multi-agent task routing, LLM management |
+| Analytics | `/api/v1/analytics` | Pipeline metrics, reports, dashboards |
+| Workflows | `/api/v1/workflows` | Event-driven automation |
+| Notifications | `/api/v1/notifications` | Multi-channel (email, push, in-app) |
+| Compliance | `/api/v1/compliance` | GDPR/SOC2, audit logging |
+| Billing | `/api/v1/billing` | Subscriptions, invoices, usage |
+| Search | `/api/v1/search` | Vector embeddings, similarity search |
+| WebSocket | `/api/v1/ws` | Real-time collaboration |
+| Resume Analysis | `/api/v1/resume-analysis` | Advanced resume processing |
+| Scheduling | `/api/v1/scheduling` | Interview scheduling engine |
+| Fraud Detection | `/api/v1/fraud` | Anomaly scoring |
+| Compliance Automation | `/api/v1/compliance-automation` | Automated compliance checks |
+| AI Evaluation | `/api/v1/ai-evaluation` | AI scoring engine |
+| Talent Intelligence | `/api/v1/talent-intelligence` | Market insights |
+| Workflow Automation | `/api/v1/workflow-automation` | No-code workflows |
+| SSO | `/api/v1/sso` | Single sign-on providers |
+| Innovation | `/api/v1/innovations` | Experimental features |
 
 ---
 

@@ -20,7 +20,7 @@ class Workflow(SQLModel, table=True):
     trigger_config: str = "{}"
     steps_config: str = "[]"
     version: int = 1
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class WorkflowStep(SQLModel, table=True):
@@ -35,7 +35,7 @@ class WorkflowStep(SQLModel, table=True):
     config: str = "{}"
     on_success: str | None = None
     on_failure: str | None = None
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class WorkflowExecution(SQLModel, table=True):
@@ -46,5 +46,5 @@ class WorkflowExecution(SQLModel, table=True):
     tenant_id: str = SQLField(index=True)
     status: str = "running"
     context_data: str = "{}"
-    started_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    started_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     completed_at: datetime | None = None

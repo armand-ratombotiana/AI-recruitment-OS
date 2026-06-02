@@ -1,4 +1,4 @@
-.PHONY: help dev prod up down logs test lint format build clean bootstrap deploy check
+.PHONY: help dev prod up down logs test lint format build clean bootstrap deploy check docs
 
 help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -116,3 +116,27 @@ status: ## Show running container status
 
 stats: ## Show container resource usage
 	docker stats --no-stream
+
+docs: ## Open documentation
+	@echo "Documentation files:"
+	@echo "  docs/DOCKER.md          - Docker architecture & troubleshooting"
+	@echo "  docs/API_ENDPOINTS.md   - Complete API endpoint reference"
+	@echo "  README.md               - Project overview"
+
+monitor: ## Run health checks against all services
+	python scripts/monitor.py --backend http://localhost:8000 --frontend http://localhost:3000
+
+monitor-continuous: ## Run continuous health monitoring
+	python scripts/monitor.py --continuous --interval 60
+
+monitor-json: ## Run health checks with JSON output
+	python scripts/monitor.py --json --backend http://localhost:8000 --frontend http://localhost:3000
+
+grafana: ## Open Grafana dashboard
+	@echo "Grafana: http://localhost:3001 (admin / admin)"
+
+prometheus: ## Open Prometheus UI
+	@echo "Prometheus: http://localhost:9090"
+
+jaeger: ## Open Jaeger UI
+	@echo "Jaeger: http://localhost:16686"

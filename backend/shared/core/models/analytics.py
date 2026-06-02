@@ -16,7 +16,7 @@ class Metric(SQLModel, table=True):
     name: str
     value: float
     dimensions: str = "{}"
-    timestamp: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class Dashboard(SQLModel, table=True):
@@ -26,7 +26,7 @@ class Dashboard(SQLModel, table=True):
     tenant_id: str = SQLField(index=True)
     name: str
     config: str = "{}"
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class Report(SQLModel, table=True):
@@ -38,4 +38,4 @@ class Report(SQLModel, table=True):
     type: str
     status: str = "pending"
     result: str = "{}"
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))

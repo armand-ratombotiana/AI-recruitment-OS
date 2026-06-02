@@ -82,7 +82,7 @@ export default function WorkflowsPage() {
     }
   };
 
-  const useTemplate = (template: typeof WORKFLOW_TEMPLATES[0]) => {
+  const applyTemplate = (template: typeof WORKFLOW_TEMPLATES[0]) => {
     setNewWorkflow({
       name: template.name,
       description: template.description,
@@ -165,7 +165,7 @@ export default function WorkflowsPage() {
               <div
                 key={i}
                 className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition cursor-pointer group"
-                onClick={() => useTemplate(template)}
+                onClick={() => applyTemplate(template)}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">{template.icon}</span>

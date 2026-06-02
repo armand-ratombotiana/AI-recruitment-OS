@@ -47,8 +47,8 @@ class Candidate(SQLModel, table=True):
     source: str | None = None
     tags: str = "[]"
     notes: str | None = None
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None).replace(tzinfo=None))
+    updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None).replace(tzinfo=None))
 
 
 class CandidateProfile(SQLModel, table=True):
@@ -66,8 +66,8 @@ class CandidateProfile(SQLModel, table=True):
     domains: str | None = None
     raw_profile: str | None = None
     embedding_id: str | None = None
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 class Skill(SQLModel, table=True):
@@ -106,7 +106,7 @@ class ExperienceEntry(SQLModel, table=True):
     is_current: bool = False
     location: str | None = None
     skills_used: str = "[]"
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 # --- API Schemas ---
