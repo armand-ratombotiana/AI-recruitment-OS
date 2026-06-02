@@ -5,7 +5,7 @@ import hashlib
 import secrets
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Header, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -64,11 +64,11 @@ class HealthResponse(BaseModel):
 
 
 class RegisterResponse(BaseModel):
-    id: str = Field(..., description="Newly created user ID")
-    email: str = Field(..., description="Registered email")
-    full_name: str = Field(..., description="User full name")
-    role: str = Field(default="candidate", description="Assigned role")
-    created: bool = Field(default=True)
+    access_token: str = Field(..., description="JWT access token")
+    refresh_token: str = Field(..., description="Refresh token")
+    token_type: str = Field(default="bearer", description="Token type")
+    expires_in: int = Field(default=1800, description="Token lifetime in seconds")
+    user: dict = Field(..., description="Created user profile")
 
 
 class LoginResponse(BaseModel):
@@ -162,12 +162,34 @@ async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db_depe
     await db.flush()
     await db.refresh(user)
 
+    # Generate tokens
+    token_data = {"sub": user.id, "email": user.email, "role": user.role.value}
+    access_token = create_access_token(token_data)
+    refresh_token = create_refresh_token(token_data)
+
+    # Store session
+    refresh_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+    session = Session(
+        user_id=user.id,
+        tenant_id=user.tenant_id,
+        refresh_token_hash=refresh_hash,
+        expires_at=(datetime.now(timezone.utc) + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)).replace(tzinfo=None),
+    )
+    db.add(session)
+    await db.commit()
+
     return RegisterResponse(
-        id=user.id,
-        email=user.email,
-        full_name=user.full_name,
-        role=user.role.value,
-        created=True,
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        user={
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "role": user.role.value,
+            "created_at": user.created_at.isoformat() if user.created_at else None,
+        },
     )
 
 
@@ -358,7 +380,7 @@ class SSOLoginResponse(BaseModel):
     summary="Get current user",
     description="Return the authenticated user's profile.",
 )
-async def get_current_user(authorization: str | None = None, db: AsyncSession = Depends(get_db_dependency)):
+async def get_current_user(authorization: str | None = Header(None), db: AsyncSession = Depends(get_db_dependency)):
     token = None
     if authorization and authorization.startswith("Bearer "):
         token = authorization[7:]

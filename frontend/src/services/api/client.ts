@@ -40,13 +40,16 @@ class APIClient {
   }
 
   async getSSOProviders() {
-    return this.request<any>('/sso/providers');
+    return this.request<{ providers: Array<{ id: string; name: string; icon: string; auth_url: string }> }>('/sso/providers');
   }
   async getSSOAuthorizeUrl(provider: string, redirectUri: string) {
-    return this.request<any>(`/sso/providers/${provider}/authorize`, { params: { redirect_uri: redirectUri } });
+    return this.request<{ authorization_url: string; state: string }>(`/sso/providers/${provider}/authorize`, { params: { redirect_uri: redirectUri } });
   }
   async ssoLogin(provider: string, code: string, redirectUri: string) {
-    const data = await this.request<any>(`/sso/providers/${provider}/callback`, { method: 'POST', body: JSON.stringify({ provider, code, redirect_uri: redirectUri }) });
+    const data = await this.request<{ access_token: string; user: any }>(`/sso/providers/${provider}/callback`, {
+      method: 'POST',
+      body: JSON.stringify({ provider, code, redirect_uri: redirectUri }),
+    });
     this.setToken(data.access_token);
     return data;
   }
