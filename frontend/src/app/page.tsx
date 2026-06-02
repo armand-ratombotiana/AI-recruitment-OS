@@ -186,26 +186,18 @@ function useCountUp(end: number, duration = 2000) {
   return { count, ref };
 }
 
-function useFadeIn() {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.classList.add('visible');
-          observer.unobserve(el);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return ref;
+function createFadeInCallback(el: HTMLDivElement | null) {
+  if (!el) return;
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        el.classList.add('visible');
+        observer.unobserve(el);
+      }
+    },
+    { threshold: 0.1 }
+  );
+  observer.observe(el);
 }
 
 export default function HomePage() {
@@ -425,7 +417,7 @@ export default function HomePage() {
       {/* Features Section */}
       <section id="features" className="py-24 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 fade-in-section" ref={useFadeIn()}>
+          <div className="text-center mb-16 fade-in-section" ref={createFadeInCallback}>
             <p className="text-sm font-semibold text-blue-600 tracking-wide uppercase mb-3">
               Features
             </p>
@@ -444,7 +436,7 @@ export default function HomePage() {
                 <div
                   key={i}
                   className="group bg-white rounded-2xl p-7 border border-gray-100 hover:border-gray-200 transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1 cursor-default fade-in-section"
-                  ref={useFadeIn()}
+                  ref={createFadeInCallback}
                 >
                   <div
                     className={`h-12 w-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 transition-transform duration-300`}
@@ -463,7 +455,7 @@ export default function HomePage() {
       {/* How It Works Section */}
       <section id="about" className="py-24 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 fade-in-section" ref={useFadeIn()}>
+          <div className="text-center mb-16 fade-in-section" ref={createFadeInCallback}>
             <p className="text-sm font-semibold text-blue-600 tracking-wide uppercase mb-3">
               How It Works
             </p>
@@ -501,7 +493,7 @@ export default function HomePage() {
             ].map((step, i) => {
               const StepIcon = step.icon;
               return (
-                <div key={i} className="relative text-center fade-in-section" ref={useFadeIn()}>
+                <div key={i} className="relative text-center fade-in-section" ref={createFadeInCallback}>
                   <div className="relative z-10 mx-auto mb-6">
                     <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center mx-auto shadow-lg shadow-blue-500/20">
                       <StepIcon className="h-7 w-7 text-white" />
@@ -522,7 +514,7 @@ export default function HomePage() {
       {/* Testimonials Section */}
       <section id="testimonials" className="py-24 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 fade-in-section" ref={useFadeIn()}>
+          <div className="text-center mb-16 fade-in-section" ref={createFadeInCallback}>
             <p className="text-sm font-semibold text-blue-600 tracking-wide uppercase mb-3">
               Testimonials
             </p>
@@ -536,7 +528,7 @@ export default function HomePage() {
               <div
                 key={i}
                 className="relative rounded-2xl p-[1px] fade-in-section"
-                ref={useFadeIn()}
+                ref={createFadeInCallback}
               >
                 {/* Gradient border */}
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-blue-500/20" />
@@ -571,7 +563,7 @@ export default function HomePage() {
       {/* Pricing Section */}
       <section id="pricing" className="py-24 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 fade-in-section" ref={useFadeIn()}>
+          <div className="text-center mb-16 fade-in-section" ref={createFadeInCallback}>
             <p className="text-sm font-semibold text-blue-600 tracking-wide uppercase mb-3">
               Pricing
             </p>
@@ -590,7 +582,7 @@ export default function HomePage() {
                     ? 'shadow-xl shadow-blue-500/10 scale-[1.02]'
                     : 'hover:shadow-lg'
                 } fade-in-section`}
-                ref={useFadeIn()}
+                ref={createFadeInCallback}
               >
                 {tier.popular && (
                   <>
