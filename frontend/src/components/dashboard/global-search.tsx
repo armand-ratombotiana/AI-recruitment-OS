@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Users, Briefcase, Calendar, FileText, X } from 'lucide-react';
+import { Search, Users, Briefcase, Calendar, FileText, X, Loader2 } from 'lucide-react';
 import { useClickOutside, useDebouncedValue } from '@/hooks';
+import { api } from '@/services/api/client';
 
 interface Result {
   type: 'candidate' | 'job' | 'interview' | 'page';
@@ -44,9 +45,11 @@ const COLOR: Record<Result['type'], string> = {
 export function GlobalSearch() {
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState<Result[]>([]);
+  const [searching, setSearching] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounced = useDebouncedValue(value, 200);
+  const debounced = useDebouncedValue(value, 250);
 
   useClickOutside(ref, () => setOpen(false));
 
@@ -63,8 +66,54 @@ export function GlobalSearch() {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
+  useEffect(() => {
+    const q = debounced.trim();
+    if (!q) {
+      setSearchResults([]);
+      setSearching(false);
+      return;
+    }
+    let cancelled = false;
+    setSearching(true);
+    Promise.allSettled([
+      api.searchCandidates(q).catch(() => null),
+      api.listJobs({ q, limit: '3' }).catch(() => null),
+    ]).then(([c, j]) => {
+      if (cancelled) return;
+      const results: Result[] = [];
+      const cData: any = c.status === 'fulfilled' ? c.value : null;
+      const cands = (cData?.data || cData?.results || []) as any[];
+      for (const cand of cands.slice(0, 4)) {
+        results.push({
+          type: 'candidate',
+          label: cand.full_name || cand.name || 'Candidate',
+          sublabel: cand.email,
+          href: '/dashboard/candidates',
+        });
+      }
+      const jData: any = j.status === 'fulfilled' ? j.value : null;
+      const jobs = (jData?.data || []) as any[];
+      for (const job of jobs.slice(0, 3)) {
+        results.push({
+          type: 'job',
+          label: job.title || 'Job',
+          sublabel: job.department || job.location,
+          href: '/dashboard/jobs',
+        });
+      }
+      for (const p of PAGE_INDEX.filter((p) => p.label.toLowerCase().includes(q.toLowerCase())).slice(0, 3)) {
+        results.push(p);
+      }
+      setSearchResults(results);
+      setSearching(false);
+    });
+    return () => { cancelled = true; };
+  }, [debounced]);
+
   const results: Result[] = debounced.trim()
-    ? PAGE_INDEX.filter((p) => p.label.toLowerCase().includes(debounced.toLowerCase())).slice(0, 6)
+    ? (searchResults.length > 0
+        ? searchResults
+        : PAGE_INDEX.filter((p) => p.label.toLowerCase().includes(debounced.toLowerCase())).slice(0, 5))
     : PAGE_INDEX.slice(0, 5);
 
   return (
@@ -98,13 +147,14 @@ export function GlobalSearch() {
         )}
       </div>
 
-      {open && results.length > 0 && (
+      {open && (results.length > 0 || searching) && (
         <div
           role="listbox"
           className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden fade-in-scale z-40 max-h-80 overflow-y-auto scrollbar-thin"
         >
-          <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 border-b border-gray-100">
-            {debounced ? 'Matching' : 'Quick navigation'}
+          <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
+            {searching && <Loader2 className="h-3 w-3 animate-spin" />}
+            {debounced ? (searching ? 'Searching…' : 'Matches') : 'Quick navigation'}
           </p>
           {results.map((r) => {
             const Icon = ICON[r.type];

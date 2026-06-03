@@ -57,20 +57,10 @@ interface Candidate {
   created_at?: string;
 }
 
-const SAMPLE: Candidate[] = [
-  { id: '1', full_name: 'Sarah Chen', email: 'sarah.chen@example.com', phone: '+1 555-0123', location: 'San Francisco, CA', status: 'interviewing', skills: ['React', 'TypeScript', 'Node.js', 'GraphQL'], experience_years: 7, score: 96, created_at: '2026-05-20' },
-  { id: '2', full_name: 'Marcus Rivera', email: 'marcus.r@example.com', phone: '+1 555-0124', location: 'Austin, TX', status: 'screening', skills: ['Python', 'TensorFlow', 'AWS'], experience_years: 5, score: 89, created_at: '2026-05-22' },
-  { id: '3', full_name: 'Emily Nakamura', email: 'emily.n@example.com', phone: '+1 555-0125', location: 'Seattle, WA', status: 'offer', skills: ['Engineering Leadership', 'System Design', 'Go'], experience_years: 12, score: 94, created_at: '2026-05-18' },
-  { id: '4', full_name: 'David Brown', email: 'd.brown@example.com', phone: '+1 555-0126', location: 'New York, NY', status: 'ppe', skills: ['Data Science', 'PyTorch', 'SQL'], experience_years: 4, score: 87, created_at: '2026-05-25' },
-  { id: '5', full_name: 'Lisa Park', email: 'lisa.park@example.com', phone: '+1 555-0127', location: 'Remote', status: 'active', skills: ['Figma', 'Design Systems', 'UX Research'], experience_years: 6, score: 82, created_at: '2026-05-26' },
-  { id: '6', full_name: 'Ahmed Hassan', email: 'a.hassan@example.com', phone: '+1 555-0128', location: 'Toronto, ON', status: 'active', skills: ['Java', 'Spring Boot', 'Kubernetes'], experience_years: 8, score: 91, created_at: '2026-05-27' },
-  { id: '7', full_name: 'Priya Patel', email: 'priya.p@example.com', phone: '+1 555-0129', location: 'London, UK', status: 'hired', skills: ['Product Management', 'Agile', 'Analytics'], experience_years: 9, score: 93, created_at: '2026-05-10' },
-  { id: '8', full_name: 'Carlos Mendoza', email: 'c.mendoza@example.com', phone: '+1 555-0130', location: 'Mexico City, MX', status: 'rejected', skills: ['Ruby', 'Rails', 'PostgreSQL'], experience_years: 3, score: 64, created_at: '2026-05-15' },
-];
-
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<'table' | 'grid'>('table');
   const [statusFilter, setStatusFilter] = useState('all');
   const [skillFilter, setSkillFilter] = useState<string[]>([]);
@@ -79,17 +69,85 @@ export default function CandidatesPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addOpen, setAddOpen] = useState(false);
   const [detail, setDetail] = useState<Candidate | null>(null);
+  const [enriching, setEnriching] = useState<Set<string>>(new Set());
+  const [matching, setMatching] = useState<Set<string>>(new Set());
+  const [submitting, setSubmitting] = useState(false);
   const { push, ToastContainer } = useToast();
 
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const d = await api.listCandidates();
+      setCandidates(d?.data || []);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load candidates');
+      setCandidates([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    api.listCandidates()
-      .then((d) => {
-        const data = d?.data && d.data.length > 0 ? d.data : SAMPLE;
-        setCandidates(data);
-      })
-      .catch(() => setCandidates(SAMPLE))
-      .finally(() => setLoading(false));
+    load();
   }, []);
+
+  const handleEnrich = async (id: string) => {
+    setEnriching((p) => new Set(p).add(id));
+    try {
+      await api.enrichCandidate(id);
+      push('success', 'AI enrichment started');
+      await load();
+    } catch (err: any) {
+      push('error', err?.message || 'Enrichment failed');
+    } finally {
+      setEnriching((p) => {
+        const n = new Set(p);
+        n.delete(id);
+        return n;
+      });
+    }
+  };
+
+  const handleMatch = async (id: string) => {
+    setMatching((p) => new Set(p).add(id));
+    try {
+      const r = await api.matchCandidate(id);
+      const score = r?.match_score ?? r?.result?.match_score;
+      push('success', `Match complete${score ? ` — score ${(score * 100).toFixed(0)}%` : ''}`);
+      await load();
+    } catch (err: any) {
+      push('error', err?.message || 'Matching failed');
+    } finally {
+      setMatching((p) => {
+        const n = new Set(p);
+        n.delete(id);
+        return n;
+      });
+    }
+  };
+
+  const handleCreate = async (data: any) => {
+    setSubmitting(true);
+    try {
+      await api.createCandidate({
+        full_name: data.full_name,
+        email: data.email,
+        phone: data.phone || undefined,
+        location: data.location || undefined,
+        skills: data.skills,
+        experience_years: data.experience_years ? Number(data.experience_years) : 0,
+        status: 'active',
+      });
+      setAddOpen(false);
+      push('success', `${data.full_name} added to candidates`);
+      await load();
+    } catch (err: any) {
+      push('error', err?.message || 'Failed to create candidate');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const allSkills = useMemo(() => {
     const s = new Set<string>();
@@ -139,10 +197,26 @@ export default function CandidatesPage() {
     push('success', `Exported ${data.length} candidate(s) to CSV`);
   };
 
-  const bulkDelete = () => {
-    setCandidates((p) => p.filter((c) => !selected.has(c.id)));
-    push('success', `Removed ${selected.size} candidate(s)`);
+  const bulkDelete = async () => {
+    const ids = Array.from(selected);
+    let removed = 0;
+    for (const id of ids) {
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/candidates/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(api.getToken() ? { Authorization: `Bearer ${api.getToken()}` } : {}),
+          },
+        });
+        removed++;
+      } catch {
+        // continue with other items
+      }
+    }
+    push('success', `Removed ${removed} candidate(s)`);
     setSelected(new Set());
+    await load();
   };
 
   const columns: Column<Candidate>[] = [
@@ -195,6 +269,33 @@ export default function CandidatesPage() {
       key: 'status',
       label: 'Status',
       render: (c) => <Badge variant={STATUS_VARIANT[c.status] || 'default'} size="sm" dot>{c.status}</Badge>,
+    },
+    {
+      key: 'actions',
+      label: '',
+      sortable: false,
+      render: (c) => (
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={() => handleEnrich(c.id)}
+            disabled={enriching.has(c.id)}
+            className="px-2 py-1 text-[10px] font-semibold rounded bg-purple-50 text-purple-700 hover:bg-purple-100 disabled:opacity-50"
+            title="AI enrichment"
+          >
+            {enriching.has(c.id) ? '...' : 'Enrich'}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleMatch(c.id)}
+            disabled={matching.has(c.id)}
+            className="px-2 py-1 text-[10px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+            title="Run AI matching"
+          >
+            {matching.has(c.id) ? '...' : 'Match'}
+          </button>
+        </div>
+      ),
     },
   ];
 
@@ -282,11 +383,18 @@ export default function CandidatesPage() {
 
       {loading ? (
         <div className="space-y-2">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} height={56} />)}</div>
+      ) : error ? (
+        <EmptyState
+          icon={<UserPlus className="h-12 w-12" />}
+          title="Couldn't load candidates"
+          description={error}
+          action={<Button variant="primary" onClick={load}>Retry</Button>}
+        />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<UserPlus className="h-12 w-12" />}
-          title="No candidates found"
-          description="Try adjusting your filters or add your first candidate."
+          title={candidates.length === 0 ? "No candidates yet" : "No candidates found"}
+          description={candidates.length === 0 ? "Add your first candidate to start building your talent pool." : "Try adjusting your filters."}
           action={<Button variant="primary" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setAddOpen(true)}>Add candidate</Button>}
         />
       ) : view === 'table' ? (
@@ -344,23 +452,8 @@ export default function CandidatesPage() {
       <Modal isOpen={addOpen} onClose={() => setAddOpen(false)} title="Add new candidate" description="Create a candidate profile. They will appear in the screening queue.">
         <AddCandidateForm
           onCancel={() => setAddOpen(false)}
-          onSubmit={(data) => {
-            const newCandidate: Candidate = {
-              id: String(Date.now()),
-              full_name: data.full_name,
-              email: data.email,
-              phone: data.phone,
-              location: data.location,
-              status: 'active',
-              skills: data.skills,
-              experience_years: Number(data.experience_years) || 0,
-              score: 0,
-              created_at: new Date().toISOString().slice(0, 10),
-            };
-            setCandidates((p) => [newCandidate, ...p]);
-            setAddOpen(false);
-            push('success', `${data.full_name} added to candidates`);
-          }}
+          onSubmit={handleCreate}
+          submitting={submitting}
         />
       </Modal>
 
@@ -371,7 +464,7 @@ export default function CandidatesPage() {
   );
 }
 
-function AddCandidateForm({ onCancel, onSubmit }: { onCancel: () => void; onSubmit: (data: any) => void }) {
+function AddCandidateForm({ onCancel, onSubmit, submitting }: { onCancel: () => void; onSubmit: (data: any) => void; submitting?: boolean }) {
   const [form, setForm] = useState({ full_name: '', email: '', phone: '', location: '', skills: '', experience_years: '' });
   const [error, setError] = useState('');
 
@@ -379,6 +472,7 @@ function AddCandidateForm({ onCancel, onSubmit }: { onCancel: () => void; onSubm
     e.preventDefault();
     if (!form.full_name.trim() || !form.email.trim()) { setError('Name and email are required'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setError('Please enter a valid email'); return; }
+    setError('');
     onSubmit({ ...form, skills: form.skills.split(',').map((s) => s.trim()).filter(Boolean) });
   };
 
@@ -412,8 +506,8 @@ function AddCandidateForm({ onCancel, onSubmit }: { onCancel: () => void; onSubm
         </div>
       </div>
       <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
-        <Button variant="secondary" onClick={onCancel}>Cancel</Button>
-        <Button variant="primary" type="submit">Add candidate</Button>
+        <Button variant="secondary" onClick={onCancel} disabled={submitting}>Cancel</Button>
+        <Button variant="primary" type="submit" loading={submitting}>Add candidate</Button>
       </div>
     </form>
   );

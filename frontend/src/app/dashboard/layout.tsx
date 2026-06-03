@@ -18,7 +18,7 @@ import {
   Search,
   Sparkles,
 } from 'lucide-react';
-import { UserMenu, NotificationsBell, QuickActionsFab, GlobalSearch } from '@/components';
+import { UserMenu, NotificationsBell, QuickActionsFab, GlobalSearch, NotificationProvider } from '@/components';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -40,6 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
+    <NotificationProvider position="top-right" maxNotifications={5}>
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-slate-50">
       {sidebarOpen && (
         <div
@@ -139,5 +140,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <QuickActionsFab />
       </div>
     </div>
+    </NotificationProvider>
   );
 }

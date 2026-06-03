@@ -10,6 +10,7 @@ export type { Tab } from './ui/tabs';
 export { Modal } from './ui/modal';
 export { Loading, Skeleton, SkeletonCard } from './ui/loading';
 export { EmptyState } from './ui/empty-state';
+export { ErrorState } from './ui/error-state';
 export { Tooltip } from './ui/tooltip';
 export type { TooltipPosition } from './ui/tooltip';
 export { NotificationProvider, useNotification } from './ui/notification';

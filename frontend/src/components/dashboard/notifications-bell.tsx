@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Bell, Check, X } from 'lucide-react';
-import { useClickOutside } from '@/hooks';
+import { useClickOutside, useToast } from '@/hooks';
+import { api } from '@/services/api/client';
 
 interface Notification {
   id: string;
@@ -13,14 +14,6 @@ interface Notification {
   type: 'info' | 'success' | 'warning' | 'danger';
 }
 
-const INITIAL: Notification[] = [
-  { id: '1', title: 'New candidate match', message: 'Sarah Chen has a 96% match for Senior Engineer', time: '2m ago', read: false, type: 'success' },
-  { id: '2', title: 'Interview completed', message: 'AI evaluation complete for Michael Park', time: '15m ago', read: false, type: 'info' },
-  { id: '3', title: 'Pipeline alert', message: '3 candidates stuck in Screening for 7+ days', time: '1h ago', read: false, type: 'warning' },
-  { id: '4', title: 'Weekly report ready', message: 'Your hiring analytics for last week are available', time: '3h ago', read: true, type: 'info' },
-  { id: '5', title: 'Workflow triggered', message: 'Auto-screen workflow processed 12 new candidates', time: '1d ago', read: true, type: 'success' },
-];
-
 const dotColor: Record<Notification['type'], string> = {
   info: 'bg-blue-500',
   success: 'bg-green-500',
@@ -28,20 +21,100 @@ const dotColor: Record<Notification['type'], string> = {
   danger: 'bg-red-500',
 };
 
+function inferType(item: any): Notification['type'] {
+  const title = (item.title || item.type || '').toLowerCase();
+  if (title.includes('error') || title.includes('fail') || title.includes('reject')) return 'danger';
+  if (title.includes('warn') || title.includes('alert') || title.includes('stuck')) return 'warning';
+  if (title.includes('success') || title.includes('complete') || title.includes('match') || title.includes('hired')) return 'success';
+  return 'info';
+}
+
+function relTime(iso: string): string {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const d = Math.floor(hr / 24);
+  return `${d}d ago`;
+}
+
 export function NotificationsBell() {
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<Notification[]>(INITIAL);
+  const [items, setItems] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { push, ToastContainer } = useToast();
 
   useClickOutside(ref, () => setOpen(false));
 
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await api.listNotifications();
+      const list = (res?.data || []).map((n: any): Notification => ({
+        id: n.id,
+        title: n.title || 'Notification',
+        message: n.message || n.body || '',
+        time: relTime(n.created_at || n.timestamp),
+        read: !!n.read,
+        type: inferType(n),
+      }));
+      setItems(list);
+    } catch {
+      // silent — keep empty state
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const unread = items.filter((n) => !n.read).length;
 
-  const markAllRead = () => setItems((p) => p.map((n) => ({ ...n, read: true })));
-  const remove = (id: string) => setItems((p) => p.filter((n) => n.id !== id));
+  const markAllRead = async () => {
+    setItems((p) => p.map((n) => ({ ...n, read: true })));
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/notifications/read-all`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(api.getToken() ? { Authorization: `Bearer ${api.getToken()}` } : {}),
+        },
+      });
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const markRead = async (id: string) => {
+    setItems((p) => p.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/notifications/${id}/read`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(api.getToken() ? { Authorization: `Bearer ${api.getToken()}` } : {}),
+        },
+      });
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const remove = (id: string) => {
+    setItems((p) => p.filter((n) => n.id !== id));
+  };
 
   return (
     <div className="relative" ref={ref}>
+      <ToastContainer />
       <button
         type="button"
         onClick={() => setOpen((s) => !s)}
@@ -83,13 +156,16 @@ export function NotificationsBell() {
           </div>
 
           <div className="max-h-96 overflow-y-auto scrollbar-thin">
-            {items.length === 0 ? (
+            {loading && items.length === 0 ? (
+              <div className="py-12 text-center text-sm text-gray-500">Loading…</div>
+            ) : items.length === 0 ? (
               <div className="py-12 text-center text-sm text-gray-500">No notifications</div>
             ) : (
               items.map((n) => (
                 <div
                   key={n.id}
-                  className={`group flex items-start gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition ${!n.read ? 'bg-blue-50/40' : ''}`}
+                  className={`group flex items-start gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition cursor-pointer ${!n.read ? 'bg-blue-50/40' : ''}`}
+                  onClick={() => markRead(n.id)}
                 >
                   <span className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${dotColor[n.type]}`} />
                   <div className="flex-1 min-w-0">
@@ -99,7 +175,7 @@ export function NotificationsBell() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => remove(n.id)}
+                    onClick={(e) => { e.stopPropagation(); remove(n.id); }}
                     aria-label="Dismiss notification"
                     className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-200 transition"
                   >

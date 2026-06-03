@@ -31,16 +31,6 @@ const STATUSES = [
   { value: 'on_hold', label: 'On hold' },
 ];
 
-const SAMPLE = [
-  { id: '1', title: 'Senior Full-Stack Engineer', department: 'Engineering', location: 'San Francisco, CA', type: 'Full-time', salary_min: 160000, salary_max: 220000, status: 'open', applicants: 47, created_at: '2026-05-10' },
-  { id: '2', title: 'Product Designer', department: 'Design', location: 'Remote', type: 'Full-time', salary_min: 120000, salary_max: 160000, status: 'open', applicants: 32, created_at: '2026-05-12' },
-  { id: '3', title: 'Data Scientist', department: 'Data', location: 'New York, NY', type: 'Full-time', salary_min: 140000, salary_max: 190000, status: 'open', applicants: 28, created_at: '2026-05-15' },
-  { id: '4', title: 'Engineering Manager', department: 'Engineering', location: 'Seattle, WA', type: 'Full-time', salary_min: 200000, salary_max: 280000, status: 'open', applicants: 15, created_at: '2026-05-18' },
-  { id: '5', title: 'DevOps Engineer', department: 'Engineering', location: 'Remote', type: 'Contract', salary_min: 130000, salary_max: 170000, status: 'draft', applicants: 0, created_at: '2026-05-22' },
-  { id: '6', title: 'Marketing Lead', department: 'Marketing', location: 'Austin, TX', type: 'Full-time', salary_min: 110000, salary_max: 150000, status: 'open', applicants: 19, created_at: '2026-05-20' },
-  { id: '7', title: 'Customer Success Manager', department: 'Operations', location: 'Remote', type: 'Full-time', salary_min: 90000, salary_max: 130000, status: 'closed', applicants: 41, created_at: '2026-04-15' },
-];
-
 const formatSalary = (min: number, max: number) => {
   if (!min && !max) return '—';
   const fmt = (n: number) => `$${n >= 1000 ? `${Math.round(n / 1000)}k` : n}`;
@@ -50,18 +40,64 @@ const formatSalary = (min: number, max: number) => {
 export default function JobsPage() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [step, setStep] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [avgTime, setAvgTime] = useState<string | null>(null);
   const { push, ToastContainer } = useToast();
 
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const d = await api.listJobs();
+      setJobs(d?.data || []);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load jobs');
+      setJobs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    api.listJobs()
-      .then((d) => setJobs(d?.data && d.data.length > 0 ? d.data : SAMPLE))
-      .catch(() => setJobs(SAMPLE))
-      .finally(() => setLoading(false));
+    load();
+    api.getDashboard('30d')
+      .then((d) => {
+        const t = d?.avg_time_to_hire_days;
+        if (typeof t === 'number') setAvgTime(`${t}d`);
+      })
+      .catch(() => setAvgTime(null));
   }, []);
+
+  const handleCreate = async (data: any) => {
+    setSubmitting(true);
+    try {
+      await api.createJob({
+        title: data.title,
+        department: data.department,
+        location: data.location || undefined,
+        type: data.type,
+        salary_min: data.salary_min,
+        salary_max: data.salary_max,
+        description: data.description,
+        requirements: data.requirements,
+        skills: data.skills,
+        status: 'open',
+      });
+      setCreateOpen(false);
+      setStep(0);
+      push('success', `Job "${data.title}" created successfully`);
+      await load();
+    } catch (err: any) {
+      push('error', err?.message || 'Failed to create job');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const filtered = jobs.filter((j) => {
     if (statusFilter !== 'all' && j.status !== statusFilter) return false;
@@ -149,7 +185,7 @@ export default function JobsPage() {
           <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase">
             <Clock className="h-3.5 w-3.5" /> Avg Time
           </div>
-          <p className="text-2xl font-bold text-purple-600 mt-1">12d</p>
+          <p className="text-2xl font-bold text-purple-600 mt-1">{avgTime ?? '—'}</p>
         </div>
       </div>
 
@@ -179,11 +215,18 @@ export default function JobsPage() {
 
       {loading ? (
         <div className="space-y-2">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} height={56} />)}</div>
+      ) : error ? (
+        <EmptyState
+          icon={<Briefcase className="h-12 w-12" />}
+          title="Couldn't load jobs"
+          description={error}
+          action={<Button variant="primary" onClick={load}>Retry</Button>}
+        />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<Briefcase className="h-12 w-12" />}
-          title="No jobs found"
-          description="Create your first job posting to start receiving applications."
+          title={jobs.length === 0 ? "No jobs yet" : "No jobs found"}
+          description={jobs.length === 0 ? "Create your first job posting to start receiving applications." : "Try adjusting your filters."}
           action={<Button variant="primary" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setCreateOpen(true)}>Create job</Button>}
         />
       ) : (
@@ -192,25 +235,20 @@ export default function JobsPage() {
         </div>
       )}
 
-      <Modal isOpen={createOpen} onClose={() => setCreateOpen(false)} title="Create new job" description="A 3-step wizard to get your job posted in under a minute." size="lg">
+      <Modal isOpen={createOpen} onClose={() => !submitting && setCreateOpen(false)} title="Create new job" description="A 3-step wizard to get your job posted in under a minute." size="lg">
         <CreateJobWizard
           step={step}
           setStep={setStep}
-          onCancel={() => { setCreateOpen(false); setStep(0); }}
-          onComplete={(data) => {
-            const newJob = { id: String(Date.now()), ...data, applicants: 0, created_at: new Date().toISOString().slice(0, 10) };
-            setJobs((p) => [newJob, ...p]);
-            setCreateOpen(false);
-            setStep(0);
-            push('success', `Job "${data.title}" created successfully`);
-          }}
+          onCancel={() => { if (!submitting) { setCreateOpen(false); setStep(0); } }}
+          onComplete={handleCreate}
+          submitting={submitting}
         />
       </Modal>
     </div>
   );
 }
 
-function CreateJobWizard({ step, setStep, onCancel, onComplete }: { step: number; setStep: (n: number) => void; onCancel: () => void; onComplete: (data: any) => void }) {
+function CreateJobWizard({ step, setStep, onCancel, onComplete, submitting }: { step: number; setStep: (n: number) => void; onCancel: () => void; onComplete: (data: any) => void; submitting?: boolean }) {
   const [form, setForm] = useState({
     title: '',
     department: 'Engineering',
@@ -328,13 +366,13 @@ function CreateJobWizard({ step, setStep, onCancel, onComplete }: { step: number
       )}
 
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-        <Button variant="secondary" onClick={step === 0 ? onCancel : () => setStep(step - 1)}>
+        <Button variant="secondary" onClick={step === 0 ? onCancel : () => setStep(step - 1)} disabled={submitting}>
           {step === 0 ? 'Cancel' : 'Back'}
         </Button>
         {step < STEPS.length - 1 ? (
           <Button variant="primary" onClick={next} disabled={step === 0 && !form.title.trim()}>Continue</Button>
         ) : (
-          <Button variant="primary" onClick={submit} leftIcon={<Plus className="h-4 w-4" />}>Create job</Button>
+          <Button variant="primary" onClick={submit} loading={submitting} leftIcon={<Plus className="h-4 w-4" />}>Create job</Button>
         )}
       </div>
     </div>

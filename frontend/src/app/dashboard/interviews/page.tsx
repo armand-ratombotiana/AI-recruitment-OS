@@ -44,16 +44,6 @@ const TYPES = [
   { value: 'onsite', label: 'Onsite', icon: '🏢' },
 ];
 
-const SAMPLE = [
-  { id: '1', candidate_name: 'Sarah Chen', job_title: 'Senior Engineer', scheduled_at: '2026-06-03T14:00:00', duration_min: 60, type: 'technical', status: 'scheduled', panel: ['JD', 'AS'], location: 'Remote' },
-  { id: '2', candidate_name: 'Marcus Rivera', job_title: 'Product Manager', scheduled_at: '2026-06-03T15:30:00', duration_min: 45, type: 'phone', status: 'scheduled', panel: ['MJ'], location: 'Remote' },
-  { id: '3', candidate_name: 'Emily Nakamura', job_title: 'CTO', scheduled_at: '2026-06-04T10:00:00', duration_min: 90, type: 'panel', status: 'scheduled', panel: ['CEO', 'CFO', 'JD'], location: 'HQ' },
-  { id: '4', candidate_name: 'David Brown', job_title: 'Data Scientist', scheduled_at: '2026-06-04T13:00:00', duration_min: 60, type: 'technical', status: 'scheduled', panel: ['KW', 'LP'], location: 'Remote' },
-  { id: '5', candidate_name: 'Lisa Park', job_title: 'Designer', scheduled_at: '2026-05-30T11:00:00', duration_min: 60, type: 'onsite', status: 'completed', panel: ['DS', 'RT'], location: 'HQ' },
-  { id: '6', candidate_name: 'Ahmed Hassan', job_title: 'Backend Engineer', scheduled_at: '2026-05-29T15:00:00', duration_min: 60, type: 'technical', status: 'completed', panel: ['JD'], location: 'Remote' },
-  { id: '7', candidate_name: 'Priya Patel', job_title: 'PM Lead', scheduled_at: '2026-05-25T09:00:00', duration_min: 45, type: 'panel', status: 'completed', panel: ['CEO', 'VP'], location: 'HQ' },
-];
-
 const TYPE_ICON: Record<string, string> = { phone: '📞', technical: '💻', panel: '👥', onsite: '🏢' };
 const TYPE_COLOR: Record<string, string> = { phone: 'bg-blue-100 text-blue-700', technical: 'bg-purple-100 text-purple-700', panel: 'bg-amber-100 text-amber-700', onsite: 'bg-green-100 text-green-700' };
 
@@ -74,19 +64,75 @@ const formatDateTime = (iso: string) => {
 export default function InterviewsPage() {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<'list' | 'calendar'>('list');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { push, ToastContainer } = useToast();
 
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const d = await api.listInterviews();
+      setInterviews(d?.data || []);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load interviews');
+      setInterviews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    api.listInterviews()
-      .then((d) => setInterviews(d?.data && d.data.length > 0 ? d.data : SAMPLE))
-      .catch(() => setInterviews(SAMPLE))
-      .finally(() => setLoading(false));
+    load();
   }, []);
+
+  const handleStart = async (id: string) => {
+    try {
+      await api.startInterview(id);
+      push('success', 'Interview started');
+      await load();
+    } catch (err: any) {
+      push('error', err?.message || 'Failed to start interview');
+    }
+  };
+
+  const handleComplete = async (id: string) => {
+    try {
+      await api.completeInterview(id);
+      push('success', 'Interview marked complete');
+      await load();
+    } catch (err: any) {
+      push('error', err?.message || 'Failed to complete interview');
+    }
+  };
+
+  const handleCreate = async (data: any) => {
+    setSubmitting(true);
+    try {
+      await api.createInterview({
+        candidate_id: data.candidate_id || data.candidate_name,
+        job_id: data.job_id || data.job_title,
+        scheduled_at: data.scheduled_at,
+        duration_min: data.duration_min,
+        type: data.type,
+        panel: data.panel,
+        location: data.location,
+        status: 'scheduled',
+      });
+      setScheduleOpen(false);
+      push('success', `Interview scheduled with ${data.candidate_name}`);
+      await load();
+    } catch (err: any) {
+      push('error', err?.message || 'Failed to schedule interview');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const filtered = interviews.filter((i) => {
     if (statusFilter !== 'all' && i.status !== statusFilter) return false;
@@ -156,7 +202,9 @@ export default function InterviewsPage() {
       label: '',
       sortable: false,
       render: (i) => i.status === 'scheduled' ? (
-        <Button size="sm" variant="primary" leftIcon={<Play className="h-3 w-3" />}>Join</Button>
+        <Button size="sm" variant="primary" leftIcon={<Play className="h-3 w-3" />} onClick={(e) => { e.stopPropagation(); handleStart(i.id); }}>Start</Button>
+      ) : i.status === 'in_progress' ? (
+        <Button size="sm" variant="success" leftIcon={<CheckCircle2 className="h-3 w-3" />} onClick={(e) => { e.stopPropagation(); handleComplete(i.id); }}>Complete</Button>
       ) : null,
     },
   ];
@@ -229,11 +277,18 @@ export default function InterviewsPage() {
 
       {loading ? (
         <div className="space-y-2">{[1, 2, 3, 4].map((i) => <Skeleton key={i} height={56} />)}</div>
+      ) : error ? (
+        <EmptyState
+          icon={<Calendar className="h-12 w-12" />}
+          title="Couldn't load interviews"
+          description={error}
+          action={<Button variant="primary" onClick={load}>Retry</Button>}
+        />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<Calendar className="h-12 w-12" />}
-          title="No interviews found"
-          description="Schedule your first interview to get started."
+          title={interviews.length === 0 ? "No interviews yet" : "No interviews found"}
+          description={interviews.length === 0 ? "Schedule your first interview to get started." : "Try adjusting your filters."}
           action={<Button variant="primary" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setScheduleOpen(true)}>Schedule interview</Button>}
         />
       ) : view === 'list' ? (
@@ -244,15 +299,11 @@ export default function InterviewsPage() {
         <CalendarView interviews={filtered} />
       )}
 
-      <Modal isOpen={scheduleOpen} onClose={() => setScheduleOpen(false)} title="Schedule interview" description="Set up a new interview with a candidate." size="lg">
+      <Modal isOpen={scheduleOpen} onClose={() => !submitting && setScheduleOpen(false)} title="Schedule interview" description="Set up a new interview with a candidate." size="lg">
         <ScheduleForm
-          onCancel={() => setScheduleOpen(false)}
-          onSubmit={(data) => {
-            const newInterview = { id: String(Date.now()), ...data, status: 'scheduled', panel: data.panel.split(',').map((p: string) => p.trim()).filter(Boolean) };
-            setInterviews((p) => [newInterview, ...p]);
-            setScheduleOpen(false);
-            push('success', `Interview scheduled with ${data.candidate_name}`);
-          }}
+          onCancel={() => !submitting && setScheduleOpen(false)}
+          onSubmit={handleCreate}
+          submitting={submitting}
         />
       </Modal>
     </div>
@@ -309,7 +360,7 @@ function CalendarView({ interviews }: { interviews: any[] }) {
   );
 }
 
-function ScheduleForm({ onCancel, onSubmit }: { onCancel: () => void; onSubmit: (data: any) => void }) {
+function ScheduleForm({ onCancel, onSubmit, submitting }: { onCancel: () => void; onSubmit: (data: any) => void; submitting?: boolean }) {
   const [form, setForm] = useState({ candidate_name: '', job_title: '', date: '', time: '', duration_min: 60, type: 'technical', panel: '', location: 'Remote' });
 
   const update = (k: string, v: any) => setForm((p) => ({ ...p, [k]: v }));
@@ -318,7 +369,11 @@ function ScheduleForm({ onCancel, onSubmit }: { onCancel: () => void; onSubmit: 
     e.preventDefault();
     if (!form.candidate_name || !form.date || !form.time) return;
     const scheduled_at = new Date(`${form.date}T${form.time}`).toISOString();
-    onSubmit({ ...form, scheduled_at });
+    onSubmit({
+      ...form,
+      scheduled_at,
+      panel: form.panel.split(',').map((p: string) => p.trim()).filter(Boolean),
+    });
   };
 
   return (
@@ -362,8 +417,8 @@ function ScheduleForm({ onCancel, onSubmit }: { onCancel: () => void; onSubmit: 
         </div>
       </div>
       <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
-        <Button variant="secondary" onClick={onCancel}>Cancel</Button>
-        <Button variant="primary" type="submit" leftIcon={<Calendar className="h-4 w-4" />}>Schedule</Button>
+        <Button variant="secondary" onClick={onCancel} disabled={submitting}>Cancel</Button>
+        <Button variant="primary" type="submit" loading={submitting} leftIcon={<Calendar className="h-4 w-4" />}>Schedule</Button>
       </div>
     </form>
   );
