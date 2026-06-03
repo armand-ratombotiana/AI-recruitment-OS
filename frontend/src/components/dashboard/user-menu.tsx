@@ -14,10 +14,21 @@ interface Me {
   email?: string;
   plan?: string;
   role?: string;
+  is_demo?: boolean;
+  email_verified?: boolean;
+  avatar_url?: string | null;
 }
 
 function initials(name: string): string {
   return name.split(' ').filter(Boolean).map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
+}
+
+function formatRole(role?: string): string {
+  if (!role) return 'Member';
+  return role
+    .split('_')
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(' ');
 }
 
 export function UserMenu() {
@@ -52,7 +63,8 @@ export function UserMenu() {
 
   const name = me?.full_name || (loading ? 'Loading…' : 'Guest');
   const email = me?.email || '';
-  const plan = me?.plan || 'Pro Plan';
+  const plan = me?.plan || formatRole(me?.role);
+  const isDemo = me?.is_demo === true;
   const ini = initials(name);
 
   return (
@@ -78,10 +90,17 @@ export function UserMenu() {
           className="absolute right-0 top-12 z-50 w-64 rounded-xl border border-gray-200 bg-white shadow-xl fade-in-scale overflow-hidden"
         >
           <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-br from-blue-50 to-purple-50">
-            <p className="text-sm font-semibold text-gray-900 truncate">{name}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold text-gray-900 truncate flex-1">{name}</p>
+              {isDemo && (
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                  Demo
+                </span>
+              )}
+            </div>
             {email && <p className="text-xs text-gray-500 mt-0.5 truncate">{email}</p>}
             <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-              <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-600" aria-hidden="true" />
               {plan}
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, APIError } from '@/services/api/client';
+import { api, APIError, onUnauthorized } from '@/services/api/client';
 
 interface AuthState {
   user: any | null;
@@ -11,6 +11,22 @@ interface AuthState {
   logout: () => Promise<void>;
   ssoLogin: (provider: string, code: string, redirectUri: string) => Promise<void>;
   clearError: () => void;
+}
+
+const redirectToLogin = () => {
+  if (typeof window === 'undefined') return;
+  if (window.location.pathname.startsWith('/login') || window.location.pathname.startsWith('/register')) return;
+  const next = encodeURIComponent(window.location.pathname + window.location.search);
+  window.location.href = `/login?next=${next}`;
+};
+
+if (typeof window !== 'undefined') {
+  onUnauthorized(() => {
+    try {
+      useAuthStore.setState({ user: null, isAuthenticated: false });
+    } catch { /* noop */ }
+    redirectToLogin();
+  });
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -31,8 +47,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (email, fullName, password) => {
     set({ isLoading: true, error: null });
     try {
-      await api.register(email, fullName, password);
-      set({ isLoading: false });
+      const res = await api.register(email, fullName, password);
+      const token = (res as any)?.access_token;
+      if (token) api.setToken(token);
+      set({ isAuthenticated: !!token, isLoading: false });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
       throw err;

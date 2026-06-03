@@ -1,12 +1,18 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/stores';
 import { Eye, EyeOff, ArrowRight, Info, Bot, Sparkles } from 'lucide-react';
 import { Button } from '@/components';
 
-export default function LoginPage() {
+const ENABLE_DEMO = process.env.NEXT_PUBLIC_ENABLE_DEMO === 'true' || process.env.NODE_ENV !== 'production';
+
+function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams.get('next') || '/dashboard';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -52,7 +58,9 @@ export default function LoginPage() {
     setError('');
     try {
       await login(email, password);
-      window.location.href = '/dashboard';
+      const safeNext = nextPath.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/dashboard';
+      router.push(safeNext);
+      router.refresh();
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials and try again.');
     } finally {
@@ -144,9 +152,11 @@ export default function LoginPage() {
 
           <h2 className="text-3xl font-bold text-gray-900 mb-1">Welcome back</h2>
           <p className="text-gray-500 text-sm mb-1">Sign in to your recruitment workspace</p>
-          <button type="button" onClick={fillDemo} className="text-xs text-blue-600 hover:text-blue-700 font-medium mb-8 inline-flex items-center gap-1 link-underline">
-            <Sparkles className="h-3 w-3" /> Use demo credentials
-          </button>
+          {ENABLE_DEMO && (
+            <button type="button" onClick={fillDemo} className="text-xs text-blue-600 hover:text-blue-700 font-medium mb-8 inline-flex items-center gap-1 link-underline">
+              <Sparkles className="h-3 w-3" /> Use demo credentials
+            </button>
+          )}
 
           {error && (
             <div role="alert" className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-start gap-2">
@@ -321,5 +331,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

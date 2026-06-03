@@ -1,5 +1,13 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+type UnauthorizedHandler = () => void;
+const unauthorizedHandlers: Set<UnauthorizedHandler> = new Set();
+
+export function onUnauthorized(handler: UnauthorizedHandler) {
+  unauthorizedHandlers.add(handler);
+  return () => unauthorizedHandlers.delete(handler);
+}
+
 class APIClient {
   private token: string | null = null;
 
@@ -21,8 +29,42 @@ class APIClient {
     const headers: Record<string, string> = { 'Content-Type': 'application/json', ...(fetchOptions.headers as Record<string, string>) };
     const token = this.getToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    const response = await fetch(url, { ...fetchOptions, headers });
-    if (!response.ok) throw new APIError(`API error: ${response.status}`, response.status);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+    let response: Response;
+    try {
+      response = await fetch(url, { ...fetchOptions, headers, signal: controller.signal });
+    } catch (e) {
+      clearTimeout(timeout);
+      if (e instanceof DOMException && e.name === 'AbortError') {
+        throw new APIError('Request timed out', 0);
+      }
+      throw new APIError('Network error', 0);
+    }
+    clearTimeout(timeout);
+
+    if (response.status === 401) {
+      this.setToken(null);
+      unauthorizedHandlers.forEach((h) => {
+        try { h(); } catch { /* noop */ }
+      });
+      let detail = '';
+      try { detail = (await response.json())?.detail || ''; } catch { /* noop */ }
+      throw new APIError(detail || 'Unauthorized', 401);
+    }
+
+    if (!response.ok) {
+      let detail = '';
+      try {
+        const body = await response.json();
+        detail = body?.detail || body?.message || '';
+        if (Array.isArray(detail)) detail = detail.map((d) => d.msg).join('; ');
+      } catch { /* noop */ }
+      throw new APIError(detail || `API error: ${response.status}`, response.status);
+    }
+
+    if (response.status === 204) return undefined as T;
     return response.json();
   }
 
