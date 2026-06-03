@@ -5,6 +5,7 @@ import os
 # Ensure the backend directory is in the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -22,11 +23,18 @@ from shared.core.health import health_checker
 from shared.core.validation import ValidationMiddleware
 
 settings = get_settings()
+logger = logging.getLogger("airos.main")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     print(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+    # Seed the demo account (idempotent, non-fatal on failure).
+    try:
+        from apps.auth_service.main import seed_demo_on_startup
+        await seed_demo_on_startup()
+    except Exception as exc:
+        logger.warning("Demo seed on startup failed: %s", exc)
     yield
     print("Shutting down...")
 
@@ -75,6 +83,7 @@ app = FastAPI(
         {"name": "Billing", "description": "Subscription plans, invoices, and usage tracking"},
         {"name": "Search", "description": "Semantic vector search for candidates and jobs"},
         {"name": "WebSocket", "description": "Real-time collaboration via WebSocket connections"},
+        {"name": "Mailing", "description": "Transactional email delivery (SMTP/mock) for account validation, password resets, and notifications"},
         {"name": "Health", "description": "Service health checks and readiness probes"},
     ],
     lifespan=lifespan,
@@ -189,6 +198,7 @@ def include_router_safe(app: FastAPI, module_path: str, attr: str, prefix: str, 
 
 print("Loading routers...")
 include_router_safe(app, "apps.auth_service.main", "router", "/api/v1/auth", ["Auth"])
+include_router_safe(app, "apps.mailing_service.main", "router", "/api/v1/mailing", ["Mailing"])
 include_router_safe(app, "apps.tenant_service.main", "router", "/api/v1/tenants", ["Tenants"])
 include_router_safe(app, "apps.user_service.main", "router", "/api/v1/users", ["Users"])
 include_router_safe(app, "apps.candidate_service.main", "router", "/api/v1/candidates", ["Candidates"])

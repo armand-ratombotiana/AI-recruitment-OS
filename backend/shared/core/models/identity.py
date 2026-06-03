@@ -31,7 +31,7 @@ class User(SQLModel, table=True):
 
     id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     tenant_id: str = SQLField(index=True)
-    email: str = SQLField(index=True)
+    email: str = SQLField(index=True, unique=True)
     full_name: str
     hashed_password: str
     role: UserRole = UserRole.CANDIDATE
@@ -41,6 +41,12 @@ class User(SQLModel, table=True):
     mfa_enabled: bool = False
     mfa_secret: str | None = None
     last_login_at: datetime | None = None
+    email_verified: bool = False
+    email_verified_at: datetime | None = None
+    is_demo: bool = False
+    failed_login_attempts: int = 0
+    locked_until: datetime | None = None
+    deactivated_at: datetime | None = None
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 

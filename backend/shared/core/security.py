@@ -27,15 +27,17 @@ except ImportError:
         return _pwd_context.verify(plain, hashed)
 
 def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
+    import secrets
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire, "type": "access"})
+    to_encode.update({"exp": expire, "type": "access", "iat": datetime.now(timezone.utc), "jti": secrets.token_urlsafe(8)})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 def create_refresh_token(data: dict[str, Any]) -> str:
+    import secrets
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
-    to_encode.update({"exp": expire, "type": "refresh"})
+    to_encode.update({"exp": expire, "type": "refresh", "iat": datetime.now(timezone.utc), "jti": secrets.token_urlsafe(16)})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 def decode_token(token: str) -> dict[str, Any] | None:

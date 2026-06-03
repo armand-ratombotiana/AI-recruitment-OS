@@ -45,6 +45,32 @@ class Settings(BaseSettings):
 
     TENANT_HEADER: str = "X-Tenant-ID"
 
+    # Mailing
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = "noreply@airos.io"
+    SMTP_FROM_NAME: str = "AI-ROS"
+    SMTP_USE_TLS: bool = True
+    SMTP_USE_SSL: bool = False
+    MAIL_MOCK_MODE: bool = True
+
+    # Auth hardening
+    AUTH_MAX_FAILED_ATTEMPTS: int = 5
+    AUTH_LOCKOUT_BASE_SECONDS: int = 30
+    AUTH_LOCKOUT_MAX_SECONDS: int = 3600
+    AUTH_LOGIN_RATE_LIMIT_PER_MIN: int = 10
+    AUTH_REGISTER_RATE_LIMIT_PER_MIN: int = 5
+    AUTH_FORGOT_PASSWORD_RATE_LIMIT_PER_MIN: int = 3
+    EMAIL_VERIFY_TOKEN_HOURS: int = 24
+    PASSWORD_RESET_TOKEN_HOURS: int = 2
+
+    # Demo seed
+    DEMO_EMAIL: str = "demo@airos.io"
+    DEMO_PASSWORD: str = "demo1234"
+    DEMO_ENABLED: bool = True
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "case_sensitive": True, "extra": "ignore"}
 
 @lru_cache
