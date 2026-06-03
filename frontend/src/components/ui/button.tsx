@@ -1,21 +1,71 @@
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline' | 'success';
+  size?: 'sm' | 'md' | 'lg' | 'icon';
+  loading?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  fullWidth?: boolean;
 }
 
-export function Button({ variant = 'primary', size = 'md', className, children, ...props }: ButtonProps) {
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  className,
+  children,
+  loading = false,
+  leftIcon,
+  rightIcon,
+  fullWidth = false,
+  disabled,
+  type = 'button',
+  ...props
+}: ButtonProps) {
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm',
-    secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
-    ghost: 'text-gray-600 hover:bg-gray-100',
-    danger: 'bg-red-600 text-white hover:bg-red-700',
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-sm',
+    secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 active:bg-gray-100',
+    ghost: 'text-gray-600 hover:bg-gray-100 active:bg-gray-200',
+    danger: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm',
+    outline: 'border border-blue-600 text-blue-600 hover:bg-blue-50 active:bg-blue-100',
+    success: 'bg-green-600 text-white hover:bg-green-700 active:bg-green-800 shadow-sm',
   };
-  const sizes = { sm: 'px-3 py-1.5 text-sm', md: 'px-4 py-2 text-sm', lg: 'px-6 py-3 text-base' };
+  const sizes = {
+    sm: 'h-8 px-3 text-xs gap-1.5',
+    md: 'h-10 px-4 text-sm gap-2',
+    lg: 'h-12 px-6 text-base gap-2',
+    icon: 'h-10 w-10 p-0',
+  };
+
+  const isDisabled = disabled || loading;
+
   return (
-    <button className={cn('inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50', variants[variant], sizes[size], className)} {...props}>
-      {children}
+    <button
+      type={type}
+      className={cn(
+        'inline-flex items-center justify-center rounded-lg font-medium transition-colors',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+        'disabled:opacity-50 disabled:pointer-events-none',
+        variants[variant],
+        sizes[size],
+        fullWidth && 'w-full',
+        className
+      )}
+      disabled={isDisabled}
+      aria-busy={loading || undefined}
+      aria-disabled={isDisabled || undefined}
+      {...props}
+    >
+      {loading ? (
+        <span
+          className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+          aria-hidden="true"
+        />
+      ) : (
+        leftIcon && <span className="inline-flex shrink-0" aria-hidden="true">{leftIcon}</span>
+      )}
+      {children && <span className={cn(loading && 'sr-only')}>{children}</span>}
+      {!loading && rightIcon && <span className="inline-flex shrink-0" aria-hidden="true">{rightIcon}</span>}
     </button>
   );
 }

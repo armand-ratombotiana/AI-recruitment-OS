@@ -1,6 +1,6 @@
 interface StatsCardProps {
   title: string;
-  value: string;
+  value: React.ReactNode;
   change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
   icon: React.ReactNode;

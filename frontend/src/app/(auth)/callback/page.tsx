@@ -27,7 +27,7 @@ function AuthCallbackContent() {
       }
 
       if (!code || !provider) {
-        setError('Missing authorization code or provider');
+        setError('Missing authorization code or provider. Please use the SSO buttons on the login page.');
         setLoading(false);
         return;
       }
