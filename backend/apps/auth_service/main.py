@@ -40,6 +40,7 @@ from shared.core.security import (
     decode_token,
     hash_api_key,
 )
+from shared.audit import audit
 
 from apps.auth_service.helpers import (
     auth_rate_limiter,
@@ -375,6 +376,16 @@ async def register(
         ).replace(tzinfo=None),
     )
     db.add(session)
+    await audit(
+        db,
+        tenant_id=user.tenant_id,
+        action="user.register",
+        resource_type="user",
+        resource_id=user.id,
+        actor_id=user.id,
+        actor_email=user.email,
+        ip_address=request.client.host if request.client else None,
+    )
     await db.commit()
 
     # Send verification email in the background
@@ -507,6 +518,16 @@ async def login(
     db.add(session)
     user.last_login_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.add(user)
+    await audit(
+        db,
+        tenant_id=user.tenant_id,
+        action="user.login",
+        resource_type="user",
+        resource_id=user.id,
+        actor_id=user.id,
+        actor_email=user.email,
+        ip_address=request.client.host if request.client else None,
+    )
     await db.commit()
 
     return LoginResponse(

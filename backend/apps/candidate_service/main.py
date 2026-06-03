@@ -19,6 +19,7 @@ from shared.core.models.candidate import (
     CandidateSkill,
 )
 from shared.core.security import require_tenant, require_user, decode_token
+from shared.audit import audit
 
 
 # ── Auth Dependency ────────────────────────────────────────────────────────────
@@ -284,6 +285,7 @@ async def create_candidate(
     data: CandidateCreateRequest,
     db: AsyncSession = Depends(get_db_dependency),
     tenant_id: str = Depends(require_tenant),
+    user: dict = Depends(require_user),
 ):
     # Check for duplicate email within the caller's tenant
     existing = await db.execute(
@@ -320,6 +322,15 @@ async def create_candidate(
 
     await db.flush()
     await db.refresh(candidate)
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.create",
+        resource_type="candidate",
+        resource_id=candidate.id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+    )
 
     return CandidateCreateResponse(
         id=candidate.id,
@@ -336,6 +347,7 @@ async def update_candidate(
     data: CandidateUpdateRequest,
     db: AsyncSession = Depends(get_db_dependency),
     tenant_id: str = Depends(require_tenant),
+    user: dict = Depends(require_user),
 ):
     result = await db.execute(
         select(Candidate).where(Candidate.id == candidate_id, Candidate.tenant_id == tenant_id)
@@ -377,6 +389,16 @@ async def update_candidate(
         profile.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
 
     await db.flush()
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.update",
+        resource_type="candidate",
+        resource_id=candidate_id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+        details={"fields": list(data.model_dump(exclude_unset=True).keys())},
+    )
     return CandidateUpdateResponse(id=candidate_id, updated=True)
 
 
@@ -385,6 +407,7 @@ async def delete_candidate(
     candidate_id: str,
     db: AsyncSession = Depends(get_db_dependency),
     tenant_id: str = Depends(require_tenant),
+    user: dict = Depends(require_user),
 ):
     result = await db.execute(
         select(Candidate).where(Candidate.id == candidate_id, Candidate.tenant_id == tenant_id)
@@ -395,6 +418,15 @@ async def delete_candidate(
 
     await db.delete(candidate)
     await db.flush()
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.delete",
+        resource_type="candidate",
+        resource_id=candidate_id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+    )
     return CandidateDeleteResponse(id=candidate_id, deleted=True)
 
 

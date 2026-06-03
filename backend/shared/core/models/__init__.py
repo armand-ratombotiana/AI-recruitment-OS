@@ -39,6 +39,12 @@ from shared.core.models.workflow import (
 from shared.core.models.analytics import (
     Metric, Dashboard, Report,
 )
+from shared.core.models.compliance import (
+    AuditEntry,
+    ConsentRecord,
+    DataExportRequest,
+    DataDeletionRequest,
+)
 
 __all__ = [
     "User", "Session", "APIKey", "Credential",
@@ -64,4 +70,5 @@ __all__ = [
     "CodingSession", "CodeSnapshot", "ExecutionResult", "PPEEvaluation",
     "Workflow", "WorkflowStep", "WorkflowExecution",
     "Metric", "Dashboard", "Report",
+    "AuditEntry", "ConsentRecord", "DataExportRequest", "DataDeletionRequest",
 ]
