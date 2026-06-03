@@ -38,4 +38,5 @@ export { NotificationsBell } from './dashboard/notifications-bell';
 export { QuickActionsFab } from './dashboard/quick-actions-fab';
 export { GlobalSearch } from './dashboard/global-search';
 export { Breadcrumb } from './dashboard/breadcrumb';
+export { OnboardingChecklist } from './dashboard/onboarding-checklist';
 export { useCountUp, useToast, useWebSocket, useDebouncedValue, useLocalStorage, useClickOutside } from '@/hooks';

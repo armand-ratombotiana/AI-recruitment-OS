@@ -29,6 +29,7 @@ import {
   Badge,
   useCountUp,
   useToast,
+  OnboardingChecklist,
 } from '@/components';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -244,6 +245,8 @@ export default function DashboardPage() {
       </div>
 
       <Breadcrumb />
+
+      <OnboardingChecklist />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard title="Total Candidates" value={<AnimatedStat value={totalCandidates} />} icon={<Users className="h-5 w-5" />} />
