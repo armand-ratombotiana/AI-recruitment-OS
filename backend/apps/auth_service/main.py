@@ -6,7 +6,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Header, status
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,11 +28,31 @@ settings = get_settings()
 
 # ── Request Models ──────────────────────────────────────────────────────────────
 
+import re
+
+def _validate_password_complexity(password: str) -> str:
+    """Validate password has uppercase, lowercase, digit, and special character."""
+    if not re.search(r"[A-Z]", password):
+        raise ValueError("Password must contain at least one uppercase letter")
+    if not re.search(r"[a-z]", password):
+        raise ValueError("Password must contain at least one lowercase letter")
+    if not re.search(r"\d", password):
+        raise ValueError("Password must contain at least one digit")
+    if not re.search(r"[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>\/?`~]", password):
+        raise ValueError("Password must contain at least one special character (!@#$%^&* etc.)")
+    return password
+
+
 class RegisterRequest(BaseModel):
     email: EmailStr = Field(..., description="User email address", examples=["user@acme.com"])
     full_name: str = Field(..., min_length=1, max_length=255, description="Full name", examples=["Jane Recruiter"])
-    password: str = Field(..., min_length=8, max_length=128, description="Password (min 8 chars)", examples=["SecureP@ss123"])
+    password: str = Field(..., min_length=8, max_length=128, description="Password (min 8 chars, must include uppercase, lowercase, digit, special char)", examples=["SecureP@ss123"])
     role: str = Field(default="candidate", description="User role", examples=["candidate"])
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        return _validate_password_complexity(v)
 
     model_config = {"json_schema_extra": {"examples": [
         {"email": "user@acme.com", "full_name": "Jane Recruiter", "password": "SecureP@ss123", "role": "candidate"}
