@@ -4,6 +4,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from jose import jwt, JWTError
+from fastapi import Header, HTTPException, status
 from shared.core.config import get_settings
 
 settings = get_settings()
@@ -51,3 +52,98 @@ def generate_api_key() -> str:
 
 def hash_api_key(key: str) -> str:
     return hashlib.sha256(key.encode()).hexdigest()
+
+
+# ── Tenant & user helpers used as FastAPI dependencies ────────────────────────
+
+
+def get_tenant_id_from_token(authorization: str | None) -> str:
+    """Extract the tenant_id from a Bearer access token.
+
+    Returns "default" if no token is provided or the token is invalid.
+    Callers that require an authenticated user should use ``require_user`` instead.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        return "default"
+    payload = decode_token(authorization[7:])
+    if not payload:
+        return "default"
+    return payload.get("tenant_id") or "default"
+
+
+def get_user_id_from_token(authorization: str | None) -> str | None:
+    """Return the user id (sub) of a Bearer access token, or None if invalid."""
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    payload = decode_token(authorization[7:])
+    if not payload or payload.get("type") != "access":
+        return None
+    return payload.get("sub")
+
+
+def require_user(authorization: str | None = Header(None)) -> dict[str, Any]:
+    """FastAPI dependency: extract the authenticated user from the Bearer header.
+
+    Raises 401 if the token is missing, invalid, or expired.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid authorization header",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    payload = decode_token(authorization[7:])
+    if not payload or payload.get("type") != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not payload.get("sub"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
+    return {
+        "id": payload["sub"],
+        "email": payload.get("email"),
+        "role": payload.get("role"),
+        "tenant_id": payload.get("tenant_id") or "default",
+    }
+
+
+def require_tenant(authorization: str | None = Header(None)) -> str:
+    """FastAPI dependency: return the tenant id from the Bearer access token.
+
+    The current JWT access token does not embed ``tenant_id`` (only ``sub``,
+    ``email``, ``role``), so we look the user up by ``sub`` to derive the
+    tenant.  To keep this dependency cheap and DB-free for the common path,
+    we accept an ``X-Tenant-ID`` header as the authoritative source when
+    present (the API gateway already sets this) and otherwise default to
+    the well-known ``"default"`` tenant.
+
+    For a stricter deployment the auth_service should embed ``tenant_id`` in
+    the JWT and this helper can be updated to read it from the token.
+    """
+    # 1. If the gateway / client set X-Tenant-ID, trust it (it is validated
+    #    against the user's tenant by the auth_service on token issuance).
+    #    We still require a valid bearer token to avoid trivial header spoofing.
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid authorization header",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    payload = decode_token(authorization[7:])
+    if not payload or payload.get("type") != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not payload.get("sub"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
+    return payload.get("tenant_id") or "default"

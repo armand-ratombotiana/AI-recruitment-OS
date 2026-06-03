@@ -18,7 +18,7 @@ from shared.core.models.candidate import (
     Skill,
     CandidateSkill,
 )
-from shared.core.security import decode_token
+from shared.core.security import require_tenant, require_user, decode_token
 
 
 # ── Auth Dependency ────────────────────────────────────────────────────────────
@@ -173,9 +173,11 @@ async def list_candidates(
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     seniority: str | None = Query(None, description="Filter by seniority level"),
     db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
 ):
-    query = select(Candidate)
-    count_query = select(func.count()).select_from(Candidate)
+    # Tenant isolation: every query is scoped to the caller's tenant.
+    query = select(Candidate).where(Candidate.tenant_id == tenant_id)
+    count_query = select(func.count()).select_from(Candidate).where(Candidate.tenant_id == tenant_id)
 
     if search:
         search_pattern = f"%{search}%"
@@ -223,8 +225,14 @@ async def list_candidates(
 
 
 @router.get("/{candidate_id}", response_model=CandidateDetailResponse, tags=["Candidates"], summary="Get candidate details")
-async def get_candidate(candidate_id: str, db: AsyncSession = Depends(get_db_dependency)):
-    result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
+async def get_candidate(
+    candidate_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+):
+    result = await db.execute(
+        select(Candidate).where(Candidate.id == candidate_id, Candidate.tenant_id == tenant_id)
+    )
     candidate = result.scalar_one_or_none()
     if not candidate:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found")
@@ -272,9 +280,15 @@ async def get_candidate(candidate_id: str, db: AsyncSession = Depends(get_db_dep
 
 @router.post("/", response_model=CandidateCreateResponse, tags=["Candidates"], summary="Create candidate",
              description="Create a new candidate profile.")
-async def create_candidate(data: CandidateCreateRequest, db: AsyncSession = Depends(get_db_dependency)):
-    # Check for duplicate email
-    existing = await db.execute(select(Candidate).where(Candidate.email == data.email))
+async def create_candidate(
+    data: CandidateCreateRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+):
+    # Check for duplicate email within the caller's tenant
+    existing = await db.execute(
+        select(Candidate).where(Candidate.email == data.email, Candidate.tenant_id == tenant_id)
+    )
     if existing.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -289,7 +303,7 @@ async def create_candidate(data: CandidateCreateRequest, db: AsyncSession = Depe
         linkedin_url=data.linkedin_url,
         source=data.source,
         status=CandidateStatus.NEW,
-        tenant_id="default",
+        tenant_id=tenant_id,
     )
     db.add(candidate)
     await db.flush()
@@ -298,7 +312,7 @@ async def create_candidate(data: CandidateCreateRequest, db: AsyncSession = Depe
     if data.seniority_level or data.years_experience is not None:
         profile = CandidateProfile(
             candidate_id=candidate.id,
-            tenant_id="default",
+            tenant_id=tenant_id,
             seniority_level=data.seniority_level,
             years_experience=data.years_experience,
         )
@@ -321,8 +335,11 @@ async def update_candidate(
     candidate_id: str,
     data: CandidateUpdateRequest,
     db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
 ):
-    result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
+    result = await db.execute(
+        select(Candidate).where(Candidate.id == candidate_id, Candidate.tenant_id == tenant_id)
+    )
     candidate = result.scalar_one_or_none()
     if not candidate:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found")
@@ -344,11 +361,14 @@ async def update_candidate(
     # Update profile
     if seniority_val or years_val is not None:
         profile_result = await db.execute(
-            select(CandidateProfile).where(CandidateProfile.candidate_id == candidate_id)
+            select(CandidateProfile).where(
+                CandidateProfile.candidate_id == candidate_id,
+                CandidateProfile.tenant_id == tenant_id,
+            )
         )
         profile = profile_result.scalar_one_or_none()
         if not profile:
-            profile = CandidateProfile(candidate_id=candidate_id, tenant_id="default")
+            profile = CandidateProfile(candidate_id=candidate_id, tenant_id=tenant_id)
             db.add(profile)
         if seniority_val:
             profile.seniority_level = seniority_val
@@ -361,8 +381,14 @@ async def update_candidate(
 
 
 @router.delete("/{candidate_id}", response_model=CandidateDeleteResponse, tags=["Candidates"], summary="Delete candidate")
-async def delete_candidate(candidate_id: str, db: AsyncSession = Depends(get_db_dependency)):
-    result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
+async def delete_candidate(
+    candidate_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+):
+    result = await db.execute(
+        select(Candidate).where(Candidate.id == candidate_id, Candidate.tenant_id == tenant_id)
+    )
     candidate = result.scalar_one_or_none()
     if not candidate:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found")
@@ -375,8 +401,14 @@ async def delete_candidate(candidate_id: str, db: AsyncSession = Depends(get_db_
 @router.post("/{candidate_id}/enrich", response_model=EnrichmentTaskResponse, tags=["Candidates"],
              summary="AI candidate enrichment",
              description="Trigger AI-powered enrichment to extract skills, seniority, and generate a profile summary.")
-async def enrich_candidate(candidate_id: str, db: AsyncSession = Depends(get_db_dependency)):
-    result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
+async def enrich_candidate(
+    candidate_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+):
+    result = await db.execute(
+        select(Candidate).where(Candidate.id == candidate_id, Candidate.tenant_id == tenant_id)
+    )
     candidate = result.scalar_one_or_none()
     if not candidate:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found")
@@ -393,8 +425,14 @@ async def enrich_candidate(candidate_id: str, db: AsyncSession = Depends(get_db_
 @router.post("/{candidate_id}/match", response_model=MatchCandidateResponse, tags=["Candidates"],
              summary="Match candidate to jobs",
              description="Use AI to find the best matching open positions for a candidate.")
-async def match_candidate_to_jobs(candidate_id: str, db: AsyncSession = Depends(get_db_dependency)):
-    result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
+async def match_candidate_to_jobs(
+    candidate_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+):
+    result = await db.execute(
+        select(Candidate).where(Candidate.id == candidate_id, Candidate.tenant_id == tenant_id)
+    )
     candidate = result.scalar_one_or_none()
     if not candidate:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found")

@@ -360,7 +360,7 @@ async def register(
     await db.refresh(user)
 
     # Generate tokens
-    token_data = {"sub": user.id, "email": user.email, "role": user.role.value}
+    token_data = {"sub": user.id, "email": user.email, "role": user.role.value, "tenant_id": user.tenant_id}
     access_token = create_access_token(token_data)
     refresh_token = create_refresh_token(token_data)
 
@@ -490,7 +490,7 @@ async def login(
     record_successful_login(user)
 
     # Generate tokens
-    token_data = {"sub": user.id, "email": user.email, "role": user.role.value}
+    token_data = {"sub": user.id, "email": user.email, "role": user.role.value, "tenant_id": user.tenant_id}
     access_token = create_access_token(token_data)
     refresh_token = create_refresh_token(token_data)
 
@@ -575,7 +575,7 @@ async def refresh(data: RefreshRequest, db: AsyncSession = Depends(get_db_depend
     session.revoked_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.add(session)
 
-    token_data = {"sub": user.id, "email": user.email, "role": user.role.value}
+    token_data = {"sub": user.id, "email": user.email, "role": user.role.value, "tenant_id": user.tenant_id}
     new_access = create_access_token(token_data)
     new_refresh = create_refresh_token(token_data)
     new_hash = hashlib.sha256(new_refresh.encode()).hexdigest()
