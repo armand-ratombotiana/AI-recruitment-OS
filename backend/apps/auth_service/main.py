@@ -19,7 +19,6 @@ from __future__ import annotations
 import hashlib
 import logging
 import re
-import secrets
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 
@@ -41,6 +40,12 @@ from shared.core.security import (
     hash_api_key,
 )
 from shared.audit import audit
+from shared.auth.mfa import (
+    generate_backup_codes,
+    generate_secret,
+    otpauth_url,
+    verify_totp,
+)
 
 from apps.auth_service.helpers import (
     auth_rate_limiter,
@@ -166,7 +171,12 @@ class DeactivateRequest(BaseModel):
 
 
 class MFAVerifyRequest(BaseModel):
+    user_id: str = Field(..., description="User ID whose secret to verify against")
     code: str = Field(..., min_length=6, max_length=6, description="6-digit TOTP code", examples=["123456"])
+
+
+class MFAEnableRequest(BaseModel):
+    user_id: str = Field(..., description="User ID to enable MFA for")
 
 
 # ── Response Models ─────────────────────────────────────────────────────────────
@@ -228,13 +238,14 @@ class ResetPasswordResponse(BaseModel):
 
 
 class MFAEnableResponse(BaseModel):
-    secret: str = Field(..., description="TOTP secret key")
-    qr_code: str = Field(..., description="Base64-encoded QR code image")
+    secret: str = Field(..., description="TOTP secret key (base32)")
+    otpauth_url: str = Field(..., description="otpauth:// URL for authenticator apps")
     backup_codes: list[str] = Field(..., description="One-time backup codes")
 
 
 class MFAVerifyResponse(BaseModel):
-    verified: bool = Field(default=True)
+    verified: bool
+    message: str | None = None
 
 
 class MeResponse(BaseModel):
@@ -900,7 +911,7 @@ async def reactivate(
     return MessageResponse(message="Account has been reactivated.")
 
 
-# ── MFA Endpoints (kept as before) ────────────────────────────────────────────
+# ── MFA Endpoints ──────────────────────────────────────────────────────────────
 
 
 @router.post(
@@ -908,14 +919,40 @@ async def reactivate(
     response_model=MFAEnableResponse,
     tags=["Auth"],
     summary="Enable MFA",
+    description=(
+        "Generate a TOTP secret for the given user and return it (base32) along "
+        "with an otpauth:// URL the user's authenticator app can consume.  The "
+        "secret is persisted to ``user.mfa_secret`` but MFA is not yet marked "
+        "as enabled — the user must call /mfa/verify with a valid code first."
+    ),
 )
-async def enable_mfa():
-    secret = secrets.token_hex(20).upper()
-    backup_codes = [secrets.token_hex(3) for _ in range(8)]
+async def enable_mfa(
+    data: MFAEnableRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    result = await db.execute(select(User).where(User.id == data.user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    secret = generate_secret()
+    user.mfa_secret = secret
+    db.add(user)
+    await audit(
+        db,
+        tenant_id=user.tenant_id,
+        action="mfa.enabled",
+        resource_type="user",
+        resource_id=user.id,
+        actor_id=user.id,
+        actor_email=user.email,
+    )
+    await db.commit()
+
     return MFAEnableResponse(
         secret=secret,
-        qr_code="data:image/png;base64,...",
-        backup_codes=backup_codes,
+        otpauth_url=otpauth_url(secret=secret, account=user.email),
+        backup_codes=generate_backup_codes(),
     )
 
 
@@ -924,9 +961,55 @@ async def enable_mfa():
     response_model=MFAVerifyResponse,
     tags=["Auth"],
     summary="Verify MFA code",
+    description=(
+        "Verify a 6-digit TOTP code against the user's stored secret.  Returns "
+        "``verified=true`` and flips ``user.mfa_enabled`` to true on the first "
+        "successful verification.  A 30-second clock-skew window is allowed."
+    ),
 )
-async def verify_mfa(data: MFAVerifyRequest):
-    return MFAVerifyResponse(verified=True)
+async def verify_mfa(
+    data: MFAVerifyRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    result = await db.execute(select(User).where(User.id == data.user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if not user.mfa_secret:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="MFA is not enabled for this user",
+        )
+
+    if not verify_totp(user.mfa_secret, data.code):
+        await audit(
+            db,
+            tenant_id=user.tenant_id,
+            action="mfa.verify",
+            resource_type="user",
+            resource_id=user.id,
+            actor_id=user.id,
+            actor_email=user.email,
+            outcome="failure",
+        )
+        await db.commit()
+        return MFAVerifyResponse(verified=False, message="Invalid or expired code")
+
+    if not user.mfa_enabled:
+        user.mfa_enabled = True
+        db.add(user)
+
+    await audit(
+        db,
+        tenant_id=user.tenant_id,
+        action="mfa.verify",
+        resource_type="user",
+        resource_id=user.id,
+        actor_id=user.id,
+        actor_email=user.email,
+    )
+    await db.commit()
+    return MFAVerifyResponse(verified=True, message="Code accepted")
 
 
 # ── Current user ──────────────────────────────────────────────────────────────
