@@ -20,6 +20,9 @@ from shared.core.exceptions import AIROSException
 from shared.core.caching import get_cache_manager
 from shared.core.health import health_checker
 from shared.core.validation import ValidationMiddleware
+from shared.middleware.cache_headers import CacheHeadersMiddleware
+from shared.middleware.compression import CompressionMiddleware
+from shared.middleware.versioning import APIVersioningMiddleware
 
 cache_manager = get_cache_manager()
 
@@ -106,6 +109,7 @@ app = FastAPI(
         {"name": "Support", "description": "Lightweight in-app support ticketing"},
         {"name": "Batch", "description": "Bulk import / update / delete operations"},
         {"name": "Background Jobs", "description": "Background job status, history, cancellation"},
+        {"name": "Dashboard", "description": "Pre-aggregated dashboard widgets (KPIs, recent activity, upcoming, funnel)"},
     ],
     lifespan=lifespan,
 )
@@ -115,6 +119,9 @@ app.add_middleware(ValidationMiddleware)
 app.add_middleware(ObservabilityMiddleware)
 app.add_middleware(TenantContextMiddleware)
 app.add_middleware(RequestIDMiddleware)
+app.add_middleware(APIVersioningMiddleware)
+app.add_middleware(CacheHeadersMiddleware)
+app.add_middleware(CompressionMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -193,9 +200,19 @@ def custom_openapi():
             "scheme": "bearer",
             "bearerFormat": "JWT",
             "description": "JWT access token obtained from /api/v1/auth/login",
-        }
+        },
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-API-Key",
+            "description": (
+                "Service-to-service API key issued via "
+                "``POST /api/v1/auth/api-keys``. Use as ``X-API-Key: <key>`` "
+                "or ``Authorization: Bearer <key>``."
+            ),
+        },
     }
-    schema["security"] = [{"BearerAuth": []}]
+    schema["security"] = [{"BearerAuth": []}, {"ApiKeyAuth": []}]
     app.openapi_schema = schema
     return app.openapi_schema
 
@@ -264,5 +281,22 @@ include_router_safe(app, "apps.onboarding_service.main", "router", "/api/v1/onbo
 include_router_safe(app, "apps.support_service.main", "router", "/api/v1/support", ["Support"])
 include_router_safe(app, "apps.batch_service.main", "router", "/api/v1", ["Batch"])
 include_router_safe(app, "apps.jobs_status_service.main", "router", "/api/v1/background-jobs", ["Background Jobs"])
+include_router_safe(app, "apps.dashboard_service.main", "router", "/api/v1/dashboard", ["Dashboard"])
+
+# ── Production monitoring & observability ────────────────────────────────────
+try:
+    from shared.monitoring import monitoring_router
+    app.include_router(monitoring_router)
+    print("  Loaded: /api/v1/monitoring (curated JSON + Prometheus metrics)")
+except Exception as e:
+    print(f"  Skipped: /api/v1/monitoring ({e})")
+
+# Expose the Prometheus exposition format at the application root.
+try:
+    from prometheus_client import make_asgi_app as _make_prom_app
+    app.mount("/metrics", _make_prom_app())
+    print("  Mounted: /metrics (Prometheus exposition format)")
+except Exception as e:
+    print(f"  Skipped: /metrics ({e})")
 
 print("All routers loaded!")

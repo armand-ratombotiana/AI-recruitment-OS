@@ -12,8 +12,10 @@ from collections import deque
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
+
+from shared.core.rate_limit_deps import default_write_rate
 
 
 # ── In-Memory Store ────────────────────────────────────────────────────────────
@@ -246,6 +248,7 @@ async def my_activities(
 async def emit_endpoint(
     data: ActivityEmit,
     x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-ID"),
+    _rl: None = Depends(default_write_rate),
 ):
     record = emit_activity(
         tenant_id=_tenant_id(x_tenant_id),

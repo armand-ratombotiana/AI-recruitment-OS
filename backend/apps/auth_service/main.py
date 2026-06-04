@@ -217,6 +217,24 @@ class RefreshResponse(BaseModel):
     expires_in: int = Field(default=1800, description="Token lifetime in seconds")
 
 
+class RefreshRotationRequest(BaseModel):
+    refresh_token: str = Field(..., description="Current refresh token")
+    revoke_other_sessions: bool = Field(
+        default=False,
+        description="If true, revoke every other active session for this user (useful after a suspected compromise).",
+    )
+
+
+class RefreshRotationResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    rotated: bool = True
+    sessions_revoked: int = 0
+    other_sessions_revoked: bool = False
+
+
 class LogoutResponse(BaseModel):
     logged_out: bool = Field(default=True)
 
@@ -630,6 +648,111 @@ async def refresh(data: RefreshRequest, db: AsyncSession = Depends(get_db_depend
         refresh_token=new_refresh,
         token_type="bearer",
         expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+
+
+@router.post(
+    "/refresh-rotation",
+    response_model=RefreshRotationResponse,
+    tags=["Auth"],
+    summary="Rotate refresh token and optionally revoke other sessions",
+    description=(
+        "Strict superset of ``/refresh`` that also rotates the refresh token "
+        "and can revoke every other active session for the user. Use this when "
+        "you suspect the current session may be compromised."
+    ),
+)
+async def refresh_rotation(
+    data: RefreshRotationRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+) -> RefreshRotationResponse:
+    """Rotate the refresh token and (optionally) nuke every other session.
+
+    Identical happy-path to ``/refresh``, but the response is shaped for
+    security tooling (returns the rotation flag and number of other
+    sessions that were revoked).
+    """
+    payload = decode_token(data.refresh_token)
+    if not payload or payload.get("type") != "refresh":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token",
+        )
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user or user.status != UserStatus.ACTIVE or user.deactivated_at is not None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive",
+        )
+
+    refresh_hash = hashlib.sha256(data.refresh_token.encode()).hexdigest()
+    session_result = await db.execute(
+        select(Session).where(
+            Session.user_id == user_id,
+            Session.refresh_token_hash == refresh_hash,
+            Session.revoked_at.is_(None),
+        )
+    )
+    current_session = session_result.scalar_one_or_none()
+    if not current_session:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session not found or revoked",
+        )
+
+    # Rotate the current session.
+    current_session.revoked_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.add(current_session)
+
+    other_revoked = 0
+    if data.revoke_other_sessions:
+        other_result = await db.execute(
+            select(Session).where(
+                Session.user_id == user_id,
+                Session.revoked_at.is_(None),
+                Session.id != current_session.id,
+            )
+        )
+        for s in other_result.scalars().all():
+            s.revoked_at = datetime.now(timezone.utc).replace(tzinfo=None)
+            db.add(s)
+            other_revoked += 1
+
+    token_data = {
+        "sub": user.id,
+        "email": user.email,
+        "role": user.role.value,
+        "tenant_id": user.tenant_id,
+    }
+    new_access = create_access_token(token_data)
+    new_refresh = create_refresh_token(token_data)
+    new_hash = hashlib.sha256(new_refresh.encode()).hexdigest()
+    new_session = Session(
+        user_id=user.id,
+        tenant_id=user.tenant_id,
+        refresh_token_hash=new_hash,
+        expires_at=(
+            datetime.now(timezone.utc)
+            + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
+        ).replace(tzinfo=None),
+    )
+    db.add(new_session)
+    await db.commit()
+
+    return RefreshRotationResponse(
+        access_token=new_access,
+        refresh_token=new_refresh,
+        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        sessions_revoked=other_revoked,
+        other_sessions_revoked=data.revoke_other_sessions,
     )
 
 
@@ -1199,19 +1322,53 @@ class APIKeyRead(BaseModel):
     revoked: bool
 
 
-async def _current_user(authorization: str | None, db: AsyncSession) -> User:
-    """Resolve the authenticated user from the Authorization header."""
-    if not authorization or not authorization.startswith("Bearer "):
+async def _current_user(
+    authorization: str | None,
+    db: AsyncSession,
+    x_api_key: str | None = None,
+) -> User:
+    """Resolve the authenticated user from the Authorization header or X-API-Key.
+
+    Supports two service-to-service flows:
+    1. ``Authorization: Bearer <jwt>`` — existing JWT path.
+    2. ``Authorization: Bearer <api_key>`` — API key in the Bearer header. Useful
+       for SDKs that only support a single Authorization header.
+    3. ``X-API-Key: <key>`` — explicit API key header.
+    """
+    bearer = None
+    if authorization and authorization.startswith("Bearer "):
+        bearer = authorization[7:]
+
+    # Try API key path first when explicitly provided.
+    api_key = x_api_key or bearer
+    if api_key and not api_key.startswith("eyJ"):
+        from shared.auth.api_key import resolve_api_key
+
+        record = await resolve_api_key(db, api_key)
+        if not record:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or revoked API key",
+                headers={"WWW-Authenticate": "ApiKey"},
+            )
+        result = await db.execute(select(User).where(User.id == record.user_id))
+        user = result.scalar_one_or_none()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        return user
+
+    if not bearer:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing or invalid authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    payload = decode_token(authorization[7:])
+    payload = decode_token(bearer)
     if not payload or payload.get("type") != "access":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     user_id = payload.get("sub")
     if not user_id:
@@ -1237,9 +1394,10 @@ async def _current_user(authorization: str | None, db: AsyncSession) -> User:
 async def create_api_key(
     data: APIKeyCreateRequest,
     authorization: str | None = Header(None),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
     db: AsyncSession = Depends(get_db_dependency),
 ):
-    user = await _current_user(authorization, db)
+    user = await _current_user(authorization, db, x_api_key=x_api_key)
 
     plaintext = generate_api_key()
     key_hash = hash_api_key(plaintext)
@@ -1286,9 +1444,10 @@ async def create_api_key(
 )
 async def list_api_keys(
     authorization: str | None = Header(None),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
     db: AsyncSession = Depends(get_db_dependency),
 ):
-    user = await _current_user(authorization, db)
+    user = await _current_user(authorization, db, x_api_key=x_api_key)
     result = await db.execute(
         select(APIKey)
         .where(APIKey.user_id == user.id, APIKey.tenant_id == user.tenant_id)
@@ -1320,9 +1479,10 @@ async def list_api_keys(
 async def revoke_api_key(
     key_id: str,
     authorization: str | None = Header(None),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
     db: AsyncSession = Depends(get_db_dependency),
 ):
-    user = await _current_user(authorization, db)
+    user = await _current_user(authorization, db, x_api_key=x_api_key)
     result = await db.execute(
         select(APIKey).where(
             APIKey.id == key_id,
