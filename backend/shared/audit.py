@@ -32,8 +32,14 @@ async def audit(
     details: dict[str, Any] | None = None,
     outcome: str = "success",
 ) -> None:
-    """Append a row to ``audit_entries``.  Best-effort: never raises."""
+    """Append a row to ``audit_entries``.  Best-effort: never raises.
+
+    Uses a SAVEPOINT so a failure here never rolls back the parent transaction
+    (which would invalidate identity-mapped objects and break the caller).
+    """
+    sp = None
     try:
+        sp = await db.begin_nested()
         entry = AuditEntry(
             tenant_id=tenant_id,
             actor_id=actor_id,
@@ -47,11 +53,11 @@ async def audit(
             outcome=outcome,
         )
         db.add(entry)
-        await db.flush()
+        await sp.commit()
     except Exception as exc:
-        # Roll back only the audit insert; do not propagate.
         logger.warning("audit write failed (action=%s resource=%s): %s", action, resource_type, exc)
-        try:
-            await db.rollback()
-        except Exception:
-            pass
+        if sp is not None:
+            try:
+                await sp.rollback()
+            except Exception:
+                pass
