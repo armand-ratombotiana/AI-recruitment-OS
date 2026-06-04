@@ -74,51 +74,50 @@ class FrontendMethod:
 
 
 def parse_client_ts(source: str) -> list[FrontendMethod]:
-    """Heuristically extract method/path/method-triple from client.ts."""
+    """Heuristically extract method/path/method-triple from client.ts.
+
+    Strategy: find every `this.request<T>('PATH', { method: 'VERB' })` and
+    `this.request<T>('PATH')` (default GET) call. The method NAME is just
+    a debug label — the alignment test only cares about (path, verb).
+    """
     methods: list[FrontendMethod] = []
 
-    # Split file into per-method blocks by scanning for "async <name>(".
-    method_starts = []
-    for m in re.finditer(r"async\s+(\w+)\s*\(", source):
-        method_starts.append((m.start(), m.group(1)))
-    method_starts.append((len(source), None))
+    # Pattern A: this.request<T>('PATH', { method: 'VERB' })
+    with_method_re = re.compile(
+        r"this\.request<[^>]+>\(\s*'([^']+)'\s*,\s*\{[^}]*method:\s*'([A-Z]+)'",
+        re.DOTALL,
+    )
+    # Pattern B: this.request<T>('PATH')  (default GET, may include options)
+    bare_re = re.compile(r"this\.request<[^>]+>\(\s*'([^']+)'")
 
-    for (start, name), (end, _) in zip(method_starts, method_starts[1:]):
-        if name is None or name in ("constructor",):
+    seen_paths: set[str] = set()
+
+    for m in with_method_re.finditer(source):
+        path, verb = m.group(1), m.group(2)
+        if path.startswith("/api/v1"):
+            path = path[len("/api/v1"):]
+        if path in seen_paths:
             continue
-        block = source[start:end]
+        seen_paths.add(path)
+        # Derive a friendly name from the first 2 path segments
+        segs = [s for s in path.strip("/").split("/") if s and not s.startswith("{")][:2]
+        name = "_".join(segs) or "api"
+        methods.append(FrontendMethod(name=name, path=path, method=verb))
 
-        # Find all single-quoted path literals that look like routes.
-        # Routes always start with '/', ignoring strings like 'GET' / 'POST'.
-        candidates = []
-        for lm in ROUTE_LITERAL_RE.finditer(block):
-            lit = lm.group(1)
-            if lit.startswith("/"):
-                candidates.append(lit)
-
-        # Heuristic: if a block has 'method: POST' it is a POST, etc.
-        verb = "GET"
-        if re.search(r"method:\s*'POST'", block):
-            verb = "POST"
-        elif re.search(r"method:\s*'PUT'", block):
-            verb = "PUT"
-        elif re.search(r"method:\s*'DELETE'", block):
-            verb = "DELETE"
-
-        # Skip pure helpers like setToken/getToken that have no path literal.
-        if not candidates:
+    for m in bare_re.finditer(source):
+        path = m.group(1)
+        if not path.startswith("/"):
             continue
-
-        # The "primary" path is usually the first /api-suffixed one.
-        primary = next(
-            (c for c in candidates if c.startswith("/") and c != "/"),
-            candidates[0],
-        )
-        # Strip /api/v1 prefix if present (we add it dynamically in client).
-        if primary.startswith("/api/v1"):
-            primary = primary[len("/api/v1"):]
-
-        methods.append(FrontendMethod(name=name, path=primary, method=verb))
+        if path.startswith("/api/v1"):
+            path_clean = path[len("/api/v1"):]
+        else:
+            path_clean = path
+        if path_clean in seen_paths:
+            continue
+        seen_paths.add(path_clean)
+        segs = [s for s in path_clean.strip("/").split("/") if s and not s.startswith("{")][:2]
+        name = "_".join(segs) or "api"
+        methods.append(FrontendMethod(name=name, path=path_clean, method="GET"))
 
     return methods
 
@@ -207,13 +206,15 @@ class TestFrontendBackendAlignment:
 
     def test_client_ts_parses(self, frontend_methods: list[FrontendMethod]) -> None:
         """Sanity check: the static parser found methods."""
-        assert len(frontend_methods) > 10, (
+        assert len(frontend_methods) > 50, (
             f"Parsed only {len(frontend_methods)} methods — parser may be broken"
         )
-        names = [m.name for m in frontend_methods]
-        # Spot-check that known methods are present.
-        for expected in ("login", "register", "listCandidates", "listJobs"):
-            assert expected in names, f"Expected method '{expected}' missing from parsed list"
+        # Spot-check that common service paths are present in the parsed (path, method) pairs.
+        paths = {m.path for m in frontend_methods}
+        verbs = {m.method for m in frontend_methods}
+        for expected in ("/auth/login", "/auth/register", "/candidates/", "/jobs/"):
+            assert expected in paths, f"Expected path '{expected}' missing from parsed list"
+        assert "POST" in verbs and "GET" in verbs, f"Expected POST and GET verbs, got {verbs}"
 
     def test_all_frontend_methods_have_backend_routes(
         self, frontend_methods: list[FrontendMethod], backend_routes: list[BackendRoute]
