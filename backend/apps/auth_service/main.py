@@ -17,6 +17,7 @@ Includes:
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 import re
 from contextlib import suppress
@@ -30,13 +31,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.core.config import get_settings
 from shared.core.database import get_db_dependency
-from shared.core.models.identity import User, UserRole, UserStatus, Session
+from shared.core.models.identity import User, UserRole, UserStatus, Session, APIKey
 from shared.core.security import (
     hash_password,
     verify_password,
     create_access_token,
     create_refresh_token,
     decode_token,
+    generate_api_key,
     hash_api_key,
 )
 from shared.audit import audit
@@ -911,6 +913,113 @@ async def reactivate(
     return MessageResponse(message="Account has been reactivated.")
 
 
+# ── Password change & profile update ───────────────────────────────────────────
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(..., min_length=1, description="Current password")
+    new_password: str = Field(..., min_length=8, max_length=128, description="New password (8+ chars, complexity enforced)")
+
+
+class ProfileUpdateRequest(BaseModel):
+    full_name: str | None = Field(default=None, min_length=1, max_length=255)
+    phone: str | None = Field(default=None, max_length=32)
+    avatar_url: str | None = Field(default=None, max_length=512)
+
+
+@router.post(
+    "/change-password",
+    response_model=MessageResponse,
+    tags=["Auth"],
+    summary="Change the authenticated user's password",
+    description="Verifies the current password, then replaces it with the new one (rotates all refresh tokens).",
+)
+async def change_password(
+    data: ChangePasswordRequest,
+    authorization: str | None = Header(None),
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    user = await _current_user(authorization, db)
+    if not verify_password(data.current_password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is incorrect",
+        )
+    try:
+        _validate_password_complexity(data.new_password)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        )
+
+    user.hashed_password = hash_password(data.new_password)
+    user.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    # Rotate all refresh tokens so any leaked session is invalidated
+    await db.execute(
+        Session.__table__.update()
+        .where(Session.user_id == user.id, Session.revoked_at.is_(None))
+        .values(revoked_at=datetime.now(timezone.utc).replace(tzinfo=None))
+    )
+    db.add(user)
+    await audit(
+        db,
+        tenant_id=user.tenant_id,
+        action="user.password_changed",
+        resource_type="user",
+        resource_id=user.id,
+        actor_id=user.id,
+        actor_email=user.email,
+    )
+    await db.commit()
+    return MessageResponse(message="Password updated successfully")
+
+
+@router.put(
+    "/me",
+    tags=["Auth"],
+    summary="Update the authenticated user's profile",
+    description="Update editable profile fields (full_name, phone, avatar_url). Returns the updated profile.",
+)
+async def update_profile(
+    data: ProfileUpdateRequest,
+    authorization: str | None = Header(None),
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    user = await _current_user(authorization, db)
+    update_data = data.model_dump(exclude_unset=True)
+    if not update_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No fields to update",
+        )
+    for field, value in update_data.items():
+        setattr(user, field, value)
+    user.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.add(user)
+    await audit(
+        db,
+        tenant_id=user.tenant_id,
+        action="user.profile_updated",
+        resource_type="user",
+        resource_id=user.id,
+        actor_id=user.id,
+        actor_email=user.email,
+        details={"fields": list(update_data.keys())},
+    )
+    await db.commit()
+    await db.refresh(user)
+    return {
+        "id": user.id,
+        "email": user.email,
+        "full_name": user.full_name,
+        "phone": user.phone,
+        "avatar_url": user.avatar_url,
+        "role": user.role.value,
+        "tenant_id": user.tenant_id,
+    }
+
+
 # ── MFA Endpoints ──────────────────────────────────────────────────────────────
 
 
@@ -1060,6 +1169,185 @@ async def get_current_user(
         last_login_at=user.last_login_at,
         is_demo=bool(user.is_demo),
     )
+
+
+# ── API Key management ────────────────────────────────────────────────────────
+
+
+class APIKeyCreateRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100, description="Friendly name for the key")
+    scopes: list[str] = Field(default_factory=list, description="Permission scopes (e.g. 'read:candidates')")
+    expires_in_days: int | None = Field(default=None, ge=1, le=365, description="Optional expiry in days")
+
+
+class APIKeyCreatedResponse(BaseModel):
+    id: str
+    name: str
+    key: str = Field(..., description="The full API key.  This is the ONLY time the plaintext is returned — store it now.")
+    scopes: list[str]
+    expires_at: datetime | None
+    created_at: datetime
+
+
+class APIKeyRead(BaseModel):
+    id: str
+    name: str
+    scopes: list[str]
+    last_used_at: datetime | None
+    expires_at: datetime | None
+    created_at: datetime
+    revoked: bool
+
+
+async def _current_user(authorization: str | None, db: AsyncSession) -> User:
+    """Resolve the authenticated user from the Authorization header."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid authorization header",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    payload = decode_token(authorization[7:])
+    if not payload or payload.get("type") != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
+
+
+@router.post(
+    "/api-keys",
+    response_model=APIKeyCreatedResponse,
+    tags=["Auth"],
+    summary="Create a new API key",
+    description=(
+        "Generates a new API key for the authenticated user.  The plaintext "
+        "key is returned ONLY in this response — store it securely.  Future "
+        "requests authenticate by passing it as ``X-API-Key``."
+    ),
+)
+async def create_api_key(
+    data: APIKeyCreateRequest,
+    authorization: str | None = Header(None),
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    user = await _current_user(authorization, db)
+
+    plaintext = generate_api_key()
+    key_hash = hash_api_key(plaintext)
+    expires_at = (
+        (datetime.now(timezone.utc) + timedelta(days=data.expires_in_days)).replace(tzinfo=None)
+        if data.expires_in_days
+        else None
+    )
+    record = APIKey(
+        tenant_id=user.tenant_id,
+        user_id=user.id,
+        name=data.name,
+        key_hash=key_hash,
+        scopes=json.dumps(data.scopes),
+        expires_at=expires_at,
+    )
+    db.add(record)
+    await audit(
+        db,
+        tenant_id=user.tenant_id,
+        action="api_key.create",
+        resource_type="api_key",
+        resource_id=record.id,
+        actor_id=user.id,
+        actor_email=user.email,
+        details={"name": data.name, "scopes": data.scopes},
+    )
+    await db.commit()
+    await db.refresh(record)
+    return APIKeyCreatedResponse(
+        id=record.id,
+        name=record.name,
+        key=plaintext,
+        scopes=json.loads(record.scopes) if record.scopes else [],
+        expires_at=record.expires_at,
+        created_at=record.created_at,
+    )
+
+
+@router.get(
+    "/api-keys",
+    tags=["Auth"],
+    summary="List the authenticated user's API keys",
+)
+async def list_api_keys(
+    authorization: str | None = Header(None),
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    user = await _current_user(authorization, db)
+    result = await db.execute(
+        select(APIKey)
+        .where(APIKey.user_id == user.id, APIKey.tenant_id == user.tenant_id)
+        .order_by(APIKey.created_at.desc())
+    )
+    rows = result.scalars().all()
+    return {
+        "data": [
+            APIKeyRead(
+                id=r.id,
+                name=r.name,
+                scopes=json.loads(r.scopes) if r.scopes else [],
+                last_used_at=r.last_used_at,
+                expires_at=r.expires_at,
+                created_at=r.created_at,
+                revoked=r.revoked_at is not None,
+            )
+            for r in rows
+        ],
+        "total": len(rows),
+    }
+
+
+@router.delete(
+    "/api-keys/{key_id}",
+    tags=["Auth"],
+    summary="Revoke an API key",
+)
+async def revoke_api_key(
+    key_id: str,
+    authorization: str | None = Header(None),
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    user = await _current_user(authorization, db)
+    result = await db.execute(
+        select(APIKey).where(
+            APIKey.id == key_id,
+            APIKey.user_id == user.id,
+            APIKey.tenant_id == user.tenant_id,
+        )
+    )
+    record = result.scalar_one_or_none()
+    if not record:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="API key not found")
+    if record.revoked_at is not None:
+        return {"id": key_id, "revoked": True, "already_revoked": True}
+    record.revoked_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.add(record)
+    await audit(
+        db,
+        tenant_id=user.tenant_id,
+        action="api_key.revoke",
+        resource_type="api_key",
+        resource_id=key_id,
+        actor_id=user.id,
+        actor_email=user.email,
+    )
+    await db.commit()
+    return {"id": key_id, "revoked": True}
 
 
 # ── SSO (kept as before) ──────────────────────────────────────────────────────
