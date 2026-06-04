@@ -37,37 +37,37 @@ const features = [
   {
     icon: Bot,
     title: 'AI Screening',
-    description: 'Autonomous agents screen and evaluate candidates 24/7 with multi-dimensional scoring and bias detection.',
+    description: 'Autonomous candidate evaluation with LLM-powered analysis.',
     color: 'from-blue-500 to-blue-600',
-  },
-  {
-    icon: Code2,
-    title: 'Live Coding',
-    description: 'Real-time pair programming interviews with AI evaluation, progressive hints, and automated scoring.',
-    color: 'from-purple-500 to-purple-600',
   },
   {
     icon: Target,
     title: 'Smart Matching',
-    description: 'ML-powered candidate-job matching with explainable scores using embeddings and skill graphs.',
+    description: '95% accuracy rate with skill-gap analysis.',
     color: 'from-green-500 to-emerald-600',
   },
   {
+    icon: Code2,
+    title: 'Live Interviews',
+    description: 'Real-time pair programming with AI feedback.',
+    color: 'from-purple-500 to-purple-600',
+  },
+  {
     icon: Workflow,
-    title: 'Workflow Engine',
-    description: 'Automate your entire hiring pipeline with visual workflows, event-driven triggers, and approval chains.',
+    title: 'Pipeline Automation',
+    description: 'Drag-and-drop Kanban with intelligent suggestions.',
     color: 'from-amber-500 to-orange-500',
   },
   {
-    icon: BarChart3,
-    title: 'Analytics',
-    description: 'Real-time insights into recruitment metrics, AI performance tracking, and predictive workforce analytics.',
+    icon: Shield,
+    title: 'Compliance First',
+    description: 'GDPR-ready with audit trails and consent management.',
     color: 'from-rose-500 to-red-500',
   },
   {
-    icon: Shield,
-    title: 'Enterprise Security',
-    description: 'SOC2 compliant with SSO, role-based access, end-to-end encryption, and audit logs.',
+    icon: Globe,
+    title: 'Enterprise Ready',
+    description: 'SSO, multi-tenant, 99.9% uptime SLA.',
     color: 'from-teal-500 to-cyan-500',
   },
 ];
@@ -75,31 +75,31 @@ const features = [
 const testimonials = [
   {
     name: 'Sarah Chen',
-    role: 'VP of People',
+    role: 'VP People',
     company: 'TechScale',
     initials: 'SC',
     color: 'from-blue-500 to-cyan-500',
-    content: 'AI-ROS cut our time-to-hire from 42 days to 12. The autonomous screening is a game changer — we finally eliminated resume bottlenecks and our hiring managers focus on culture fit, not paperwork.',
+    content: 'AI-ROS cut our time-to-hire from 42 days to 12.',
     rating: 5,
     metrics: { value: '71%', label: 'faster hiring' },
   },
   {
-    name: 'Marcus Rivera',
-    role: 'Head of Recruiting',
+    name: 'Marcus Rodriguez',
+    role: 'Head of Talent',
     company: 'DataFlow',
     initials: 'MR',
     color: 'from-purple-500 to-pink-500',
-    content: 'The AI matching is eerily accurate. We went from 200+ manual reviews per hire to letting the system surface the top 5 candidates automatically. Quality of hire is up 40%.',
+    content: 'The autonomous screening is a game changer. We process 10x more candidates.',
     rating: 5,
-    metrics: { value: '40%', label: 'better quality' },
+    metrics: { value: '10x', label: 'more candidates' },
   },
   {
-    name: 'Emily Nakamura',
+    name: 'Emily Watson',
     role: 'CTO',
-    company: 'CloudBridge',
-    initials: 'EN',
+    company: 'CloudNine',
+    initials: 'EW',
     color: 'from-amber-500 to-orange-500',
-    content: 'The analytics alone justified the ROI. We can see exactly where candidates drop off and optimize with data, not guesswork. Our funnel is now a science, not an art.',
+    content: 'Best ROI of any HR tool we\'ve deployed.',
     rating: 5,
     metrics: { value: '4.9x', label: 'ROI in Q1' },
   },
@@ -288,11 +288,11 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <nav
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
           scrolled
-            ? 'bg-white/95 backdrop-blur-xl border-b border-gray-100 shadow-sm'
+            ? 'bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 shadow-sm'
             : 'bg-transparent'
         }`}
         role="navigation"
@@ -303,7 +303,7 @@ export default function HomePage() {
               <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition">
                 <Bot className="h-5 w-5 text-white" />
               </div>
-              <span className={`text-lg font-bold transition-colors duration-300 ${scrolled ? 'text-gray-900' : 'text-white'}`}>
+              <span className={`text-lg font-bold transition-colors duration-300 ${scrolled ? 'text-gray-900 dark:text-white' : 'text-white'}`}>
                 AI-ROS
               </span>
             </Link>
@@ -319,7 +319,7 @@ export default function HomePage() {
                   key={item.label}
                   href={item.href}
                   className={`text-sm transition-colors duration-300 link-underline ${
-                    scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/80 hover:text-white'
+                    scrolled ? 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white' : 'text-white/80 hover:text-white'
                   }`}
                 >
                   {item.label}
@@ -327,7 +327,7 @@ export default function HomePage() {
               ))}
               <Link
                 href="/login"
-                className={`text-sm transition-colors duration-300 ${scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/80 hover:text-white'}`}
+                className={`text-sm transition-colors duration-300 ${scrolled ? 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white' : 'text-white/80 hover:text-white'}`}
               >
                 Sign In
               </Link>
@@ -341,7 +341,7 @@ export default function HomePage() {
 
             <button
               className={`md:hidden p-2 rounded-lg transition-colors ${
-                scrolled ? 'text-gray-600 hover:bg-gray-100' : 'text-white hover:bg-white/10'
+                scrolled ? 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' : 'text-white hover:bg-white/10'
               }`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
@@ -353,7 +353,7 @@ export default function HomePage() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-100 shadow-lg animate-slide-down">
+          <div className="md:hidden bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 shadow-lg animate-slide-down">
             <div className="px-4 py-4 space-y-1">
               {[
                 { label: 'Features', href: '#features' },
@@ -364,13 +364,13 @@ export default function HomePage() {
                 <a
                   key={item.label}
                   href={item.href}
-                  className="block px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg"
+                  className="block px-3 py-2.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.label}
                 </a>
               ))}
-              <Link href="/login" className="block px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/login" className="block px-3 py-2.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                 Sign In
               </Link>
               <Link href="/register" className="block px-3 py-2.5 text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-medium text-center" onClick={() => setMobileMenuOpen(false)}>
@@ -468,12 +468,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section aria-label="Trusted by" className="py-12 px-4 bg-white border-b border-gray-100">
+      <section aria-label="Trusted by" className="py-12 px-4 bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto">
-          <p className="text-center text-xs font-semibold uppercase tracking-widest text-gray-400 mb-6">Trusted by innovative teams worldwide</p>
+          <p className="text-center text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-6">Trusted by innovative teams worldwide</p>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-6 items-center">
             {TRUSTED_BY.map((c) => (
-              <div key={c} className="text-center text-gray-400 hover:text-gray-600 transition">
+              <div key={c} className="text-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition">
                 <div className="text-lg sm:text-xl font-bold tracking-tight">{c}</div>
               </div>
             ))}
@@ -481,34 +481,34 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 px-4 bg-slate-900 relative overflow-hidden">
+      <section className="py-16 px-4 bg-slate-900 dark:bg-gray-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 via-purple-900/20 to-blue-900/20" />
         <div className="relative max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
               { stat: stats[0], suffix: '+', label: 'Companies' },
-              { stat: stats[1], suffix: '+', label: 'Candidates Processed' },
-              { stat: stats[2], suffix: '%', label: 'Accuracy Rate' },
+              { stat: stats[1], suffix: '+', label: 'Candidates Screened' },
+              { stat: stats[2], suffix: '%', label: 'Matching Accuracy' },
               { stat: stats[3], suffix: 'x', label: 'Faster Hiring' },
             ].map((item, i) => (
               <div key={i} ref={item.stat.ref} className="text-center">
                 <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white count-up">
                   {item.stat.count.toLocaleString()}{item.suffix}
                 </p>
-                <p className="text-slate-400 mt-2 text-sm font-medium">{item.label}</p>
+                <p className="text-slate-400 dark:text-gray-400 mt-2 text-sm font-medium">{item.label}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="features" className="py-24 px-4">
+      <section id="features" className="py-24 px-4 bg-white dark:bg-gray-950">
         <div className="max-w-7xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-16">
               <p className="text-sm font-semibold text-blue-600 tracking-wide uppercase mb-3">Features</p>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Why AI-ROS?</h2>
-              <p className="text-lg text-gray-500 max-w-2xl mx-auto">Powered by AI, designed for humans. A complete platform from sourcing to offer.</p>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">Why AI-ROS?</h2>
+              <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">Powered by AI, designed for humans. A complete platform from sourcing to offer.</p>
             </div>
           </FadeInSection>
 
@@ -517,12 +517,12 @@ export default function HomePage() {
               const FeatureIcon = feature.icon;
               return (
                 <FadeInSection key={i}>
-                  <div className="group bg-white rounded-2xl p-7 border border-gray-100 hover:border-gray-200 transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1 cursor-default h-full">
+                  <div className="group bg-white dark:bg-gray-900 rounded-2xl p-7 border border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50 hover:-translate-y-1 cursor-default h-full">
                     <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
                       <FeatureIcon className="h-6 w-6 text-white" />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed">{feature.description}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">{feature.description}</p>
                   </div>
                 </FadeInSection>
               );
@@ -531,13 +531,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="how" className="py-24 px-4 bg-gray-50">
+      <section id="how" className="py-24 px-4 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-6xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-16">
               <p className="text-sm font-semibold text-blue-600 tracking-wide uppercase mb-3">How it works</p>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Three steps to autonomous hiring</h2>
-              <p className="text-lg text-gray-500 max-w-2xl mx-auto">Go from job description to top candidate in minutes, not weeks.</p>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">Three steps to autonomous hiring</h2>
+              <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">Go from job description to top candidate in minutes, not weeks.</p>
             </div>
           </FadeInSection>
 
@@ -558,11 +558,11 @@ export default function HomePage() {
                         <StepIcon className="h-7 w-7 text-white" />
                       </div>
                     </div>
-                    <div className="inline-flex items-center gap-1 bg-blue-50 text-blue-600 text-xs font-bold px-2.5 py-1 rounded-full mb-3">
+                    <div className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold px-2.5 py-1 rounded-full mb-3">
                       Step {step.num}
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{step.title}</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto">{step.desc}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{step.title}</h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-xs mx-auto">{step.desc}</p>
                   </div>
                 </FadeInSection>
               );
@@ -570,7 +570,7 @@ export default function HomePage() {
           </div>
 
           <FadeInSection>
-            <div className="mt-16 max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-gray-200 bg-gradient-to-br from-slate-900 to-slate-800 aspect-video relative group cursor-pointer">
+            <div className="mt-16 max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-slate-900 to-slate-800 aspect-video relative group cursor-pointer">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="h-20 w-20 rounded-full bg-white/10 backdrop-blur-md border-2 border-white/30 flex items-center justify-center group-hover:scale-110 transition">
                   <Play className="h-8 w-8 text-white fill-white ml-1" />
@@ -591,13 +591,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="testimonials" className="py-24 px-4">
+      <section id="testimonials" className="py-24 px-4 bg-white dark:bg-gray-950">
         <div className="max-w-7xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-16">
               <p className="text-sm font-semibold text-blue-600 tracking-wide uppercase mb-3">Testimonials</p>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Trusted by leading teams</h2>
-              <p className="text-lg text-gray-500">Real stories from real customers.</p>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">Trusted by leading teams</h2>
+              <p className="text-lg text-gray-500 dark:text-gray-400">Real stories from real customers.</p>
             </div>
           </FadeInSection>
 
@@ -606,27 +606,27 @@ export default function HomePage() {
               <FadeInSection key={i}>
                 <div className="relative rounded-2xl p-[1px] h-full">
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-blue-500/20" />
-                  <div className="relative bg-white rounded-2xl p-7 h-full flex flex-col">
+                  <div className="relative bg-white dark:bg-gray-900 rounded-2xl p-7 h-full flex flex-col">
                     <div className="flex gap-1 mb-4" aria-label={`${t.rating} star rating`}>
                       {Array.from({ length: t.rating }).map((_, j) => (
                         <Star key={j} className="h-4 w-4 fill-amber-400 text-amber-400" />
                       ))}
                     </div>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-1">&ldquo;{t.content}&rdquo;</p>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-6 flex-1">&ldquo;{t.content}&rdquo;</p>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white text-sm font-bold`}>
                           {t.initials}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">{t.name}</p>
-                          <p className="text-xs text-gray-500">{t.role}, {t.company}</p>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{t.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{t.role}, {t.company}</p>
                         </div>
                       </div>
                     </div>
-                    <div className="pt-4 border-t border-gray-100 flex items-center gap-2">
+                    <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2">
                       <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{t.metrics.value}</span>
-                      <span className="text-xs text-gray-500">{t.metrics.label}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{t.metrics.label}</span>
                     </div>
                   </div>
                 </div>
@@ -636,29 +636,29 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="pricing" className="py-24 px-4 bg-gray-50">
+      <section id="pricing" className="py-24 px-4 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-12">
               <p className="text-sm font-semibold text-blue-600 tracking-wide uppercase mb-3">Pricing</p>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Simple, transparent pricing</h2>
-              <p className="text-lg text-gray-500 mb-8">Start free, scale as you grow</p>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">Simple, transparent pricing</h2>
+              <p className="text-lg text-gray-500 dark:text-gray-400 mb-8">Start free, scale as you grow</p>
 
-              <div className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-full p-1 shadow-sm">
+              <div className="inline-flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full p-1 shadow-sm">
                 <button
                   onClick={() => setBilling('monthly')}
-                  className={`px-4 py-1.5 text-sm font-semibold rounded-full transition ${billing === 'monthly' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`px-4 py-1.5 text-sm font-semibold rounded-full transition ${billing === 'monthly' ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
                   aria-pressed={billing === 'monthly'}
                 >
                   Monthly
                 </button>
                 <button
                   onClick={() => setBilling('yearly')}
-                  className={`px-4 py-1.5 text-sm font-semibold rounded-full transition inline-flex items-center gap-1.5 ${billing === 'yearly' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`px-4 py-1.5 text-sm font-semibold rounded-full transition inline-flex items-center gap-1.5 ${billing === 'yearly' ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
                   aria-pressed={billing === 'yearly'}
                 >
                   Yearly
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${billing === 'yearly' ? 'bg-white/20 text-white' : 'bg-green-100 text-green-700'}`}>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${billing === 'yearly' ? 'bg-white/20 text-white' : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'}`}>
                     -20%
                   </span>
                 </button>
@@ -680,23 +680,23 @@ export default function HomePage() {
                         </div>
                       </>
                     )}
-                    <div className={`relative bg-white rounded-2xl p-8 h-full flex flex-col ${tier.popular ? '' : 'border border-gray-200'}`}>
-                      <h3 className="text-xl font-bold text-gray-900">{tier.name}</h3>
+                    <div className={`relative bg-white dark:bg-gray-950 rounded-2xl p-8 h-full flex flex-col ${tier.popular ? '' : 'border border-gray-200 dark:border-gray-800'}`}>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">{tier.name}</h3>
                       <p className="text-gray-400 text-sm mt-1">{tier.description}</p>
                       <div className="mt-5 mb-7">
-                        <span className="text-4xl font-bold text-gray-900">
+                        <span className="text-4xl font-bold text-gray-900 dark:text-white">
                           {typeof price === 'number' ? `$${price}` : price}
                         </span>
                         {typeof price === 'number' && (
                           <span className="text-gray-400 text-sm">/mo</span>
                         )}
                         {billing === 'yearly' && typeof price === 'number' && (
-                          <p className="text-xs text-green-600 font-medium mt-1">Save 20% with annual billing</p>
+                          <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-1">Save 20% with annual billing</p>
                         )}
                       </div>
                       <ul className="space-y-3 mb-8 flex-1">
                         {tier.features.map((feature, j) => (
-                          <li key={j} className="flex items-start gap-2.5 text-sm text-gray-600">
+                          <li key={j} className="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-300">
                             <Check className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
                             {feature}
                           </li>
@@ -707,7 +707,7 @@ export default function HomePage() {
                         className={`block w-full py-3 rounded-xl font-semibold text-center text-sm transition-all ${
                           tier.popular
                             ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/25'
-                            : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700'
                         }`}
                       >
                         {tier.cta}
@@ -720,32 +720,32 @@ export default function HomePage() {
           </div>
 
           <FadeInSection>
-            <div className="max-w-5xl mx-auto bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-900">Compare plans</h3>
+            <div className="max-w-5xl mx-auto bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+              <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+                <h3 className="font-semibold text-gray-900 dark:text-white">Compare plans</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="px-6 py-3 text-left font-semibold text-gray-600">Feature</th>
-                      <th className="px-6 py-3 text-center font-semibold text-gray-600">Starter</th>
-                      <th className="px-6 py-3 text-center font-semibold text-blue-600 bg-blue-50/50">Professional</th>
-                      <th className="px-6 py-3 text-center font-semibold text-gray-600">Enterprise</th>
+                    <tr className="border-b border-gray-200 dark:border-gray-800">
+                      <th className="px-6 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Feature</th>
+                      <th className="px-6 py-3 text-center font-semibold text-gray-600 dark:text-gray-400">Starter</th>
+                      <th className="px-6 py-3 text-center font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20">Professional</th>
+                      <th className="px-6 py-3 text-center font-semibold text-gray-600 dark:text-gray-400">Enterprise</th>
                     </tr>
                   </thead>
                   <tbody>
                     {COMPARISON.map((row, i) => (
-                      <tr key={i} className="border-b border-gray-100 last:border-0">
-                        <td className="px-6 py-3 text-gray-700">{row.feature}</td>
-                        <td className="px-6 py-3 text-center text-gray-600">
-                          {row.starter === true ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : row.starter === false ? <span className="text-gray-300">—</span> : row.starter}
+                      <tr key={i} className="border-b border-gray-100 dark:border-gray-800 last:border-0">
+                        <td className="px-6 py-3 text-gray-700 dark:text-gray-300">{row.feature}</td>
+                        <td className="px-6 py-3 text-center text-gray-600 dark:text-gray-400">
+                          {row.starter === true ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : row.starter === false ? <span className="text-gray-300 dark:text-gray-600">—</span> : row.starter}
                         </td>
-                        <td className="px-6 py-3 text-center text-gray-900 font-medium bg-blue-50/30">
-                          {row.pro === true ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : row.pro === false ? <span className="text-gray-300">—</span> : row.pro}
+                        <td className="px-6 py-3 text-center text-gray-900 dark:text-white font-medium bg-blue-50/30 dark:bg-blue-900/10">
+                          {row.pro === true ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : row.pro === false ? <span className="text-gray-300 dark:text-gray-600">—</span> : row.pro}
                         </td>
-                        <td className="px-6 py-3 text-center text-gray-600">
-                          {row.ent === true ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : row.ent === false ? <span className="text-gray-300">—</span> : row.ent}
+                        <td className="px-6 py-3 text-center text-gray-600 dark:text-gray-400">
+                          {row.ent === true ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : row.ent === false ? <span className="text-gray-300 dark:text-gray-600">—</span> : row.ent}
                         </td>
                       </tr>
                     ))}
@@ -757,13 +757,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="faq" className="py-24 px-4">
+      <section id="faq" className="py-24 px-4 bg-white dark:bg-gray-950">
         <div className="max-w-3xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-12">
               <p className="text-sm font-semibold text-blue-600 tracking-wide uppercase mb-3">FAQ</p>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Questions? We have answers</h2>
-              <p className="text-lg text-gray-500">Everything you need to know to get started.</p>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">Questions? We have answers</h2>
+              <p className="text-lg text-gray-500 dark:text-gray-400">Everything you need to know to get started.</p>
             </div>
           </FadeInSection>
 
@@ -774,7 +774,7 @@ export default function HomePage() {
                 return (
                   <div
                     key={i}
-                    className={`rounded-xl border transition-all ${open ? 'border-blue-200 bg-blue-50/30' : 'border-gray-200 bg-white'}`}
+                    className={`rounded-xl border transition-all ${open ? 'border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/10' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900'}`}
                   >
                     <button
                       onClick={() => setOpenFaq(open ? null : i)}
@@ -782,11 +782,11 @@ export default function HomePage() {
                       aria-expanded={open}
                       aria-controls={`faq-${i}`}
                     >
-                      <span className="font-semibold text-gray-900">{item.q}</span>
-                      {open ? <ChevronUp className="h-4 w-4 text-gray-500 shrink-0" /> : <ChevronDown className="h-4 w-4 text-gray-500 shrink-0" />}
+                      <span className="font-semibold text-gray-900 dark:text-white">{item.q}</span>
+                      {open ? <ChevronUp className="h-4 w-4 text-gray-500 dark:text-gray-400 shrink-0" /> : <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400 shrink-0" />}
                     </button>
                     {open && (
-                      <div id={`faq-${i}`} className="px-5 pb-4 text-sm text-gray-600 leading-relaxed">
+                      <div id={`faq-${i}`} className="px-5 pb-4 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                         {item.a}
                       </div>
                     )}
@@ -798,7 +798,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-24 px-4">
+      <section className="py-24 px-4 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-4xl mx-auto">
           <FadeInSection>
             <div className="relative rounded-2xl overflow-hidden">
@@ -807,34 +807,29 @@ export default function HomePage() {
               <div className="relative p-12 md:p-16 text-center">
                 <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Ready to transform your hiring?</h2>
                 <p className="text-white/70 text-lg mb-8 max-w-xl mx-auto">Join 500+ companies already using AI-ROS to hire smarter, faster, and fairer.</p>
-                <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                  <div className="relative flex-1">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all"
-                    />
-                  </div>
-                  <button type="submit" className="px-6 py-3 bg-white text-gray-900 rounded-xl font-semibold hover:bg-gray-100 transition-all shadow-xl inline-flex items-center justify-center gap-2">
-                    {subscribed ? 'Sent!' : 'Get Started'}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link
+                    href="/register"
+                    className="px-8 py-3.5 bg-white text-gray-900 rounded-xl font-semibold hover:bg-gray-100 transition-all shadow-xl inline-flex items-center justify-center gap-2"
+                  >
+                    Start Free Trial
                     <ArrowRight className="h-4 w-4" />
-                  </button>
-                </form>
-                {subscribed && (
-                  <p className="text-green-300 text-xs mt-3">✓ Check your inbox for the welcome email</p>
-                )}
-                <p className="text-white/40 text-xs mt-4">No credit card required. Free 14-day trial.</p>
+                  </Link>
+                  <a
+                    href="#how"
+                    className="px-8 py-3.5 border-2 border-white/30 text-white rounded-xl font-semibold hover:bg-white/10 transition-all inline-flex items-center justify-center gap-2"
+                  >
+                    Book a Demo
+                  </a>
+                </div>
+                <p className="text-white/40 text-xs mt-6">No credit card required. Free 14-day trial.</p>
               </div>
             </div>
           </FadeInSection>
         </div>
       </section>
 
-      <footer className="bg-gray-900 text-gray-400">
+      <footer className="bg-gray-900 dark:bg-gray-950 text-gray-400">
         <div className="max-w-7xl mx-auto px-4 py-16">
           <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
             <div className="col-span-2">

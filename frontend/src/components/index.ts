@@ -29,6 +29,15 @@ export { Calendar } from './ui/calendar';
 export { Kanban } from './ui/kanban';
 export type { KanbanCard, KanbanColumn } from './ui/kanban';
 export { InputField, TextareaField, SelectField, CheckboxField } from './ui/form-field';
+export { Kbd, KbdGroup } from './ui/kbd';
+export { Timeline } from './ui/timeline';
+export type { TimelineItem } from './ui/timeline';
+export { RangeSlider } from './ui/range-slider';
+export { Combobox } from './ui/combobox';
+export type { ComboboxOption } from './ui/combobox';
+export { MentionInput } from './ui/mention-input';
+export type { MentionItem } from './ui/mention-input';
+export { RichTextEditor } from './ui/rich-text-editor';
 export { StatsCard } from './dashboard/stats-card';
 export { InterviewChat } from './interview/interview-chat';
 export { PPEEditor } from './coding-editor/ppe-editor';
@@ -56,3 +65,5 @@ export {
   ALL_TOURS,
 } from './onboarding/tours';
 export { useCountUp, useToast, useWebSocket, useDebouncedValue, useLocalStorage, useClickOutside } from '@/hooks';
+export { usePolling } from '@/hooks/use-polling';
+export type { PollingState } from '@/hooks/use-polling';

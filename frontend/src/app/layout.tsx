@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { ServiceWorkerRegister, InstallPrompt } from '@/components/pwa';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://airos.io'),
@@ -21,6 +22,14 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'AI-ROS' }],
   creator: 'AI-ROS',
+  applicationName: 'AI-ROS',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'AI-ROS',
+  },
+  formatDetection: { telephone: false, email: false, address: false },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -84,13 +93,55 @@ const THEME_INIT_SCRIPT = `
 })();
 `;
 
+const STRUCTURED_DATA = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': 'https://airos.io/#organization',
+      name: 'AI-ROS',
+      url: 'https://airos.io',
+      logo: 'https://airos.io/favicon.svg',
+      sameAs: ['https://twitter.com/airos_io'],
+    },
+    {
+      '@type': 'SoftwareApplication',
+      name: 'AI-ROS — AI-Native Recruitment OS',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      description:
+        'Autonomous AI-native enterprise recruitment platform with multi-agent orchestration. Screen, interview, and hire top talent 4x faster.',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+        category: 'Free trial',
+      },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '4.8',
+        ratingCount: '120',
+      },
+    },
+  ],
+});
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <link rel="manifest" href="/manifest.json" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: STRUCTURED_DATA }}
+        />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <ServiceWorkerRegister />
+        <InstallPrompt />
+      </body>
     </html>
   );
 }

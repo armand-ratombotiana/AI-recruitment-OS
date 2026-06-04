@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Users,
@@ -164,32 +164,41 @@ export default function DashboardPage() {
   const [activity, setActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState<'7d' | '30d' | '90d'>('7d');
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  const load = useCallback(async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
+    try {
+      const [dash, pipe, cands, ints] = await Promise.allSettled([
+        api.analytics.getDashboard(range),
+        api.analytics.getPipeline(),
+        api.candidates.list({ limit: '5', sort: '-created_at' }),
+        api.interviews.list({ upcoming: 'true', limit: '5' }),
+      ]);
+      setData({
+        dashboard: dash.status === 'fulfilled' ? dash.value : {},
+        pipeline: pipe.status === 'fulfilled' ? pipe.value : {},
+      });
+      setRecent(cands.status === 'fulfilled' ? cands.value?.data || [] : []);
+      setUpcoming(ints.status === 'fulfilled' ? ints.value?.data || [] : []);
+      const fromDash = dash.status === 'fulfilled' ? (dash.value?.recent_activity || []) : [];
+      setActivity(Array.isArray(fromDash) ? fromDash : []);
+      setLastRefresh(new Date());
+    } catch {
+      /* noop */
+    } finally {
+      if (!isBackground) setLoading(false);
+    }
+  }, [range]);
 
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    Promise.allSettled([
-      api.getDashboard(range),
-      api.getPipelineAnalytics(),
-      api.listCandidates({ limit: '5', sort: '-created_at' }),
-      api.listInterviews({ upcoming: 'true', limit: '5' }),
-      api.getAIPerformance().catch(() => null),
-    ])
-      .then(([dash, pipe, cands, ints, _ai]) => {
-        if (cancelled) return;
-        setData({
-          dashboard: dash.status === 'fulfilled' ? dash.value : {},
-          pipeline: pipe.status === 'fulfilled' ? pipe.value : {},
-        });
-        setRecent(cands.status === 'fulfilled' ? cands.value?.data || [] : []);
-        setUpcoming(ints.status === 'fulfilled' ? ints.value?.data || [] : []);
-        const fromDash = dash.status === 'fulfilled' ? (dash.value?.recent_activity || []) : [];
-        setActivity(Array.isArray(fromDash) ? fromDash : []);
-      })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [range]);
+    load(false);
+  }, [load]);
+
+  useEffect(() => {
+    const timer = setInterval(() => load(true), 30_000);
+    return () => clearInterval(timer);
+  }, [load]);
 
   if (loading) return <DashboardSkeleton />;
 
@@ -247,6 +256,12 @@ export default function DashboardPage() {
             </button>
           ))}
         </div>
+        {lastRefresh && (
+          <span className="text-[10px] text-gray-400 dark:text-gray-500 inline-flex items-center gap-1.5" aria-live="polite">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500 pulse-dot" aria-hidden="true" />
+            Live · {lastRefresh.toLocaleTimeString()}
+          </span>
+        )}
       </div>
 
       <Breadcrumb />

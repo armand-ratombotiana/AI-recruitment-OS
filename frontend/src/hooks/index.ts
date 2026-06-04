@@ -102,12 +102,16 @@ export function useClickOutside(ref: React.RefObject<HTMLElement>, onOutside: ()
 }
 
 export function useToast() {
-  const [toasts, setToasts] = useState<{ id: string; type: 'success' | 'error' | 'info'; message: string }[]>([]);
+  const [toasts, setToasts] = useState<{ id: string; type: 'success' | 'error' | 'info' | 'warning'; message: string }[]>([]);
 
-  const push = useCallback((type: 'success' | 'error' | 'info', message: string) => {
+  const push = useCallback((type: 'success' | 'error' | 'info' | 'warning', message: string, duration = 3500) => {
     const id = Math.random().toString(36).slice(2);
     setToasts((p) => [...p, { id, type, message }]);
-    setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 3500);
+    setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), duration);
+  }, []);
+
+  const dismiss = useCallback((id: string) => {
+    setToasts((p) => p.filter((t) => t.id !== id));
   }, []);
 
   const ToastContainer = () => {
@@ -124,20 +128,32 @@ export function useToast() {
           {
             key: t.id,
             role: 'status',
-            className: `pointer-events-auto px-4 py-3 rounded-lg shadow-lg text-sm font-medium slide-in-right min-w-[260px] ${
+            className: `pointer-events-auto px-4 py-3 rounded-lg shadow-lg text-sm font-medium slide-in-right min-w-[260px] flex items-center gap-2 ${
               t.type === 'success'
                 ? 'bg-green-600 text-white'
                 : t.type === 'error'
                   ? 'bg-red-600 text-white'
-                  : 'bg-gray-900 text-white'
+                  : t.type === 'warning'
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-gray-900 text-white'
             }`,
           },
-          t.message
+          t.message,
+          createElement(
+            'button',
+            {
+              type: 'button',
+              onClick: () => dismiss(t.id),
+              'aria-label': 'Dismiss notification',
+              className: 'ml-2 text-white/80 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded',
+            },
+            '×'
+          )
         )
       )
     );
     return container;
   };
 
-  return { push, ToastContainer };
+  return { push, dismiss, ToastContainer };
 }

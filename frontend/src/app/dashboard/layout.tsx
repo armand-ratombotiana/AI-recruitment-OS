@@ -60,6 +60,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         Skip to main content
       </a>
+      <a
+        href="#primary-nav"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-32 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:shadow-lg"
+      >
+        Skip to navigation
+      </a>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 dark:from-surface-950 dark:via-surface-900 dark:to-surface-950">
         {sidebarOpen && (
           <div
@@ -93,7 +99,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
           </div>
 
-          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto" aria-label="Main">
+          <nav id="primary-nav" className="flex-1 p-3 space-y-0.5 overflow-y-auto" aria-label="Main">
             <p className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
               {translate(locale, 'nav.workspace')}
             </p>

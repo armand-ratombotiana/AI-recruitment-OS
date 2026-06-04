@@ -80,17 +80,17 @@ export default function RegisterPage() {
 
   if (step === 'verify') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-6">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-gray-200 p-8 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-950 p-6">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
           <div className="mx-auto mb-6 h-16 w-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
             <Mail className="h-8 w-8 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Check your inbox</h2>
-          <p className="text-sm text-gray-600 mb-1">We sent a verification link to</p>
-          <p className="text-sm font-semibold text-gray-900 mb-6">{email}</p>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left text-sm text-blue-900 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Check your inbox</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">We sent a verification link to</p>
+          <p className="text-sm font-semibold text-gray-900 dark:text-white mb-6">{email}</p>
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-left text-sm text-blue-900 dark:text-blue-200 mb-6">
             <p className="font-semibold mb-1">Next steps:</p>
-            <ol className="space-y-1 text-xs text-blue-800 list-decimal pl-4">
+            <ol className="space-y-1 text-xs text-blue-800 dark:text-blue-300 list-decimal pl-4">
               <li>Click the link in the email to verify your account</li>
               <li>Set up your company profile</li>
               <li>Invite your team members</li>
@@ -155,20 +155,20 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-white">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-white dark:bg-gray-950">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2.5 mb-10">
             <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
               <Bot className="h-5 w-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-gray-900">AI-ROS</span>
+            <span className="text-lg font-bold text-gray-900 dark:text-white">AI-ROS</span>
           </div>
 
-          <h2 className="text-3xl font-bold text-gray-900 mb-1">Create your account</h2>
-          <p className="text-gray-500 text-sm mb-8">Start your 14-day free trial — no credit card needed</p>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Create your account</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-8">Start your 14-day free trial — no credit card needed</p>
 
           {error && (
-            <div role="alert" className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-start gap-2">
+            <div role="alert" className="mb-6 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400 flex items-start gap-2">
               <svg className="h-4 w-4 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               <span>{error}</span>
             </div>
@@ -176,55 +176,55 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1.5">Full name</label>
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Full name</label>
               <input
                 id="fullName"
                 type="text"
                 value={fullName}
                 onChange={(e) => { setFullName(e.target.value); if (touched.fullName && !e.target.value.trim()) setError(''); }}
                 onBlur={() => setTouched((t) => ({ ...t, fullName: true }))}
-                className={`w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${touched.fullName && !fullName.trim() ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                className={`w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${touched.fullName && !fullName.trim() ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/30' : 'border-gray-300 dark:border-gray-700'}`}
                 placeholder="John Doe"
                 autoComplete="name"
                 required
               />
               {touched.fullName && !fullName.trim() && (
-                <p className="mt-1.5 text-xs text-red-600">Please enter your full name</p>
+                <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">Please enter your full name</p>
               )}
             </div>
 
             <div>
-              <label htmlFor="reg-email" className="block text-sm font-medium text-gray-700 mb-1.5">Work email</label>
+              <label htmlFor="reg-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Work email</label>
               <input
                 id="reg-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={() => setTouched((t) => ({ ...t, email: true }))}
-                className={`w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${touched.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                className={`w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${touched.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/30' : 'border-gray-300 dark:border-gray-700'}`}
                 placeholder="you@company.com"
                 autoComplete="email"
                 required
               />
-              <p className="mt-1.5 text-xs text-gray-400 flex items-center gap-1">
+              <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
                 <Sparkles className="h-3 w-3" /> We&apos;ll never share your email.
               </p>
             </div>
 
             <div>
-              <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+              <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
               <div className="relative">
                 <input
                   id="reg-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3.5 py-2.5 pr-10 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                  className="w-full px-3.5 py-2.5 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                   placeholder="••••••••"
                   autoComplete="new-password"
                   required
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" aria-label={showPassword ? 'Hide password' : 'Show password'}>
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
@@ -236,18 +236,18 @@ export default function RegisterPage() {
                       {[0, 1, 2, 3, 4].map((i) => (
                         <div
                           key={i}
-                          className={`h-1.5 flex-1 rounded-full transition-all ${i < strength ? STRENGTH_COLORS[strength] : 'bg-gray-200'}`}
+                          className={`h-1.5 flex-1 rounded-full transition-all ${i < strength ? STRENGTH_COLORS[strength] : 'bg-gray-200 dark:bg-gray-700'}`}
                         />
                       ))}
                     </div>
-                    <span className="text-xs font-semibold text-gray-600 w-20 text-right">{STRENGTH_LABELS[strength]}</span>
+                    <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 w-20 text-right">{STRENGTH_LABELS[strength]}</span>
                   </div>
                   <ul className="grid grid-cols-1 gap-1">
                     {RULES.map((r) => {
                       const ok = r.test(password);
                       return (
-                        <li key={r.id} className={`flex items-center gap-1.5 text-xs ${ok ? 'text-green-700' : 'text-gray-500'}`}>
-                          <span className={`h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0 ${ok ? 'bg-green-500' : 'bg-gray-200'}`}>
+                        <li key={r.id} className={`flex items-center gap-1.5 text-xs ${ok ? 'text-green-700 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                          <span className={`h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0 ${ok ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'}`}>
                             {ok && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
                           </span>
                           {r.label}
@@ -260,7 +260,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="confirm" className="block text-sm font-medium text-gray-700 mb-1.5">Confirm password</label>
+              <label htmlFor="confirm" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Confirm password</label>
               <div className="relative">
                 <input
                   id="confirm"
@@ -269,18 +269,18 @@ export default function RegisterPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   onBlur={() => setTouched((t) => ({ ...t, confirm: true }))}
                   className={`w-full px-3.5 py-2.5 pr-10 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${
-                    touched.confirm && confirmPassword && password !== confirmPassword ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    touched.confirm && confirmPassword && password !== confirmPassword ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/30' : 'border-gray-300 dark:border-gray-700'
                   }`}
                   placeholder="••••••••"
                   autoComplete="new-password"
                   required
                 />
-                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}>
+                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}>
                   {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               {touched.confirm && confirmPassword && password !== confirmPassword && (
-                <p className="mt-1.5 text-xs text-red-600">Passwords do not match</p>
+                <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">Passwords do not match</p>
               )}
             </div>
 
@@ -289,9 +289,9 @@ export default function RegisterPage() {
                 type="checkbox"
                 checked={agreeTerms}
                 onChange={(e) => setAgreeTerms(e.target.checked)}
-                className="h-4 w-4 mt-0.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 shrink-0"
+                className="h-4 w-4 mt-0.5 text-blue-600 border-gray-300 dark:border-gray-700 rounded focus:ring-blue-500 shrink-0"
               />
-              <span className="text-xs text-gray-600 leading-relaxed">
+              <span className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                 I agree to the <a href="#" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:text-blue-700 link-underline">Terms of Service</a>, <a href="#" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:text-blue-700 link-underline">Privacy Policy</a>, and <a href="#" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:text-blue-700 link-underline">Data Processing Agreement</a>.
               </span>
             </label>
@@ -309,9 +309,9 @@ export default function RegisterPage() {
           </form>
 
           <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200 dark:border-gray-700" /></div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-3 text-gray-400 uppercase tracking-wider">Or sign up with</span>
+              <span className="bg-white dark:bg-gray-950 px-3 text-gray-400 dark:text-gray-500 uppercase tracking-wider">Or sign up with</span>
             </div>
           </div>
 
@@ -327,16 +327,16 @@ export default function RegisterPage() {
                 type="button"
                 onClick={() => handleSSO(p.id)}
                 disabled={!!ssoProvider}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
                 aria-label={`Sign up with ${p.label}`}
               >
-                {ssoProvider === p.id ? <span className="h-3.5 w-3.5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" /> : p.path}
+                {ssoProvider === p.id ? <span className="h-3.5 w-3.5 border-2 border-gray-300 dark:border-gray-600 border-t-blue-600 rounded-full animate-spin" /> : p.path}
                 {p.label}
               </button>
             ))}
           </div>
 
-          <p className="mt-8 text-center text-sm text-gray-500">
+          <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Already have an account?{' '}
             <Link href="/login" className="text-blue-600 hover:text-blue-700 font-semibold link-underline">
               Sign in

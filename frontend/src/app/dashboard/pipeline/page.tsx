@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Briefcase, Loader2, Mail, MapPin } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Briefcase, Loader2, Mail, MapPin, RefreshCw } from 'lucide-react';
 import { api } from '@/services/api/client';
 import { EmptyState, Button, Skeleton, useToast, Modal, ConfirmDialog } from '@/components';
 
@@ -22,26 +22,33 @@ export default function PipelinePage() {
   const [moving, setMoving] = useState<string | null>(null);
   const [detail, setDetail] = useState<any | null>(null);
   const [confirmMove, setConfirmMove] = useState<{ id: string; from: string; to: string } | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const { push, ToastContainer } = useToast();
 
-  const load = async () => {
-    setLoading(true);
+  const load = useCallback(async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
     setError(null);
     try {
-      const d = await api.listCandidates({ page_size: '100' });
+      const d: any = await api.candidates.list({ page_size: '100' });
       const items = Array.isArray(d) ? d : (d?.data || d?.items || []);
       setCandidates(items);
+      setLastRefresh(new Date());
     } catch (err: any) {
       setError(err?.message || 'Failed to load pipeline');
-      setCandidates([]);
+      if (!isBackground) setCandidates([]);
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    load();
-  }, []);
+    load(false);
+  }, [load]);
+
+  useEffect(() => {
+    const timer = setInterval(() => load(true), 60_000);
+    return () => clearInterval(timer);
+  }, [load]);
 
   const doMove = async (id: string, newStatus: string) => {
     setMoving(id);
@@ -76,11 +83,24 @@ export default function PipelinePage() {
   return (
     <div className="space-y-6">
       <ToastContainer />
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Pipeline</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {candidates.length} candidates across {COLUMNS.length} stages. Drag to move between stages.
-        </p>
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Pipeline</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {candidates.length} candidates across {COLUMNS.length} stages. Drag to move between stages.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {lastRefresh && (
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 inline-flex items-center gap-1.5" aria-live="polite">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-500 pulse-dot" aria-hidden="true" />
+              Live · {lastRefresh.toLocaleTimeString()}
+            </span>
+          )}
+          <Button variant="ghost" size="sm" leftIcon={<RefreshCw className="h-3.5 w-3.5" />} onClick={() => load(false)} aria-label="Refresh pipeline">
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -92,7 +112,7 @@ export default function PipelinePage() {
           icon={<Briefcase className="h-12 w-12" />}
           title="Couldn’t load pipeline"
           description={error}
-          action={<Button variant="primary" onClick={load}>Retry</Button>}
+          action={<Button variant="primary" onClick={() => load(false)}>Retry</Button>}
         />
       ) : candidates.length === 0 ? (
         <EmptyState

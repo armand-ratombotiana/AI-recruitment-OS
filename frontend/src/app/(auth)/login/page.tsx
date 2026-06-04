@@ -141,17 +141,17 @@ function LoginForm() {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-white">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-white dark:bg-gray-950">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2.5 mb-10">
             <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
               <Bot className="h-5 w-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-gray-900">AI-ROS</span>
+            <span className="text-lg font-bold text-gray-900 dark:text-white">AI-ROS</span>
           </div>
 
-          <h2 className="text-3xl font-bold text-gray-900 mb-1">Welcome back</h2>
-          <p className="text-gray-500 text-sm mb-1">Sign in to your recruitment workspace</p>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Welcome back</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">Sign in to your recruitment workspace</p>
           {ENABLE_DEMO && (
             <button type="button" onClick={fillDemo} className="text-xs text-blue-600 hover:text-blue-700 font-medium mb-8 inline-flex items-center gap-1 link-underline">
               <Sparkles className="h-3 w-3" /> Use demo credentials
@@ -159,7 +159,7 @@ function LoginForm() {
           )}
 
           {error && (
-            <div role="alert" className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-start gap-2">
+            <div role="alert" className="mb-6 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400 flex items-start gap-2">
               <svg className="h-4 w-4 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               <span>{error}</span>
             </div>
@@ -167,7 +167,7 @@ function LoginForm() {
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 Work email
               </label>
               <div className="relative">
@@ -179,7 +179,7 @@ function LoginForm() {
                   onChange={(e) => { setEmail(e.target.value); if (touched.email) setEmailError(validateEmail(e.target.value)); }}
                   onBlur={() => { setTouched((t) => ({ ...t, email: true })); setEmailError(validateEmail(email)); }}
                   className={`w-full px-3.5 py-2.5 pr-10 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${
-                    emailError ? 'border-red-300 bg-red-50' : emailValid ? 'border-green-300 bg-green-50/30' : 'border-gray-300'
+                    emailError ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/30' : emailValid ? 'border-green-300 dark:border-green-700 bg-green-50/30 dark:bg-green-950/30' : 'border-gray-300 dark:border-gray-700'
                   }`}
                   placeholder="you@company.com"
                   aria-invalid={!!emailError}
@@ -191,18 +191,18 @@ function LoginForm() {
                 )}
               </div>
               {emailError ? (
-                <p id="email-error" className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                <p id="email-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
                   <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
                   {emailError}
                 </p>
               ) : (
-                <p id="email-help" className="mt-1.5 text-xs text-gray-400">We&apos;ll never share your email.</p>
+                <p id="email-help" className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">We&apos;ll never share your email.</p>
               )}
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1.5">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
                 <a href="#" onClick={(e) => e.preventDefault()} className="text-xs text-blue-600 hover:text-blue-700 link-underline">Forgot password?</a>
               </div>
               <div className="relative">
@@ -213,7 +213,7 @@ function LoginForm() {
                   onChange={(e) => { setPassword(e.target.value); if (touched.password) setPasswordError(validatePassword(e.target.value)); }}
                   onBlur={() => { setTouched((t) => ({ ...t, password: true })); setPasswordError(validatePassword(password)); }}
                   className={`w-full px-3.5 py-2.5 pr-10 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${
-                    passwordError ? 'border-red-300 bg-red-50' : passwordValid ? 'border-green-300 bg-green-50/30' : 'border-gray-300'
+                    passwordError ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/30' : passwordValid ? 'border-green-300 dark:border-green-700 bg-green-50/30 dark:bg-green-950/30' : 'border-gray-300 dark:border-gray-700'
                   }`}
                   placeholder="••••••••"
                   aria-invalid={!!passwordError}
@@ -223,14 +223,14 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               {passwordError && (
-                <p id="password-error" className="mt-1.5 text-xs text-red-600">{passwordError}</p>
+                <p id="password-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400">{passwordError}</p>
               )}
             </div>
 
@@ -240,9 +240,9 @@ function LoginForm() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-700 rounded focus:ring-blue-500"
                 />
-                <span className="ml-2 text-sm text-gray-600 group-hover:text-gray-900">Remember me for 30 days</span>
+                <span className="ml-2 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white">Remember me for 30 days</span>
               </label>
             </div>
 
@@ -259,9 +259,9 @@ function LoginForm() {
           </form>
 
           <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200 dark:border-gray-700" /></div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-3 text-gray-400 uppercase tracking-wider">Or continue with</span>
+              <span className="bg-white dark:bg-gray-950 px-3 text-gray-400 dark:text-gray-500 uppercase tracking-wider">Or continue with</span>
             </div>
           </div>
 
@@ -278,11 +278,11 @@ function LoginForm() {
                   type="button"
                   onClick={() => handleSSO(p.id)}
                   disabled={!!ssoProvider}
-                  className={`flex items-center justify-center gap-2 px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-sm font-medium text-gray-700 transition disabled:opacity-50 ${p.color} hover:bg-gray-50`}
+                  className={`flex items-center justify-center gap-2 px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 transition disabled:opacity-50 ${p.color} hover:bg-gray-50 dark:hover:bg-gray-800`}
                   aria-label={`Sign in with ${p.label}`}
                 >
                   {ssoProvider === p.id ? (
-                    <span className="h-3.5 w-3.5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+                    <span className="h-3.5 w-3.5 border-2 border-gray-300 dark:border-gray-600 border-t-blue-600 rounded-full animate-spin" />
                   ) : (
                     <>
                       {p.id === 'google' && (
@@ -322,7 +322,7 @@ function LoginForm() {
             )}
           </div>
 
-          <p className="mt-8 text-center text-sm text-gray-500">
+          <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Don&apos;t have an account?{' '}
             <Link href="/register" className="text-blue-600 hover:text-blue-700 font-semibold link-underline">
               Start free trial

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Plus,
   Calendar,
@@ -73,23 +73,28 @@ export default function InterviewsPage() {
   const [submitting, setSubmitting] = useState(false);
   const { push, ToastContainer } = useToast();
 
-  const load = async () => {
-    setLoading(true);
+  const load = useCallback(async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
     setError(null);
     try {
-      const d = await api.listInterviews();
+      const d: any = await api.interviews.list();
       setInterviews(d?.data || []);
     } catch (err: any) {
       setError(err?.message || 'Failed to load interviews');
-      setInterviews([]);
+      if (!isBackground) setInterviews([]);
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    load();
-  }, []);
+    load(false);
+  }, [load]);
+
+  useEffect(() => {
+    const timer = setInterval(() => load(true), 60_000);
+    return () => clearInterval(timer);
+  }, [load]);
 
   const handleStart = async (id: string) => {
     try {
@@ -282,7 +287,7 @@ export default function InterviewsPage() {
           icon={<Calendar className="h-12 w-12" />}
           title="Couldn't load interviews"
           description={error}
-          action={<Button variant="primary" onClick={load}>Retry</Button>}
+          action={<Button variant="primary" onClick={() => load(false)}>Retry</Button>}
         />
       ) : filtered.length === 0 ? (
         <EmptyState
