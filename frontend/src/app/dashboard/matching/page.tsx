@@ -106,22 +106,22 @@ export default function MatchingPage() {
         />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Top Candidates</h2>
-              {scoring && <span className="text-xs text-gray-500 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Scoring…</span>}
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Top Candidates</h2>
+              {scoring && <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Scoring…</span>}
             </div>
             <div className="space-y-3">
               {list.length === 0 ? (
-                <p className="text-center py-6 text-gray-500 text-sm">No candidates yet</p>
+                <p className="text-center py-6 text-gray-500 dark:text-gray-400 text-sm">No candidates yet</p>
               ) : (
                 list.map((c) => {
                   const score = typeof c.match_score === 'number' ? c.match_score * 100 : null;
                   return (
-                    <div key={c.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                    <div key={c.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm text-gray-900 truncate">{c.full_name || '—'}</p>
-                        <p className="text-xs text-gray-500 truncate">{c.email}</p>
+                        <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{c.full_name || '—'}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{c.email}</p>
                         {c.recommendation && (
                           <p className="text-[10px] text-purple-700 mt-0.5 italic">{c.recommendation}</p>
                         )}
@@ -133,7 +133,7 @@ export default function MatchingPage() {
                           {Math.round(score)}%
                         </span>
                       ) : (
-                        <span className="ml-2 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">—</span>
+                        <span className="ml-2 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">—</span>
                       )}
                     </div>
                   );
@@ -142,20 +142,20 @@ export default function MatchingPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold mb-4">Open Positions</h2>
+          <div className="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Open Positions</h2>
             <div className="space-y-3">
               {jobs.length === 0 ? (
-                <p className="text-center py-6 text-gray-500 text-sm">No open positions</p>
+                <p className="text-center py-6 text-gray-500 dark:text-gray-400 text-sm">No open positions</p>
               ) : (
                 jobs.map((j) => (
-                  <div key={j.id} className="p-3 bg-gray-50 rounded-lg">
-                    <p className="font-medium text-sm text-gray-900">{j.title}</p>
-                    <p className="text-xs text-gray-500">{j.department || 'General'} · {j.location || 'Remote'}</p>
+                  <div key={j.id} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <p className="font-medium text-sm text-gray-900 dark:text-white">{j.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{j.department || 'General'} · {j.location || 'Remote'}</p>
                     {Array.isArray(j.skills) && j.skills.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {j.skills.slice(0, 4).map((s: string) => (
-                          <span key={s} className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-medium">
+                          <span key={s} className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium">
                             {s}
                           </span>
                         ))}
@@ -170,8 +170,8 @@ export default function MatchingPage() {
       )}
 
       {!loading && !error && Object.keys(scored).length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-purple-600" />
             Match factor breakdown
           </h2>
@@ -180,19 +180,19 @@ export default function MatchingPage() {
               .filter((c) => c.factors && Object.keys(c.factors).length > 0)
               .slice(0, 5)
               .map((c) => (
-                <div key={c.id} className="border border-gray-200 rounded-lg p-3">
-                  <p className="text-sm font-semibold text-gray-900 mb-2">{c.full_name}</p>
+                <div key={c.id} className="border border-gray-200 dark:border-gray-800 rounded-lg p-3">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">{c.full_name}</p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {Object.entries(c.factors || {}).map(([k, v]) => {
                       const pct = typeof v === 'number' ? Math.round(v * 100) : 0;
                       return (
                         <div key={k}>
-                          <p className="text-[10px] text-gray-500 capitalize">{k.replace(/_/g, ' ')}</p>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400 capitalize">{k.replace(/_/g, ' ')}</p>
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 h-1.5 bg-gray-100 rounded overflow-hidden">
+                            <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
                               <div className="h-full bg-gradient-to-r from-blue-500 to-purple-500" style={{ width: `${pct}%` }} />
                             </div>
-                            <span className="text-xs font-bold text-gray-700 w-9 text-right">{pct}%</span>
+                            <span className="text-xs font-bold text-gray-700 dark:text-gray-300 w-9 text-right">{pct}%</span>
                           </div>
                         </div>
                       );
@@ -201,7 +201,7 @@ export default function MatchingPage() {
                   {Array.isArray(c.matching_skills) && c.matching_skills.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {c.matching_skills.slice(0, 5).map((s) => (
-                        <span key={s} className="text-[10px] px-1.5 py-0.5 rounded bg-green-50 text-green-700 font-medium">✓ {s}</span>
+                        <span key={s} className="text-[10px] px-1.5 py-0.5 rounded bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-medium">✓ {s}</span>
                       ))}
                     </div>
                   )}

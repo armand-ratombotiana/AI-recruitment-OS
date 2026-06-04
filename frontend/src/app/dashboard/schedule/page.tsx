@@ -106,7 +106,7 @@ export default function SchedulePage() {
               key={r}
               onClick={() => setRange(r)}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize ${
-                range === r ? 'bg-blue-600 text-white' : 'border border-gray-200 hover:bg-gray-50'
+                range === r ? 'bg-blue-600 text-white' : 'border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800'
               }`}
             >
               {r === 'today' ? 'Today' : r === 'week' ? 'This Week' : 'This Month'}
@@ -115,10 +115,10 @@ export default function SchedulePage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
         {loading ? (
           <div className="space-y-3">
-            {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />)}
+            {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />)}
           </div>
         ) : error ? (
           <EmptyState
@@ -145,18 +145,18 @@ export default function SchedulePage() {
               const time = isNaN(t.getTime()) ? '—' : t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
               const date = isNaN(t.getTime()) ? '' : t.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
               return (
-                <div key={e.id} className={`flex items-center gap-4 p-4 rounded-lg border-l-4 ${TYPE_COLOR[e.type] || 'border-gray-300 bg-gray-50'}`}>
+                <div key={e.id} className={`flex items-center gap-4 p-4 rounded-lg border-l-4 ${TYPE_COLOR[e.type] || 'border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800'}`}>
                   <div className="text-center w-16 shrink-0">
-                    <p className="text-[10px] text-gray-500 uppercase font-bold">{date.split(',')[0]}</p>
-                    <p className="text-lg font-bold text-gray-900">{t.getDate()}</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold">{date.split(',')[0]}</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white">{t.getDate()}</p>
                   </div>
-                  <span className="text-sm font-mono font-medium text-gray-500 w-14 shrink-0">{time}</span>
+                  <span className="text-sm font-mono font-medium text-gray-500 dark:text-gray-400 w-14 shrink-0">{time}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-gray-900 truncate">
+                    <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">
                       {TYPE_ICON[e.type] || '📅'}{' '}
                       {e.candidate_name || e.candidate?.full_name || 'Candidate'} — {e.job_title || e.job?.title || e.type}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                       {e.duration_min || 60} min · {e.location || 'Remote'} · {e.status}
                     </p>
                   </div>

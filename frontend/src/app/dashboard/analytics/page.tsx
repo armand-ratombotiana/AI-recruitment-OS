@@ -67,7 +67,7 @@ export default function AnalyticsPage() {
             <button
               key={r}
               onClick={() => setRange(r)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium ${range === r ? 'bg-blue-600 text-white' : 'border border-gray-200 hover:bg-gray-50'}`}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium ${range === r ? 'bg-blue-600 text-white' : 'border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
             >
               {r}
             </button>
@@ -106,8 +106,8 @@ export default function AnalyticsPage() {
                   return (
                     <div key={i} className="space-y-1">
                       <div className="flex justify-between text-sm">
-                        <span className="font-semibold text-gray-700">{s.stage || s.name || `Stage ${i + 1}`}</span>
-                        <span className="text-gray-500">{count.toLocaleString()}</span>
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">{s.stage || s.name || `Stage ${i + 1}`}</span>
+                        <span className="text-gray-500 dark:text-gray-400">{count.toLocaleString()}</span>
                       </div>
                       <div
                         className={`h-7 rounded-md bg-gradient-to-r ${colors[i % colors.length]} flex items-center px-3 text-white text-xs font-bold`}
@@ -149,13 +149,13 @@ export default function AnalyticsPage() {
                   return (
                     <div key={ag.id || ag.type || i} className="space-y-1">
                       <div className="flex justify-between text-sm">
-                        <span className="font-semibold text-gray-700 truncate flex items-center gap-1.5">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300 truncate flex items-center gap-1.5">
                           <Sparkles className="h-3.5 w-3.5 text-purple-500" />
                           {ag.name || ag.type || 'Agent'}
                         </span>
-                        <span className="text-gray-500">{tasks.toLocaleString()} tasks</span>
+                        <span className="text-gray-500 dark:text-gray-400">{tasks.toLocaleString()} tasks</span>
                       </div>
-                      <div className="h-5 bg-gray-100 rounded overflow-hidden">
+                      <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-purple-500 to-blue-500"
                           style={{ width: `${widthPct}%` }}
@@ -163,7 +163,7 @@ export default function AnalyticsPage() {
                         />
                       </div>
                       {typeof ag.confidence === 'number' && (
-                        <p className="text-[10px] text-gray-500">avg confidence {Math.round(ag.confidence * 100)}%</p>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400">avg confidence {Math.round(ag.confidence * 100)}%</p>
                       )}
                     </div>
                   );
@@ -186,9 +186,9 @@ export default function AnalyticsPage() {
               { label: 'Rejections', value: d.rejections_count ?? 0 },
               { label: 'Offer acceptance', value: d.offer_acceptance_rate != null ? `${d.offer_acceptance_rate}%` : '—' },
             ].map((s, i) => (
-              <div key={i} className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-500">{s.label}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{s.value}</p>
+              <div key={i} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p className="text-xs text-gray-500 dark:text-gray-400">{s.label}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{s.value}</p>
               </div>
             ))}
           </div>

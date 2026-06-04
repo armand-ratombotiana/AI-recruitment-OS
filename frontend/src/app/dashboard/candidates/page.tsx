@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Plus,
   Search,
@@ -69,7 +69,7 @@ export default function CandidatesPage() {
   const [submitting, setSubmitting] = useState(false);
   const { push, ToastContainer } = useToast();
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -81,11 +81,12 @@ export default function CandidatesPage() {
     } finally {
       setLoading(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   const handleEnrich = async (id: string) => {
     setEnriching((p) => new Set(p).add(id));
