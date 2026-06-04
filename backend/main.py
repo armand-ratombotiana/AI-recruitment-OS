@@ -98,6 +98,14 @@ app = FastAPI(
         {"name": "WebSocket", "description": "Real-time collaboration via WebSocket connections"},
         {"name": "Mailing", "description": "Transactional email delivery (SMTP/mock) for account validation, password resets, and notifications"},
         {"name": "Health", "description": "Service health checks and readiness probes"},
+        {"name": "Exports", "description": "CSV/XLSX/PDF analytics and reporting exports with signed download URLs"},
+        {"name": "Webhooks", "description": "Outgoing webhook subscriptions with HMAC signing and retry"},
+        {"name": "Calendar", "description": "Google/Outlook calendar integration and interview sync"},
+        {"name": "Activity", "description": "Tenant and per-user activity feed for the dashboard widget"},
+        {"name": "Onboarding", "description": "Multi-step onboarding flow with completion tracking"},
+        {"name": "Support", "description": "Lightweight in-app support ticketing"},
+        {"name": "Batch", "description": "Bulk import / update / delete operations"},
+        {"name": "Background Jobs", "description": "Background job status, history, cancellation"},
     ],
     lifespan=lifespan,
 )
@@ -236,5 +244,25 @@ include_router_safe(app, "apps.talent_intelligence_service.main", "router", "/ap
 include_router_safe(app, "apps.workflow_automation_service.main", "router", "/api/v1/workflow-automation", ["Workflow Automation"])
 include_router_safe(app, "apps.sso_service.main", "router", "/api/v1/sso", ["SSO"])
 include_router_safe(app, "apps.innovation_service.main", "router", "/api/v1/innovations", ["Innovation"])
+
+# ── New production-grade routers ─────────────────────────────────────────────
+include_router_safe(app, "apps.export_service.main", "router", "/api/v1/exports", ["Exports"])
+# Mount the same export router under /analytics/export/* to satisfy the
+# spec request for `GET /api/v1/analytics/export/candidates` etc.
+include_router_safe(app, "apps.export_service.main", "router", "/api/v1/analytics/export", ["Exports"])
+include_router_safe(app, "apps.webhooks_service.main", "router", "/api/v1/webhooks", ["Webhooks"])
+include_router_safe(app, "apps.search_service.main", "router", "/api/v1/global-search", ["Search"])
+# Also expose the global search router under /api/v1/search so the request
+# GET /api/v1/search?q=... matches the spec. POST endpoints on the
+# vector_search_service (e.g. POST /api/v1/search/candidates) still win
+# because they target different HTTP methods + paths.
+include_router_safe(app, "apps.search_service.main", "router", "/api/v1/search", ["Search"])
+include_router_safe(app, "apps.calendar_service.main", "router", "/api/v1/calendar", ["Calendar"])
+include_router_safe(app, "apps.health_service.main", "router", "/api/v1/health", ["Health"])
+include_router_safe(app, "apps.activity_service.main", "router", "/api/v1/activity", ["Activity"])
+include_router_safe(app, "apps.onboarding_service.main", "router", "/api/v1/onboarding", ["Onboarding"])
+include_router_safe(app, "apps.support_service.main", "router", "/api/v1/support", ["Support"])
+include_router_safe(app, "apps.batch_service.main", "router", "/api/v1", ["Batch"])
+include_router_safe(app, "apps.jobs_status_service.main", "router", "/api/v1/background-jobs", ["Background Jobs"])
 
 print("All routers loaded!")
