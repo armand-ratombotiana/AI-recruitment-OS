@@ -11,7 +11,7 @@ interface Message {
   content: string;
   agentName?: string;
   confidence?: number;
-  reasoning?: string[];
+  reasoning?: any[];
   timestamp: string;
 }
 

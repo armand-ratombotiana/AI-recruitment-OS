@@ -11,8 +11,9 @@ interface ChatMessage {
   content: string;
   agentName?: string;
   confidence?: number;
-  reasoning?: string[];
+  reasoning?: any[];
   timestamp: string;
+  feedback?: 'up' | 'down';
 }
 
 const SUGGESTED = [

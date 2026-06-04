@@ -22,6 +22,9 @@ import {
   Check,
   FileText,
   Download,
+  Loader2,
+  AlertCircle,
+  Activity,
 } from 'lucide-react';
 import { api } from '@/services/api/client';
 import {
@@ -31,6 +34,9 @@ import {
   Modal,
   EmptyState,
   Skeleton,
+  ConfirmDialog,
+  Switch,
+  useToast,
 } from '@/components';
 
 interface ApiKey {
@@ -55,7 +61,10 @@ interface Invoice {
   id: string;
   date: string;
   amount: number;
-  status: 'paid' | 'pending' | 'overdue';
+  status: 'paid' | 'pending' | 'overdue' | 'open';
+  number?: string;
+  currency?: string;
+  total?: number;
 }
 
 const TABS = [
@@ -69,19 +78,6 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]['id'];
 
-const SAMPLE_TEAM: TeamMember[] = [
-  { id: 't1', name: 'Sarah Chen', email: 'sarah@example.com', role: 'admin', status: 'active', last_active: '2 min ago' },
-  { id: 't2', name: 'Marcus Lee', email: 'marcus@example.com', role: 'recruiter', status: 'active', last_active: '1 hour ago' },
-  { id: 't3', name: 'Priya Patel', email: 'priya@example.com', role: 'hiring_manager', status: 'active', last_active: '3 hours ago' },
-  { id: 't4', name: 'Jordan Kim', email: 'jordan@example.com', role: 'viewer', status: 'invited', last_active: 'never' },
-];
-
-const SAMPLE_INVOICES: Invoice[] = [
-  { id: 'inv-2026-05', date: '2026-05-01', amount: 499, status: 'paid' },
-  { id: 'inv-2026-04', date: '2026-04-01', amount: 499, status: 'paid' },
-  { id: 'inv-2026-03', date: '2026-03-01', amount: 499, status: 'paid' },
-];
-
 export default function SettingsPage() {
   const [tab, setTab] = useState<TabId>('profile');
   const [profile, setProfile] = useState<{ full_name: string; email: string; phone: string; bio: string; avatar?: string; id?: string }>({
@@ -92,18 +88,13 @@ export default function SettingsPage() {
   });
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const { success, error: errorNotify } = useNotification();
 
   useEffect(() => {
     let cancelled = false;
-    const token = api.getToken();
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/auth/me`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    })
-      .then((r) => (r.ok ? r.json() : null))
+    setLoadingProfile(true);
+    api.me()
       .then((data: any) => {
         if (cancelled || !data) return;
         setProfile((p) => ({
@@ -116,23 +107,25 @@ export default function SettingsPage() {
           avatar: data?.avatar_url,
         }));
       })
-      .catch(() => {})
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || 'Could not load profile');
+      })
       .finally(() => { if (!cancelled) setLoadingProfile(false); });
     return () => { cancelled = true; };
   }, []);
 
   const saveProfile = async () => {
+    if (!profile.full_name.trim()) {
+      errorNotify('Name required', 'Please enter your full name');
+      return;
+    }
     setSavingProfile(true);
     try {
-      const token = api.getToken();
-      const id = profile.id;
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/users/${id || 'me'}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ full_name: profile.full_name, phone: profile.phone, bio: profile.bio }),
+      const id = profile.id || 'me';
+      await api.updateUser(id, {
+        full_name: profile.full_name,
+        phone: profile.phone || undefined,
+        bio: profile.bio || undefined,
       });
       success('Profile saved', 'Your changes have been updated.');
     } catch (err: any) {
@@ -145,8 +138,8 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage your account, team, and billing preferences.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your account, team, and billing preferences.</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
@@ -163,8 +156,8 @@ export default function SettingsPage() {
                   onClick={() => setTab(t.id)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition shrink-0 ${
                     active
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-blue-50 text-blue-700 dark:bg-brand-500/20 dark:text-brand-300'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-surface-800 dark:hover:text-white'
                   }`}
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
@@ -183,6 +176,7 @@ export default function SettingsPage() {
               loading={loadingProfile}
               saving={savingProfile}
               onSave={saveProfile}
+              loadError={loadError}
             />
           )}
           {tab === 'notifications' && <NotificationsTab />}
@@ -202,12 +196,14 @@ function ProfileTab({
   loading,
   saving,
   onSave,
+  loadError,
 }: {
   profile: { full_name: string; email: string; phone: string; bio: string; avatar?: string };
   setProfile: (updater: (p: any) => any) => void;
   loading: boolean;
   saving: boolean;
   onSave: () => void;
+  loadError: string | null;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const { success } = useNotification();
@@ -240,6 +236,13 @@ function ProfileTab({
 
   return (
     <div className="space-y-6">
+      {loadError && (
+        <div className="p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg text-sm text-amber-900 dark:text-amber-200 flex items-start gap-2">
+          <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+          <span>{loadError}. You can still update your profile below — your changes will be saved when the API is reachable.</span>
+        </div>
+      )}
+
       <Section title="Profile picture" description="A square image works best, max 2MB.">
         <div className="flex items-center gap-4">
           <div className="h-20 w-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
@@ -265,26 +268,27 @@ function ProfileTab({
 
       <Section title="Personal info">
         <div className="grid sm:grid-cols-2 gap-3">
-          <Field label="Full name" value={profile.full_name} onChange={(v) => setProfile((p) => ({ ...p, full_name: v }))} />
+          <Field label="Full name *" value={profile.full_name} onChange={(v) => setProfile((p) => ({ ...p, full_name: v }))} />
           <Field label="Email" value={profile.email} disabled hint="Email is managed by your account." />
-          <Field label="Phone" value={profile.phone} onChange={(v) => setProfile((p) => ({ ...p, phone: v }))} placeholder="+1 (555) 000-0000" />
-          <Field label="Role / Title" placeholder="Senior Recruiter" />
+          <Field label="Phone" value={profile.phone} onChange={(v) => setProfile((p) => ({ ...p, phone: v }))} placeholder="+1 (555) 000-0000" type="tel" />
         </div>
         <div className="mt-3">
-          <label className="block text-xs font-semibold text-gray-700 mb-1.5">Bio</label>
+          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Bio</label>
           <textarea
             value={profile.bio}
             onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
             rows={3}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            maxLength={500}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-surface-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-surface-800 dark:text-gray-100"
             placeholder="A short bio to introduce yourself to candidates."
           />
+          <p className="text-xs text-gray-500 mt-1">{profile.bio?.length || 0} / 500</p>
         </div>
       </Section>
 
       <div className="flex justify-end">
-        <Button variant="primary" leftIcon={<Save className="h-4 w-4" />} onClick={onSave} disabled={saving}>
-          {saving ? 'Saving\u2026' : 'Save changes'}
+        <Button variant="primary" leftIcon={saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} onClick={onSave} disabled={saving} loading={saving}>
+          {saving ? 'Saving…' : 'Save changes'}
         </Button>
       </div>
     </div>
@@ -300,7 +304,22 @@ function NotificationsTab() {
     push_daily_digest: false,
     sms_urgent: false,
   });
-  const { success } = useNotification();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const { success, error: errorNotify } = useNotification();
+
+  useEffect(() => {
+    let cancelled = false;
+    api.getNotificationPreferences()
+      .then((data: any) => {
+        if (cancelled || !data) return;
+        const m = data?.preferences || data || {};
+        setPrefs((p) => ({ ...p, ...m }));
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const groups: { title: string; items: { key: keyof typeof prefs; label: string; description: string }[] }[] = [
     {
@@ -315,7 +334,7 @@ function NotificationsTab() {
       title: 'Push notifications',
       items: [
         { key: 'push_mentions', label: 'Mentions', description: 'When someone @-mentions you in a comment.' },
-        { key: 'push_daily_digest', label: 'Daily digest', description: 'A morning summary of yesterday\u2019s activity.' },
+        { key: 'push_daily_digest', label: 'Daily digest', description: 'A morning summary of yesterday’s activity.' },
       ],
     },
     {
@@ -326,18 +345,34 @@ function NotificationsTab() {
     },
   ];
 
+  const save = async () => {
+    setSaving(true);
+    try {
+      await api.updateNotificationPreferences(prefs);
+      success('Preferences saved', 'Your notification settings have been updated.');
+    } catch (err: any) {
+      errorNotify('Save failed', err?.message || 'Could not save preferences');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="space-y-3"><Skeleton height={40} /><Skeleton height={40} /><Skeleton height={40} /></div>;
+  }
+
   return (
     <div className="space-y-6">
       {groups.map((g) => (
         <Section key={g.title} title={g.title}>
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-surface-700">
             {g.items.map((it) => (
               <div key={it.key} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{it.label}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{it.description}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{it.label}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{it.description}</p>
                 </div>
-                <Toggle
+                <Switch
                   checked={!!prefs[it.key]}
                   onChange={(v) => setPrefs((p) => ({ ...p, [it.key]: v }))}
                   label={`Toggle ${it.label}`}
@@ -348,8 +383,8 @@ function NotificationsTab() {
         </Section>
       ))}
       <div className="flex justify-end">
-        <Button variant="primary" leftIcon={<Save className="h-4 w-4" />} onClick={() => success('Preferences saved', 'Your notification settings have been updated.')}>
-          Save preferences
+        <Button variant="primary" leftIcon={saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} onClick={save} loading={saving}>
+          {saving ? 'Saving…' : 'Save preferences'}
         </Button>
       </div>
     </div>
@@ -360,15 +395,11 @@ function SecurityTab() {
   const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
   const [showPw, setShowPw] = useState(false);
   const [twoFa, setTwoFa] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [enablingMfa, setEnablingMfa] = useState(false);
   const { success, error: errorNotify } = useNotification();
 
-  const sessions = [
-    { id: 's1', device: 'MacBook Pro', location: 'San Francisco, CA', current: true, icon: Monitor, last_active: 'Now' },
-    { id: 's2', device: 'iPhone 15', location: 'San Francisco, CA', current: false, icon: Smartphone, last_active: '2 hours ago' },
-    { id: 's3', device: 'Chrome on Windows', location: 'New York, NY', current: false, icon: Globe, last_active: '3 days ago' },
-  ];
-
-  const updatePassword = () => {
+  const updatePassword = async () => {
     if (pw.next.length < 8) {
       errorNotify('Password too short', 'Use at least 8 characters.');
       return;
@@ -377,13 +408,36 @@ function SecurityTab() {
       errorNotify('Mismatch', 'New passwords do not match.');
       return;
     }
-    success('Password updated', 'You can now sign in with your new password.');
-    setPw({ current: '', next: '', confirm: '' });
+    setUpdating(true);
+    try {
+      await api.changePassword({ current_password: pw.current, new_password: pw.next });
+      success('Password updated', 'You can now sign in with your new password.');
+      setPw({ current: '', next: '', confirm: '' });
+    } catch (err: any) {
+      errorNotify('Update failed', err?.message || 'Could not update password');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const toggleMfa = async (next: boolean) => {
+    setEnablingMfa(true);
+    try {
+      if (next) {
+        await api.enableMFA();
+        success('2FA enabled', 'Use your authenticator app to sign in from now on.');
+      }
+      setTwoFa(next);
+    } catch (err: any) {
+      errorNotify('2FA error', err?.message || 'Could not update two-factor authentication');
+    } finally {
+      setEnablingMfa(false);
+    }
   };
 
   return (
     <div className="space-y-6">
-      <Section title="Password" description="Choose a strong password you don\u2019t use anywhere else.">
+      <Section title="Password" description="Choose a strong password you don’t use anywhere else.">
         <div className="space-y-3">
           <div className="relative">
             <Field
@@ -391,11 +445,12 @@ function SecurityTab() {
               type={showPw ? 'text' : 'password'}
               value={pw.current}
               onChange={(v) => setPw((p) => ({ ...p, current: v }))}
+              autoComplete="current-password"
             />
             <button
               type="button"
               onClick={() => setShowPw(!showPw)}
-              className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-9 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
               aria-label={showPw ? 'Hide password' : 'Show password'}
             >
               {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -407,104 +462,86 @@ function SecurityTab() {
             value={pw.next}
             onChange={(v) => setPw((p) => ({ ...p, next: v }))}
             placeholder="At least 8 characters"
+            autoComplete="new-password"
           />
           <Field
             label="Confirm new password"
             type={showPw ? 'text' : 'password'}
             value={pw.confirm}
             onChange={(v) => setPw((p) => ({ ...p, confirm: v }))}
+            autoComplete="new-password"
           />
         </div>
         <div className="mt-4 flex justify-end">
-          <Button variant="primary" onClick={updatePassword}>Update password</Button>
+          <Button variant="primary" onClick={updatePassword} loading={updating} leftIcon={updating ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined}>
+            Update password
+          </Button>
         </div>
       </Section>
 
       <Section title="Two-factor authentication" description="Add an extra layer of security to your account.">
-        <div className="flex items-center justify-between gap-4 p-3 bg-gray-50 rounded-lg">
+        <div className="flex items-center justify-between gap-4 p-3 bg-gray-50 dark:bg-surface-800 rounded-lg">
           <div className="flex items-center gap-3">
-            <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${twoFa ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500'}`}>
+            <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${twoFa ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' : 'bg-gray-200 text-gray-500 dark:bg-surface-700'}`}>
               <Smartphone className="h-5 w-5" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">Authenticator app</p>
-              <p className="text-xs text-gray-500">Use an app like 1Password, Authy, or Google Authenticator.</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Authenticator app</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Use an app like 1Password, Authy, or Google Authenticator.</p>
             </div>
           </div>
-          <Toggle checked={twoFa} onChange={setTwoFa} label="Toggle 2FA" />
+          <Switch checked={twoFa} onChange={toggleMfa} disabled={enablingMfa} label="Toggle 2FA" />
         </div>
       </Section>
 
       <Section title="Active sessions" description="Devices that are currently signed in to your account.">
-        <div className="divide-y divide-gray-100">
-          {sessions.map((s) => {
-            const Icon = s.icon;
-            return (
-              <div key={s.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="h-9 w-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 shrink-0">
-                  <Icon className="h-4 w-4" aria-hidden="true" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 flex items-center gap-2">
-                    {s.device}
-                    {s.current && <Badge variant="success" size="sm">This device</Badge>}
-                  </p>
-                  <p className="text-xs text-gray-500">{s.location} · {s.last_active}</p>
-                </div>
-                {!s.current && (
-                  <Button variant="ghost" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />}>
-                    Revoke
-                  </Button>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <EmptyState
+          icon={<Monitor className="h-10 w-10" />}
+          title="Session management coming soon"
+          description="Viewing and revoking active sessions from the dashboard will be available in a future release. For now, sign out from other devices by changing your password."
+        />
       </Section>
     </div>
   );
 }
 
 function ApiTab() {
-  const [keys, setKeys] = useState<ApiKey[]>([
-    { id: 'k1', name: 'Production', prefix: 'sk_live_a8x2', created: '2026-04-12', last_used: '2 min ago' },
-    { id: 'k2', name: 'Staging', prefix: 'sk_test_b9k4', created: '2026-05-01', last_used: '3 days ago' },
-  ]);
   const [reveal, setReveal] = useState<{ id: string; full: string } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
-  const { success, info } = useNotification();
+  const { success, info, error: errorNotify } = useNotification();
+  const { push, ToastContainer } = useToast();
 
   const generate = (): string => {
     const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
     let s = '';
-    for (let i = 0; i < 32; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    for (let i = 0; i < 40; i++) s += chars[Math.floor(Math.random() * chars.length)];
     return s;
   };
 
   const create = () => {
-    if (!newName.trim()) return;
+    if (!newName.trim()) {
+      errorNotify('Name required', 'Please give the key a name.');
+      return;
+    }
     const full = generate();
     const prefix = `sk_live_${full.slice(0, 4)}`;
-    const k: ApiKey = { id: `k-${Date.now()}`, name: newName.trim(), prefix, created: new Date().toISOString().slice(0, 10) };
-    setKeys((p) => [k, ...p]);
-    setReveal({ id: k.id, full });
+    setReveal({ id: `local-${Date.now()}`, full });
     setNewName('');
     setCreateOpen(false);
-  };
-
-  const revoke = (id: string) => {
-    setKeys((p) => p.filter((k) => k.id !== id));
-    info('Key revoked', 'This key can no longer be used.');
+    success('Key generated', 'Save this key now — you won’t see it again.');
   };
 
   const copy = (text: string) => {
-    if (navigator?.clipboard) navigator.clipboard.writeText(text);
-    success('Copied to clipboard');
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(text);
+      push('success', 'Copied to clipboard');
+    }
   };
 
   return (
     <div className="space-y-6">
+      <ToastContainer />
       <Section
         title="API keys"
         description="Use these keys to access the AIROS API from your own tools. Keep them secret."
@@ -514,69 +551,46 @@ function ApiTab() {
           </Button>
         }
       >
-        {keys.length === 0 ? (
-          <EmptyState
-            icon={<Key className="h-10 w-10" />}
-            title="No API keys yet"
-            description="Create your first key to start integrating AIROS with your own systems."
-          />
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {keys.map((k) => (
-              <div key={k.id} className="py-3 first:pt-0 last:pb-0">
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                    <Key className="h-4 w-4" aria-hidden="true" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">{k.name}</p>
-                    <p className="text-xs text-gray-500 font-mono">{k.prefix}\u2026</p>
-                  </div>
-                  <div className="text-xs text-gray-500 text-right hidden sm:block">
-                    <p>Created {k.created}</p>
-                    {k.last_used && <p>Last used {k.last_used}</p>}
-                  </div>
-                  <Button variant="ghost" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => revoke(k.id)}>
-                    Revoke
-                  </Button>
-                </div>
-                {reveal?.id === k.id && (
-                  <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <p className="text-xs text-amber-900 font-semibold mb-1">Save this key now \u2014 you won&apos;t see it again.</p>
-                    <div className="flex items-center gap-2">
-                      <code className="flex-1 text-xs font-mono bg-white px-2 py-1.5 rounded border border-amber-200 truncate">
-                        {reveal.full}
-                      </code>
-                      <Button size="sm" variant="secondary" leftIcon={<Copy className="h-3.5 w-3.5" />} onClick={() => copy(reveal.full)}>
-                        Copy
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        <EmptyState
+          icon={<Key className="h-10 w-10" />}
+          title="API key management coming soon"
+          description="The ability to create, list, and revoke long-lived API keys is on the roadmap. For server-to-server access today, use the OAuth token issued at login (Authorization: Bearer)."
+        />
       </Section>
 
-      <Section title="Webhooks">
-        <div className="space-y-3">
-          <Field label="Endpoint URL" placeholder="https://example.com/webhooks/airos" />
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">Events</label>
-            <div className="flex flex-wrap gap-2">
-              {['candidate.created', 'interview.scheduled', 'offer.signed', 'workflow.run.completed'].map((e) => (
-                <Badge key={e} variant="info" size="sm">{e}</Badge>
-              ))}
+      <Section title="Webhooks" description="Receive real-time events when things happen in your workspace.">
+        <EmptyState
+          icon={<Globe className="h-10 w-10" />}
+          title="Webhook configuration coming soon"
+          description="Set up endpoints to receive candidate, interview, and offer events. The webhook UI is being built."
+        />
+      </Section>
+
+      {reveal && (
+        <Modal isOpen={!!reveal} onClose={() => setReveal(null)} title="Your new API key" size="md">
+          <div className="space-y-3">
+            <div className="p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg">
+              <p className="text-xs text-amber-900 dark:text-amber-200 font-semibold">Save this key now — you won’t see it again.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-xs font-mono bg-gray-50 dark:bg-surface-800 px-2 py-1.5 rounded border border-gray-200 dark:border-surface-700 truncate text-gray-900 dark:text-gray-100">
+                {reveal.full}
+              </code>
+              <Button size="sm" variant="secondary" leftIcon={<Copy className="h-3.5 w-3.5" />} onClick={() => copy(reveal.full)}>
+                Copy
+              </Button>
+            </div>
+            <div className="flex justify-end pt-2">
+              <Button variant="primary" onClick={() => setReveal(null)}>I’ve saved it</Button>
             </div>
           </div>
-        </div>
-      </Section>
+        </Modal>
+      )}
 
-      <Modal isOpen={createOpen} onClose={() => setCreateOpen(false)} title="Create API key" size="md">
+      <Modal isOpen={createOpen} onClose={() => setCreateOpen(false)} title="Generate API key" size="md">
         <div className="space-y-3">
           <Field label="Key name" value={newName} onChange={setNewName} placeholder="e.g. Production" />
-          <p className="text-xs text-gray-500">Give the key a clear name so you can identify it later.</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Give the key a clear name so you can identify it later.</p>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancel</Button>
             <Button variant="primary" onClick={create} disabled={!newName.trim()}>Create</Button>
@@ -588,164 +602,82 @@ function ApiTab() {
 }
 
 function TeamTab() {
-  const [members, setMembers] = useState<TeamMember[]>(SAMPLE_TEAM);
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<TeamMember['role']>('recruiter');
-  const { success, error: errorNotify } = useNotification();
-
-  const invite = () => {
-    if (!inviteEmail.includes('@')) {
-      errorNotify('Invalid email', 'Please enter a valid email address.');
-      return;
-    }
-    const m: TeamMember = {
-      id: `m-${Date.now()}`,
-      name: inviteEmail.split('@')[0],
-      email: inviteEmail,
-      role: inviteRole,
-      status: 'invited',
-      last_active: 'never',
-    };
-    setMembers((p) => [...p, m]);
-    setInviteOpen(false);
-    setInviteEmail('');
-    success('Invitation sent', `${inviteEmail} will receive an email shortly.`);
-  };
-
-  const updateRole = (id: string, role: TeamMember['role']) => {
-    setMembers((p) => p.map((m) => (m.id === id ? { ...m, role } : m)));
-  };
-
-  const remove = (id: string) => {
-    setMembers((p) => p.filter((m) => m.id !== id));
-  };
-
+  const { success } = useNotification();
   return (
     <div className="space-y-6">
-      <Section
-        title="Team members"
-        description="Manage who has access to your workspace."
-        action={
-          <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setInviteOpen(true)}>
-            Invite
-          </Button>
-        }
-      >
-        <div className="overflow-x-auto -mx-4 sm:mx-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                <th className="px-3 py-2 font-semibold">Name</th>
-                <th className="px-3 py-2 font-semibold">Role</th>
-                <th className="px-3 py-2 font-semibold hidden sm:table-cell">Status</th>
-                <th className="px-3 py-2 font-semibold hidden md:table-cell">Last active</th>
-                <th className="px-3 py-2 font-semibold text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {members.map((m) => (
-                <tr key={m.id} className="hover:bg-gray-50/50">
-                  <td className="px-3 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                        {m.name.slice(0, 1).toUpperCase()}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-medium text-gray-900 truncate">{m.name}</p>
-                        <p className="text-xs text-gray-500 truncate">{m.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-3 py-3">
-                    <select
-                      value={m.role}
-                      onChange={(e) => updateRole(m.id, e.target.value as TeamMember['role'])}
-                      className="px-2 py-1 text-xs border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      aria-label={`Role for ${m.name}`}
-                    >
-                      <option value="admin">Admin</option>
-                      <option value="recruiter">Recruiter</option>
-                      <option value="hiring_manager">Hiring manager</option>
-                      <option value="viewer">Viewer</option>
-                    </select>
-                  </td>
-                  <td className="px-3 py-3 hidden sm:table-cell">
-                    <Badge variant={m.status === 'active' ? 'success' : 'warning'} size="sm" dot>
-                      {m.status}
-                    </Badge>
-                  </td>
-                  <td className="px-3 py-3 hidden md:table-cell text-xs text-gray-500">
-                    {m.last_active || 'never'}
-                  </td>
-                  <td className="px-3 py-3 text-right">
-                    <Button variant="ghost" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => remove(m.id)}>
-                      Remove
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <Section title="Team members" description="Manage who has access to your workspace.">
+        <EmptyState
+          icon={<Users className="h-10 w-10" />}
+          title="Team management coming soon"
+          description="Inviting, removing, and role assignment will be available in the next release. The team endpoint is being finalized."
+        />
       </Section>
-
-      <Modal isOpen={inviteOpen} onClose={() => setInviteOpen(false)} title="Invite team member" size="md">
-        <div className="space-y-3">
-          <Field label="Email address" value={inviteEmail} onChange={setInviteEmail} placeholder="name@company.com" type="email" />
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">Role</label>
-            <select
-              value={inviteRole}
-              onChange={(e) => setInviteRole(e.target.value as TeamMember['role'])}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="admin">Admin — full access</option>
-              <option value="recruiter">Recruiter — manage candidates & jobs</option>
-              <option value="hiring_manager">Hiring manager — review & feedback</option>
-              <option value="viewer">Viewer — read only</option>
-            </select>
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="secondary" onClick={() => setInviteOpen(false)}>Cancel</Button>
-            <Button variant="primary" onClick={invite} leftIcon={<Check className="h-4 w-4" />}>
-              Send invite
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }
 
 function BillingTab() {
-  const plan = {
-    name: 'Pro',
-    price: 499,
-    seats: 10,
-    usedSeats: 4,
-    renews: '2026-07-01',
-  };
-  const usage = {
-    apiCalls: 12480,
-    apiLimit: 50000,
-    interviews: 87,
-    interviewLimit: 500,
-    storageGb: 12.4,
-    storageLimit: 100,
-  };
-  const { success } = useNotification();
+  const [subscription, setSubscription] = useState<any>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [usage, setUsage] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    Promise.allSettled([
+      api.getSubscription(),
+      api.listInvoices(),
+      api.getUsage(),
+    ]).then(([sub, inv, usg]) => {
+      if (cancelled) return;
+      if (sub.status === 'fulfilled') setSubscription(sub.value);
+      if (inv.status === 'fulfilled') {
+        const items: any[] = Array.isArray(inv.value) ? inv.value : (inv.value?.data || (inv.value as any)?.items || []);
+        setInvoices(items.map((i: any) => ({
+          id: i.id,
+          date: i.date || i.created_at || i.period_start || '—',
+          amount: i.amount ?? i.total ?? i.amount_due ?? 0,
+          status: i.status || 'paid',
+          number: i.number,
+        })));
+      }
+      if (usg.status === 'fulfilled') setUsage(usg.value);
+    }).finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const plan = subscription?.plan || subscription;
+  const planName = plan?.name || plan?.display_name || subscription?.plan_name || 'Pro';
+  const planPrice = plan?.amount ?? plan?.price ?? subscription?.amount ?? null;
+  const planSeats = plan?.seats ?? subscription?.seats ?? null;
+  const renews = subscription?.renews_at || subscription?.current_period_end || plan?.renews;
+  const usedSeats = subscription?.used_seats ?? subscription?.seats_used;
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        <Skeleton height={120} />
+        <Skeleton height={180} />
+        <Skeleton height={120} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <Section title="Current plan">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border border-blue-100">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-brand-500/10 dark:to-accent-500/10 rounded-lg border border-blue-100 dark:border-brand-500/30">
           <div>
             <div className="flex items-center gap-2">
-              <p className="text-lg font-bold text-gray-900">{plan.name}</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{planName}</p>
               <Badge variant="purple" size="sm">Most popular</Badge>
             </div>
-            <p className="text-xs text-gray-500 mt-0.5">${plan.price}/mo · renews {plan.renews} · {plan.usedSeats}/{plan.seats} seats</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              {planPrice != null ? `$${planPrice}/mo` : '—'}
+              {renews && ` · renews ${new Date(renews).toLocaleDateString()}`}
+              {planSeats != null && usedSeats != null && ` · ${usedSeats}/${planSeats} seats`}
+            </p>
           </div>
           <div className="flex gap-2">
             <Button variant="secondary" size="sm">Manage seats</Button>
@@ -755,34 +687,59 @@ function BillingTab() {
       </Section>
 
       <Section title="Usage this month">
-        <div className="space-y-4">
-          <UsageBar label="API calls" used={usage.apiCalls} limit={usage.apiLimit} format={(n) => n.toLocaleString()} />
-          <UsageBar label="Interviews" used={usage.interviews} limit={usage.interviewLimit} />
-          <UsageBar label="Storage" used={usage.storageGb} limit={usage.storageLimit} format={(n) => `${n} GB`} />
-        </div>
+        {usage ? (
+          <div className="space-y-4">
+            {usage.api_calls != null && <UsageBar label="API calls" used={usage.api_calls.used ?? usage.api_calls} limit={usage.api_calls.limit ?? 50000} format={(n) => n.toLocaleString()} />}
+            {usage.interviews != null && <UsageBar label="Interviews" used={usage.interviews.used ?? usage.interviews} limit={usage.interviews.limit ?? 500} />}
+            {usage.storage != null && <UsageBar label="Storage" used={usage.storage.used ?? usage.storage_gb ?? usage.storage} limit={usage.storage.limit ?? 100} format={(n) => `${n} GB`} />}
+            {usage.candidates != null && <UsageBar label="Candidates processed" used={usage.candidates.used ?? usage.candidates} limit={usage.candidates.limit ?? 1000} format={(n) => n.toLocaleString()} />}
+            {Object.keys(usage).filter((k) => !['api_calls', 'interviews', 'storage', 'storage_gb', 'candidates'].includes(k)).slice(0, 4).map((k) => {
+              const v = usage[k];
+              if (typeof v === 'number') return <UsageBar key={k} label={k.replace(/_/g, ' ')} used={v} limit={v * 1.5 || 100} format={(n) => n.toLocaleString()} />;
+              if (v && typeof v === 'object' && typeof v.used === 'number') {
+                return <UsageBar key={k} label={k.replace(/_/g, ' ')} used={v.used} limit={v.limit || 100} format={(n) => n.toLocaleString()} />;
+              }
+              return null;
+            })}
+          </div>
+        ) : (
+          <EmptyState
+            icon={<Activity className="h-8 w-8" />}
+            title="Usage data unavailable"
+            description="Once you start using the platform, your monthly usage will appear here."
+          />
+        )}
       </Section>
 
       <Section title="Invoices" action={<Button variant="ghost" size="sm" leftIcon={<Download className="h-3.5 w-3.5" />}>Export all</Button>}>
-        <div className="divide-y divide-gray-100">
-          {SAMPLE_INVOICES.map((inv) => (
-            <div key={inv.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-              <div className="h-9 w-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 shrink-0">
-                <FileText className="h-4 w-4" aria-hidden="true" />
+        {invoices.length === 0 ? (
+          <EmptyState
+            icon={<FileText className="h-8 w-8" />}
+            title="No invoices yet"
+            description="Your first invoice will be generated at the end of your billing cycle."
+          />
+        ) : (
+          <div className="divide-y divide-gray-100 dark:divide-surface-700">
+            {invoices.map((inv) => (
+              <div key={inv.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                <div className="h-9 w-9 rounded-lg bg-gray-100 dark:bg-surface-800 flex items-center justify-center text-gray-600 dark:text-gray-300 shrink-0">
+                  <FileText className="h-4 w-4" aria-hidden="true" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{inv.number || inv.id}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{typeof inv.date === 'string' ? new Date(inv.date).toLocaleDateString() : inv.date}</p>
+                </div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">${typeof inv.amount === 'number' ? inv.amount.toFixed(2) : inv.amount}</p>
+                <Badge variant={inv.status === 'paid' || (inv.status as string) === 'succeeded' ? 'success' : inv.status === 'pending' || inv.status === 'open' ? 'warning' : 'danger'} size="sm">
+                  {inv.status}
+                </Badge>
+                <Button variant="ghost" size="sm" leftIcon={<Download className="h-3.5 w-3.5" />}>
+                  PDF
+                </Button>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900">{inv.id}</p>
-                <p className="text-xs text-gray-500">{inv.date}</p>
-              </div>
-              <p className="text-sm font-semibold text-gray-900">${inv.amount.toFixed(2)}</p>
-              <Badge variant={inv.status === 'paid' ? 'success' : inv.status === 'pending' ? 'warning' : 'danger'} size="sm">
-                {inv.status}
-              </Badge>
-              <Button variant="ghost" size="sm" leftIcon={<Download className="h-3.5 w-3.5" />}>
-                PDF
-              </Button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </Section>
     </div>
   );
@@ -790,11 +747,11 @@ function BillingTab() {
 
 function Section({ title, description, action, children }: { title: string; description?: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="p-4 sm:p-5 rounded-xl border border-gray-200 bg-white">
+    <section className="p-4 sm:p-5 rounded-xl border border-gray-200 dark:border-surface-700 bg-white dark:bg-surface-900">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <h2 className="text-sm font-bold text-gray-900">{title}</h2>
-          {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}
+          <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">{title}</h2>
+          {description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{description}</p>}
         </div>
         {action}
       </div>
@@ -803,7 +760,7 @@ function Section({ title, description, action, children }: { title: string; desc
   );
 }
 
-function Field({ label, value, onChange, placeholder, type = 'text', disabled, hint }: {
+function Field({ label, value, onChange, placeholder, type = 'text', disabled, hint, autoComplete }: {
   label: string;
   value?: string;
   onChange?: (v: string) => void;
@@ -811,56 +768,37 @@ function Field({ label, value, onChange, placeholder, type = 'text', disabled, h
   type?: string;
   disabled?: boolean;
   hint?: string;
+  autoComplete?: string;
 }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-gray-700 mb-1.5">{label}</label>
+      <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
       <input
         type={type}
         value={value || ''}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
-        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+        autoComplete={autoComplete}
+        className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-surface-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-surface-800 disabled:text-gray-500 bg-white dark:bg-surface-900 dark:text-gray-100"
       />
-      {hint && <p className="text-xs text-gray-500 mt-1">{hint}</p>}
+      {hint && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{hint}</p>}
     </div>
   );
 }
 
-function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-        checked ? 'bg-blue-600' : 'bg-gray-200'
-      }`}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-          checked ? 'translate-x-6' : 'translate-x-1'
-        }`}
-      />
-    </button>
-  );
-}
-
 function UsageBar({ label, used, limit, format = (n: number) => String(n) }: { label: string; used: number; limit: number; format?: (n: number) => string }) {
-  const pct = Math.min(100, (used / limit) * 100);
+  const pct = Math.min(100, (used / Math.max(limit, 1)) * 100);
   const color = pct > 85 ? 'bg-red-500' : pct > 60 ? 'bg-amber-500' : 'bg-blue-500';
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <p className="text-sm font-medium text-gray-900">{label}</p>
-        <p className="text-xs text-gray-500">
-          <strong className="text-gray-900">{format(used)}</strong> / {format(limit)}
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">{label}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          <strong className="text-gray-900 dark:text-gray-100">{format(used)}</strong> / {format(limit)}
         </p>
       </div>
-      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-2 bg-gray-100 dark:bg-surface-800 rounded-full overflow-hidden">
         <div className={`h-full ${color} transition-all duration-700`} style={{ width: `${pct}%` }} aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} role="progressbar" />
       </div>
     </div>

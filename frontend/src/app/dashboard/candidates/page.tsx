@@ -40,8 +40,8 @@ interface Candidate {
   id: string;
   full_name: string;
   email: string;
-  phone?: string;
-  location?: string;
+  phone?: string | null;
+  location?: string | null;
   status: string;
   skills: string[];
   experience_years?: number;
@@ -74,7 +74,7 @@ export default function CandidatesPage() {
     setError(null);
     try {
       const d = await api.listCandidates();
-      setCandidates(d?.data || []);
+      setCandidates(((d?.data || []) as any) as Candidate[]);
     } catch (err: any) {
       setError(err?.message || t('candidates.couldntLoad', "Couldn't load candidates"));
       setCandidates([]);

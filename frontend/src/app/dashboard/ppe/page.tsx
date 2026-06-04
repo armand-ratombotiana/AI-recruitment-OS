@@ -88,7 +88,7 @@ export default function PPEPage() {
     if (!session?.id) return;
     setHinting(true);
     try {
-      const h = await api.requestHint(session.id);
+      const h: any = await api.requestHint(session.id);
       const text = h?.hint || h?.content || h?.text || 'Consider the time complexity of your approach.';
       push('info', text);
     } catch (err: any) {
