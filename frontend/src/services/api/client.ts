@@ -1248,6 +1248,14 @@ class APIClient {
   async listNotifications() {
     return this.notifications.list();
   }
+  /** @deprecated use `api.notifications.markRead()` */
+  async markNotificationRead(notificationId: string) {
+    return this.notifications.markRead(notificationId);
+  }
+  /** @deprecated use `api.notifications.markAllRead()` */
+  async markAllNotificationsRead() {
+    return this.notifications.markAllRead();
+  }
 
   /** @deprecated use `api.compliance.getStatus()` */
   async getComplianceStatus() {

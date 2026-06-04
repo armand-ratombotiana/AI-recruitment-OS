@@ -856,7 +856,46 @@
     "markAllRead": "Mark all read",
     "loading": "Loading…",
     "none": "No notifications",
-    "viewAll": "View all activity"
+    "viewAll": "View all activity",
+    "page": {
+      "subtitle": "Stay on top of interviews, candidates, and system activity.",
+      "filters": {
+        "all": "All",
+        "unread": "Unread",
+        "interviews": "Interviews",
+        "candidates": "Candidates",
+        "system": "System"
+      },
+      "clearRead": "Clear read",
+      "refreshing": "Refreshing…",
+      "refresh": "Refresh",
+      "new": "New",
+      "justNow": "Just now",
+      "markAsRead": "Mark as read",
+      "open": "Open notification",
+      "dismiss": "Dismiss notification",
+      "empty": {
+        "title": "You're all caught up",
+        "description": "No notifications match the current filter. We'll let you know when something new comes in."
+      },
+      "error": {
+        "title": "Couldn't load notifications",
+        "retry": "Try again"
+      },
+      "counts": {
+        "total": "Total",
+        "unread": "Unread"
+      },
+      "tabs": {
+        "aria": "Filter notifications by category"
+      },
+      "list": {
+        "aria": "Notifications list"
+      },
+      "actions": {
+        "aria": "Bulk notification actions"
+      }
+    }
   },
   "userMenu": {
     "open": "Open user menu",

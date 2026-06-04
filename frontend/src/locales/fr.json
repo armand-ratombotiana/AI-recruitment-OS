@@ -856,7 +856,46 @@
     "markAllRead": "Tout marquer comme lu",
     "loading": "Chargement…",
     "none": "Aucune notification",
-    "viewAll": "Voir toute l'activité"
+    "viewAll": "Voir toute l'activité",
+    "page": {
+      "subtitle": "Suivez vos entretiens, candidats et activité système en un coup d'œil.",
+      "filters": {
+        "all": "Toutes",
+        "unread": "Non lues",
+        "interviews": "Entretiens",
+        "candidates": "Candidats",
+        "system": "Système"
+      },
+      "clearRead": "Effacer les lues",
+      "refreshing": "Actualisation…",
+      "refresh": "Actualiser",
+      "new": "Nouveau",
+      "justNow": "À l'instant",
+      "markAsRead": "Marquer comme lu",
+      "open": "Ouvrir la notification",
+      "dismiss": "Ignorer la notification",
+      "empty": {
+        "title": "Tout est à jour",
+        "description": "Aucune notification ne correspond au filtre actuel. Nous vous préviendrons lorsqu'il y aura du nouveau."
+      },
+      "error": {
+        "title": "Impossible de charger les notifications",
+        "retry": "Réessayer"
+      },
+      "counts": {
+        "total": "Total",
+        "unread": "Non lues"
+      },
+      "tabs": {
+        "aria": "Filtrer les notifications par catégorie"
+      },
+      "list": {
+        "aria": "Liste des notifications"
+      },
+      "actions": {
+        "aria": "Actions groupées sur les notifications"
+      }
+    }
   },
   "userMenu": {
     "open": "Ouvrir le menu utilisateur",

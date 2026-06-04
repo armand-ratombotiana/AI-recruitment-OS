@@ -856,7 +856,46 @@
     "markAllRead": "Marcar todo como leído",
     "loading": "Cargando…",
     "none": "Sin notificaciones",
-    "viewAll": "Ver toda la actividad"
+    "viewAll": "Ver toda la actividad",
+    "page": {
+      "subtitle": "Mantente al día con entrevistas, candidatos y actividad del sistema.",
+      "filters": {
+        "all": "Todas",
+        "unread": "No leídas",
+        "interviews": "Entrevistas",
+        "candidates": "Candidatos",
+        "system": "Sistema"
+      },
+      "clearRead": "Borrar leídas",
+      "refreshing": "Actualizando…",
+      "refresh": "Actualizar",
+      "new": "Nuevo",
+      "justNow": "Ahora mismo",
+      "markAsRead": "Marcar como leída",
+      "open": "Abrir notificación",
+      "dismiss": "Descartar notificación",
+      "empty": {
+        "title": "Estás al día",
+        "description": "Ninguna notificación coincide con el filtro actual. Te avisaremos cuando llegue algo nuevo."
+      },
+      "error": {
+        "title": "No se pudieron cargar las notificaciones",
+        "retry": "Reintentar"
+      },
+      "counts": {
+        "total": "Total",
+        "unread": "No leídas"
+      },
+      "tabs": {
+        "aria": "Filtrar notificaciones por categoría"
+      },
+      "list": {
+        "aria": "Lista de notificaciones"
+      },
+      "actions": {
+        "aria": "Acciones masivas de notificaciones"
+      }
+    }
   },
   "userMenu": {
     "open": "Abrir menú de usuario",
