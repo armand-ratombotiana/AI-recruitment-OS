@@ -47,6 +47,9 @@ aiofiles==24.1.0
 websockets==14.1
 aiosmtplib>=3.0.0,<6.0.0
 
+# === Payments ===
+stripe>=7.0.0,<12.0.0
+
 # === Observability ===
 opentelemetry-api==1.29.0
 opentelemetry-sdk==1.29.0

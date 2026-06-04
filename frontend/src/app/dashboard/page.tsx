@@ -32,12 +32,13 @@ import {
   OnboardingChecklist,
 } from '@/components';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLocaleStore, translate, interpolate, formatRelativeTime } from '@/stores/locale-store';
 
 const QUICK = [
-  { label: 'Add candidate', icon: UserPlus, href: '/dashboard/candidates', color: 'from-blue-500 to-blue-600' },
-  { label: 'Create job', icon: Briefcase, href: '/dashboard/jobs', color: 'from-green-500 to-emerald-600' },
-  { label: 'Schedule interview', icon: Calendar, href: '/dashboard/interviews', color: 'from-purple-500 to-purple-600' },
-  { label: 'Ask AI Copilot', icon: Bot, href: '/dashboard/ai-copilot', color: 'from-amber-500 to-orange-600' },
+  { key: 'dashboard.quickActions.addCandidate', icon: UserPlus, href: '/dashboard/candidates', color: 'from-blue-500 to-blue-600' },
+  { key: 'dashboard.quickActions.createJob', icon: Briefcase, href: '/dashboard/jobs', color: 'from-green-500 to-emerald-600' },
+  { key: 'dashboard.quickActions.scheduleInterview', icon: Calendar, href: '/dashboard/interviews', color: 'from-purple-500 to-purple-600' },
+  { key: 'dashboard.quickActions.askAI', icon: Bot, href: '/dashboard/ai-copilot', color: 'from-amber-500 to-orange-600' },
 ];
 
 const STATUS_COLORS: Record<string, 'info' | 'warning' | 'success' | 'purple' | 'default' | 'danger'> = {
@@ -94,7 +95,7 @@ function BarChart({ data, max }: { data: { label: string; value: number }[]; max
             data-value={b.value}
             role="presentation"
           />
-          <span className="bar-chart-label">{b.label}</span>
+          <span className="bar-chart-label dark:text-gray-400">{b.label}</span>
         </div>
       ))}
     </div>
@@ -111,8 +112,8 @@ function FunnelChart({ data }: { data: { stage: string; count: number; color: st
         return (
           <div key={f.stage} className="space-y-1">
             <div className="flex justify-between text-xs">
-              <span className="font-semibold text-gray-700">{f.stage}</span>
-              <span className="text-gray-500">{f.count}</span>
+              <span className="font-semibold text-gray-700 dark:text-gray-200">{f.stage}</span>
+              <span className="text-gray-500 dark:text-gray-400">{f.count}</span>
             </div>
             <div
               className={`h-6 rounded-md bg-gradient-to-r ${f.color} flex items-center px-2.5 text-white text-[10px] font-bold transition-all hover:translate-x-1`}
@@ -155,6 +156,8 @@ function colorForAction(action: string): string {
 }
 
 export default function DashboardPage() {
+  const locale = useLocaleStore((s) => s.locale);
+  const t = (key: string, fb?: string) => translate(locale, key, fb);
   const [data, setData] = useState<any>(null);
   const [recent, setRecent] = useState<any[]>([]);
   const [upcoming, setUpcoming] = useState<any[]>([]);
@@ -225,20 +228,22 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back</h1>
-          <p className="text-sm text-gray-500 mt-1">Here&apos;s what&apos;s happening with your hiring today.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">{t('dashboard.welcomeBack', 'Welcome back')}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('dashboard.welcomeSubtitle', "Here's what's happening with your hiring today.")}</p>
         </div>
-        <div className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
+        <div className="flex items-center gap-1.5 bg-white dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-lg p-1 shadow-sm">
           {(['7d', '30d', '90d'] as const).map((r) => (
             <button
               key={r}
               onClick={() => setRange(r)}
               className={`px-3 py-1.5 text-xs font-semibold rounded-md transition ${
-                range === r ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                range === r
+                  ? 'bg-blue-600 text-white shadow-sm dark:bg-brand-500'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-surface-700 dark:hover:text-white'
               }`}
               aria-pressed={range === r}
             >
-              {r === '7d' ? '7 days' : r === '30d' ? '30 days' : '90 days'}
+              {r === '7d' ? t('dashboard.last7days', '7 days') : r === '30d' ? t('dashboard.last30days', '30 days') : t('dashboard.last90days', '90 days')}
             </button>
           ))}
         </div>
@@ -249,10 +254,10 @@ export default function DashboardPage() {
       <OnboardingChecklist />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard title="Total Candidates" value={<AnimatedStat value={totalCandidates} />} icon={<Users className="h-5 w-5" />} />
-        <StatsCard title="Active Jobs" value={<AnimatedStat value={activeJobs} />} icon={<Briefcase className="h-5 w-5" />} />
-        <StatsCard title="Interviews This Week" value={<AnimatedStat value={interviewsThisWeek} />} icon={<Calendar className="h-5 w-5" />} />
-        <StatsCard title="Pass Rate" value={<AnimatedStat value={passRate} suffix="%" />} icon={<Target className="h-5 w-5" />} />
+        <StatsCard title={t('dashboard.totalCandidates', 'Total Candidates')} value={<AnimatedStat value={totalCandidates} />} icon={<Users className="h-5 w-5" />} />
+        <StatsCard title={t('dashboard.activeJobs', 'Active Jobs')} value={<AnimatedStat value={activeJobs} />} icon={<Briefcase className="h-5 w-5" />} />
+        <StatsCard title={t('dashboard.interviewsThisWeek', 'Interviews This Week')} value={<AnimatedStat value={interviewsThisWeek} />} icon={<Calendar className="h-5 w-5" />} />
+        <StatsCard title={t('dashboard.passRate', 'Pass Rate')} value={<AnimatedStat value={passRate} suffix="%" />} icon={<Target className="h-5 w-5" />} />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -260,14 +265,14 @@ export default function DashboardPage() {
           const Icon = q.icon;
           return (
             <Link
-              key={q.label}
+              key={q.key}
               href={q.href}
-              className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4 hover:border-blue-300 hover:shadow-md transition-all"
+              className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-surface-700 dark:bg-surface-900 p-4 hover:border-blue-300 hover:shadow-md transition-all"
             >
               <div className={`h-10 w-10 rounded-lg bg-gradient-to-br ${q.color} flex items-center justify-center mb-3 group-hover:scale-110 transition`}>
                 <Icon className="h-5 w-5 text-white" />
               </div>
-              <p className="text-sm font-semibold text-gray-900">{q.label}</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t(q.key, q.key)}</p>
               <ArrowUpRight className="absolute top-3 right-3 h-4 w-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
             </Link>
           );
@@ -279,8 +284,8 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Weekly activity</CardTitle>
-                <p className="text-xs text-gray-500 mt-0.5">Candidates processed per day</p>
+                <CardTitle>{t('dashboard.weeklyActivity', 'Weekly activity')}</CardTitle>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('dashboard.weeklyActivitySub', 'Candidates processed per day')}</p>
               </div>
             </div>
           </CardHeader>
@@ -288,19 +293,19 @@ export default function DashboardPage() {
             {weekly.length === 0 ? (
               <EmptyState
                 icon={<TrendingUp className="h-10 w-10" />}
-                title="No activity data yet"
-                description="Charts will populate once candidates start flowing through the pipeline."
+                title={t('dashboard.noActivityData', 'No activity data yet')}
+                description={t('dashboard.noActivityDesc', 'Charts will populate once candidates start flowing through the pipeline.')}
               />
             ) : (
               <>
                 <BarChart data={weekly} max={weeklyMax} />
-                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-surface-700 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                   <span className="flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full bg-gradient-to-br from-blue-500 to-purple-500" />
-                    Candidates
+                    {t('dashboard.candidatesCount', 'Candidates')}
                   </span>
                   <span>
-                    Total: <strong className="text-gray-900">{weeklyTotal.toLocaleString()} this period</strong>
+                    {t('common.of', 'of')} <strong className="text-gray-900 dark:text-gray-100">{weeklyTotal.toLocaleString()} {t('dashboard.thisPeriod', 'this period')}</strong>
                   </span>
                 </div>
               </>
@@ -311,16 +316,16 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Pipeline funnel</CardTitle>
-              {funnel.length > 0 && <Badge variant="info" size="sm">{funnel.length} stages</Badge>}
+              <CardTitle>{t('dashboard.pipelineFunnel', 'Pipeline funnel')}</CardTitle>
+              {funnel.length > 0 && <Badge variant="info" size="sm">{funnel.length} {t('dashboard.stages', 'stages')}</Badge>}
             </div>
           </CardHeader>
           <CardContent>
             {funnel.length === 0 ? (
               <EmptyState
                 icon={<Activity className="h-10 w-10" />}
-                title="No funnel data"
-                description="Add candidates and start screening to see your funnel."
+                title={t('dashboard.noFunnelData', 'No funnel data')}
+                description={t('dashboard.noFunnelDesc', 'Add candidates and start screening to see your funnel.')}
               />
             ) : (
               <FunnelChart data={funnel} />
@@ -334,11 +339,11 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-blue-600" />
-                <CardTitle>Recent activity</CardTitle>
+                <Activity className="h-4 w-4 text-blue-600 dark:text-brand-400" />
+                <CardTitle>{t('dashboard.recentActivity', 'Recent activity')}</CardTitle>
               </div>
-              <Link href="/dashboard/analytics" className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1">
-                View all <ChevronRight className="h-3.5 w-3.5" />
+              <Link href="/dashboard/analytics" className="text-xs text-blue-600 hover:text-blue-700 dark:text-brand-400 dark:hover:text-brand-300 font-semibold flex items-center gap-1">
+                {t('common.viewAll', 'View all')} <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           </CardHeader>
@@ -346,27 +351,27 @@ export default function DashboardPage() {
             {activity.length === 0 ? (
               <EmptyState
                 icon={<Sparkles className="h-10 w-10" />}
-                title="No activity yet"
-                description="AI actions, screening runs, and workflow events will show up here."
+                title={t('dashboard.noActivity', 'No activity yet')}
+                description={t('dashboard.noActivitySubDesc', 'AI actions, screening runs, and workflow events will show up here.')}
               />
             ) : (
               <ul className="space-y-2.5">
                 {activity.slice(0, 6).map((a: any, i: number) => (
-                  <li key={a.id || i} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition group">
+                  <li key={a.id || i} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-surface-800 transition group">
                     <div className={`h-9 w-9 rounded-lg bg-gradient-to-br ${a.color || colorForAction(a.action)} flex items-center justify-center shrink-0`}>
                       <Sparkles className="h-4 w-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900">
+                      <p className="text-sm text-gray-900 dark:text-gray-100">
                         <span className="font-semibold">{a.user || a.actor || 'System'}</span>{' '}
-                        <span className="text-gray-500">{a.action}</span>{' '}
+                        <span className="text-gray-500 dark:text-gray-400">{a.action}</span>{' '}
                         <span className="font-semibold">{a.target}</span>
                       </p>
-                      {a.meta && <p className="text-xs text-gray-500">{a.meta}</p>}
+                      {a.meta && <p className="text-xs text-gray-500 dark:text-gray-400">{a.meta}</p>}
                     </div>
-                    <span className="text-xs text-gray-400 whitespace-nowrap flex items-center gap-1 mt-1">
+                    <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap flex items-center gap-1 mt-1">
                       <Clock className="h-3 w-3" />
-                      {relTime(a.created_at || a.time)}
+                      {a.created_at ? formatRelativeTime(a.created_at, locale) : ''}
                     </span>
                   </li>
                 ))}
@@ -379,37 +384,37 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-purple-600" />
-                <CardTitle>Upcoming</CardTitle>
+                <Calendar className="h-4 w-4 text-purple-600 dark:text-accent-400" />
+                <CardTitle>{t('dashboard.upcoming', 'Upcoming')}</CardTitle>
               </div>
-              {upcoming.length > 0 && <Badge variant="purple" size="sm">{upcoming.length} events</Badge>}
+              {upcoming.length > 0 && <Badge variant="purple" size="sm">{upcoming.length} {t('dashboard.events', 'events')}</Badge>}
             </div>
           </CardHeader>
           <CardContent>
             {upcoming.length === 0 ? (
               <EmptyState
                 icon={<Calendar className="h-10 w-10" />}
-                title="Nothing scheduled"
-                description="Your day is clear."
+                title={t('dashboard.noScheduled', 'Nothing scheduled')}
+                description={t('dashboard.noScheduledDesc', 'Your day is clear.')}
                 action={
-                  <Link href="/dashboard/interviews?action=schedule" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                    Schedule an interview
+                  <Link href="/dashboard/interviews?action=schedule" className="text-sm text-blue-600 hover:text-blue-700 dark:text-brand-400 font-medium">
+                    {t('dashboard.scheduleInterview', 'Schedule an interview')}
                   </Link>
                 }
               />
             ) : (
               <ul className="space-y-2">
                 {upcoming.map((e: any, i: number) => {
-                  const t = new Date(e.scheduled_at);
-                  const time = isNaN(t.getTime()) ? '—' : t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  const dt = new Date(e.scheduled_at);
+                  const time = isNaN(dt.getTime()) ? '—' : dt.toLocaleTimeString(locale === 'en' ? 'en-US' : locale === 'fr' ? 'fr-FR' : 'es-ES', { hour: '2-digit', minute: '2-digit' });
                   return (
-                    <li key={e.id || i} className="flex items-center gap-3 p-3 rounded-lg border-l-4 border-purple-500 bg-purple-50/50">
-                      <span className="text-sm font-mono font-bold text-gray-700 w-14 shrink-0">{time}</span>
+                    <li key={e.id || i} className="flex items-center gap-3 p-3 rounded-lg border-l-4 border-purple-500 bg-purple-50/50 dark:bg-accent-500/10">
+                      <span className="text-sm font-mono font-bold text-gray-700 dark:text-gray-200 w-14 shrink-0">{time}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 truncate">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                           {e.candidate_name || e.candidate?.full_name || 'Candidate'}
                         </p>
-                        <p className="text-xs text-gray-500 truncate">{e.job_title || e.job?.title || e.type || 'Interview'}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{e.job_title || e.job?.title || e.type || 'Interview'}</p>
                       </div>
                     </li>
                   );
@@ -424,11 +429,11 @@ export default function DashboardPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-600" />
-              <CardTitle>Recent candidates</CardTitle>
+              <Users className="h-4 w-4 text-blue-600 dark:text-brand-400" />
+              <CardTitle>{t('dashboard.recentCandidates', 'Recent candidates')}</CardTitle>
             </div>
-            <Link href="/dashboard/candidates" className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1">
-              View all <ChevronRight className="h-3.5 w-3.5" />
+            <Link href="/dashboard/candidates" className="text-xs text-blue-600 hover:text-blue-700 dark:text-brand-400 dark:hover:text-brand-300 font-semibold flex items-center gap-1">
+              {t('common.viewAll', 'View all')} <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </CardHeader>
@@ -436,11 +441,11 @@ export default function DashboardPage() {
           {recent.length === 0 ? (
             <EmptyState
               icon={<UserPlus className="h-10 w-10" />}
-              title="No candidates yet"
-              description="Add your first candidate to get started."
+              title={t('dashboard.noCandidates', 'No candidates yet')}
+              description={t('dashboard.noCandidatesDesc', 'Add your first candidate to get started.')}
               action={
-                <Link href="/dashboard/candidates?action=add" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                  Add candidate →
+                <Link href="/dashboard/candidates?action=add" className="text-sm text-blue-600 hover:text-blue-700 dark:text-brand-400 font-medium">
+                  {t('dashboard.addCandidate', 'Add candidate')} →
                 </Link>
               }
             />
@@ -455,22 +460,22 @@ export default function DashboardPage() {
                   <Link
                     key={c.id}
                     href={`/dashboard/candidates`}
-                    className="group p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition card-hover"
+                    className="group p-3 rounded-lg border border-gray-100 dark:border-surface-700 hover:border-blue-200 hover:bg-blue-50/30 dark:hover:bg-brand-500/10 transition card-hover"
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
                         {initials}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-gray-900 truncate">{name}</p>
-                        <p className="text-[10px] text-gray-500 truncate">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{name}</p>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
                           {c.experience_years ? `${c.experience_years}y exp` : c.email || ''}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <Badge variant={STATUS_COLORS[statusKey] || 'default'} size="sm">{status}</Badge>
-                      {c.score ? <span className="text-xs font-bold text-gray-700">{Math.round(c.score)}%</span> : null}
+                      {c.score ? <span className="text-xs font-bold text-gray-700 dark:text-gray-200">{Math.round(c.score)}%</span> : null}
                     </div>
                   </Link>
                 );

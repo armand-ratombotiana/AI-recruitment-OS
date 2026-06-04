@@ -112,17 +112,17 @@ export function Modal({
         aria-describedby={descId}
         tabIndex={-1}
         className={cn(
-          'relative w-full bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh] outline-none',
+          'relative w-full bg-white dark:bg-surface-900 rounded-xl shadow-2xl dark:shadow-black/40 flex flex-col max-h-[90vh] outline-none',
           sizes[size]
         )}
       >
-        <div className="flex items-start justify-between gap-4 p-6 border-b border-gray-100">
+        <div className="flex items-start justify-between gap-4 p-6 border-b border-gray-100 dark:border-surface-700">
           <div className="flex-1 min-w-0">
-            <h2 id={titleId} className="text-lg font-semibold text-gray-900">
+            <h2 id={titleId} className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {title}
             </h2>
             {description && (
-              <p id={descId} className="mt-1 text-sm text-gray-500">
+              <p id={descId} className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {description}
               </p>
             )}
@@ -131,7 +131,7 @@ export function Modal({
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-1"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-1"
               aria-label="Close dialog"
             >
               <svg
@@ -153,7 +153,7 @@ export function Modal({
         </div>
         <div className="flex-1 overflow-y-auto p-6">{children}</div>
         {footer && (
-          <div className="border-t border-gray-100 p-4 bg-gray-50 rounded-b-xl">
+          <div className="border-t border-gray-100 dark:border-surface-700 p-4 bg-gray-50 dark:bg-surface-800 rounded-b-xl">
             {footer}
           </div>
         )}

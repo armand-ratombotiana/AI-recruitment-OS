@@ -1,0 +1,864 @@
+{
+  "common": {
+    "appName": "AI-ROS",
+    "loading": "Chargement…",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "back": "Retour",
+    "next": "Suivant",
+    "skip": "Passer",
+    "done": "Terminé",
+    "retry": "Réessayer",
+    "search": "Rechercher",
+    "actions": "Actions",
+    "viewAll": "Tout voir",
+    "filter": "Filtrer",
+    "export": "Exporter",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "open": "Ouvrir",
+    "yes": "Oui",
+    "no": "Non",
+    "or": "Ou",
+    "of": "sur",
+    "more": "de plus"
+  },
+  "nav": {
+    "workspace": "Espace de travail",
+    "dashboard": "Tableau de bord",
+    "candidates": "Candidats",
+    "jobs": "Offres",
+    "interviews": "Entretiens",
+    "ppe": "PPE",
+    "analytics": "Analyses",
+    "aiCopilot": "Copilote IA",
+    "workflows": "Flux de travail",
+    "pipeline": "Pipeline",
+    "matching": "Matching IA",
+    "schedule": "Planning",
+    "settings": "Paramètres",
+    "proTip": "Appuyez sur",
+    "proTipCommand": "pour ouvrir la recherche et accéder à n'importe où."
+  },
+  "auth": {
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "signUp": "S'inscrire",
+    "createAccount": "Créer votre compte",
+    "welcomeBack": "Bon retour",
+    "startFreeTrial": "Démarrer l'essai gratuit",
+    "workEmail": "Email professionnel",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "fullName": "Nom complet",
+    "forgotPassword": "Mot de passe oublié ?",
+    "rememberMe": "Se souvenir de moi pendant 30 jours",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "haveAccount": "Vous avez déjà un compte ?",
+    "orContinueWith": "Ou continuer avec",
+    "orSignUpWith": "Ou s'inscrire avec",
+    "agreeTerms": "J'accepte les {terms}, la {privacy} et le {dpa}.",
+    "terms": "Conditions d'utilisation",
+    "privacy": "Politique de confidentialité",
+    "dpa": "Accord de traitement des données",
+    "ssoGoogle": "Google",
+    "ssoMicrosoft": "Microsoft",
+    "ssoLinkedin": "LinkedIn",
+    "ssoApple": "Apple",
+    "ssoNotConfigured": "Le SSO avec {provider} n'est pas encore configuré. Veuillez utiliser l'email et le mot de passe.",
+    "checkInbox": "Vérifiez votre boîte de réception",
+    "checkInboxDesc": "Nous avons envoyé un lien de vérification à",
+    "verifySteps": "Cliquez sur le lien dans l'email pour vérifier votre compte, configurer le profil de votre entreprise et inviter les membres de votre équipe.",
+    "emailPlaceholder": "vous@entreprise.com",
+    "demoCredentials": "Utiliser les identifiants de démo",
+    "loginFailed": "Échec de la connexion. Veuillez vérifier vos identifiants et réessayer.",
+    "creatingAccount": "Création du compte…",
+    "signingIn": "Connexion en cours…",
+    "strengthLabels": ["Très faible", "Faible", "Moyen", "Bon", "Fort", "Excellent"],
+    "passwordRules": {
+      "length": "Au moins 8 caractères",
+      "upper": "Une lettre majuscule",
+      "lower": "Une lettre minuscule",
+      "number": "Un chiffre",
+      "special": "Un caractère spécial"
+    },
+    "errors": {
+      "nameRequired": "Veuillez entrer votre nom complet",
+      "emailRequired": "L'email est requis",
+      "emailInvalid": "Veuillez entrer une adresse email valide",
+      "passwordRequired": "Le mot de passe est requis",
+      "passwordMin": "Le mot de passe doit comporter au moins 6 caractères",
+      "passwordsMatch": "Les mots de passe ne correspondent pas",
+      "agreeRequired": "Veuillez accepter les conditions d'utilisation",
+      "nameAndEmailRequired": "Le nom et l'email sont requis"
+    }
+  },
+  "landing": {
+    "navFeatures": "Fonctionnalités",
+    "navHow": "Comment ça marche",
+    "navPricing": "Tarifs",
+    "navFaq": "FAQ",
+    "signIn": "Se connecter",
+    "getStarted": "Commencer",
+    "newBadge": "NOUVEAU : Recrutement piloté par IA v3.0",
+    "heroTitle1": "L'avenir du recrutement",
+    "heroTitle2": "est autonome",
+    "heroSubtitle": "AI-ROS déploie des agents intelligents qui trient les candidats, mènent les entretiens et prennent des décisions d'embauche — pour que votre équipe puisse se concentrer sur l'essentiel.",
+    "heroCtaPrimary": "Démarrer l'essai gratuit",
+    "heroCtaSecondary": "Voir comment ça marche",
+    "heroTricheck": "✓ Aucune carte bancaire requise   ✓ Essai gratuit de 14 jours   ✓ Annulable à tout moment",
+    "trustedBy": "Choisi par des équipes innovantes dans le monde entier",
+    "statsCompanies": "Entreprises",
+    "statsCandidates": "Candidats traités",
+    "statsAccuracy": "Taux de précision",
+    "statsFaster": "Recrutement plus rapide",
+    "featuresTitle": "Pourquoi AI-ROS ?",
+    "featuresSubtitle": "Propulsé par l'IA, conçu pour les humains. Une plateforme complète du sourcing à l'offre.",
+    "features": {
+      "screening": "Présélection IA",
+      "screeningDesc": "Des agents autonomes trient et évaluent les candidats 24h/24 avec une notation multidimensionnelle et détection des biais.",
+      "coding": "Codage en direct",
+      "codingDesc": "Entretiens de pair programming en temps réel avec évaluation IA, indices progressifs et notation automatisée.",
+      "matching": "Matching intelligent",
+      "matchingDesc": "Matching candidat-offre propulsé par ML avec scores explicables grâce aux embeddings et graphes de compétences.",
+      "workflow": "Moteur de workflows",
+      "workflowDesc": "Automatisez tout votre pipeline de recrutement avec workflows visuels, déclencheurs événementiels et chaînes d'approbation.",
+      "analytics": "Analyses",
+      "analyticsDesc": "Informations en temps réel sur les métriques de recrutement, suivi des performances IA et analyses prédictives des effectifs.",
+      "security": "Sécurité entreprise",
+      "securityDesc": "Conforme SOC2 avec SSO, contrôle d'accès par rôle, chiffrement de bout en bout et journaux d'audit."
+    },
+    "howTitle": "Trois étapes vers un recrutement autonome",
+    "howSubtitle": "Passez de la fiche de poste au candidat idéal en quelques minutes, pas en semaines.",
+    "howSteps": {
+      "step1Title": "Importez et configurez",
+      "step1Desc": "Ajoutez vos fiches de poste, exigences et critères d'évaluation en quelques minutes.",
+      "step2Title": "L'IA prend le relais",
+      "step2Desc": "Nos agents trient, interviewent et évaluent les candidats de façon autonome.",
+      "step3Title": "Examinez et recrutez",
+      "step3Desc": "Consultez les recommandations IA, comparez les candidats et prenez des décisions éclairées."
+    },
+    "testimonialsTitle": "Choisi par des équipes de premier plan",
+    "testimonialsSubtitle": "Des histoires vraies de clients réels.",
+    "pricingTitle": "Tarifs simples et transparents",
+    "pricingSubtitle": "Commencez gratuitement, évoluez à votre rythme",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "save20": "-20%",
+    "mostPopular": "Le plus populaire",
+    "pricingTiers": {
+      "starter": {
+        "name": "Starter",
+        "description": "100 candidats, 3 utilisateurs, IA basique",
+        "cta": "Démarrer l'essai gratuit"
+      },
+      "professional": {
+        "name": "Professional",
+        "description": "500 candidats, 10 utilisateurs, IA avancée",
+        "cta": "Démarrer l'essai gratuit"
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "description": "Tout illimité",
+        "cta": "Contacter les ventes"
+      }
+    },
+    "faqTitle": "Des questions ? Nous avons les réponses",
+    "faqSubtitle": "Tout ce qu'il faut savoir pour démarrer.",
+    "footerTagline": "Plateforme de recrutement IA-native pour les équipes modernes. Recrutez plus vite, plus équitable, plus malin.",
+    "operational": "Tous les systèmes opérationnels",
+    "footerCopyright": "© 2026 AI-ROS. Tous droits réservés.",
+    "language": "Français (France)",
+    "ctaFinalTitle": "Prêt à transformer votre recrutement ?",
+    "ctaFinalSubtitle": "Rejoignez plus de 500 entreprises qui utilisent déjà AI-ROS pour recruter plus malin, plus vite, plus équitable.",
+    "ctaFinalButton": "Commencer",
+    "emailPlaceholder": "Entrez votre email",
+    "emailSent": "✓ Vérifiez votre boîte de réception pour l'email de bienvenue",
+    "noCreditCard": "Aucune carte bancaire requise. Essai gratuit de 14 jours."
+  },
+  "dashboard": {
+    "welcomeBack": "Bon retour",
+    "welcomeSubtitle": "Voici ce qui se passe dans votre recrutement aujourd'hui.",
+    "last7days": "7 jours",
+    "last30days": "30 jours",
+    "last90days": "90 jours",
+    "totalCandidates": "Candidats totaux",
+    "activeJobs": "Offres actives",
+    "interviewsThisWeek": "Entretiens cette semaine",
+    "passRate": "Taux de réussite",
+    "weeklyActivity": "Activité hebdomadaire",
+    "weeklyActivitySub": "Candidats traités par jour",
+    "candidatesCount": "Candidats",
+    "thisPeriod": "cette période",
+    "pipelineFunnel": "Entonnoir de pipeline",
+    "stages": "étapes",
+    "recentActivity": "Activité récente",
+    "upcoming": "À venir",
+    "events": "événements",
+    "recentCandidates": "Candidats récents",
+    "noActivityData": "Pas encore de données d'activité",
+    "noActivityDesc": "Les graphiques se rempliront dès que des candidats commenceront à passer dans le pipeline.",
+    "noFunnelData": "Pas de données d'entonnoir",
+    "noFunnelDesc": "Ajoutez des candidats et lancez la présélection pour voir votre entonnoir.",
+    "noActivity": "Pas encore d'activité",
+    "noActivitySubDesc": "Les actions IA, présélections et événements de workflow apparaîtront ici.",
+    "noScheduled": "Rien de planifié",
+    "noScheduledDesc": "Votre journée est libre.",
+    "scheduleInterview": "Planifier un entretien",
+    "noCandidates": "Pas encore de candidats",
+    "noCandidatesDesc": "Ajoutez votre premier candidat pour commencer.",
+    "addCandidate": "Ajouter un candidat",
+    "quickActions": {
+      "addCandidate": "Ajouter un candidat",
+      "createJob": "Créer une offre",
+      "scheduleInterview": "Planifier un entretien",
+      "askAI": "Demander au copilote IA"
+    }
+  },
+  "candidates": {
+    "title": "Candidats",
+    "totalShown": "{total} au total · {shown} affichés",
+    "addCandidate": "Ajouter un candidat",
+    "search": "Rechercher par nom ou email...",
+    "allStatuses": "Tous les statuts",
+    "statuses": {
+      "active": "Actif",
+      "screening": "Présélection",
+      "ppe": "PPE",
+      "interviewing": "Entretien",
+      "offer": "Offre",
+      "hired": "Embauché",
+      "rejected": "Refusé"
+    },
+    "table": {
+      "candidate": "Candidat",
+      "location": "Localisation",
+      "skills": "Compétences",
+      "experience": "Exp.",
+      "score": "Score",
+      "status": "Statut"
+    },
+    "filterSkills": "Compétences :",
+    "minScore": "Score min. :",
+    "selected": "{count} sélectionné(s)",
+    "clear": "Effacer",
+    "exported": "{count} candidat(s) exporté(s) en CSV",
+    "removed": "{count} candidat(s) supprimé(s)",
+    "couldntLoad": "Impossible de charger les candidats",
+    "noCandidatesYet": "Pas encore de candidats",
+    "noCandidatesFound": "Aucun candidat trouvé",
+    "noCandidatesDesc": "Ajoutez votre premier candidat pour commencer à construire votre vivier.",
+    "tryAdjusting": "Essayez d'ajuster vos filtres.",
+    "add": "Ajouter un candidat",
+    "newCandidate": "Ajouter un nouveau candidat",
+    "newCandidateDesc": "Créez un profil candidat. Il apparaîtra dans la file de présélection.",
+    "fields": {
+      "fullName": "Nom complet *",
+      "email": "Email *",
+      "phone": "Téléphone",
+      "location": "Localisation",
+      "experience": "Années d'expérience",
+      "skills": "Compétences (séparées par des virgules)"
+    },
+    "actions": {
+      "enrich": "Enrichir",
+      "match": "Matcher"
+    },
+    "enrichStarted": "Enrichissement IA lancé",
+    "matchComplete": "Matching terminé",
+    "matchCompleteWithScore": "Matching terminé — score {score}%",
+    "addedToCandidates": "{name} ajouté aux candidats",
+    "viewDetails": "Voir les détails du candidat"
+  },
+  "jobs": {
+    "title": "Offres",
+    "openTotal": "{open} ouvertes · {total} candidats au total",
+    "createJob": "Créer une offre",
+    "search": "Rechercher par titre...",
+    "stats": {
+      "total": "Offres totales",
+      "open": "Ouvertes",
+      "applicants": "Candidats",
+      "avgTime": "Délai moyen"
+    },
+    "table": {
+      "position": "Poste",
+      "type": "Type",
+      "salary": "Salaire",
+      "applicants": "Candidats",
+      "status": "Statut",
+      "posted": "Publiée"
+    },
+    "wizard": {
+      "title": "Créer une nouvelle offre",
+      "desc": "Un assistant en 3 étapes pour publier votre offre en moins d'une minute.",
+      "steps": ["Bases", "Exigences", "Pipeline"],
+      "continue": "Continuer",
+      "create": "Créer l'offre",
+      "ready": "Prêt à publier",
+      "readyDesc": "Votre offre sera publiée et commencera à recevoir des candidatures immédiatement. La présélection IA classera les candidats automatiquement."
+    },
+    "fields": {
+      "title": "Titre du poste *",
+      "department": "Département",
+      "type": "Type d'emploi",
+      "location": "Localisation",
+      "salaryMin": "Salaire min. (€)",
+      "salaryMax": "Salaire max. (€)",
+      "description": "Description du poste",
+      "requirements": "Exigences",
+      "skills": "Compétences requises (séparées par des virgules)"
+    },
+    "statuses": {
+      "open": "Ouverte",
+      "draft": "Brouillon",
+      "closed": "Fermée",
+      "on_hold": "En pause"
+    },
+    "created": "Offre « {title} » créée avec succès",
+    "couldntLoad": "Impossible de charger les offres",
+    "noJobsYet": "Pas encore d'offres",
+    "noJobsFound": "Aucune offre trouvée",
+    "noJobsDesc": "Créez votre première offre pour commencer à recevoir des candidatures."
+  },
+  "interviews": {
+    "title": "Entretiens",
+    "totalUpcoming": "{total} au total · {upcoming} à venir",
+    "schedule": "Planifier un entretien",
+    "search": "Rechercher des entretiens...",
+    "upcomingThisWeek": "À venir cette semaine",
+    "types": {
+      "all": "Tous les types",
+      "phone": "Entretien téléphonique",
+      "technical": "Technique",
+      "panel": "Panel",
+      "onsite": "Sur site"
+    },
+    "statuses": {
+      "scheduled": "Planifié",
+      "in_progress": "En cours",
+      "completed": "Terminé",
+      "cancelled": "Annulé"
+    },
+    "started": "Entretien démarré",
+    "completed": "Entretien marqué comme terminé",
+    "scheduledWith": "Entretien planifié avec {name}",
+    "fields": {
+      "candidateName": "Nom du candidat *",
+      "jobPosition": "Poste *",
+      "date": "Date *",
+      "time": "Heure *",
+      "duration": "Durée (min)",
+      "type": "Type",
+      "location": "Lieu",
+      "panel": "Panel (initiales, séparées par des virgules)"
+    },
+    "couldntLoad": "Impossible de charger les entretiens",
+    "noInterviewsYet": "Pas encore d'entretiens",
+    "noInterviewsFound": "Aucun entretien trouvé",
+    "noInterviewsDesc": "Planifiez votre premier entretien pour commencer."
+  },
+  "ppe": {
+    "title": "Évaluation de pair programming",
+    "selectProblem": "Sélectionner un problème…",
+    "language": "Langage",
+    "examples": "Exemples",
+    "constraints": "Contraintes",
+    "input": "Entrée :",
+    "output": "Sortie :",
+    "hint": "Indice",
+    "fetching": "Récupération…",
+    "runTests": "Lancer les tests",
+    "running": "Exécution…",
+    "sessionLive": "Session active",
+    "startingSession": "Démarrage de la session…",
+    "result": "Résultat",
+    "testsPassed": "{passed} / {total} tests réussis",
+    "score": "Score",
+    "aiFeedback": "Retour IA",
+    "selectProblemDesc": "Sélectionnez un problème pour commencer",
+    "noProblemsTitle": "Aucun problème de code disponible",
+    "noProblemsDesc": "Une fois qu'un admin aura ajouté des problèmes, vous pourrez démarrer une session de pair programming ici.",
+    "couldntLoad": "Impossible de charger les problèmes",
+    "noActiveSession": "Aucune session active",
+    "executed": "Code exécuté",
+    "executionFailed": "Échec de l'exécution",
+    "hintFailed": "Impossible de récupérer l'indice",
+    "sessionFailed": "Impossible de démarrer la session : {error}"
+  },
+  "analytics": {
+    "title": "Analyses",
+    "stats": {
+      "totalCandidates": "Candidats totaux",
+      "activeJobs": "Offres actives",
+      "interviews": "Entretiens",
+      "passRate": "Taux de réussite"
+    },
+    "funnel": "Entonnoir de pipeline",
+    "aiPerformance": "Performance des agents IA",
+    "agents": "agents",
+    "noPipeline": "Pas de données de pipeline",
+    "noPipelineDesc": "Une fois que des candidats commenceront à passer dans l'entonnoir, vous verrez la répartition ici.",
+    "noAiMetrics": "Pas encore de métriques IA",
+    "noAiMetricsDesc": "Lancez l'orchestrateur IA pour peupler les stats de performance par agent.",
+    "productivity": "Signaux de productivité",
+    "metrics": {
+      "avgTimeToHire": "Délai moyen d'embauche",
+      "hires": "Embauchés cette période",
+      "rejections": "Refus",
+      "offerAcceptance": "Acceptation des offres"
+    }
+  },
+  "aiCopilot": {
+    "title": "Copilote IA recrutement",
+    "subtitle": "Propulsé par GPT-4o · routé via l'orchestrateur",
+    "welcome": "Bonjour ! Je suis votre copilote IA recrutement. Je peux vous aider à résumer des candidats, expliquer les scores d'évaluation IA, comparer des candidats, recommander des décisions d'embauche et générer des questions d'entretien. Comment puis-je vous aider ?",
+    "placeholder": "Posez une question sur les candidats, évaluations, pipeline…",
+    "send": "Envoyer",
+    "sending": "Envoi…",
+    "thinking": "L'IA réfléchit…",
+    "reasoning": "Voir le raisonnement",
+    "confidence": "confiance",
+    "suggested": [
+      "Résume mes meilleurs candidats",
+      "Qui dois-je faire passer en entretien ensuite ?",
+      "Explique le score de Sarah Chen",
+      "Où est le goulot d'étranglement du pipeline ?"
+    ],
+    "suggestedShort": [
+      "Résumer les candidats",
+      "Expliquer les scores",
+      "Comparer les candidats",
+      "Identifier les risques"
+    ],
+    "pipelineSummary": "Résumé du pipeline",
+    "suggestedActions": "Actions suggérées",
+    "emailDrafts": "Brouillons d'email",
+    "agentName": "Copilote recrutement",
+    "requestFailed": "Échec de la requête copilote. Veuillez réessayer.",
+    "requestFailedDesc": "J'ai des difficultés à joindre le service IA. Veuillez vérifier que le backend fonctionne, puis réessayez.",
+    "requestFailedPanel": "J'ai eu des difficultés à joindre le service IA. Veuillez vérifier que le backend fonctionne et réessayer."
+  },
+  "workflows": {
+    "title": "Flux de travail",
+    "subtitle": "{count} workflows · {active} actifs",
+    "all": "Tous",
+    "active": "Actifs",
+    "paused": "En pause",
+    "create": "Créer un workflow",
+    "noWorkflows": "Pas encore de workflows",
+    "noWorkflowsDesc": "Construisez des pipelines automatisés qui trient, planifient et contactent les candidats sans lever le petit doigt.",
+    "createFirst": "Créer votre premier workflow",
+    "activeBadge": "Actif",
+    "pausedBadge": "En pause",
+    "runs": "exécutions",
+    "success": "succès",
+    "last": "Dernière",
+    "never": "jamais",
+    "pause": "Mettre en pause",
+    "activate": "Activer",
+    "runNow": "Lancer maintenant",
+    "duplicate": "Dupliquer",
+    "viewDetails": "Voir les détails",
+    "delete": "Supprimer",
+    "duplicated": "Dupliqué",
+    "duplicatedDesc": "Copie de « {name} » créée",
+    "deleted": "Supprimé",
+    "deletedDesc": "« {name} » a été retiré.",
+    "pausedNotify": "Workflow mis en pause",
+    "activatedNotify": "Workflow activé",
+    "triggered": "Workflow déclenché",
+    "triggeredDesc": "« {name} » est en cours d'exécution.",
+    "created": "Workflow créé",
+    "createdDesc": "« {name} » est prêt. Activez-le pour commencer.",
+    "createModal": {
+      "title": "Créer un workflow",
+      "desc": "Choisissez un modèle pour démarrer en quelques secondes.",
+      "custom": "Constructeur personnalisé",
+      "customDesc": "Besoin d'un workflow entièrement personnalisé ? Contactez-nous et nous vous aiderons à le construire."
+    },
+    "details": {
+      "title": "Workflow",
+      "desc": "Journal d'exécution et statistiques",
+      "totalRuns": "Exécutions totales",
+      "successRate": "Taux de réussite",
+      "lastRun": "Dernière exécution",
+      "neverRun": "Jamais",
+      "steps": "Étapes",
+      "close": "Fermer"
+    },
+    "stepTypes": {
+      "trigger": "Déclencheur",
+      "condition": "Condition",
+      "action": "Action",
+      "notify": "Notification"
+    },
+    "templates": {
+      "highPriority": {
+        "name": "Alerte candidat haute priorité",
+        "desc": "Notifier le manager quand un candidat a un score de 90+"
+      },
+      "weeklyDigest": {
+        "name": "Résumé hebdomadaire d'embauche",
+        "desc": "Envoyer un résumé des recrutements à la direction chaque lundi"
+      },
+      "reEngage": {
+        "name": "Réengager les candidats dormants",
+        "desc": "Recontacter les candidats qui n'ont pas progressé depuis 14 jours"
+      }
+    }
+  },
+  "pipeline": {
+    "title": "Pipeline",
+    "subtitle": "{count} candidats sur {stages} étapes. Glissez pour déplacer entre les étapes.",
+    "stages": {
+      "active": "Actif",
+      "screening": "Présélection",
+      "ppe": "PPE",
+      "interview": "Entretien",
+      "offer": "Offre",
+      "hired": "Embauché",
+      "rejected": "Refusé"
+    },
+    "noCandidates": "Aucun candidat",
+    "noCandidatesInPipeline": "Aucun candidat dans le pipeline",
+    "noCandidatesDesc": "Ajoutez des candidats et ils apparaîtront ici, organisés par étape.",
+    "moved": "Déplacé vers {status}",
+    "couldntLoad": "Impossible de charger le pipeline"
+  },
+  "matching": {
+    "title": "Matching IA",
+    "run": "Lancer le matching IA",
+    "scoring": "Notation…",
+    "topCandidates": "Meilleurs candidats",
+    "openPositions": "Postes ouverts",
+    "noCandidates": "Pas encore de candidats",
+    "noPositions": "Aucun poste ouvert",
+    "factorBreakdown": "Détail des facteurs de matching",
+    "complete": "Matching IA terminé",
+    "couldntLoad": "Impossible de charger les données"
+  },
+  "schedule": {
+    "title": "Planning",
+    "today": "Aujourd'hui",
+    "week": "Cette semaine",
+    "month": "Ce mois-ci",
+    "nothing": "Rien de planifié",
+    "nothingToday": "Votre journée est libre.",
+    "nothingPeriod": "Aucun événement sur cette période.",
+    "scheduleCta": "Planifier un entretien →",
+    "couldntLoad": "Impossible de charger le planning"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Gérez votre compte, équipe et préférences de facturation.",
+    "tabs": {
+      "profile": "Profil",
+      "notifications": "Notifications",
+      "security": "Sécurité",
+      "api": "API",
+      "team": "Équipe",
+      "billing": "Facturation"
+    },
+    "profile": {
+      "picture": "Photo de profil",
+      "pictureDesc": "Une image carrée fonctionne mieux, max 2 Mo.",
+      "upload": "Téléverser",
+      "remove": "Retirer",
+      "personal": "Informations personnelles",
+      "phone": "Téléphone",
+      "role": "Rôle / Titre",
+      "bio": "Bio",
+      "saved": "Profil enregistré",
+      "savedDesc": "Vos modifications ont été mises à jour.",
+      "saveFailed": "Échec de l'enregistrement"
+    },
+    "notifications": {
+      "email": "Email",
+      "push": "Notifications push",
+      "sms": "SMS",
+      "saved": "Préférences enregistrées",
+      "savedDesc": "Vos paramètres de notification ont été mis à jour."
+    },
+    "security": {
+      "password": "Mot de passe",
+      "passwordDesc": "Choisissez un mot de passe fort que vous n'utilisez nulle part ailleurs.",
+      "current": "Mot de passe actuel",
+      "new": "Nouveau mot de passe",
+      "confirm": "Confirmer le nouveau mot de passe",
+      "update": "Mettre à jour le mot de passe",
+      "tooShort": "Mot de passe trop court",
+      "tooShortDesc": "Utilisez au moins 8 caractères.",
+      "mismatch": "Incohérence",
+      "mismatchDesc": "Les nouveaux mots de passe ne correspondent pas.",
+      "updated": "Mot de passe mis à jour",
+      "updatedDesc": "Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
+      "twofa": "Authentification à deux facteurs",
+      "twofaDesc": "Ajoutez une couche de sécurité supplémentaire à votre compte.",
+      "authenticator": "Application d'authentification",
+      "authenticatorDesc": "Utilisez une app comme 1Password, Authy ou Google Authenticator.",
+      "sessions": "Sessions actives",
+      "sessionsDesc": "Appareils actuellement connectés à votre compte.",
+      "thisDevice": "Cet appareil",
+      "revoke": "Révoquer"
+    },
+    "api": {
+      "keys": "Clés API",
+      "keysDesc": "Utilisez ces clés pour accéder à l'API AIROS depuis vos propres outils. Gardez-les secrètes.",
+      "newKey": "Nouvelle clé",
+      "noKeys": "Pas encore de clés API",
+      "noKeysDesc": "Créez votre première clé pour commencer à intégrer AIROS avec vos propres systèmes.",
+      "created": "Créée",
+      "lastUsed": "Dernière utilisation",
+      "revoke": "Révoquer",
+      "saveWarning": "Sauvegardez cette clé maintenant — vous ne la reverrez plus.",
+      "copy": "Copier",
+      "copied": "Copié dans le presse-papier",
+      "revoked": "Clé révoquée",
+      "revokedDesc": "Cette clé ne peut plus être utilisée.",
+      "createKey": "Créer une clé API",
+      "keyName": "Nom de la clé",
+      "keyNameDesc": "Donnez à la clé un nom clair pour l'identifier plus tard.",
+      "create": "Créer",
+      "webhooks": "Webhooks",
+      "endpoint": "URL du endpoint"
+    },
+    "team": {
+      "members": "Membres de l'équipe",
+      "membersDesc": "Gérez qui a accès à votre espace de travail.",
+      "invite": "Inviter",
+      "name": "Nom",
+      "role": "Rôle",
+      "status": "Statut",
+      "lastActive": "Dernière activité",
+      "actions": "Actions",
+      "remove": "Retirer",
+      "inviteTitle": "Inviter un membre",
+      "email": "Adresse email",
+      "emailPlaceholder": "nom@entreprise.com",
+      "sendInvite": "Envoyer l'invitation",
+      "invited": "Invitation envoyée",
+      "invitedDesc": "{email} recevra un email sous peu.",
+      "invalidEmail": "Email invalide",
+      "invalidEmailDesc": "Veuillez entrer une adresse email valide.",
+      "roles": {
+        "admin": "Admin",
+        "recruiter": "Recruteur",
+        "hiring_manager": "Manager d'embauche",
+        "viewer": "Observateur"
+      }
+    },
+    "billing": {
+      "plan": "Plan actuel",
+      "manageSeats": "Gérer les sièges",
+      "upgrade": "Changer de plan",
+      "usage": "Usage ce mois-ci",
+      "invoices": "Factures",
+      "exportAll": "Tout exporter"
+    }
+  },
+  "onboarding": {
+    "welcome": "Bienvenue sur AI-ROS",
+    "progress": "{done} sur {total} terminé · {pct}%",
+    "dismiss": "Ignorer l'onboarding",
+    "steps": {
+      "profile": {
+        "label": "Complétez votre profil",
+        "desc": "Ajoutez votre nom, photo et rôle"
+      },
+      "firstJob": {
+        "label": "Publiez votre première offre",
+        "desc": "Créez une offre pour commencer à recevoir des candidatures"
+      },
+      "firstCandidate": {
+        "label": "Ajoutez un candidat",
+        "desc": "Importez des candidats ou invitez-les par email"
+      },
+      "aiCopilot": {
+        "label": "Essayez le copilote IA",
+        "desc": "Demandez à l'IA d'évaluer, matcher ou résumer"
+      },
+      "pipeline": {
+        "label": "Configurez votre pipeline",
+        "desc": "Personnalisez les étapes de votre workflow de recrutement"
+      }
+    }
+  },
+  "tour": {
+    "help": "Voir la visite",
+    "skip": "Passer",
+    "next": "Suivant",
+    "prev": "Retour",
+    "finish": "Terminer",
+    "step": "Étape {current} sur {total}",
+    "replay": "Revoir la visite",
+    "candidates": {
+      "title": "Bienvenue dans Candidats",
+      "intro": "Gérez tout votre vivier de talents en un seul endroit. Faisons un tour rapide.",
+      "filters": {
+        "title": "Recherche et filtres",
+        "desc": "Trouvez rapidement des candidats par nom, email, statut ou compétences."
+      },
+      "add": {
+        "title": "Ajouter un candidat",
+        "desc": "Cliquez ici pour ajouter manuellement un candidat ou importer depuis votre ATS."
+      },
+      "table": {
+        "title": "Table des candidats",
+        "desc": "Affichez, triez et sélectionnez des candidats. Lancez l'enrichissement ou le matching IA depuis la colonne d'actions."
+      },
+      "ai": {
+        "title": "Actions IA",
+        "desc": "Cliquez sur Enrichir pour extraire compétences/informations ou sur Matcher pour scorer contre les offres."
+      },
+      "details": {
+        "title": "Cliquez sur un candidat",
+        "desc": "Ouvrez un candidat pour voir son profil complet, lancer des actions IA et voir son historique."
+      }
+    },
+    "jobs": {
+      "title": "Bienvenue dans Offres",
+      "intro": "Publiez de nouveaux postes et gérez vos rôles ouverts ici.",
+      "filters": {
+        "title": "Filtrer les offres",
+        "desc": "Filtrez par statut (ouverte, brouillon, fermée) ou recherchez par titre."
+      },
+      "create": {
+        "title": "Créer une offre",
+        "desc": "Un assistant en 3 étapes vous guide à travers titre, exigences et configuration du pipeline."
+      },
+      "manage": {
+        "title": "Gérer les candidats par offre",
+        "desc": "Cliquez sur une offre pour voir ses candidats, classement et statut de présélection."
+      }
+    },
+    "ppe": {
+      "title": "Évaluation de pair programming",
+      "intro": "Lancez de vrais entretiens de code et laissez l'IA évaluer les solutions.",
+      "choose": {
+        "title": "Choisir un problème",
+        "desc": "Sélectionnez un problème et un langage. Un template de départ est fourni."
+      },
+      "editor": {
+        "title": "Éditeur de code",
+        "desc": "Écrivez votre solution dans un éditeur avec coloration syntaxique."
+      },
+      "run": {
+        "title": "Lancer les tests",
+        "desc": "Soumettez votre code pour exécuter la suite de tests et obtenir un retour instantané."
+      },
+      "hint": {
+        "title": "Demander un indice",
+        "desc": "Bloqué ? Demandez à l'IA un indice contextuel sans spoiler la solution."
+      },
+      "submit": {
+        "title": "Soumettre pour évaluation IA",
+        "desc": "Votre soumission est notée sur la correction, performance et qualité du code."
+      }
+    },
+    "aiCopilot": {
+      "title": "Copilote IA",
+      "intro": "Votre assistant de recrutement toujours disponible. Demandez tout sur vos candidats ou votre pipeline.",
+      "agents": {
+        "title": "Agents IA",
+        "desc": "En coulisses, des agents spécialisés gèrent le matching, la présélection et la planification."
+      },
+      "input": {
+        "title": "Demandez tout",
+        "desc": "Tapez votre question en langage naturel. Le copilote peut résumer, recommander et expliquer."
+      },
+      "response": {
+        "title": "Réponse IA",
+        "desc": "Obtenez une réponse structurée avec un score de confiance, une chaîne de raisonnement et des actions suggérées."
+      },
+      "history": {
+        "title": "Historique de conversation",
+        "desc": "Votre historique de chat est préservé pendant la session pour vous y référer."
+      }
+    },
+    "pipeline": {
+      "title": "Pipeline",
+      "intro": "Visualisez et gérez le parcours de chaque candidat.",
+      "stages": {
+        "title": "Étapes",
+        "desc": "Chaque colonne est une étape. Glissez les candidats entre les étapes pour mettre à jour leur statut."
+      },
+      "card": {
+        "title": "Carte candidat",
+        "desc": "Chaque carte affiche les infos clés d'un coup d'œil : nom, rôle et compétences."
+      },
+      "drag": {
+        "title": "Glisser pour déplacer",
+        "desc": "Cliquez et maintenez une carte pour la glisser vers une nouvelle étape. Le changement est enregistré automatiquement."
+      },
+      "ai": {
+        "title": "Prochaines actions suggérées par l'IA",
+        "desc": "Ouvrez un candidat pour voir les prochaines étapes recommandées par l'IA selon son profil."
+      }
+    },
+    "settings": {
+      "title": "Paramètres",
+      "intro": "Gérez votre compte, sécurité, équipe et facturation en un seul endroit.",
+      "tabs": {
+        "title": "Onglets",
+        "desc": "Naviguez entre Profil, Notifications, Sécurité, API, Équipe et Facturation."
+      },
+      "save": {
+        "title": "Enregistrer les modifications",
+        "desc": "N'oubliez pas d'enregistrer vos modifications. La plupart des onglets s'enregistrent automatiquement."
+      }
+    },
+    "analytics": {
+      "title": "Analyses",
+      "intro": "Informations en temps réel sur votre entonnoir d'embauche et la performance IA.",
+      "funnel": {
+        "title": "Entonnoir de pipeline",
+        "desc": "Voyez comment les candidats progressent à travers chaque étape de votre pipeline."
+      },
+      "ai": {
+        "title": "Performance des agents IA",
+        "desc": "Suivez la performance de chaque agent IA : tâches complétées, confiance, précision."
+      }
+    },
+    "workflows": {
+      "title": "Workflows",
+      "intro": "Automatisez les tâches répétitives avec des workflows sans code.",
+      "list": {
+        "title": "Liste des workflows",
+        "desc": "Chaque workflow est une séquence de déclencheurs, conditions, actions et notifications."
+      },
+      "actions": {
+        "title": "Actions de workflow",
+        "desc": "Mettre en pause/activer, lancer, dupliquer ou supprimer un workflow depuis le menu de la carte."
+      }
+    }
+  },
+  "theme": {
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
+  "language": {
+    "label": "Langue",
+    "select": "Choisir la langue"
+  },
+  "quickActions": {
+    "open": "Ouvrir les actions rapides",
+    "close": "Fermer les actions rapides"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unread": "non lues",
+    "markAllRead": "Tout marquer comme lu",
+    "loading": "Chargement…",
+    "none": "Aucune notification",
+    "viewAll": "Voir toute l'activité"
+  },
+  "userMenu": {
+    "open": "Ouvrir le menu utilisateur",
+    "profile": "Votre profil",
+    "settings": "Paramètres",
+    "signOut": "Se déconnecter"
+  }
+}

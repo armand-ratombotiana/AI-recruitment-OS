@@ -8,6 +8,44 @@
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
   --gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #ec4899 100%);
+  --surface-0: #ffffff;
+  --surface-50: #f8fafc;
+  --surface-100: #f1f5f9;
+  --surface-200: #e2e8f0;
+  --surface-300: #cbd5e1;
+  --surface-400: #94a3b8;
+  --surface-500: #64748b;
+  --surface-600: #475569;
+  --surface-700: #334155;
+  --surface-800: #1e293b;
+  --surface-900: #0f172a;
+  --surface-950: #020617;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --ring: #2563eb;
+}
+
+.dark {
+  --background: #0b1220;
+  --foreground: #e2e8f0;
+  --primary: #60a5fa;
+  --primary-hover: #93c5fd;
+  --gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #ec4899 100%);
+  --surface-0: #020617;
+  --surface-50: #0b1220;
+  --surface-100: #0f172a;
+  --surface-200: #1e293b;
+  --surface-300: #334155;
+  --surface-400: #475569;
+  --surface-500: #64748b;
+  --surface-600: #94a3b8;
+  --surface-700: #cbd5e1;
+  --surface-800: #e2e8f0;
+  --surface-900: #f1f5f9;
+  --surface-950: #f8fafc;
+  --border: #1e293b;
+  --muted: #94a3b8;
+  --ring: #60a5fa;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -22,6 +60,11 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+html {
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 /* ============================
@@ -470,4 +513,31 @@ html {
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* ============================
+   DARK MODE OVERRIDES
+   ============================ */
+.dark .shimmer {
+  background: linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+  background-size: 200% 100%;
+}
+
+.dark .bar-chart-label {
+  color: #94a3b8;
+}
+
+.dark .funnel-bar {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.dark .gradient-border {
+  background: #0f172a;
 }

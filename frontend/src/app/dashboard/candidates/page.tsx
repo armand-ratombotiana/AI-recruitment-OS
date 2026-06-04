@@ -18,8 +18,10 @@ import {
   Star,
 } from 'lucide-react';
 import { api } from '@/services/api/client';
-import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb } from '@/components';
+import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton } from '@/components';
 import type { Column } from '@/components/ui/data-table';
+import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
+import { candidatesTour } from '@/components/onboarding/tours';
 
 const STATUS_VARIANT: Record<string, 'info' | 'warning' | 'success' | 'purple' | 'default' | 'danger'> = {
   active: 'info',
@@ -32,16 +34,7 @@ const STATUS_VARIANT: Record<string, 'info' | 'warning' | 'success' | 'purple' |
   ppe: 'warning',
 };
 
-const STATUSES = [
-  { value: 'all', label: 'All statuses' },
-  { value: 'active', label: 'Active' },
-  { value: 'screening', label: 'Screening' },
-  { value: 'ppe', label: 'PPE' },
-  { value: 'interviewing', label: 'Interviewing' },
-  { value: 'offer', label: 'Offer' },
-  { value: 'hired', label: 'Hired' },
-  { value: 'rejected', label: 'Rejected' },
-];
+const STATUS_VALUES = ['all', 'active', 'screening', 'ppe', 'interviewing', 'offer', 'hired', 'rejected'];
 
 interface Candidate {
   id: string;
@@ -58,6 +51,8 @@ interface Candidate {
 }
 
 export default function CandidatesPage() {
+  const locale = useLocaleStore((s) => s.locale);
+  const t = (key: string, fb?: string) => translate(locale, key, fb);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +76,7 @@ export default function CandidatesPage() {
       const d = await api.listCandidates();
       setCandidates(d?.data || []);
     } catch (err: any) {
-      setError(err?.message || 'Failed to load candidates');
+      setError(err?.message || t('candidates.couldntLoad', "Couldn't load candidates"));
       setCandidates([]);
     } finally {
       setLoading(false);
@@ -96,7 +91,7 @@ export default function CandidatesPage() {
     setEnriching((p) => new Set(p).add(id));
     try {
       await api.enrichCandidate(id);
-      push('success', 'AI enrichment started');
+      push('success', t('candidates.enrichStarted', 'AI enrichment started'));
       await load();
     } catch (err: any) {
       push('error', err?.message || 'Enrichment failed');
@@ -114,7 +109,10 @@ export default function CandidatesPage() {
     try {
       const r = await api.matchCandidate(id);
       const score = r?.match_score ?? r?.result?.match_score;
-      push('success', `Match complete${score ? ` — score ${(score * 100).toFixed(0)}%` : ''}`);
+      const msg = score
+        ? t('candidates.matchCompleteWithScore', 'Match complete — score {score}%').replace('{score}', String((score * 100).toFixed(0)))
+        : t('candidates.matchComplete', 'Match complete');
+      push('success', msg);
       await load();
     } catch (err: any) {
       push('error', err?.message || 'Matching failed');
@@ -140,7 +138,7 @@ export default function CandidatesPage() {
         status: 'active',
       });
       setAddOpen(false);
-      push('success', `${data.full_name} added to candidates`);
+      push('success', t('candidates.addedToCandidates', '{name} added to candidates').replace('{name}', data.full_name));
       await load();
     } catch (err: any) {
       push('error', err?.message || 'Failed to create candidate');
@@ -194,7 +192,7 @@ export default function CandidatesPage() {
     a.download = `candidates-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    push('success', `Exported ${data.length} candidate(s) to CSV`);
+    push('success', t('candidates.exported', 'Exported {count} candidate(s) to CSV').replace('{count}', String(data.length)));
   };
 
   const bulkDelete = async () => {
@@ -214,7 +212,7 @@ export default function CandidatesPage() {
         // continue with other items
       }
     }
-    push('success', `Removed ${removed} candidate(s)`);
+    push('success', t('candidates.removed', 'Removed {count} candidate(s)').replace('{count}', String(removed)));
     setSelected(new Set());
     await load();
   };
@@ -236,38 +234,38 @@ export default function CandidatesPage() {
     },
     {
       key: 'full_name',
-      label: 'Candidate',
+      label: t('candidates.table.candidate', 'Candidate'),
       render: (c) => (
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
             {c.full_name?.split(' ').map((n) => n[0]).join('').slice(0, 2)}
           </div>
           <div>
-            <p className="font-medium text-gray-900">{c.full_name}</p>
-            <p className="text-xs text-gray-500">{c.email}</p>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{c.full_name}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{c.email}</p>
           </div>
         </div>
       ),
     },
-    { key: 'location', label: 'Location', render: (c) => c.location ? <span className="text-gray-600 text-xs">{c.location}</span> : <span className="text-gray-400">—</span> },
+    { key: 'location', label: t('candidates.table.location', 'Location'), render: (c) => c.location ? <span className="text-gray-600 dark:text-gray-300 text-xs">{c.location}</span> : <span className="text-gray-400">—</span> },
     {
       key: 'skills',
-      label: 'Skills',
+      label: t('candidates.table.skills', 'Skills'),
       sortable: false,
       render: (c) => (
         <div className="flex flex-wrap gap-1 max-w-xs">
           {c.skills?.slice(0, 3).map((s) => (
-            <span key={s} className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-gray-100 text-gray-700 font-medium">{s}</span>
+            <span key={s} className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-gray-100 text-gray-700 font-medium dark:bg-surface-800 dark:text-gray-200">{s}</span>
           ))}
           {c.skills && c.skills.length > 3 && <span className="text-xs text-gray-400">+{c.skills.length - 3}</span>}
         </div>
       ),
     },
-    { key: 'experience_years', label: 'Exp.', align: 'center', render: (c) => c.experience_years ? `${c.experience_years}y` : '—' },
-    { key: 'score', label: 'Score', align: 'center', render: (c) => c.score ? <span className="font-bold text-gray-900">{c.score}</span> : '—' },
+    { key: 'experience_years', label: t('candidates.table.experience', 'Exp.'), align: 'center', render: (c) => c.experience_years ? `${c.experience_years}y` : '—' },
+    { key: 'score', label: t('candidates.table.score', 'Score'), align: 'center', render: (c) => c.score ? <span className="font-bold text-gray-900 dark:text-gray-100">{c.score}</span> : '—' },
     {
       key: 'status',
-      label: 'Status',
+      label: t('candidates.table.status', 'Status'),
       render: (c) => <Badge variant={STATUS_VARIANT[c.status] || 'default'} size="sm" dot>{c.status}</Badge>,
     },
     {
@@ -280,19 +278,19 @@ export default function CandidatesPage() {
             type="button"
             onClick={() => handleEnrich(c.id)}
             disabled={enriching.has(c.id)}
-            className="px-2 py-1 text-[10px] font-semibold rounded bg-purple-50 text-purple-700 hover:bg-purple-100 disabled:opacity-50"
+            className="px-2 py-1 text-[10px] font-semibold rounded bg-purple-50 text-purple-700 hover:bg-purple-100 disabled:opacity-50 dark:bg-accent-500/20 dark:text-accent-300 dark:hover:bg-accent-500/30"
             title="AI enrichment"
           >
-            {enriching.has(c.id) ? '...' : 'Enrich'}
+            {enriching.has(c.id) ? '...' : t('candidates.actions.enrich', 'Enrich')}
           </button>
           <button
             type="button"
             onClick={() => handleMatch(c.id)}
             disabled={matching.has(c.id)}
-            className="px-2 py-1 text-[10px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+            className="px-2 py-1 text-[10px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 dark:bg-brand-500/20 dark:text-brand-300 dark:hover:bg-brand-500/30"
             title="Run AI matching"
           >
-            {matching.has(c.id) ? '...' : 'Match'}
+            {matching.has(c.id) ? '...' : t('candidates.actions.match', 'Match')}
           </button>
         </div>
       ),
@@ -305,17 +303,25 @@ export default function CandidatesPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Candidates</h1>
-          <p className="text-sm text-gray-500 mt-1">{candidates.length} total · {filtered.length} shown</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">{t('candidates.title', 'Candidates')}</h1>
+            <HelpButton tour={candidatesTour} />
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {interpolate(t('candidates.totalShown', '{total} total · {shown} shown'), {
+              total: String(candidates.length),
+              shown: String(filtered.length),
+            })}
+          </p>
         </div>
-        <Button variant="primary" leftIcon={<UserPlus className="h-4 w-4" />} onClick={() => setAddOpen(true)}>
-          Add candidate
+        <Button data-tour="candidates-add" variant="primary" leftIcon={<UserPlus className="h-4 w-4" />} onClick={() => setAddOpen(true)}>
+          {t('candidates.addCandidate', 'Add candidate')}
         </Button>
       </div>
 
       <Breadcrumb />
 
-      <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+      <div data-tour="candidates-search" className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 p-4 space-y-3">
         <div className="flex flex-col lg:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -323,60 +329,70 @@ export default function CandidatesPage() {
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search candidates by name or email..."
-              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              placeholder={t('candidates.search', 'Search candidates by name or email...')}
+              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100 dark:placeholder-gray-500"
               aria-label="Search candidates"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-white"
+            className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100"
             aria-label="Filter by status"
           >
-            {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            {STATUS_VALUES.map((v) => (
+              <option key={v} value={v}>
+                {v === 'all'
+                  ? t('candidates.allStatuses', 'All statuses')
+                  : t(`candidates.statuses.${v}`, v.charAt(0).toUpperCase() + v.slice(1))}
+              </option>
+            ))}
           </select>
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg p-1">
-            <button onClick={() => setView('table')} className={`p-1.5 rounded ${view === 'table' ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-50'}`} aria-label="Table view" aria-pressed={view === 'table'}>
+          <div className="flex items-center gap-2 bg-white dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-lg p-1">
+            <button onClick={() => setView('table')} className={`p-1.5 rounded ${view === 'table' ? 'bg-blue-50 text-blue-600 dark:bg-brand-500/20 dark:text-brand-300' : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-surface-700'}`} aria-label="Table view" aria-pressed={view === 'table'}>
               <List className="h-4 w-4" />
             </button>
-            <button onClick={() => setView('grid')} className={`p-1.5 rounded ${view === 'grid' ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-50'}`} aria-label="Grid view" aria-pressed={view === 'grid'}>
+            <button onClick={() => setView('grid')} className={`p-1.5 rounded ${view === 'grid' ? 'bg-blue-50 text-blue-600 dark:bg-brand-500/20 dark:text-brand-300' : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-surface-700'}`} aria-label="Grid view" aria-pressed={view === 'grid'}>
               <LayoutGrid className="h-4 w-4" />
             </button>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-            <Filter className="h-3.5 w-3.5" /> Skills:
+          <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+            <Filter className="h-3.5 w-3.5" /> {t('candidates.filterSkills', 'Skills:')}
           </div>
           {allSkills.slice(0, 8).map((s) => (
             <button
               key={s}
               onClick={() => setSkillFilter((p) => p.includes(s) ? p.filter((x) => x !== s) : [...p, s])}
               className={`px-2.5 py-1 text-xs font-medium rounded-full border transition ${
-                skillFilter.includes(s) ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                skillFilter.includes(s)
+                  ? 'bg-blue-100 border-blue-300 text-blue-700 dark:bg-brand-500/30 dark:border-brand-500/50 dark:text-brand-200'
+                  : 'bg-white dark:bg-surface-800 border-gray-200 dark:border-surface-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-surface-700'
               }`}
             >
               {s}
             </button>
           ))}
           <div className="ml-auto flex items-center gap-2 text-xs">
-            <label className="text-gray-500">Min score: <strong className="text-gray-900">{minScore}</strong></label>
+            <label className="text-gray-500 dark:text-gray-400">{t('candidates.minScore', 'Min score:')} <strong className="text-gray-900 dark:text-gray-100">{minScore}</strong></label>
             <input type="range" min="0" max="100" value={minScore} onChange={(e) => setMinScore(Number(e.target.value))} className="w-24" aria-label="Minimum score" />
           </div>
         </div>
       </div>
 
       {selected.size > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center justify-between">
+        <div className="bg-blue-50 dark:bg-brand-500/10 border border-blue-200 dark:border-brand-500/30 rounded-xl p-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-blue-900">{selected.size} selected</span>
-            <button onClick={() => setSelected(new Set())} className="text-xs text-blue-700 hover:underline">Clear</button>
+            <span className="text-sm font-semibold text-blue-900 dark:text-brand-200">
+              {interpolate(t('candidates.selected', '{count} selected'), { count: String(selected.size) })}
+            </span>
+            <button onClick={() => setSelected(new Set())} className="text-xs text-blue-700 dark:text-brand-300 hover:underline">{t('candidates.clear', 'Clear')}</button>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" leftIcon={<Download className="h-3.5 w-3.5" />} onClick={exportCSV}>Export</Button>
-            <Button variant="danger" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={bulkDelete}>Delete</Button>
+            <Button variant="secondary" size="sm" leftIcon={<Download className="h-3.5 w-3.5" />} onClick={exportCSV}>{t('common.export', 'Export')}</Button>
+            <Button variant="danger" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={bulkDelete}>{t('common.delete', 'Delete')}</Button>
           </div>
         </div>
       )}
@@ -386,19 +402,19 @@ export default function CandidatesPage() {
       ) : error ? (
         <EmptyState
           icon={<UserPlus className="h-12 w-12" />}
-          title="Couldn't load candidates"
+          title={t('candidates.couldntLoad', "Couldn't load candidates")}
           description={error}
-          action={<Button variant="primary" onClick={load}>Retry</Button>}
+          action={<Button variant="primary" onClick={load}>{t('common.retry', 'Retry')}</Button>}
         />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<UserPlus className="h-12 w-12" />}
-          title={candidates.length === 0 ? "No candidates yet" : "No candidates found"}
-          description={candidates.length === 0 ? "Add your first candidate to start building your talent pool." : "Try adjusting your filters."}
-          action={<Button variant="primary" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setAddOpen(true)}>Add candidate</Button>}
+          title={candidates.length === 0 ? t('candidates.noCandidatesYet', 'No candidates yet') : t('candidates.noCandidatesFound', 'No candidates found')}
+          description={candidates.length === 0 ? t('candidates.noCandidatesDesc', 'Add your first candidate to start building your talent pool.') : t('candidates.tryAdjusting', 'Try adjusting your filters.')}
+          action={<Button variant="primary" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setAddOpen(true)}>{t('candidates.add', 'Add candidate')}</Button>}
         />
       ) : view === 'table' ? (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div data-tour="candidates-table" className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 overflow-hidden">
           <DataTable
             columns={columns}
             data={filtered}
@@ -413,7 +429,8 @@ export default function CandidatesPage() {
           {filtered.map((c) => (
             <div
               key={c.id}
-              className="group bg-white rounded-xl border border-gray-200 p-4 hover:border-blue-300 hover:shadow-md transition cursor-pointer"
+              data-tour="candidates-row"
+              className="group bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 p-4 hover:border-blue-300 dark:hover:border-brand-500/40 hover:shadow-md transition cursor-pointer"
               onClick={() => setDetail(c)}
               role="button"
               tabIndex={0}
@@ -424,8 +441,8 @@ export default function CandidatesPage() {
                     {c.full_name?.split(' ').map((n) => n[0]).join('').slice(0, 2)}
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 text-sm">{c.full_name}</p>
-                    <p className="text-xs text-gray-500">{c.experience_years}y exp</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{c.full_name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{c.experience_years}y exp</p>
                   </div>
                 </div>
                 {c.score && (
@@ -437,10 +454,10 @@ export default function CandidatesPage() {
               </div>
               <div className="flex flex-wrap gap-1 mb-3">
                 {c.skills?.slice(0, 3).map((s) => (
-                  <span key={s} className="inline-block px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-700 font-medium">{s}</span>
+                  <span key={s} className="inline-block px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-700 font-medium dark:bg-surface-800 dark:text-gray-200">{s}</span>
                 ))}
               </div>
-              <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-surface-700">
                 <Badge variant={STATUS_VARIANT[c.status] || 'default'} size="sm" dot>{c.status}</Badge>
                 <span className="text-xs text-gray-400">{c.location}</span>
               </div>
@@ -449,71 +466,74 @@ export default function CandidatesPage() {
         </div>
       )}
 
-      <Modal isOpen={addOpen} onClose={() => setAddOpen(false)} title="Add new candidate" description="Create a candidate profile. They will appear in the screening queue.">
+      <Modal isOpen={addOpen} onClose={() => setAddOpen(false)} title={t('candidates.newCandidate', 'Add new candidate')} description={t('candidates.newCandidateDesc', 'Create a candidate profile. They will appear in the screening queue.')}>
         <AddCandidateForm
           onCancel={() => setAddOpen(false)}
           onSubmit={handleCreate}
           submitting={submitting}
+          locale={locale}
         />
       </Modal>
 
-      <Modal isOpen={!!detail} onClose={() => setDetail(null)} title={detail?.full_name || 'Candidate'} description={detail?.email} size="lg">
-        {detail && <CandidateDetail candidate={detail} />}
+      <Modal isOpen={!!detail} onClose={() => setDetail(null)} title={detail?.full_name || t('candidates.title', 'Candidate')} description={detail?.email} size="lg">
+        {detail && <CandidateDetail candidate={detail} locale={locale} />}
       </Modal>
     </div>
   );
 }
 
-function AddCandidateForm({ onCancel, onSubmit, submitting }: { onCancel: () => void; onSubmit: (data: any) => void; submitting?: boolean }) {
+function AddCandidateForm({ onCancel, onSubmit, submitting, locale }: { onCancel: () => void; onSubmit: (data: any) => void; submitting?: boolean; locale: any }) {
+  const t = (key: string, fb?: string) => translate(locale, key, fb);
   const [form, setForm] = useState({ full_name: '', email: '', phone: '', location: '', skills: '', experience_years: '' });
   const [error, setError] = useState('');
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.full_name.trim() || !form.email.trim()) { setError('Name and email are required'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setError('Please enter a valid email'); return; }
+    if (!form.full_name.trim() || !form.email.trim()) { setError(t('auth.errors.nameAndEmailRequired', 'Name and email are required')); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setError(t('auth.errors.emailInvalid', 'Please enter a valid email')); return; }
     setError('');
     onSubmit({ ...form, skills: form.skills.split(',').map((s) => s.trim()).filter(Boolean) });
   };
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>}
+      {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 dark:bg-red-500/10 dark:border-red-500/30 dark:text-red-300">{error}</div>}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Full name *</label>
-          <input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('candidates.fields.fullName', 'Full name *')}</label>
+          <input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" required />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Email *</label>
-          <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('candidates.fields.email', 'Email *')}</label>
+          <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" required />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
-          <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('candidates.fields.phone', 'Phone')}</label>
+          <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Location</label>
-          <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="City, Country" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('candidates.fields.location', 'Location')}</label>
+          <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="City, Country" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Years of experience</label>
-          <input type="number" min="0" value={form.experience_years} onChange={(e) => setForm({ ...form, experience_years: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('candidates.fields.experience', 'Years of experience')}</label>
+          <input type="number" min="0" value={form.experience_years} onChange={(e) => setForm({ ...form, experience_years: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Skills (comma separated)</label>
-          <input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="React, TypeScript, Node.js" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('candidates.fields.skills', 'Skills (comma separated)')}</label>
+          <input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="React, TypeScript, Node.js" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
         </div>
       </div>
-      <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
-        <Button variant="secondary" onClick={onCancel} disabled={submitting}>Cancel</Button>
-        <Button variant="primary" type="submit" loading={submitting}>Add candidate</Button>
+      <div className="flex justify-end gap-2 pt-4 border-t border-gray-100 dark:border-surface-700">
+        <Button variant="secondary" onClick={onCancel} disabled={submitting}>{t('common.cancel', 'Cancel')}</Button>
+        <Button variant="primary" type="submit" loading={submitting}>{t('candidates.addCandidate', 'Add candidate')}</Button>
       </div>
     </form>
   );
 }
 
-function CandidateDetail({ candidate }: { candidate: Candidate }) {
+function CandidateDetail({ candidate, locale }: { candidate: Candidate; locale: any }) {
+  const t = (key: string, fb?: string) => translate(locale, key, fb);
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-4">
@@ -521,35 +541,35 @@ function CandidateDetail({ candidate }: { candidate: Candidate }) {
           {candidate.full_name?.split(' ').map((n) => n[0]).join('').slice(0, 2)}
         </div>
         <div>
-          <h3 className="text-lg font-bold text-gray-900">{candidate.full_name}</h3>
-          <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{candidate.full_name}</h3>
+          <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mt-1">
             <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {candidate.email}</span>
             {candidate.phone && <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> {candidate.phone}</span>}
             {candidate.location && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {candidate.location}</span>}
           </div>
         </div>
         <div className="ml-auto text-right">
-          <p className="text-2xl font-bold text-gray-900">{candidate.score || 0}</p>
-          <p className="text-xs text-gray-500">Match score</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{candidate.score || 0}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Match score</p>
         </div>
       </div>
 
       <div>
-        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Skills</h4>
+        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">{t('candidates.table.skills', 'Skills')}</h4>
         <div className="flex flex-wrap gap-1.5">
           {candidate.skills?.map((s) => (
-            <span key={s} className="px-2.5 py-1 rounded-full text-xs bg-blue-50 text-blue-700 font-medium border border-blue-200">{s}</span>
+            <span key={s} className="px-2.5 py-1 rounded-full text-xs bg-blue-50 text-blue-700 font-medium border border-blue-200 dark:bg-brand-500/20 dark:text-brand-300 dark:border-brand-500/30">{s}</span>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100">
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">Experience</p>
-          <p className="text-sm font-semibold text-gray-900 mt-0.5 flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" /> {candidate.experience_years || 0} years</p>
+      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100 dark:border-surface-700">
+        <div className="p-3 bg-gray-50 dark:bg-surface-800 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Experience</p>
+          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-0.5 flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" /> {candidate.experience_years || 0} years</p>
         </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">Status</p>
+        <div className="p-3 bg-gray-50 dark:bg-surface-800 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('candidates.table.status', 'Status')}</p>
           <div className="mt-1"><Badge variant={STATUS_VARIANT[candidate.status] || 'default'} size="sm" dot>{candidate.status}</Badge></div>
         </div>
       </div>

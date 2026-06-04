@@ -1,0 +1,864 @@
+{
+  "common": {
+    "appName": "AI-ROS",
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "skip": "Skip",
+    "done": "Done",
+    "retry": "Retry",
+    "search": "Search",
+    "actions": "Actions",
+    "viewAll": "View all",
+    "filter": "Filter",
+    "export": "Export",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "open": "Open",
+    "yes": "Yes",
+    "no": "No",
+    "or": "Or",
+    "of": "of",
+    "more": "more"
+  },
+  "nav": {
+    "workspace": "Workspace",
+    "dashboard": "Dashboard",
+    "candidates": "Candidates",
+    "jobs": "Jobs",
+    "interviews": "Interviews",
+    "ppe": "PPE",
+    "analytics": "Analytics",
+    "aiCopilot": "AI Copilot",
+    "workflows": "Workflows",
+    "pipeline": "Pipeline",
+    "matching": "AI Matching",
+    "schedule": "Schedule",
+    "settings": "Settings",
+    "proTip": "Press",
+    "proTipCommand": "to open search and jump anywhere."
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "signUp": "Sign up",
+    "createAccount": "Create your account",
+    "welcomeBack": "Welcome back",
+    "startFreeTrial": "Start free trial",
+    "workEmail": "Work email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "fullName": "Full name",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me for 30 days",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "orContinueWith": "Or continue with",
+    "orSignUpWith": "Or sign up with",
+    "agreeTerms": "I agree to the {terms}, {privacy}, and {dpa}.",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "dpa": "Data Processing Agreement",
+    "ssoGoogle": "Google",
+    "ssoMicrosoft": "Microsoft",
+    "ssoLinkedin": "LinkedIn",
+    "ssoApple": "Apple",
+    "ssoNotConfigured": "SSO with {provider} is not configured yet. Please use email & password.",
+    "checkInbox": "Check your inbox",
+    "checkInboxDesc": "We sent a verification link to",
+    "verifySteps": "Click the link in the email to verify your account, set up your company profile, and invite your team members.",
+    "emailPlaceholder": "you@company.com",
+    "demoCredentials": "Use demo credentials",
+    "loginFailed": "Login failed. Please check your credentials and try again.",
+    "creatingAccount": "Creating account…",
+    "signingIn": "Signing you in…",
+    "strengthLabels": ["Very weak", "Weak", "Fair", "Good", "Strong", "Excellent"],
+    "passwordRules": {
+      "length": "At least 8 characters",
+      "upper": "One uppercase letter",
+      "lower": "One lowercase letter",
+      "number": "One number",
+      "special": "One special character"
+    },
+    "errors": {
+      "nameRequired": "Please enter your full name",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordMin": "Password must be at least 6 characters",
+      "passwordsMatch": "Passwords do not match",
+      "agreeRequired": "Please agree to the terms of service",
+      "nameAndEmailRequired": "Name and email are required"
+    }
+  },
+  "landing": {
+    "navFeatures": "Features",
+    "navHow": "How it works",
+    "navPricing": "Pricing",
+    "navFaq": "FAQ",
+    "signIn": "Sign In",
+    "getStarted": "Get Started",
+    "newBadge": "NEW: AI-Powered Recruitment v3.0",
+    "heroTitle1": "The Future of Hiring",
+    "heroTitle2": "is Autonomous",
+    "heroSubtitle": "AI-ROS deploys intelligent agents that screen candidates, conduct interviews, and make hiring decisions — so your team can focus on building.",
+    "heroCtaPrimary": "Start Free Trial",
+    "heroCtaSecondary": "See how it works",
+    "heroTricheck": "✓ No credit card required   ✓ 14-day free trial   ✓ Cancel anytime",
+    "trustedBy": "Trusted by innovative teams worldwide",
+    "statsCompanies": "Companies",
+    "statsCandidates": "Candidates Processed",
+    "statsAccuracy": "Accuracy Rate",
+    "statsFaster": "Faster Hiring",
+    "featuresTitle": "Why AI-ROS?",
+    "featuresSubtitle": "Powered by AI, designed for humans. A complete platform from sourcing to offer.",
+    "features": {
+      "screening": "AI Screening",
+      "screeningDesc": "Autonomous agents screen and evaluate candidates 24/7 with multi-dimensional scoring and bias detection.",
+      "coding": "Live Coding",
+      "codingDesc": "Real-time pair programming interviews with AI evaluation, progressive hints, and automated scoring.",
+      "matching": "Smart Matching",
+      "matchingDesc": "ML-powered candidate-job matching with explainable scores using embeddings and skill graphs.",
+      "workflow": "Workflow Engine",
+      "workflowDesc": "Automate your entire hiring pipeline with visual workflows, event-driven triggers, and approval chains.",
+      "analytics": "Analytics",
+      "analyticsDesc": "Real-time insights into recruitment metrics, AI performance tracking, and predictive workforce analytics.",
+      "security": "Enterprise Security",
+      "securityDesc": "SOC2 compliant with SSO, role-based access, end-to-end encryption, and audit logs."
+    },
+    "howTitle": "Three steps to autonomous hiring",
+    "howSubtitle": "Go from job description to top candidate in minutes, not weeks.",
+    "howSteps": {
+      "step1Title": "Upload & configure",
+      "step1Desc": "Add your job descriptions, requirements, and evaluation criteria in minutes.",
+      "step2Title": "AI takes over",
+      "step2Desc": "Our agents screen, interview, and evaluate candidates autonomously.",
+      "step3Title": "Review & hire",
+      "step3Desc": "Review AI recommendations, compare candidates, and make informed decisions."
+    },
+    "testimonialsTitle": "Trusted by leading teams",
+    "testimonialsSubtitle": "Real stories from real customers.",
+    "pricingTitle": "Simple, transparent pricing",
+    "pricingSubtitle": "Start free, scale as you grow",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "save20": "-20%",
+    "mostPopular": "Most Popular",
+    "pricingTiers": {
+      "starter": {
+        "name": "Starter",
+        "description": "100 candidates, 3 users, basic AI",
+        "cta": "Start Free Trial"
+      },
+      "professional": {
+        "name": "Professional",
+        "description": "500 candidates, 10 users, advanced AI",
+        "cta": "Start Free Trial"
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "description": "Unlimited everything",
+        "cta": "Contact Sales"
+      }
+    },
+    "faqTitle": "Questions? We have answers",
+    "faqSubtitle": "Everything you need to know to get started.",
+    "footerTagline": "AI-native recruitment platform for modern teams. Hire faster, fairer, smarter.",
+    "operational": "All systems operational",
+    "footerCopyright": "© 2026 AI-ROS. All rights reserved.",
+    "language": "English (US)",
+    "ctaFinalTitle": "Ready to transform your hiring?",
+    "ctaFinalSubtitle": "Join 500+ companies already using AI-ROS to hire smarter, faster, and fairer.",
+    "ctaFinalButton": "Get Started",
+    "emailPlaceholder": "Enter your email",
+    "emailSent": "✓ Check your inbox for the welcome email",
+    "noCreditCard": "No credit card required. Free 14-day trial."
+  },
+  "dashboard": {
+    "welcomeBack": "Welcome back",
+    "welcomeSubtitle": "Here's what's happening with your hiring today.",
+    "last7days": "7 days",
+    "last30days": "30 days",
+    "last90days": "90 days",
+    "totalCandidates": "Total Candidates",
+    "activeJobs": "Active Jobs",
+    "interviewsThisWeek": "Interviews This Week",
+    "passRate": "Pass Rate",
+    "weeklyActivity": "Weekly activity",
+    "weeklyActivitySub": "Candidates processed per day",
+    "candidatesCount": "Candidates",
+    "thisPeriod": "this period",
+    "pipelineFunnel": "Pipeline funnel",
+    "stages": "stages",
+    "recentActivity": "Recent activity",
+    "upcoming": "Upcoming",
+    "events": "events",
+    "recentCandidates": "Recent candidates",
+    "noActivityData": "No activity data yet",
+    "noActivityDesc": "Charts will populate once candidates start flowing through the pipeline.",
+    "noFunnelData": "No funnel data",
+    "noFunnelDesc": "Add candidates and start screening to see your funnel.",
+    "noActivity": "No activity yet",
+    "noActivitySubDesc": "AI actions, screening runs, and workflow events will show up here.",
+    "noScheduled": "Nothing scheduled",
+    "noScheduledDesc": "Your day is clear.",
+    "scheduleInterview": "Schedule an interview",
+    "noCandidates": "No candidates yet",
+    "noCandidatesDesc": "Add your first candidate to get started.",
+    "addCandidate": "Add candidate",
+    "quickActions": {
+      "addCandidate": "Add candidate",
+      "createJob": "Create job",
+      "scheduleInterview": "Schedule interview",
+      "askAI": "Ask AI Copilot"
+    }
+  },
+  "candidates": {
+    "title": "Candidates",
+    "totalShown": "{total} total · {shown} shown",
+    "addCandidate": "Add candidate",
+    "search": "Search candidates by name or email...",
+    "allStatuses": "All statuses",
+    "statuses": {
+      "active": "Active",
+      "screening": "Screening",
+      "ppe": "PPE",
+      "interviewing": "Interviewing",
+      "offer": "Offer",
+      "hired": "Hired",
+      "rejected": "Rejected"
+    },
+    "table": {
+      "candidate": "Candidate",
+      "location": "Location",
+      "skills": "Skills",
+      "experience": "Exp.",
+      "score": "Score",
+      "status": "Status"
+    },
+    "filterSkills": "Skills:",
+    "minScore": "Min score:",
+    "selected": "{count} selected",
+    "clear": "Clear",
+    "exported": "Exported {count} candidate(s) to CSV",
+    "removed": "Removed {count} candidate(s)",
+    "couldntLoad": "Couldn't load candidates",
+    "noCandidatesYet": "No candidates yet",
+    "noCandidatesFound": "No candidates found",
+    "noCandidatesDesc": "Add your first candidate to start building your talent pool.",
+    "tryAdjusting": "Try adjusting your filters.",
+    "add": "Add candidate",
+    "newCandidate": "Add new candidate",
+    "newCandidateDesc": "Create a candidate profile. They will appear in the screening queue.",
+    "fields": {
+      "fullName": "Full name *",
+      "email": "Email *",
+      "phone": "Phone",
+      "location": "Location",
+      "experience": "Years of experience",
+      "skills": "Skills (comma separated)"
+    },
+    "actions": {
+      "enrich": "Enrich",
+      "match": "Match"
+    },
+    "enrichStarted": "AI enrichment started",
+    "matchComplete": "Match complete",
+    "matchCompleteWithScore": "Match complete — score {score}%",
+    "addedToCandidates": "{name} added to candidates",
+    "viewDetails": "View candidate details"
+  },
+  "jobs": {
+    "title": "Jobs",
+    "openTotal": "{open} open · {total} total applicants",
+    "createJob": "Create job",
+    "search": "Search jobs by title...",
+    "stats": {
+      "total": "Total Jobs",
+      "open": "Open",
+      "applicants": "Applicants",
+      "avgTime": "Avg Time"
+    },
+    "table": {
+      "position": "Position",
+      "type": "Type",
+      "salary": "Salary",
+      "applicants": "Applicants",
+      "status": "Status",
+      "posted": "Posted"
+    },
+    "wizard": {
+      "title": "Create new job",
+      "desc": "A 3-step wizard to get your job posted in under a minute.",
+      "steps": ["Basics", "Requirements", "Pipeline"],
+      "continue": "Continue",
+      "create": "Create job",
+      "ready": "Ready to post",
+      "readyDesc": "Your job will be published and start receiving applications immediately. The AI screening will rank candidates automatically."
+    },
+    "fields": {
+      "title": "Job title *",
+      "department": "Department",
+      "type": "Employment type",
+      "location": "Location",
+      "salaryMin": "Salary min ($)",
+      "salaryMax": "Salary max ($)",
+      "description": "Job description",
+      "requirements": "Requirements",
+      "skills": "Required skills (comma separated)"
+    },
+    "statuses": {
+      "open": "Open",
+      "draft": "Draft",
+      "closed": "Closed",
+      "on_hold": "On hold"
+    },
+    "created": "Job \"{title}\" created successfully",
+    "couldntLoad": "Couldn't load jobs",
+    "noJobsYet": "No jobs yet",
+    "noJobsFound": "No jobs found",
+    "noJobsDesc": "Create your first job posting to start receiving applications."
+  },
+  "interviews": {
+    "title": "Interviews",
+    "totalUpcoming": "{total} total · {upcoming} upcoming",
+    "schedule": "Schedule interview",
+    "search": "Search interviews...",
+    "upcomingThisWeek": "Upcoming this week",
+    "types": {
+      "all": "All types",
+      "phone": "Phone screen",
+      "technical": "Technical",
+      "panel": "Panel",
+      "onsite": "Onsite"
+    },
+    "statuses": {
+      "scheduled": "Scheduled",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "started": "Interview started",
+    "completed": "Interview marked complete",
+    "scheduledWith": "Interview scheduled with {name}",
+    "fields": {
+      "candidateName": "Candidate name *",
+      "jobPosition": "Job position *",
+      "date": "Date *",
+      "time": "Time *",
+      "duration": "Duration (min)",
+      "type": "Type",
+      "location": "Location",
+      "panel": "Panel (initials, comma separated)"
+    },
+    "couldntLoad": "Couldn't load interviews",
+    "noInterviewsYet": "No interviews yet",
+    "noInterviewsFound": "No interviews found",
+    "noInterviewsDesc": "Schedule your first interview to get started."
+  },
+  "ppe": {
+    "title": "Pair Programming Evaluation",
+    "selectProblem": "Select problem…",
+    "language": "Language",
+    "examples": "Examples",
+    "constraints": "Constraints",
+    "input": "Input:",
+    "output": "Output:",
+    "hint": "Hint",
+    "fetching": "Fetching…",
+    "runTests": "Run tests",
+    "running": "Running…",
+    "sessionLive": "Session live",
+    "startingSession": "Starting session…",
+    "result": "Result",
+    "testsPassed": "{passed} / {total} tests passed",
+    "score": "Score",
+    "aiFeedback": "AI feedback",
+    "selectProblemDesc": "Select a problem to begin",
+    "noProblemsTitle": "No coding problems available",
+    "noProblemsDesc": "Once an admin adds problems, you'll be able to start a pair-programming session here.",
+    "couldntLoad": "Couldn't load problems",
+    "noActiveSession": "No active session",
+    "executed": "Code executed",
+    "executionFailed": "Execution failed",
+    "hintFailed": "Could not fetch hint",
+    "sessionFailed": "Could not start session: {error}"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "stats": {
+      "totalCandidates": "Total Candidates",
+      "activeJobs": "Active Jobs",
+      "interviews": "Interviews",
+      "passRate": "Pass Rate"
+    },
+    "funnel": "Pipeline funnel",
+    "aiPerformance": "AI agent performance",
+    "agents": "agents",
+    "noPipeline": "No pipeline data",
+    "noPipelineDesc": "Once candidates start moving through the funnel, you'll see the breakdown here.",
+    "noAiMetrics": "No AI metrics yet",
+    "noAiMetricsDesc": "Run the AI orchestrator to populate per-agent performance stats.",
+    "productivity": "Productivity signals",
+    "metrics": {
+      "avgTimeToHire": "Avg time to hire",
+      "hires": "Hires this period",
+      "rejections": "Rejections",
+      "offerAcceptance": "Offer acceptance"
+    }
+  },
+  "aiCopilot": {
+    "title": "AI Recruiting Copilot",
+    "subtitle": "Powered by GPT-4o · routed through the orchestrator",
+    "welcome": "Hello! I'm your AI recruiting copilot. I can help you summarize candidates, explain AI evaluation scores, compare applicants, recommend hiring decisions, and generate interview questions. What would you like help with?",
+    "placeholder": "Ask about candidates, evaluations, pipeline…",
+    "send": "Send",
+    "sending": "Sending…",
+    "thinking": "AI is thinking…",
+    "reasoning": "Show reasoning",
+    "confidence": "confidence",
+    "suggested": [
+      "Summarize my top candidates",
+      "Who should I move to interview next?",
+      "Explain the score for Sarah Chen",
+      "Where is the pipeline bottlenecked?"
+    ],
+    "suggestedShort": [
+      "Summarize candidates",
+      "Explain scores",
+      "Compare applicants",
+      "Identify risks"
+    ],
+    "pipelineSummary": "Pipeline summary",
+    "suggestedActions": "Suggested actions",
+    "emailDrafts": "Email drafts",
+    "agentName": "Recruiting Copilot",
+    "requestFailed": "Copilot request failed. Please try again.",
+    "requestFailedDesc": "I'm having trouble reaching the AI service right now. Please check that the backend is running, then try again.",
+    "requestFailedPanel": "I had trouble reaching the AI service. Please verify the backend is running and try again."
+  },
+  "workflows": {
+    "title": "Workflows",
+    "subtitle": "{count} workflows · {active} active",
+    "all": "All",
+    "active": "Active",
+    "paused": "Paused",
+    "create": "Create workflow",
+    "noWorkflows": "No workflows yet",
+    "noWorkflowsDesc": "Build automated pipelines that screen, schedule, and message candidates without lifting a finger.",
+    "createFirst": "Create your first workflow",
+    "activeBadge": "Active",
+    "pausedBadge": "Paused",
+    "runs": "runs",
+    "success": "success",
+    "last": "Last",
+    "never": "never",
+    "pause": "Pause",
+    "activate": "Activate",
+    "runNow": "Run now",
+    "duplicate": "Duplicate",
+    "viewDetails": "View details",
+    "delete": "Delete",
+    "duplicated": "Duplicated",
+    "duplicatedDesc": "Created a copy of \"{name}\"",
+    "deleted": "Deleted",
+    "deletedDesc": "\"{name}\" has been removed.",
+    "pausedNotify": "Workflow paused",
+    "activatedNotify": "Workflow activated",
+    "triggered": "Workflow triggered",
+    "triggeredDesc": "\"{name}\" is running.",
+    "created": "Workflow created",
+    "createdDesc": "\"{name}\" is ready. Toggle it on to start.",
+    "createModal": {
+      "title": "Create workflow",
+      "desc": "Pick a template to get started in seconds.",
+      "custom": "Custom builder",
+      "customDesc": "Need a fully custom workflow? Reach out and we'll help you build it."
+    },
+    "details": {
+      "title": "Workflow",
+      "desc": "Execution log and stats",
+      "totalRuns": "Total runs",
+      "successRate": "Success rate",
+      "lastRun": "Last run",
+      "neverRun": "Never",
+      "steps": "Steps",
+      "close": "Close"
+    },
+    "stepTypes": {
+      "trigger": "Trigger",
+      "condition": "Condition",
+      "action": "Action",
+      "notify": "Notify"
+    },
+    "templates": {
+      "highPriority": {
+        "name": "High-priority candidate alert",
+        "desc": "Notify hiring manager when a candidate scores 90+"
+      },
+      "weeklyDigest": {
+        "name": "Weekly hiring digest",
+        "desc": "Send a hiring summary to leadership every Monday"
+      },
+      "reEngage": {
+        "name": "Re-engage stale candidates",
+        "desc": "Reach out to candidates who haven't progressed in 14 days"
+      }
+    }
+  },
+  "pipeline": {
+    "title": "Pipeline",
+    "subtitle": "{count} candidates across {stages} stages. Drag to move between stages.",
+    "stages": {
+      "active": "Active",
+      "screening": "Screening",
+      "ppe": "PPE",
+      "interview": "Interview",
+      "offer": "Offer",
+      "hired": "Hired",
+      "rejected": "Rejected"
+    },
+    "noCandidates": "No candidates",
+    "noCandidatesInPipeline": "No candidates in pipeline",
+    "noCandidatesDesc": "Add candidates and they will appear here, organized by stage.",
+    "moved": "Moved to {status}",
+    "couldntLoad": "Couldn't load pipeline"
+  },
+  "matching": {
+    "title": "AI Matching",
+    "run": "Run AI matching",
+    "scoring": "Scoring…",
+    "topCandidates": "Top Candidates",
+    "openPositions": "Open Positions",
+    "noCandidates": "No candidates yet",
+    "noPositions": "No open positions",
+    "factorBreakdown": "Match factor breakdown",
+    "complete": "AI matching complete",
+    "couldntLoad": "Couldn't load data"
+  },
+  "schedule": {
+    "title": "Schedule",
+    "today": "Today",
+    "week": "This Week",
+    "month": "This Month",
+    "nothing": "Nothing scheduled",
+    "nothingToday": "Your day is clear.",
+    "nothingPeriod": "No events in this period.",
+    "scheduleCta": "Schedule an interview →",
+    "couldntLoad": "Couldn't load schedule"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account, team, and billing preferences.",
+    "tabs": {
+      "profile": "Profile",
+      "notifications": "Notifications",
+      "security": "Security",
+      "api": "API",
+      "team": "Team",
+      "billing": "Billing"
+    },
+    "profile": {
+      "picture": "Profile picture",
+      "pictureDesc": "A square image works best, max 2MB.",
+      "upload": "Upload",
+      "remove": "Remove",
+      "personal": "Personal info",
+      "phone": "Phone",
+      "role": "Role / Title",
+      "bio": "Bio",
+      "saved": "Profile saved",
+      "savedDesc": "Your changes have been updated.",
+      "saveFailed": "Save failed"
+    },
+    "notifications": {
+      "email": "Email",
+      "push": "Push notifications",
+      "sms": "SMS",
+      "saved": "Preferences saved",
+      "savedDesc": "Your notification settings have been updated."
+    },
+    "security": {
+      "password": "Password",
+      "passwordDesc": "Choose a strong password you don't use anywhere else.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "update": "Update password",
+      "tooShort": "Password too short",
+      "tooShortDesc": "Use at least 8 characters.",
+      "mismatch": "Mismatch",
+      "mismatchDesc": "New passwords do not match.",
+      "updated": "Password updated",
+      "updatedDesc": "You can now sign in with your new password.",
+      "twofa": "Two-factor authentication",
+      "twofaDesc": "Add an extra layer of security to your account.",
+      "authenticator": "Authenticator app",
+      "authenticatorDesc": "Use an app like 1Password, Authy, or Google Authenticator.",
+      "sessions": "Active sessions",
+      "sessionsDesc": "Devices that are currently signed in to your account.",
+      "thisDevice": "This device",
+      "revoke": "Revoke"
+    },
+    "api": {
+      "keys": "API keys",
+      "keysDesc": "Use these keys to access the AIROS API from your own tools. Keep them secret.",
+      "newKey": "New key",
+      "noKeys": "No API keys yet",
+      "noKeysDesc": "Create your first key to start integrating AIROS with your own systems.",
+      "created": "Created",
+      "lastUsed": "Last used",
+      "revoke": "Revoke",
+      "saveWarning": "Save this key now — you won't see it again.",
+      "copy": "Copy",
+      "copied": "Copied to clipboard",
+      "revoked": "Key revoked",
+      "revokedDesc": "This key can no longer be used.",
+      "createKey": "Create API key",
+      "keyName": "Key name",
+      "keyNameDesc": "Give the key a clear name so you can identify it later.",
+      "create": "Create",
+      "webhooks": "Webhooks",
+      "endpoint": "Endpoint URL"
+    },
+    "team": {
+      "members": "Team members",
+      "membersDesc": "Manage who has access to your workspace.",
+      "invite": "Invite",
+      "name": "Name",
+      "role": "Role",
+      "status": "Status",
+      "lastActive": "Last active",
+      "actions": "Actions",
+      "remove": "Remove",
+      "inviteTitle": "Invite team member",
+      "email": "Email address",
+      "emailPlaceholder": "name@company.com",
+      "sendInvite": "Send invite",
+      "invited": "Invitation sent",
+      "invitedDesc": "{email} will receive an email shortly.",
+      "invalidEmail": "Invalid email",
+      "invalidEmailDesc": "Please enter a valid email address.",
+      "roles": {
+        "admin": "Admin",
+        "recruiter": "Recruiter",
+        "hiring_manager": "Hiring manager",
+        "viewer": "Viewer"
+      }
+    },
+    "billing": {
+      "plan": "Current plan",
+      "manageSeats": "Manage seats",
+      "upgrade": "Upgrade plan",
+      "usage": "Usage this month",
+      "invoices": "Invoices",
+      "exportAll": "Export all"
+    }
+  },
+  "onboarding": {
+    "welcome": "Welcome to AI-ROS",
+    "progress": "{done} of {total} complete · {pct}%",
+    "dismiss": "Dismiss onboarding",
+    "steps": {
+      "profile": {
+        "label": "Complete your profile",
+        "desc": "Add your name, photo, and role"
+      },
+      "firstJob": {
+        "label": "Post your first job",
+        "desc": "Create a job listing to start receiving applications"
+      },
+      "firstCandidate": {
+        "label": "Add a candidate",
+        "desc": "Import candidates or invite them via email"
+      },
+      "aiCopilot": {
+        "label": "Try the AI Copilot",
+        "desc": "Ask the AI to evaluate, match, or summarize"
+      },
+      "pipeline": {
+        "label": "Set up your pipeline",
+        "desc": "Customize stages for your hiring workflow"
+      }
+    }
+  },
+  "tour": {
+    "help": "Show tour",
+    "skip": "Skip",
+    "next": "Next",
+    "prev": "Back",
+    "finish": "Finish",
+    "step": "Step {current} of {total}",
+    "replay": "Replay tour",
+    "candidates": {
+      "title": "Welcome to Candidates",
+      "intro": "Manage your entire talent pool in one place. Let's take a quick tour.",
+      "filters": {
+        "title": "Search & filter",
+        "desc": "Quickly find candidates by name, email, status, or skills."
+      },
+      "add": {
+        "title": "Add a candidate",
+        "desc": "Click here to manually add a candidate or import from your ATS."
+      },
+      "table": {
+        "title": "Candidates table",
+        "desc": "View, sort, and select candidates. Run AI enrichment or matching from the action column."
+      },
+      "ai": {
+        "title": "AI actions",
+        "desc": "Click Enrich to extract skills/insights or Match to score against open jobs."
+      },
+      "details": {
+        "title": "Click any candidate",
+        "desc": "Open a candidate to see their full profile, run AI actions, and view their application history."
+      }
+    },
+    "jobs": {
+      "title": "Welcome to Jobs",
+      "intro": "Post new positions and manage your open roles here.",
+      "filters": {
+        "title": "Filter jobs",
+        "desc": "Filter by status (open, draft, closed) or search by title."
+      },
+      "create": {
+        "title": "Create a job",
+        "desc": "A 3-step wizard walks you through title, requirements, and pipeline setup."
+      },
+      "manage": {
+        "title": "Manage candidates per job",
+        "desc": "Click any job to see its applicants, ranking, and screening status."
+      }
+    },
+    "ppe": {
+      "title": "Pair Programming Evaluation",
+      "intro": "Run real coding interviews and let AI evaluate solutions.",
+      "choose": {
+        "title": "Choose a problem",
+        "desc": "Pick a problem and language. A starter template is provided."
+      },
+      "editor": {
+        "title": "Code editor",
+        "desc": "Write your solution in a syntax-highlighted editor."
+      },
+      "run": {
+        "title": "Run tests",
+        "desc": "Submit your code to execute the test suite and get instant feedback."
+      },
+      "hint": {
+        "title": "Request a hint",
+        "desc": "Stuck? Ask the AI for a contextual hint without spoiling the solution."
+      },
+      "submit": {
+        "title": "Submit for AI evaluation",
+        "desc": "Your submission is scored on correctness, performance, and code quality."
+      }
+    },
+    "aiCopilot": {
+      "title": "AI Copilot",
+      "intro": "Your always-on recruiting assistant. Ask anything about your candidates or pipeline.",
+      "agents": {
+        "title": "AI agents",
+        "desc": "Behind the scenes, specialized agents handle matching, screening, and scheduling."
+      },
+      "input": {
+        "title": "Ask anything",
+        "desc": "Type your question in natural language. The copilot can summarize, recommend, and explain."
+      },
+      "response": {
+        "title": "AI response",
+        "desc": "Get a structured answer with a confidence score, reasoning chain, and suggested actions."
+      },
+      "history": {
+        "title": "Conversation history",
+        "desc": "Your chat history is preserved during the session so you can refer back to past answers."
+      }
+    },
+    "pipeline": {
+      "title": "Pipeline",
+      "intro": "Visualize and manage every candidate's journey.",
+      "stages": {
+        "title": "Stages",
+        "desc": "Each column is a stage. Drag candidates between stages to update their status."
+      },
+      "card": {
+        "title": "Candidate card",
+        "desc": "Each card shows key info at a glance: name, role, and skills."
+      },
+      "drag": {
+        "title": "Drag to move",
+        "desc": "Click and hold a card to drag it to a new stage. The change is saved automatically."
+      },
+      "ai": {
+        "title": "AI-suggested next actions",
+        "desc": "Open a candidate to see AI-recommended next steps based on their profile."
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "intro": "Manage your account, security, team, and billing in one place.",
+      "tabs": {
+        "title": "Tabs",
+        "desc": "Switch between Profile, Notifications, Security, API, Team, and Billing."
+      },
+      "save": {
+        "title": "Save changes",
+        "desc": "Don't forget to save your changes after editing. Most tabs autosave."
+      }
+    },
+    "analytics": {
+      "title": "Analytics",
+      "intro": "Real-time insights into your hiring funnel and AI performance.",
+      "funnel": {
+        "title": "Pipeline funnel",
+        "desc": "See how candidates progress through each stage of your pipeline."
+      },
+      "ai": {
+        "title": "AI agent performance",
+        "desc": "Track how each AI agent is performing: tasks completed, confidence, accuracy."
+      }
+    },
+    "workflows": {
+      "title": "Workflows",
+      "intro": "Automate repetitive tasks with no-code workflows.",
+      "list": {
+        "title": "Workflow list",
+        "desc": "Each workflow is a sequence of triggers, conditions, actions, and notifications."
+      },
+      "actions": {
+        "title": "Workflow actions",
+        "desc": "Pause/activate, run, duplicate, or delete a workflow from the card menu."
+      }
+    }
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "label": "Language",
+    "select": "Select language"
+  },
+  "quickActions": {
+    "open": "Open quick actions",
+    "close": "Close quick actions"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unread": "unread",
+    "markAllRead": "Mark all read",
+    "loading": "Loading…",
+    "none": "No notifications",
+    "viewAll": "View all activity"
+  },
+  "userMenu": {
+    "open": "Open user menu",
+    "profile": "Your profile",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  }
+}

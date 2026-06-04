@@ -71,6 +71,16 @@ class Settings(BaseSettings):
     DEMO_PASSWORD: str = "demo1234"
     DEMO_ENABLED: bool = True
 
+    # Billing / Payments (Stripe)
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    STRIPE_MODE: str = "mock"  # "mock" or "live"
+    BILLING_CURRENCY: str = "usd"
+    TRIAL_DAYS: int = 14
+    ANNUAL_DISCOUNT_PCT: int = 17
+    TAX_RATE_PCT: float = 0.0  # 0% by default; set in production
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "case_sensitive": True, "extra": "ignore"}
 
 @lru_cache

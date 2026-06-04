@@ -173,9 +173,9 @@ export function DataTable<T extends Record<string, any>>({
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-surface-700">
         <table className="w-full" role="table">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-surface-800">
             <tr>
               {visibleColumns.map((col) => {
                 const canSort = col.sortable !== false;
@@ -199,9 +199,9 @@ export function DataTable<T extends Record<string, any>>({
                     onClick={canSort ? () => handleSort(col.key) : undefined}
                     style={col.width ? { width: col.width } : undefined}
                     className={cn(
-                      'px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-600',
+                      'px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400',
                       align,
-                      canSort && 'cursor-pointer select-none hover:bg-gray-100'
+                      canSort && 'cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-surface-700'
                     )}
                   >
                     <span className="inline-flex items-center gap-1">
@@ -232,7 +232,7 @@ export function DataTable<T extends Record<string, any>>({
               })}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
+          <tbody className="divide-y divide-gray-100 dark:divide-surface-700 bg-white dark:bg-surface-900">
             {paged.map((item, i) => (
               <tr
                 key={rowKey ? rowKey(item) : i}
@@ -245,8 +245,8 @@ export function DataTable<T extends Record<string, any>>({
                 }}
                 tabIndex={onRowClick ? 0 : undefined}
                 className={cn(
-                  'focus:outline-none focus-visible:bg-blue-50',
-                  onRowClick && 'cursor-pointer hover:bg-gray-50'
+                  'focus:outline-none focus-visible:bg-blue-50 dark:focus-visible:bg-brand-500/10',
+                  onRowClick && 'cursor-pointer hover:bg-gray-50 dark:hover:bg-surface-800'
                 )}
               >
                 {visibleColumns.map((col) => {
@@ -260,7 +260,7 @@ export function DataTable<T extends Record<string, any>>({
                     <td
                       key={col.key}
                       className={cn(
-                        'whitespace-nowrap px-4 py-3 text-sm text-gray-700',
+                        'whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-200',
                         align
                       )}
                     >

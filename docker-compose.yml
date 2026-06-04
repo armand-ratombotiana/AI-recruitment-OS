@@ -78,6 +78,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - DEBUG=${DEBUG:-false}
+      - WEB_CONCURRENCY=${WEB_CONCURRENCY:-1}
     depends_on:
       postgres:
         condition: service_healthy

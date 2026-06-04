@@ -58,9 +58,38 @@ export const viewport: Viewport = {
   ],
 };
 
+const THEME_INIT_SCRIPT = `
+(function() {
+  try {
+    var t = localStorage.getItem('airos_theme');
+    var mode = t ? JSON.parse(t).state ? JSON.parse(t).state.theme : null : null;
+    if (!mode) mode = 'system';
+    var resolved = mode;
+    if (mode === 'system') {
+      resolved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    var root = document.documentElement;
+    if (resolved === 'dark') {
+      root.classList.add('dark');
+      root.style.colorScheme = 'dark';
+    } else {
+      root.classList.remove('dark');
+      root.style.colorScheme = 'light';
+    }
+    var loc = localStorage.getItem('airos_locale');
+    if (loc) {
+      try { root.lang = (JSON.parse(loc).state && JSON.parse(loc).state.locale) || 'en'; } catch (e) { root.lang = 'en'; }
+    }
+  } catch (e) {}
+})();
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="antialiased">{children}</body>
     </html>
   );

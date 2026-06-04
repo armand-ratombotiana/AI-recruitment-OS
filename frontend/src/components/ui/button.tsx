@@ -23,11 +23,11 @@ export function Button({
   ...props
 }: ButtonProps) {
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-sm',
-    secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 active:bg-gray-100',
-    ghost: 'text-gray-600 hover:bg-gray-100 active:bg-gray-200',
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-sm dark:bg-brand-500 dark:hover:bg-brand-400 dark:active:bg-brand-600',
+    secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 active:bg-gray-100 dark:bg-surface-800 dark:text-gray-200 dark:border-surface-600 dark:hover:bg-surface-700 dark:active:bg-surface-600',
+    ghost: 'text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-300 dark:hover:bg-surface-800 dark:active:bg-surface-700',
     danger: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm',
-    outline: 'border border-blue-600 text-blue-600 hover:bg-blue-50 active:bg-blue-100',
+    outline: 'border border-blue-600 text-blue-600 hover:bg-blue-50 active:bg-blue-100 dark:border-brand-400 dark:text-brand-400 dark:hover:bg-brand-500/10 dark:active:bg-brand-500/20',
     success: 'bg-green-600 text-white hover:bg-green-700 active:bg-green-800 shadow-sm',
   };
   const sizes = {
