@@ -17,10 +17,11 @@ from fastapi.openapi.utils import get_openapi
 from shared.core.config import get_settings
 from shared.core.middleware import RequestIDMiddleware, TenantContextMiddleware, ObservabilityMiddleware
 from shared.core.exceptions import AIROSException
-from shared.core.caching import cache_manager
-from shared.core.ratelimit import rate_limiter
+from shared.core.caching import get_cache_manager
 from shared.core.health import health_checker
 from shared.core.validation import ValidationMiddleware
+
+cache_manager = get_cache_manager()
 
 settings = get_settings()
 logger = logging.getLogger("airos.main")
@@ -29,12 +30,24 @@ logger = logging.getLogger("airos.main")
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     print(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+    # Connect Redis-backed rate limiters (no-op if REDIS_URL is unset/unreachable).
+    try:
+        from shared.core.ratelimit import init_rate_limiters
+        await init_rate_limiters()
+    except Exception as exc:
+        logger.warning("Rate limiter init on startup failed: %s", exc)
     # Seed the demo account (idempotent, non-fatal on failure).
     try:
         from apps.auth_service.main import seed_demo_on_startup
         await seed_demo_on_startup()
     except Exception as exc:
         logger.warning("Demo seed on startup failed: %s", exc)
+    # Seed billing (demo Pro plan + coupons). Idempotent and non-fatal.
+    try:
+        from apps.billing_service.main import seed_billing_on_startup_async
+        await seed_billing_on_startup_async()
+    except Exception as exc:
+        logger.warning("Billing seed on startup failed: %s", exc)
     yield
     print("Shutting down...")
 

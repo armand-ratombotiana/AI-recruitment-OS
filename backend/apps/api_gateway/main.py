@@ -16,7 +16,12 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    # Startup: connect to databases, Kafka, Redis
+    # Startup: connect to Redis-backed rate limiters (no-op if unavailable).
+    try:
+        from shared.core.ratelimit import init_rate_limiters
+        await init_rate_limiters()
+    except Exception:
+        pass
     yield
     # Shutdown: close connections, flush buffers
 
