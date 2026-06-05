@@ -1,12 +1,17 @@
 """AI Orchestrator — Multi-agent task routing and LLM management."""
 from __future__ import annotations
 
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
+
+from apps.ai_orchestrator.agents import AGENT_REGISTRY, build_agent
+
+logger = logging.getLogger("ai.orchestrator")
 
 
 AGENTS_DB: dict[str, dict] = {
@@ -156,6 +161,7 @@ class OrchestrateRequest(BaseModel):
     job_id: Optional[str] = Field(default=None, description="Target job ID")
     candidate_id: Optional[str] = Field(default=None, description="Target candidate ID")
     resume_id: Optional[str] = Field(default=None, description="Target resume ID")
+    tenant_id: Optional[str] = Field(default=None, description="Tenant scope (defaults to 'default')")
 
 
 class CreateTaskRequest(BaseModel):
@@ -403,20 +409,59 @@ async def orchestrate(data: OrchestrateRequest):
         raise HTTPException(status_code=404, detail=f"Agent type '{data.agent_type}' not found")
 
     task_id = f"task_{uuid.uuid4().hex[:12]}"
-    result = _generate_result(
-        data.agent_type, data.input, data.context,
-        data.job_id, data.candidate_id, data.resume_id,
-    )
-    reasoning_chain = _build_reasoning_chain(data.agent_type, data.input, data.context)
-    confidence_score = result.get("confidence_score", 0.85)
-
     now = datetime.now(timezone.utc).isoformat()
+    tenant_id = data.tenant_id or "default"
+
+    # Real LLM-backed agents (screening, matching) get dispatched through the
+    # agent registry; everything else still returns the deterministic mock
+    # so the demo flows keep working without API keys.
+    if data.agent_type in AGENT_REGISTRY:
+        candidate_payload = {
+            "id": data.candidate_id or data.input.get("candidate_id"),
+            **data.input.get("candidate", {}),
+        }
+        job_payload = {
+            "id": data.job_id or data.input.get("job_id"),
+            **data.input.get("job", {}),
+        }
+        try:
+            real_agent = build_agent(data.agent_type, tenant_id=tenant_id)
+            result = await real_agent.process_task(
+                {"candidate": candidate_payload, "job": job_payload}
+            )
+            reasoning_chain = _build_reasoning_chain(data.agent_type, data.input, data.context)
+            confidence_score = float(result.get("confidence_score", 0.0))
+            model_used = result.get("model_used") or agent["model"]
+        except Exception as exc:
+            logger.exception(
+                "orchestrate.real_agent_failed agent=%s tenant=%s", data.agent_type, tenant_id
+            )
+            raise HTTPException(
+                status_code=500,
+                detail=f"Agent '{data.agent_type}' failed: {exc}",
+            ) from exc
+    else:
+        result = _generate_result(
+            data.agent_type, data.input, data.context,
+            data.job_id, data.candidate_id, data.resume_id,
+        )
+        reasoning_chain = _build_reasoning_chain(data.agent_type, data.input, data.context)
+        confidence_score = result.get("confidence_score", 0.85)
+        model_used = agent["model"]
+
+    if data.job_id:
+        result["job_id"] = data.job_id
+    if data.candidate_id:
+        result["candidate_id"] = data.candidate_id
+    if data.resume_id:
+        result["resume_id"] = data.resume_id
+
     task = {
         "id": task_id,
         "agent_type": data.agent_type,
         "agent_id": agent["id"],
         "agent_name": agent["name"],
-        "model_used": agent["model"],
+        "model_used": model_used,
         "status": "completed",
         "input": data.input,
         "context": data.context,
@@ -426,6 +471,7 @@ async def orchestrate(data: OrchestrateRequest):
         "result": result,
         "reasoning_chain": reasoning_chain,
         "confidence_score": confidence_score,
+        "tenant_id": tenant_id,
         "created_at": now,
         "completed_at": now,
     }
@@ -437,10 +483,11 @@ async def orchestrate(data: OrchestrateRequest):
         "status": "completed",
         "agent_type": data.agent_type,
         "agent_name": agent["name"],
-        "model_used": agent["model"],
+        "model_used": model_used,
         "result": result,
         "reasoning_chain": reasoning_chain,
         "confidence_score": confidence_score,
+        "tenant_id": tenant_id,
         "context": {
             "job_id": data.job_id,
             "candidate_id": data.candidate_id,
