@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import {
   Plus,
   Briefcase,
@@ -205,7 +205,7 @@ export default function JobsPage() {
           <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
             <Clock className="h-3.5 w-3.5" /> {t('jobs.stats.avgTime', 'Avg Time')}
           </div>
-          <p className="text-2xl font-bold text-purple-600 dark:text-accent-400 mt-1">{avgTime ?? '—'}</p>
+          <p className="text-2xl font-bold text-purple-600 dark:text-accent-400 mt-1" aria-label={t('jobs.stats.avgTimeAria', 'Average time to hire: {value}').replace('{value}', avgTime ?? '—')}>{avgTime ?? '—'}</p>
         </div>
       </div>
 
@@ -226,7 +226,7 @@ export default function JobsPage() {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100"
-            aria-label="Filter by status"
+            aria-label={t('jobs.filterByStatus', 'Filter by status')}
           >
             {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
@@ -234,7 +234,7 @@ export default function JobsPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-2">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} height={56} />)}</div>
+        <div className="space-y-2" aria-busy="true">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} height={56} />)}</div>
       ) : error ? (
         <EmptyState
           icon={<Briefcase className="h-12 w-12" />}
@@ -271,6 +271,15 @@ export default function JobsPage() {
 
 function CreateJobWizard({ step, setStep, onCancel, onComplete, submitting, locale }: { step: number; setStep: (n: number) => void; onCancel: () => void; onComplete: (data: any) => void; submitting?: boolean; locale: any }) {
   const t = (key: string, fb?: string) => translate(locale, key, fb);
+  const titleId = useId();
+  const deptId = useId();
+  const typeId = useId();
+  const locId = useId();
+  const salMinId = useId();
+  const salMaxId = useId();
+  const descId = useId();
+  const reqId = useId();
+  const skillsId = useId();
   const [form, setForm] = useState({
     title: '',
     department: 'Engineering',
@@ -301,13 +310,17 @@ function CreateJobWizard({ step, setStep, onCancel, onComplete, submitting, loca
     });
   };
 
-  const STEP_LABELS = ['Basics', 'Requirements', 'Pipeline'];
+  const STEP_LABELS = [
+    t('jobs.wizard.stepBasics', 'Basics'),
+    t('jobs.wizard.stepRequirements', 'Requirements'),
+    t('jobs.wizard.stepReview', 'Review'),
+  ];
 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         {STEP_LABELS.map((label, i) => (
-          <div key={i} className="flex items-center gap-2 flex-1">
+          <div key={i} className="flex items-center gap-2 flex-1" aria-current={i === step ? 'step' : undefined}>
             <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${i < step ? 'bg-green-500 text-white' : i === step ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500 dark:bg-surface-700 dark:text-gray-400'}`}>
               {i < step ? '✓' : i + 1}
             </div>
@@ -320,35 +333,35 @@ function CreateJobWizard({ step, setStep, onCancel, onComplete, submitting, loca
       {step === 0 && (
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.title', 'Job title *')}</label>
-            <input value={form.title} onChange={(e) => update('title', e.target.value)} placeholder="e.g. Senior Full-Stack Engineer" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
+            <label htmlFor={titleId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.title', 'Job title *')}</label>
+            <input id={titleId} value={form.title} onChange={(e) => update('title', e.target.value)} placeholder="e.g. Senior Full-Stack Engineer" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.department', 'Department')}</label>
-              <select value={form.department} onChange={(e) => update('department', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100">
+              <label htmlFor={deptId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.department', 'Department')}</label>
+              <select id={deptId} value={form.department} onChange={(e) => update('department', e.target.value)} className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100">
                 {['Engineering', 'Design', 'Product', 'Data', 'Marketing', 'Sales', 'Operations', 'HR'].map((d) => <option key={d}>{d}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.type', 'Employment type')}</label>
-              <select value={form.type} onChange={(e) => update('type', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100">
+              <label htmlFor={typeId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.type', 'Employment type')}</label>
+              <select id={typeId} value={form.type} onChange={(e) => update('type', e.target.value)} className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100">
                 {['Full-time', 'Part-time', 'Contract', 'Internship'].map((tt) => <option key={tt}>{tt}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.location', 'Location')}</label>
-            <input value={form.location} onChange={(e) => update('location', e.target.value)} placeholder="e.g. San Francisco, CA or Remote" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
+            <label htmlFor={locId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.location', 'Location')}</label>
+            <input id={locId} value={form.location} onChange={(e) => update('location', e.target.value)} placeholder="e.g. San Francisco, CA or Remote" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.salaryMin', 'Salary min ($)')}</label>
-              <input type="number" value={form.salary_min} onChange={(e) => update('salary_min', e.target.value)} placeholder="100000" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
+              <label htmlFor={salMinId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.salaryMin', 'Salary min ($)')}</label>
+              <input id={salMinId} type="number" value={form.salary_min} onChange={(e) => update('salary_min', e.target.value)} placeholder="100000" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.salaryMax', 'Salary max ($)')}</label>
-              <input type="number" value={form.salary_max} onChange={(e) => update('salary_max', e.target.value)} placeholder="150000" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
+              <label htmlFor={salMaxId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.salaryMax', 'Salary max ($)')}</label>
+              <input id={salMaxId} type="number" value={form.salary_max} onChange={(e) => update('salary_max', e.target.value)} placeholder="150000" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100" />
             </div>
           </div>
         </div>
@@ -357,16 +370,16 @@ function CreateJobWizard({ step, setStep, onCancel, onComplete, submitting, loca
       {step === 1 && (
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.description', 'Job description')}</label>
-            <textarea value={form.description} onChange={(e) => update('description', e.target.value)} rows={4} placeholder="What will this person do? What's the mission?" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
+            <label htmlFor={descId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.description', 'Job description')}</label>
+            <textarea id={descId} value={form.description} onChange={(e) => update('description', e.target.value)} rows={4} placeholder="What will this person do? What's the mission?" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white dark:bg-surface-800 dark:text-gray-100" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.requirements', 'Requirements')}</label>
-            <textarea value={form.requirements} onChange={(e) => update('requirements', e.target.value)} rows={4} placeholder="What skills and experience are required?" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
+            <label htmlFor={reqId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.requirements', 'Requirements')}</label>
+            <textarea id={reqId} value={form.requirements} onChange={(e) => update('requirements', e.target.value)} rows={4} placeholder="What skills and experience are required?" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white dark:bg-surface-800 dark:text-gray-100" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.skills', 'Required skills (comma separated)')}</label>
-            <input value={form.skills} onChange={(e) => update('skills', e.target.value)} placeholder="React, TypeScript, Node.js" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
+            <label htmlFor={skillsId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.skills', 'Required skills (comma separated)')}</label>
+            <input id={skillsId} value={form.skills} onChange={(e) => update('skills', e.target.value)} placeholder="React, TypeScript, Node.js" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100" />
           </div>
         </div>
       )}

@@ -299,7 +299,8 @@
       "total": "Offres totales",
       "open": "Ouvertes",
       "applicants": "Candidats",
-      "avgTime": "Délai moyen"
+      "avgTime": "Délai moyen",
+      "avgTimeAria": "Délai moyen d'embauche : {value}"
     },
     "table": {
       "position": "Poste",

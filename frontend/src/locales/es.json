@@ -299,7 +299,8 @@
       "total": "Empleos totales",
       "open": "Abiertos",
       "applicants": "Candidatos",
-      "avgTime": "Tiempo medio"
+      "avgTime": "Tiempo medio",
+      "avgTimeAria": "Tiempo medio de contratación: {value}"
     },
     "table": {
       "position": "Posición",

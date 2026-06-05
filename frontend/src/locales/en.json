@@ -323,6 +323,9 @@
     },
     "filterByStatus": "Filter by status",
     "searchAria": "Search jobs",
+    "stats": {
+      "avgTimeAria": "Average time to hire: {value}"
+    },
     "createFailed": "Failed to create job",
     "fields": {
       "title": "Job title *",
