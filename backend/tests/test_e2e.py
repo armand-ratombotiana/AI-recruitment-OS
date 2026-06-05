@@ -72,19 +72,13 @@ def _reset_ai_tasks():
 
 
 def _reset_workflows():
-    """Reset workflow executions in-memory store."""
-    import apps.workflow_engine.main as wf_mod
-    wf_mod.EXECUTIONS_DB.clear()
+    """Workflow runs are now in the database; nothing to reset at module level."""
+    return None
 
 
 def _reset_notifications():
-    """Reset notification DB to seed data."""
-    import apps.notification_service.main as notif_mod
-    notif_mod.NOTIFICATIONS_DB.clear()
-    notif_mod.NOTIFICATIONS_DB["n1"] = {
-        "id": "n1", "title": "New Application", "message": "John Smith applied",
-        "type": "info", "channel": "in_app", "read": False, "created_at": "2025-01-20T10:30:00Z",
-    }
+    """Notifications are now in the database; nothing to reset at module level."""
+    return None
 
 
 # ============================================================================

@@ -34,8 +34,9 @@ from shared.core.models.pair_programming import (
     CodingSession, CodeSnapshot, ExecutionResult, PPEEvaluation,
 )
 from shared.core.models.workflow import (
-    Workflow, WorkflowStep, WorkflowExecution,
+    Workflow, WorkflowRun,
 )
+from shared.core.models.notification import Notification
 from shared.core.models.analytics import (
     Metric, Dashboard, Report,
 )
@@ -68,7 +69,7 @@ __all__ = [
     "PPESessionCreate", "PPESessionRead",
     "CodeExecutionRequest", "PPEEvaluationRead",
     "CodingSession", "CodeSnapshot", "ExecutionResult", "PPEEvaluation",
-    "Workflow", "WorkflowStep", "WorkflowExecution",
+    "Workflow", "WorkflowRun", "Notification",
     "Metric", "Dashboard", "Report",
     "AuditEntry", "ConsentRecord", "DataExportRequest", "DataDeletionRequest",
 ]

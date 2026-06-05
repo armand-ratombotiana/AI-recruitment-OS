@@ -1,59 +1,37 @@
-"""Notification Service — Multi-channel notifications with CRUD."""
+"""Notification Service — Multi-channel notifications backed by the database.
+
+All notification records are now persisted via SQLModel (``Notification``)
+instead of an in-memory dict.  Per-tenant channel preferences remain a
+small in-memory helper because they are configuration rather than data and
+the task focused on replacing the data-plane stubs.
+"""
 from __future__ import annotations
 
-import uuid
-from datetime import datetime, timezone
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.auth import require_admin, require_authenticated_user, require_tenant_id
+from shared.core.database import get_db_dependency
+from shared.core.models.notification import Notification
 
 
-NOTIFICATIONS_DB: dict[str, dict] = {
-    "n1": {
-        "id": "n1",
-        "tenant_id": "default",
-        "title": "New Application",
-        "message": "John Smith applied for Senior Engineer",
-        "type": "info",
-        "channel": "in_app",
-        "read": False,
-        "created_at": "2025-01-20T10:30:00Z",
-    },
-    "n2": {
-        "id": "n2",
-        "tenant_id": "default",
-        "title": "Interview Completed",
-        "message": "Sarah Chen completed technical interview",
-        "type": "success",
-        "channel": "in_app",
-        "read": True,
-        "created_at": "2025-01-19T14:15:00Z",
-    },
-    "n3": {
-        "id": "n3",
-        "tenant_id": "default",
-        "title": "Offer Accepted",
-        "message": "Michael Brown accepted the offer for DevOps Lead",
-        "type": "success",
-        "channel": "email",
-        "read": False,
-        "created_at": "2025-01-18T09:00:00Z",
-    },
-}
+# Per-tenant channel preferences (config, not data; kept in-memory on purpose).
+_PREFERENCES: dict[str, dict[str, Any]] = {}
 
-PREFERENCES_DB: dict[str, dict] = {
-    "default": {
-        "tenant_id": "default",
+
+def _default_preferences(tenant_id: str) -> dict[str, Any]:
+    return {
+        "tenant_id": tenant_id,
         "email": True,
         "push": True,
         "in_app": True,
         "sms": False,
         "digest_frequency": "daily",
-    },
-}
+    }
 
 
 class NotificationCreate(BaseModel):
@@ -62,6 +40,7 @@ class NotificationCreate(BaseModel):
     type: str = "info"
     channel: str = "in_app"
     recipient_id: Optional[str] = None
+    link: Optional[str] = None
 
 
 class NotificationUpdate(BaseModel):
@@ -69,6 +48,7 @@ class NotificationUpdate(BaseModel):
     message: Optional[str] = None
     type: Optional[str] = None
     read: Optional[bool] = None
+    link: Optional[str] = None
 
 
 class PreferencesUpdate(BaseModel):
@@ -77,6 +57,20 @@ class PreferencesUpdate(BaseModel):
     in_app: Optional[bool] = None
     sms: Optional[bool] = None
     digest_frequency: Optional[str] = None
+
+
+def _to_dict(n: Notification) -> dict[str, Any]:
+    return {
+        "id": n.id,
+        "tenant_id": n.tenant_id,
+        "user_id": n.user_id,
+        "title": n.title,
+        "message": n.message,
+        "type": n.type,
+        "link": n.link,
+        "read": n.read,
+        "created_at": n.created_at.isoformat() if n.created_at else None,
+    }
 
 
 router = APIRouter()
@@ -89,16 +83,9 @@ async def health():
 
 @router.get("/preferences")
 async def get_preferences(tenant_id: str = Depends(require_tenant_id)):
-    if tenant_id not in PREFERENCES_DB:
-        PREFERENCES_DB[tenant_id] = {
-            "tenant_id": tenant_id,
-            "email": True,
-            "push": True,
-            "in_app": True,
-            "sms": False,
-            "digest_frequency": "daily",
-        }
-    return PREFERENCES_DB[tenant_id]
+    prefs = _PREFERENCES.get(tenant_id) or _default_preferences(tenant_id)
+    _PREFERENCES[tenant_id] = prefs
+    return prefs
 
 
 @router.put("/preferences")
@@ -106,16 +93,7 @@ async def update_preferences(
     data: PreferencesUpdate,
     tenant_id: str = Depends(require_tenant_id),
 ):
-    if tenant_id not in PREFERENCES_DB:
-        PREFERENCES_DB[tenant_id] = {
-            "tenant_id": tenant_id,
-            "email": True,
-            "push": True,
-            "in_app": True,
-            "sms": False,
-            "digest_frequency": "daily",
-        }
-    prefs = PREFERENCES_DB[tenant_id]
+    prefs = _PREFERENCES.get(tenant_id) or _default_preferences(tenant_id)
     if data.email is not None:
         prefs["email"] = data.email
     if data.push is not None:
@@ -126,17 +104,23 @@ async def update_preferences(
         prefs["sms"] = data.sms
     if data.digest_frequency is not None:
         prefs["digest_frequency"] = data.digest_frequency
+    _PREFERENCES[tenant_id] = prefs
     return prefs
 
 
 @router.post("/read-all")
-async def mark_all_read(tenant_id: str = Depends(require_tenant_id)):
-    count = 0
-    for n in NOTIFICATIONS_DB.values():
-        if n.get("tenant_id", "default") == tenant_id and not n["read"]:
-            n["read"] = True
-            count += 1
-    return {"marked_read": count}
+async def mark_all_read(
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    result = await db.execute(
+        update(Notification)
+        .where(Notification.tenant_id == tenant_id, Notification.read.is_(False))
+        .values(read=True)
+        .execution_options(synchronize_session=False)
+    )
+    await db.commit()
+    return {"marked_read": result.rowcount or 0}
 
 
 @router.get("/")
@@ -144,15 +128,17 @@ async def list_notifications(
     read: Optional[bool] = None,
     type: Optional[str] = None,
     tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
 ):
-    notifications = [n for n in NOTIFICATIONS_DB.values() if n.get("tenant_id", "default") == tenant_id]
+    stmt = select(Notification).where(Notification.tenant_id == tenant_id)
     if read is not None:
-        notifications = [n for n in notifications if n["read"] == read]
+        stmt = stmt.where(Notification.read == read)
     if type:
-        notifications = [n for n in notifications if n["type"] == type]
-
+        stmt = stmt.where(Notification.type == type)
+    stmt = stmt.order_by(Notification.created_at.desc())
+    rows = (await db.execute(stmt)).scalars().all()
+    notifications = [_to_dict(n) for n in rows]
     unread_count = sum(1 for n in notifications if not n["read"])
-
     return {
         "notifications": notifications,
         "total": len(notifications),
@@ -164,33 +150,41 @@ async def list_notifications(
 async def get_notification(
     notification_id: str,
     tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
 ):
-    notification = NOTIFICATIONS_DB.get(notification_id)
-    if not notification or notification.get("tenant_id", "default") != tenant_id:
+    row = (
+        await db.execute(
+            select(Notification).where(
+                Notification.id == notification_id,
+                Notification.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not row:
         raise HTTPException(status_code=404, detail=f"Notification {notification_id} not found")
-    return notification
+    return _to_dict(row)
 
 
 @router.post("/")
 async def create_notification(
     data: NotificationCreate,
     tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
     _admin: dict = Depends(require_admin),
 ):
-    notification_id = f"n_{uuid.uuid4().hex[:8]}"
-    notification = {
-        "id": notification_id,
-        "tenant_id": tenant_id,
-        "title": data.title,
-        "message": data.message,
-        "type": data.type,
-        "channel": data.channel,
-        "recipient_id": data.recipient_id,
-        "read": False,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-    }
-    NOTIFICATIONS_DB[notification_id] = notification
-    return notification
+    row = Notification(
+        tenant_id=tenant_id,
+        user_id=data.recipient_id,
+        type=data.type,
+        title=data.title,
+        message=data.message,
+        link=data.link,
+        read=False,
+    )
+    db.add(row)
+    await db.commit()
+    await db.refresh(row)
+    return _to_dict(row)
 
 
 @router.put("/{notification_id}")
@@ -198,34 +192,55 @@ async def update_notification(
     notification_id: str,
     data: NotificationUpdate,
     tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
     _admin: dict = Depends(require_admin),
 ):
-    notification = NOTIFICATIONS_DB.get(notification_id)
-    if not notification or notification.get("tenant_id", "default") != tenant_id:
+    row = (
+        await db.execute(
+            select(Notification).where(
+                Notification.id == notification_id,
+                Notification.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not row:
         raise HTTPException(status_code=404, detail=f"Notification {notification_id} not found")
 
     if data.title is not None:
-        notification["title"] = data.title
+        row.title = data.title
     if data.message is not None:
-        notification["message"] = data.message
+        row.message = data.message
     if data.type is not None:
-        notification["type"] = data.type
+        row.type = data.type
     if data.read is not None:
-        notification["read"] = data.read
+        row.read = data.read
+    if data.link is not None:
+        row.link = data.link
 
-    return notification
+    await db.commit()
+    await db.refresh(row)
+    return _to_dict(row)
 
 
 @router.delete("/{notification_id}")
 async def delete_notification(
     notification_id: str,
     tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
     _admin: dict = Depends(require_admin),
 ):
-    notification = NOTIFICATIONS_DB.get(notification_id)
-    if not notification or notification.get("tenant_id", "default") != tenant_id:
+    row = (
+        await db.execute(
+            select(Notification).where(
+                Notification.id == notification_id,
+                Notification.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not row:
         raise HTTPException(status_code=404, detail=f"Notification {notification_id} not found")
-    del NOTIFICATIONS_DB[notification_id]
+    await db.delete(row)
+    await db.commit()
     return {"deleted": True, "notification_id": notification_id}
 
 
@@ -233,9 +248,18 @@ async def delete_notification(
 async def mark_read(
     notification_id: str,
     tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
 ):
-    notification = NOTIFICATIONS_DB.get(notification_id)
-    if not notification or notification.get("tenant_id", "default") != tenant_id:
+    row = (
+        await db.execute(
+            select(Notification).where(
+                Notification.id == notification_id,
+                Notification.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not row:
         raise HTTPException(status_code=404, detail=f"Notification {notification_id} not found")
-    notification["read"] = True
+    row.read = True
+    await db.commit()
     return {"id": notification_id, "read": True}
