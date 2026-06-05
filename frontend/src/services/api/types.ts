@@ -1898,3 +1898,148 @@ export namespace InnovationsTypes {
     feedback: string;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Activity Feed
+// ---------------------------------------------------------------------------
+
+export namespace ActivityTypes {
+  export type ActionType =
+    | 'create'
+    | 'update'
+    | 'delete'
+    | 'login'
+    | 'logout'
+    | 'view'
+    | 'export'
+    | 'message'
+    | 'schedule'
+    | 'cancel'
+    | 'complete'
+    | 'invite'
+    | 'settings_change'
+    | 'generate'
+    | 'upload'
+    | 'download'
+    | 'comment'
+    | 'approve'
+    | 'reject'
+    | 'archive'
+    | 'restore'
+    | 'assign'
+    | 'unassign'
+    | 'merge'
+    | 'split'
+    | 'share'
+    | 'tag'
+    | 'untag'
+    | 'publish'
+    | 'unpublish'
+    | 'other';
+
+  export type EntityType =
+    | 'candidate'
+    | 'job'
+    | 'interview'
+    | 'offer'
+    | 'workflow'
+    | 'report'
+    | 'message'
+    | 'email'
+    | 'sms'
+    | 'pipeline'
+    | 'stage'
+    | 'user'
+    | 'team'
+    | 'role'
+    | 'permission'
+    | 'integration'
+    | 'webhook'
+    | 'tag'
+    | 'note'
+    | 'document'
+    | 'resume'
+    | 'evaluation'
+    | 'assessment'
+    | 'campaign'
+    | 'segment'
+    | 'billing'
+    | 'subscription'
+    | 'invoice'
+    | 'session'
+    | 'login'
+    | 'settings'
+    | 'api_key'
+    | 'tenant'
+    | 'notification'
+    | 'announcement'
+    | 'ppe_session'
+    | 'ai_agent'
+    | 'other';
+
+  export interface Actor {
+    id: string;
+    name: string;
+    email?: string;
+    avatar_url?: string | null;
+    role?: string;
+  }
+
+  export interface ActivityTarget {
+    type: EntityType;
+    id: string;
+    label: string;
+    url?: string | null;
+  }
+
+  export interface ActivityEntry {
+    id: string;
+    action: ActionType | string;
+    action_label?: string;
+    description?: string;
+    actor: Actor;
+    target?: ActivityTarget | null;
+    entity_type?: EntityType | string | null;
+    entity_id?: string | null;
+    entity_label?: string | null;
+    entity_url?: string | null;
+    metadata?: Record<string, unknown> | null;
+    ip_address?: string | null;
+    user_agent?: string | null;
+    location?: string | null;
+    created_at: ISODateString;
+  }
+
+  export interface ActivityFilter {
+    actor_id?: string;
+    action?: ActionType | string;
+    entity_type?: EntityType | string;
+    target_id?: string;
+    target_type?: EntityType | string;
+    from?: ISODateString;
+    to?: ISODateString;
+    search?: string;
+    page?: number;
+    page_size?: number;
+  }
+
+  export interface ActivityFeedResponse {
+    data: ActivityEntry[];
+    total: number;
+    page: number;
+    page_size: number;
+    has_more: boolean;
+  }
+
+  export interface ActivityTypeOption {
+    value: ActionType | string;
+    label: string;
+    description?: string;
+    category?: 'auth' | 'create' | 'update' | 'delete' | 'communication' | 'system' | 'other';
+    icon?: string;
+  }
+
+  export interface ActivityTypesResponse {
+    data: ActivityTypeOption[];
+  }
+}

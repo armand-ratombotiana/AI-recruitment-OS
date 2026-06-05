@@ -39,6 +39,7 @@ import type {
   TalentIntelTypes,
   WorkflowAutomationTypes,
   InnovationsTypes,
+  ActivityTypes,
   HealthResponse,
   ListResponse,
   PaginatedResponse,
@@ -609,6 +610,31 @@ class APIClient {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
+  };
+
+  // ========================================================================
+  // ACTIVITY FEED SERVICE
+  // ========================================================================
+
+  activity = {
+    health: () => this.request<HealthResponse>('/activity/health'),
+    list: (filters?: ActivityTypes.ActivityFilter) => {
+      const params: Record<string, string> = {};
+      if (!filters) return this.request<ActivityTypes.ActivityFeedResponse>('/activity/', { params });
+      if (filters.actor_id) params.actor_id = filters.actor_id;
+      if (filters.action) params.action = String(filters.action);
+      if (filters.entity_type) params.entity_type = String(filters.entity_type);
+      if (filters.target_id) params.target_id = filters.target_id;
+      if (filters.target_type) params.target_type = String(filters.target_type);
+      if (filters.from) params.from = filters.from;
+      if (filters.to) params.to = filters.to;
+      if (filters.search) params.search = filters.search;
+      if (filters.page !== undefined) params.page = String(filters.page);
+      if (filters.page_size !== undefined) params.page_size = String(filters.page_size);
+      return this.request<ActivityTypes.ActivityFeedResponse>('/activity/', { params });
+    },
+    getTypes: () =>
+      this.request<ActivityTypes.ActivityTypesResponse>('/activity/types'),
   };
 
   // ========================================================================
@@ -1333,6 +1359,15 @@ class APIClient {
   /** @deprecated use `api.innovations.predictSuccess()` */
   async predictSuccess(candidateId: string, jobId: string) {
     return this.innovations.predictSuccess({ candidate_id: candidateId, job_id: jobId });
+  }
+
+  /** @deprecated use `api.activity.list()` */
+  async listActivityFeed(filters?: ActivityTypes.ActivityFilter) {
+    return this.activity.list(filters);
+  }
+  /** @deprecated use `api.activity.getTypes()` */
+  async getActivityTypes() {
+    return this.activity.getTypes();
   }
 }
 
