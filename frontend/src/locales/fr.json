@@ -535,6 +535,13 @@
     "create": "Créer un workflow",
     "noWorkflows": "Pas encore de workflows",
     "noWorkflowsDesc": "Construisez des pipelines automatisés qui trient, planifient et contactent les candidats sans lever le petit doigt.",
+    "noMatch": "Aucun workflow ne correspond à ce filtre",
+    "tryAll": "Essayez de sélectionner « Tous » pour voir vos workflows.",
+    "couldntLoad": "Impossible de charger les workflows",
+    "filterLabel": "Filtrer les workflows",
+    "actionsAria": "Plus d'actions",
+    "stepsAria": "Étapes du workflow",
+    "runNowAria": "Lancer le workflow maintenant",
     "createFirst": "Créer votre premier workflow",
     "activeBadge": "Actif",
     "pausedBadge": "En pause",
@@ -558,6 +565,13 @@
     "triggeredDesc": "« {name} » est en cours d'exécution.",
     "created": "Workflow créé",
     "createdDesc": "« {name} » est prêt. Activez-le pour commencer.",
+    "triggerFailed": "Impossible de déclencher le workflow",
+    "duplicateFailed": "Impossible de dupliquer le workflow",
+    "deleteFailed": "Impossible de supprimer le workflow",
+    "updateFailed": "Impossible de mettre à jour le workflow",
+    "createFailed": "Impossible de créer le workflow",
+    "confirmDeleteTitle": "Supprimer le workflow ?",
+    "confirmDeleteDesc": "Ceci supprimera définitivement « {name} ». Toutes les exécutions actives seront annulées.",
     "createModal": {
       "title": "Créer un workflow",
       "desc": "Choisissez un modèle pour démarrer en quelques secondes.",
@@ -583,15 +597,24 @@
     "templates": {
       "highPriority": {
         "name": "Alerte candidat haute priorité",
-        "desc": "Notifier le manager quand un candidat a un score de 90+"
+        "desc": "Notifier le manager quand un candidat a un score de 90+",
+        "trigger": "Nouveau score IA",
+        "condition": "Score > 90",
+        "notify": "Slack + Email"
       },
       "weeklyDigest": {
         "name": "Résumé hebdomadaire d'embauche",
-        "desc": "Envoyer un résumé des recrutements à la direction chaque lundi"
+        "desc": "Envoyer un résumé des recrutements à la direction chaque lundi",
+        "trigger": "Lundi 9h",
+        "action": "Générer rapport",
+        "notify": "Email direction"
       },
       "reEngage": {
         "name": "Réengager les candidats dormants",
-        "desc": "Recontacter les candidats qui n'ont pas progressé depuis 14 jours"
+        "desc": "Recontacter les candidats qui n'ont pas progressé depuis 14 jours",
+        "trigger": "Pas d'activité 14j",
+        "condition": "Statut différent d'embauché",
+        "action": "Relance IA"
       }
     }
   },

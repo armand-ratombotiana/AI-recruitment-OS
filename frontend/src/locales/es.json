@@ -535,6 +535,13 @@
     "create": "Crear workflow",
     "noWorkflows": "Aún no hay workflows",
     "noWorkflowsDesc": "Construye pipelines automatizados que filtran, agendan y contactan candidatos sin esfuerzo.",
+    "noMatch": "Ningún workflow coincide con este filtro",
+    "tryAll": "Intenta seleccionar «Todos» para ver tus workflows.",
+    "couldntLoad": "No se pudieron cargar los workflows",
+    "filterLabel": "Filtrar workflows",
+    "actionsAria": "Más acciones",
+    "stepsAria": "Pasos del workflow",
+    "runNowAria": "Ejecutar workflow ahora",
     "createFirst": "Crea tu primer workflow",
     "activeBadge": "Activo",
     "pausedBadge": "En pausa",
@@ -558,6 +565,13 @@
     "triggeredDesc": "«{name}» está ejecutándose.",
     "created": "Workflow creado",
     "createdDesc": "«{name}» está listo. Actívalo para empezar.",
+    "triggerFailed": "No se pudo disparar el workflow",
+    "duplicateFailed": "No se pudo duplicar el workflow",
+    "deleteFailed": "No se pudo eliminar el workflow",
+    "updateFailed": "No se pudo actualizar el workflow",
+    "createFailed": "No se pudo crear el workflow",
+    "confirmDeleteTitle": "¿Eliminar workflow?",
+    "confirmDeleteDesc": "Esto eliminará permanentemente «{name}». Cualquier ejecución activa será cancelada.",
     "createModal": {
       "title": "Crear workflow",
       "desc": "Elige una plantilla para empezar en segundos.",
@@ -583,15 +597,24 @@
     "templates": {
       "highPriority": {
         "name": "Alerta de candidato de alta prioridad",
-        "desc": "Notificar al manager cuando un candidato puntúa 90+"
+        "desc": "Notificar al manager cuando un candidato puntúa 90+",
+        "trigger": "Nueva puntuación IA",
+        "condition": "Puntuación > 90",
+        "notify": "Slack + Email"
       },
       "weeklyDigest": {
         "name": "Resumen semanal de contratación",
-        "desc": "Enviar un resumen de contrataciones al liderazgo cada lunes"
+        "desc": "Enviar un resumen de contrataciones al liderazgo cada lunes",
+        "trigger": "Lunes 9am",
+        "action": "Generar informe",
+        "notify": "Email liderazgo"
       },
       "reEngage": {
         "name": "Reactivar candidatos inactivos",
-        "desc": "Contactar con candidatos que no han progresado en 14 días"
+        "desc": "Contactar con candidatos que no han progresado en 14 días",
+        "trigger": "Sin actividad 14d",
+        "condition": "Estado distinto a contratado",
+        "action": "Reactivación IA"
       }
     }
   },
@@ -800,6 +823,10 @@
         "title": "Añadir candidato",
         "desc": "Haz clic aquí para añadir manualmente un candidato o importar desde tu ATS."
       },
+      "import": {
+        "title": "Importar en masa",
+        "desc": "Sube un CSV o conecta tu ATS para traer cientos de candidatos de una vez."
+      },
       "table": {
         "title": "Tabla de candidatos",
         "desc": "Ve, ordena y selecciona candidatos. Lanza enriquecimiento o matching IA desde la columna de acciones."
@@ -807,6 +834,10 @@
       "ai": {
         "title": "Acciones IA",
         "desc": "Haz clic en Enriquecer para extraer habilidades/insights o en Matchear para puntuar contra empleos abiertos."
+      },
+      "bulk": {
+        "title": "Acciones en masa",
+        "desc": "Selecciona múltiples candidatos para exportar a CSV, eliminar o lanzar acciones IA en masa."
       },
       "details": {
         "title": "Haz clic en un candidato",
@@ -819,6 +850,10 @@
       "filters": {
         "title": "Filtrar empleos",
         "desc": "Filtra por estado (abierto, borrador, cerrado) o busca por título."
+      },
+      "stats": {
+        "title": "Stats de un vistazo",
+        "desc": "Mira rápidamente el total de empleos, candidatos y tiempo medio de contratación."
       },
       "create": {
         "title": "Crear empleo",
@@ -835,6 +870,14 @@
       "choose": {
         "title": "Elegir un problema",
         "desc": "Selecciona un problema y un lenguaje. Se proporciona una plantilla inicial."
+      },
+      "language": {
+        "title": "Elegir un lenguaje",
+        "desc": "Elige entre Python, JavaScript, TypeScript, Java, Go o C++."
+      },
+      "timer": {
+        "title": "Temporizador de sesión",
+        "desc": "Un temporizador en vivo sigue la duración de tu sesión una vez inicies un problema."
       },
       "editor": {
         "title": "Editor de código",
@@ -859,6 +902,10 @@
       "agents": {
         "title": "Agentes IA",
         "desc": "Detrás de escena, agentes especializados gestionan matching, filtrado y agenda."
+      },
+      "prompts": {
+        "title": "Prompts sugeridos",
+        "desc": "Empieza rápido con prompts seleccionados que muestran lo que el copiloto puede hacer."
       },
       "input": {
         "title": "Pregunta lo que quieras",
@@ -893,6 +940,30 @@
         "desc": "Abre un candidato para ver los próximos pasos recomendados por la IA según su perfil."
       }
     },
+    "interviews": {
+      "title": "Entrevistas",
+      "intro": "Programa, gestiona y únete a entrevistas con tus candidatos.",
+      "schedule": {
+        "title": "Programar entrevista",
+        "desc": "Haz clic aquí para programar una entrevista telefónica, técnica, panel o presencial."
+      },
+      "upcoming": {
+        "title": "Próximas esta semana",
+        "desc": "Vista rápida de las entrevistas en los próximos siete días."
+      },
+      "filters": {
+        "title": "Filtrar entrevistas",
+        "desc": "Busca por candidato, filtra por estado o tipo, o cambia a la vista de calendario."
+      },
+      "table": {
+        "title": "Lista de entrevistas",
+        "desc": "Ve entrevistas programadas con tipo, panel y estado de un vistazo."
+      },
+      "join": {
+        "title": "Iniciar o unirse",
+        "desc": "Haz clic en Iniciar cuando comience la entrevista, o Completar al final para registrar el resultado."
+      }
+    },
     "settings": {
       "title": "Ajustes",
       "intro": "Gestiona tu cuenta, seguridad, equipo y facturación en un solo lugar.",
@@ -908,6 +979,14 @@
     "analytics": {
       "title": "Analíticas",
       "intro": "Información en tiempo real sobre tu embudo de contratación y rendimiento IA.",
+      "range": {
+        "title": "Rango de tiempo",
+        "desc": "Cambia entre ventanas de 7, 30 y 90 días para comparar tendencias."
+      },
+      "stats": {
+        "title": "Métricas clave",
+        "desc": "Total de candidatos, empleos activos, entrevistas esta semana y tasa de éxito."
+      },
       "funnel": {
         "title": "Embudo de pipeline",
         "desc": "Ve cómo progresan los candidatos por cada etapa de tu pipeline."
@@ -915,14 +994,30 @@
       "ai": {
         "title": "Rendimiento de agentes IA",
         "desc": "Sigue el rendimiento de cada agente IA: tareas completadas, confianza, precisión."
+      },
+      "export": {
+        "title": "Exportar y compartir",
+        "desc": "Toma capturas o copia los números directamente. La exportación CSV está en la página de informes."
       }
     },
     "workflows": {
       "title": "Workflows",
       "intro": "Automatiza tareas repetitivas con workflows sin código.",
+      "create": {
+        "title": "Crear workflow",
+        "desc": "Elige una plantilla o construye un workflow personalizado con disparadores, condiciones y acciones."
+      },
+      "filter": {
+        "title": "Filtrar workflows",
+        "desc": "Cambia entre Todos, Activos y Pausados para centrarte en lo importante."
+      },
       "list": {
         "title": "Lista de workflows",
         "desc": "Cada workflow es una secuencia de disparadores, condiciones, acciones y notificaciones."
+      },
+      "activate": {
+        "title": "Activar workflows",
+        "desc": "Activa un workflow para que se ejecute automáticamente. Pausa en cualquier momento para detenerlo."
       },
       "actions": {
         "title": "Acciones de workflow",

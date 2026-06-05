@@ -537,6 +537,13 @@
     "create": "Create workflow",
     "noWorkflows": "No workflows yet",
     "noWorkflowsDesc": "Build automated pipelines that screen, schedule, and message candidates without lifting a finger.",
+    "noMatch": "No workflows match this filter",
+    "tryAll": "Try selecting \"All\" to see your workflows.",
+    "couldntLoad": "Couldn't load workflows",
+    "filterLabel": "Filter workflows",
+    "actionsAria": "More actions",
+    "stepsAria": "Workflow steps",
+    "runNowAria": "Run workflow now",
     "createFirst": "Create your first workflow",
     "activeBadge": "Active",
     "pausedBadge": "Paused",
@@ -560,6 +567,13 @@
     "triggeredDesc": "\"{name}\" is running.",
     "created": "Workflow created",
     "createdDesc": "\"{name}\" is ready. Toggle it on to start.",
+    "triggerFailed": "Failed to trigger workflow",
+    "duplicateFailed": "Failed to duplicate workflow",
+    "deleteFailed": "Failed to delete workflow",
+    "updateFailed": "Failed to update workflow",
+    "createFailed": "Failed to create workflow",
+    "confirmDeleteTitle": "Delete workflow?",
+    "confirmDeleteDesc": "This will permanently remove \"{name}\". Any active runs will be cancelled.",
     "createModal": {
       "title": "Create workflow",
       "desc": "Pick a template to get started in seconds.",
@@ -585,15 +599,24 @@
     "templates": {
       "highPriority": {
         "name": "High-priority candidate alert",
-        "desc": "Notify hiring manager when a candidate scores 90+"
+        "desc": "Notify hiring manager when a candidate scores 90+",
+        "trigger": "New AI score",
+        "condition": "Score > 90",
+        "notify": "Slack + Email"
       },
       "weeklyDigest": {
         "name": "Weekly hiring digest",
-        "desc": "Send a hiring summary to leadership every Monday"
+        "desc": "Send a hiring summary to leadership every Monday",
+        "trigger": "Monday 9am",
+        "action": "Build report",
+        "notify": "Email leadership"
       },
       "reEngage": {
         "name": "Re-engage stale candidates",
-        "desc": "Reach out to candidates who haven't progressed in 14 days"
+        "desc": "Reach out to candidates who haven't progressed in 14 days",
+        "trigger": "No activity 14d",
+        "condition": "Status not hired",
+        "action": "AI outreach"
       }
     }
   },
