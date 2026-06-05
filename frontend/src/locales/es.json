@@ -640,7 +640,9 @@
     "nothingToday": "Tu día está libre.",
     "nothingPeriod": "No hay eventos en este período.",
     "scheduleCta": "Agendar una entrevista →",
-    "couldntLoad": "No se pudo cargar la agenda"
+    "couldntLoad": "No se pudo cargar la agenda",
+    "rangeLabel": "Rango de fechas",
+    "listLabel": "Eventos agendados"
   },
   "settings": {
     "title": "Ajustes",

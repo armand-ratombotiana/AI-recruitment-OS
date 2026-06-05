@@ -640,7 +640,9 @@
     "nothingToday": "Votre journée est libre.",
     "nothingPeriod": "Aucun événement sur cette période.",
     "scheduleCta": "Planifier un entretien →",
-    "couldntLoad": "Impossible de charger le planning"
+    "couldntLoad": "Impossible de charger le planning",
+    "rangeLabel": "Plage de dates",
+    "listLabel": "Événements planifiés"
   },
   "settings": {
     "title": "Paramètres",

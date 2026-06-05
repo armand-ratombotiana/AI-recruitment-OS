@@ -642,7 +642,9 @@
     "nothingToday": "Your day is clear.",
     "nothingPeriod": "No events in this period.",
     "scheduleCta": "Schedule an interview →",
-    "couldntLoad": "Couldn't load schedule"
+    "couldntLoad": "Couldn't load schedule",
+    "rangeLabel": "Date range",
+    "listLabel": "Scheduled events"
   },
   "settings": {
     "title": "Settings",
