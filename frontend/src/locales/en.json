@@ -22,7 +22,11 @@
     "no": "No",
     "or": "Or",
     "of": "of",
-    "more": "more"
+    "more": "more",
+    "live": "Live",
+    "refresh": "Refresh",
+    "to": "to",
+    "viewDetails": "View details"
   },
   "nav": {
     "workspace": "Workspace",
@@ -531,7 +535,13 @@
     "noCandidatesInPipeline": "No candidates in pipeline",
     "noCandidatesDesc": "Add candidates and they will appear here, organized by stage.",
     "moved": "Moved to {status}",
-    "couldntLoad": "Couldn't load pipeline"
+    "couldntLoad": "Couldn't load pipeline",
+    "confirmMove": {
+      "title": "Confirm move",
+      "desc": "Move this candidate from",
+      "warning": "This is a significant status change.",
+      "confirm": "Move candidate"
+    }
   },
   "matching": {
     "title": "AI Matching",

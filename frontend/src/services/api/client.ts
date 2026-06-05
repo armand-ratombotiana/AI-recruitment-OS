@@ -840,6 +840,57 @@ class APIClient {
   };
 
   // ========================================================================
+  // SUPPORT SERVICE
+  // ========================================================================
+
+  support = {
+    health: () => this.request<HealthResponse>('/support/health'),
+    stats: () => this.request<any>('/support/stats'),
+    listTickets: (params?: { status?: string; priority?: string; limit?: number; offset?: number }) => {
+      const p: Record<string, string> = {};
+      if (params?.status) p.status = params.status;
+      if (params?.priority) p.priority = params.priority;
+      if (params?.limit) p.limit = String(params.limit);
+      if (params?.offset) p.offset = String(params.offset);
+      return this.request<any>('/support/tickets', { params: p });
+    },
+    getTicket: (id: string) => this.request<any>(`/support/tickets/${id}`),
+    createTicket: (data: { subject: string; message: string; priority?: string; category?: string }) =>
+      this.request<any>('/support/tickets', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    updateTicket: (id: string, data: any) =>
+      this.request<any>(`/support/tickets/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    deleteTicket: (id: string) =>
+      this.request<any>(`/support/tickets/${id}`, {
+        method: 'DELETE',
+      }),
+    closeTicket: (id: string) =>
+      this.request<any>(`/support/tickets/${id}/close`, {
+        method: 'POST',
+      }),
+    reopenTicket: (id: string) =>
+      this.request<any>(`/support/tickets/${id}/reopen`, {
+        method: 'POST',
+      }),
+    addMessage: (id: string, message: string) =>
+      this.request<any>(`/support/tickets/${id}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({ message }),
+      }),
+    listMessages: (id: string) =>
+      this.request<any>(`/support/tickets/${id}/messages`),
+  };
+
+  // Deprecated aliases
+  listSupportTickets = this.support.listTickets;
+  createSupportTicket = this.support.createTicket;
+
+  // ========================================================================
   // SEARCH SERVICE (vector_search_service)
   // ========================================================================
 

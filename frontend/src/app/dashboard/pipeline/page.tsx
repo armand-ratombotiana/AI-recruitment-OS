@@ -1,21 +1,26 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Briefcase, Loader2, Mail, MapPin, RefreshCw } from 'lucide-react';
+import { Briefcase, Loader2, Mail, MapPin, RefreshCw, HelpCircle } from 'lucide-react';
 import { api } from '@/services/api/client';
-import { EmptyState, Button, Skeleton, useToast, Modal, ConfirmDialog } from '@/components';
+import { EmptyState, Button, Skeleton, useToast, Modal, ConfirmDialog, HelpButton } from '@/components';
+import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
+import { pipelineTour } from '@/components/onboarding/tours';
 
-const COLUMNS = [
-  { id: 'active', title: 'Active', color: 'bg-blue-500' },
-  { id: 'screening', title: 'Screening', color: 'bg-yellow-500' },
-  { id: 'ppe', title: 'PPE', color: 'bg-amber-500' },
-  { id: 'interviewing', title: 'Interview', color: 'bg-purple-500' },
-  { id: 'offer', title: 'Offer', color: 'bg-green-500' },
-  { id: 'hired', title: 'Hired', color: 'bg-emerald-600' },
-  { id: 'rejected', title: 'Rejected', color: 'bg-gray-400' },
-];
+const STAGE_IDS = ['active', 'screening', 'ppe', 'interview', 'offer', 'hired', 'rejected'];
+const STAGE_COLORS: Record<string, string> = {
+  active: 'bg-blue-500',
+  screening: 'bg-yellow-500',
+  ppe: 'bg-amber-500',
+  interview: 'bg-purple-500',
+  offer: 'bg-green-500',
+  hired: 'bg-emerald-600',
+  rejected: 'bg-gray-400',
+};
 
 export default function PipelinePage() {
+  const locale = useLocaleStore((s) => s.locale);
+  const t = (key: string, fb?: string) => translate(locale, key, fb);
   const [candidates, setCandidates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +29,8 @@ export default function PipelinePage() {
   const [confirmMove, setConfirmMove] = useState<{ id: string; from: string; to: string } | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const { push, ToastContainer } = useToast();
+
+  const COLUMNS = STAGE_IDS.map((id) => ({ id, title: t(`pipeline.stages.${id}`, id), color: STAGE_COLORS[id] || 'bg-gray-400' }));
 
   const load = useCallback(async (isBackground = false) => {
     if (!isBackground) setLoading(true);
@@ -34,12 +41,12 @@ export default function PipelinePage() {
       setCandidates(items);
       setLastRefresh(new Date());
     } catch (err: any) {
-      setError(err?.message || 'Failed to load pipeline');
+      setError(err?.message || t('pipeline.couldntLoad', "Couldn't load pipeline"));
       if (!isBackground) setCandidates([]);
     } finally {
       if (!isBackground) setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load(false);
@@ -55,7 +62,7 @@ export default function PipelinePage() {
     try {
       await api.updateCandidate(id, { status: newStatus });
       setCandidates((p) => p.map((c) => (c.id === id ? { ...c, status: newStatus } : c)));
-      push('success', `Moved to ${newStatus}`);
+      push('success', interpolate(t('pipeline.moved', 'Moved to {status}'), { status: t(`pipeline.stages.${newStatus}`, newStatus) }));
     } catch (err: any) {
       push('error', err?.message || 'Failed to move candidate');
     } finally {
@@ -84,21 +91,27 @@ export default function PipelinePage() {
     <div className="space-y-6">
       <ToastContainer />
       <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Pipeline</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {candidates.length} candidates across {COLUMNS.length} stages. Drag to move between stages.
-          </p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('pipeline.title', 'Pipeline')}</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              {interpolate(t('pipeline.subtitle', '{count} candidates across {stages} stages. Drag to move between stages.'), {
+                count: String(candidates.length),
+                stages: String(COLUMNS.length),
+              })}
+            </p>
+          </div>
+          <HelpButton tour={pipelineTour} />
         </div>
         <div className="flex items-center gap-2">
           {lastRefresh && (
             <span className="text-[10px] text-gray-400 dark:text-gray-500 inline-flex items-center gap-1.5" aria-live="polite">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500 pulse-dot" aria-hidden="true" />
-              Live · {lastRefresh.toLocaleTimeString()}
+              {t('common.live', 'Live')} · {lastRefresh.toLocaleTimeString()}
             </span>
           )}
-          <Button variant="ghost" size="sm" leftIcon={<RefreshCw className="h-3.5 w-3.5" />} onClick={() => load(false)} aria-label="Refresh pipeline">
-            Refresh
+          <Button variant="ghost" size="sm" leftIcon={<RefreshCw className="h-3.5 w-3.5" />} onClick={() => load(false)} aria-label={t('common.refresh', 'Refresh')}>
+            {t('common.refresh', 'Refresh')}
           </Button>
         </div>
       </div>
@@ -110,15 +123,15 @@ export default function PipelinePage() {
       ) : error ? (
         <EmptyState
           icon={<Briefcase className="h-12 w-12" />}
-          title="Couldn’t load pipeline"
+          title={t('pipeline.couldntLoad', "Couldn't load pipeline")}
           description={error}
-          action={<Button variant="primary" onClick={() => load(false)}>Retry</Button>}
+          action={<Button variant="primary" onClick={() => load(false)}>{t('common.retry', 'Retry')}</Button>}
         />
       ) : candidates.length === 0 ? (
         <EmptyState
           icon={<Briefcase className="h-12 w-12" />}
-          title="No candidates in pipeline"
-          description="Add candidates and they will appear here, organized by stage."
+          title={t('pipeline.noCandidatesInPipeline', 'No candidates in pipeline')}
+          description={t('pipeline.noCandidatesDesc', 'Add candidates and they will appear here, organized by stage.')}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 overflow-x-auto">
@@ -127,6 +140,7 @@ export default function PipelinePage() {
             return (
               <div
                 key={col.id}
+                data-tour={col.id === 'screening' ? 'pipeline-stages' : col.id === 'active' ? 'pipeline-card' : undefined}
                 className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 p-3 min-h-[200px] flex flex-col"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
@@ -143,13 +157,14 @@ export default function PipelinePage() {
                 </div>
                 <div className="space-y-2 flex-1 overflow-y-auto min-h-0">
                   {list.length === 0 ? (
-                    <p className="text-xs text-gray-300 dark:text-gray-600 text-center py-6">No candidates</p>
+                    <p className="text-xs text-gray-300 dark:text-gray-600 text-center py-6">{t('pipeline.noCandidates', 'No candidates')}</p>
                   ) : (
                     list.map((c) => {
                       const initials = (c.full_name || '?').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
                       return (
                         <div
                           key={c.id}
+                          data-tour={col.id === 'active' ? 'pipeline-card' : undefined}
                           draggable
                           onDragStart={(e) => e.dataTransfer.setData('text/plain', c.id)}
                           onClick={() => setDetail(c)}
@@ -193,7 +208,7 @@ export default function PipelinePage() {
         </div>
       )}
 
-      <Modal isOpen={!!detail} onClose={() => setDetail(null)} title={detail?.full_name || 'Candidate'} size="md">
+      <Modal isOpen={!!detail} onClose={() => setDetail(null)} title={detail?.full_name || t('candidates.title', 'Candidate')} size="md">
         {detail && (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -207,25 +222,25 @@ export default function PipelinePage() {
             </div>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="p-2 bg-gray-50 dark:bg-surface-800 rounded">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Status</p>
-                <p className="font-semibold capitalize text-gray-900 dark:text-gray-100">{detail.status || '—'}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('candidates.table.status', 'Status')}</p>
+                <p className="font-semibold capitalize text-gray-900 dark:text-gray-100">{t(`pipeline.stages.${detail.status}`, detail.status) || '—'}</p>
               </div>
               <div className="p-2 bg-gray-50 dark:bg-surface-800 rounded">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Location</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('candidates.table.location', 'Location')}</p>
                 <p className="font-semibold text-gray-900 dark:text-gray-100">{detail.location || '—'}</p>
               </div>
               <div className="p-2 bg-gray-50 dark:bg-surface-800 rounded">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Experience</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('candidates.table.experience', 'Experience')}</p>
                 <p className="font-semibold text-gray-900 dark:text-gray-100">{detail.experience_years ? `${detail.experience_years}y` : '—'}</p>
               </div>
               <div className="p-2 bg-gray-50 dark:bg-surface-800 rounded">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Score</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('candidates.table.score', 'Score')}</p>
                 <p className="font-semibold text-gray-900 dark:text-gray-100">{detail.score ?? '—'}</p>
               </div>
             </div>
             {detail.skills?.length > 0 && (
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">Skills</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">{t('candidates.table.skills', 'Skills')}</p>
                 <div className="flex flex-wrap gap-1">
                   {detail.skills.map((s: string) => (
                     <span key={s} className="text-xs px-2 py-0.5 rounded bg-blue-50 dark:bg-brand-500/20 text-blue-700 dark:text-brand-300">{s}</span>
@@ -247,9 +262,9 @@ export default function PipelinePage() {
             await doMove(id, to);
           }
         }}
-        title="Confirm move"
-        description={`Move this candidate from ${confirmMove?.from || 'current stage'} to ${confirmMove?.to}? This is a significant status change.`}
-        confirmLabel="Move candidate"
+        title={t('pipeline.confirmMove.title', 'Confirm move')}
+        description={`${t('pipeline.confirmMove.desc', 'Move this candidate from')} ${t(`pipeline.stages.${confirmMove?.from}`, confirmMove?.from || '')} ${t('common.to', 'to')} ${t(`pipeline.stages.${confirmMove?.to}`, confirmMove?.to || '')}? ${t('pipeline.confirmMove.warning', 'This is a significant status change.')}`}
+        confirmLabel={t('pipeline.confirmMove.confirm', 'Move candidate')}
       />
     </div>
   );

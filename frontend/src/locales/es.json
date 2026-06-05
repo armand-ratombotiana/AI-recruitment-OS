@@ -22,7 +22,11 @@
     "no": "No",
     "or": "O",
     "of": "de",
-    "more": "más"
+    "more": "más",
+    "live": "En vivo",
+    "refresh": "Actualizar",
+    "to": "a",
+    "viewDetails": "Ver detalles"
   },
   "nav": {
     "workspace": "Espacio de trabajo",
@@ -531,7 +535,13 @@
     "noCandidatesInPipeline": "Sin candidatos en el pipeline",
     "noCandidatesDesc": "Añade candidatos y aparecerán aquí, organizados por etapa.",
     "moved": "Movido a {status}",
-    "couldntLoad": "No se pudo cargar el pipeline"
+    "couldntLoad": "No se pudo cargar el pipeline",
+    "confirmMove": {
+      "title": "Confirmar movimiento",
+      "desc": "Mover este candidato de",
+      "warning": "Este es un cambio de estado importante.",
+      "confirm": "Mover candidato"
+    }
   },
   "matching": {
     "title": "Matching IA",
