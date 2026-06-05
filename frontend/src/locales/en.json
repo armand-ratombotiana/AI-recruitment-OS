@@ -320,7 +320,10 @@
     "couldntLoad": "Couldn't load jobs",
     "noJobsYet": "No jobs yet",
     "noJobsFound": "No jobs found",
-    "noJobsDesc": "Create your first job posting to start receiving applications."
+    "noJobsDesc": "Create your first job posting to start receiving applications.",
+    "deptGeneral": "General",
+    "remote": "Remote",
+    "fullTime": "Full-time"
   },
   "interviews": {
     "title": "Interviews",

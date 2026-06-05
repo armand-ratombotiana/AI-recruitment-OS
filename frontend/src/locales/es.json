@@ -320,7 +320,10 @@
     "couldntLoad": "No se pudieron cargar los empleos",
     "noJobsYet": "Aún no hay empleos",
     "noJobsFound": "No se encontraron empleos",
-    "noJobsDesc": "Crea tu primer empleo para empezar a recibir candidaturas."
+    "noJobsDesc": "Crea tu primer empleo para empezar a recibir candidaturas.",
+    "deptGeneral": "General",
+    "remote": "Remoto",
+    "fullTime": "Tiempo completo"
   },
   "interviews": {
     "title": "Entrevistas",

@@ -320,7 +320,10 @@
     "couldntLoad": "Impossible de charger les offres",
     "noJobsYet": "Pas encore d'offres",
     "noJobsFound": "Aucune offre trouvée",
-    "noJobsDesc": "Créez votre première offre pour commencer à recevoir des candidatures."
+    "noJobsDesc": "Créez votre première offre pour commencer à recevoir des candidatures.",
+    "deptGeneral": "Général",
+    "remote": "À distance",
+    "fullTime": "Temps plein"
   },
   "interviews": {
     "title": "Entretiens",
