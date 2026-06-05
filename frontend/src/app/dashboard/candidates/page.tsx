@@ -18,7 +18,7 @@ import {
   Star,
 } from 'lucide-react';
 import { api } from '@/services/api/client';
-import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton } from '@/components';
+import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
 import type { Column } from '@/components/ui/data-table';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
 import { candidatesTour } from '@/components/onboarding/tours';
@@ -67,6 +67,8 @@ export default function CandidatesPage() {
   const [enriching, setEnriching] = useState<Set<string>>(new Set());
   const [matching, setMatching] = useState<Set<string>>(new Set());
   const [submitting, setSubmitting] = useState(false);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const { push, ToastContainer } = useToast();
 
   const load = useCallback(async () => {
@@ -185,8 +187,8 @@ export default function CandidatesPage() {
     const rows = [['Name', 'Email', 'Status', 'Score', 'Skills', 'Location']];
     const data = selected.size > 0 ? filtered.filter((c) => selected.has(c.id)) : filtered;
     data.forEach((c) => rows.push([c.full_name, c.email, c.status, String(c.score || 0), c.skills?.join('; ') || '', c.location || '']));
-    const csv = rows.map((r) => r.map((v) => `"${(v || '').replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const csv = rows.map((r) => r.map((v) => `"${(v || '').replace(/"/g, '""')}"`).join('\n'));
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -197,23 +199,25 @@ export default function CandidatesPage() {
   };
 
   const bulkDelete = async () => {
+    setBulkDeleting(true);
     const ids = Array.from(selected);
     let removed = 0;
+    let failed = 0;
     for (const id of ids) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/candidates/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(api.getToken() ? { Authorization: `Bearer ${api.getToken()}` } : {}),
-          },
-        });
+        await api.candidates.delete(id);
         removed++;
       } catch {
-        // continue with other items
+        failed++;
       }
     }
-    push('success', t('candidates.removed', 'Removed {count} candidate(s)').replace('{count}', String(removed)));
+    setBulkDeleting(false);
+    setConfirmBulkDelete(false);
+    if (failed > 0) {
+      push('error', t('candidates.bulkDeleteFailed', 'Some candidates could not be deleted'));
+    } else {
+      push('success', t('candidates.removed', 'Removed {count} candidate(s)').replace('{count}', String(removed)));
+    }
     setSelected(new Set());
     await load();
   };
@@ -229,7 +233,7 @@ export default function CandidatesPage() {
           checked={selected.has(c.id)}
           onChange={() => toggleSelect(c.id)}
           onClick={(e) => e.stopPropagation()}
-          aria-label={`Select ${c.full_name}`}
+          aria-label={interpolate(t('candidates.select', 'Select {name}'), { name: c.full_name })}
         />
       ),
     },
@@ -332,14 +336,14 @@ export default function CandidatesPage() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t('candidates.search', 'Search candidates by name or email...')}
               className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100 dark:placeholder-gray-500"
-              aria-label="Search candidates"
+              aria-label={t('candidates.searchAria', 'Search candidates')}
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100"
-            aria-label="Filter by status"
+            aria-label={t('jobs.filterByStatus', t('candidates.filterByStatus', 'Filter by status'))}
           >
             {STATUS_VALUES.map((v) => (
               <option key={v} value={v}>
@@ -350,10 +354,10 @@ export default function CandidatesPage() {
             ))}
           </select>
           <div className="flex items-center gap-2 bg-white dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-lg p-1">
-            <button onClick={() => setView('table')} className={`p-1.5 rounded ${view === 'table' ? 'bg-blue-50 text-blue-600 dark:bg-brand-500/20 dark:text-brand-300' : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-surface-700'}`} aria-label="Table view" aria-pressed={view === 'table'}>
+            <button onClick={() => setView('table')} className={`p-1.5 rounded ${view === 'table' ? 'bg-blue-50 text-blue-600 dark:bg-brand-500/20 dark:text-brand-300' : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-surface-700'}`} aria-label={t('candidates.viewTable', 'Table view')} aria-pressed={view === 'table'}>
               <List className="h-4 w-4" />
             </button>
-            <button onClick={() => setView('grid')} className={`p-1.5 rounded ${view === 'grid' ? 'bg-blue-50 text-blue-600 dark:bg-brand-500/20 dark:text-brand-300' : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-surface-700'}`} aria-label="Grid view" aria-pressed={view === 'grid'}>
+            <button onClick={() => setView('grid')} className={`p-1.5 rounded ${view === 'grid' ? 'bg-blue-50 text-blue-600 dark:bg-brand-500/20 dark:text-brand-300' : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-surface-700'}`} aria-label={t('candidates.viewGrid', 'Grid view')} aria-pressed={view === 'grid'}>
               <LayoutGrid className="h-4 w-4" />
             </button>
           </div>
@@ -393,7 +397,7 @@ export default function CandidatesPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" leftIcon={<Download className="h-3.5 w-3.5" />} onClick={exportCSV}>{t('common.export', 'Export')}</Button>
-            <Button variant="danger" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={bulkDelete}>{t('common.delete', 'Delete')}</Button>
+            <Button variant="danger" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => setConfirmBulkDelete(true)}>{t('common.delete', 'Delete')}</Button>
           </div>
         </div>
       )}
@@ -479,6 +483,19 @@ export default function CandidatesPage() {
       <Modal isOpen={!!detail} onClose={() => setDetail(null)} title={detail?.full_name || t('candidates.title', 'Candidate')} description={detail?.email} size="lg">
         {detail && <CandidateDetail candidate={detail} locale={locale} />}
       </Modal>
+
+      <ConfirmDialog
+        isOpen={confirmBulkDelete}
+        onClose={() => !bulkDeleting && setConfirmBulkDelete(false)}
+        onConfirm={bulkDelete}
+        title={interpolate(t('candidates.confirmBulkDelete.title', 'Delete {count} candidate(s)?'), { count: String(selected.size) })}
+        description={t('candidates.confirmBulkDelete.description', 'This will permanently remove the selected candidates from your talent pool. This action cannot be undone.')}
+        confirmLabel={t('candidates.confirmBulkDelete.confirm', 'Delete candidates')}
+        cancelLabel={t('candidates.confirmBulkDelete.cancel', t('common.cancel', 'Cancel'))}
+        variant="danger"
+        loading={bulkDeleting}
+        destructive
+      />
     </div>
   );
 }
