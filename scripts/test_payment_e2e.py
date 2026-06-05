@@ -326,8 +326,8 @@ def main() -> int:
                  detail=detail, payload=p)
 
     # Cancel (immediate)
-    r = client.delete(f"{BASE}/billing/subscription/me", headers=h,
-                      json={"immediate": True, "reason": "e2e test"})
+    r = client.request("DELETE", f"{BASE}/billing/subscription/me", headers=h,
+                       json={"immediate": True, "reason": "e2e test"})
     p = r.json() if r.status_code == 200 else {}
     ok = r.status_code == 200 and p.get("status") == "canceled"
     detail = expect(ok, f"status=canceled (got {p.get('status')})")

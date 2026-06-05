@@ -367,12 +367,12 @@ export default function PPEPage() {
                   </div>
                 </div>
                 <div className="px-4 py-2 space-y-1">
-                  {Array.isArray(result?.test_results) && result.test_results.map((t1: any, i: number) => (
-                    <div key={i} className={`flex items-center gap-2 text-xs ${t1.passed ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
-                      {t1.passed ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
-                      <span className="font-mono">Test {t1.test ?? i + 1}: {t1.input ?? ''}</span>
-                      {!t1.passed && t1.expected !== undefined && (
-                        <span className="text-gray-500 dark:text-gray-400">— expected {JSON.stringify(t1.expected)}, got {JSON.stringify(t1.actual)}</span>
+                  {Array.isArray(result?.test_results) && result.test_results.map((tr: any, i: number) => (
+                    <div key={i} className={`flex items-center gap-2 text-xs ${tr.passed ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                      {tr.passed ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+                      <span className="font-mono">{interpolate(t('ppe.test', 'Test {n}:'), { n: String(tr.test ?? i + 1) })} {tr.input ?? ''}</span>
+                      {!tr.passed && tr.expected !== undefined && (
+                        <span className="text-gray-500 dark:text-gray-400">— {t('ppe.expected', 'expected')} {JSON.stringify(tr.expected)}, {t('ppe.got', 'got')} {JSON.stringify(tr.actual)}</span>
                       )}
                     </div>
                   ))}

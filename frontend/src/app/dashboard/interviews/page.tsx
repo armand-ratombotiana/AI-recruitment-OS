@@ -17,7 +17,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { api } from '@/services/api/client';
-import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb } from '@/components';
+import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, interviewsTour } from '@/components';
 import type { Column } from '@/components/ui/data-table';
 import { useLocaleStore, translate, interpolate, formatDate } from '@/stores/locale-store';
 
@@ -104,8 +104,7 @@ export default function InterviewsPage() {
     } finally {
       if (!isBackground) setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load(false);
@@ -260,6 +259,7 @@ export default function InterviewsPage() {
       render: (i) =>
         i.status === 'scheduled' ? (
           <Button
+            data-tour="interviews-join"
             size="sm"
             variant="primary"
             leftIcon={<Play className="h-3 w-3" />}
@@ -273,6 +273,7 @@ export default function InterviewsPage() {
           </Button>
         ) : i.status === 'in_progress' ? (
           <Button
+            data-tour="interviews-join"
             size="sm"
             variant="success"
             leftIcon={<CheckCircle2 className="h-3 w-3" />}
@@ -294,9 +295,12 @@ export default function InterviewsPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {t('interviews.title', 'Interviews')}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+              {t('interviews.title', 'Interviews')}
+            </h1>
+            <HelpButton tour={interviewsTour} />
+          </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {interpolate(t('interviews.totalUpcoming', '{total} total · {upcoming} upcoming'), {
               total: String(interviews.length),
@@ -305,6 +309,7 @@ export default function InterviewsPage() {
           </p>
         </div>
         <Button
+          data-tour="interviews-schedule"
           variant="primary"
           leftIcon={<Plus className="h-4 w-4" />}
           onClick={() => setScheduleOpen(true)}
@@ -318,6 +323,7 @@ export default function InterviewsPage() {
 
       {upcoming.length > 0 && (
         <div
+          data-tour="interviews-upcoming"
           aria-live="polite"
           className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-500/10 dark:via-blue-500/10 dark:to-indigo-500/10 border border-purple-200 dark:border-purple-500/30 rounded-xl p-5"
         >
@@ -352,7 +358,7 @@ export default function InterviewsPage() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 p-4">
+      <div data-tour="interviews-filters" className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 p-4">
         <div className="flex flex-col lg:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -439,7 +445,7 @@ export default function InterviewsPage() {
           }
         />
       ) : view === 'list' ? (
-        <div className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 overflow-hidden">
+        <div data-tour="interviews-table" className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 overflow-hidden">
           <DataTable columns={columns} data={filtered} searchable={false} pageSize={10} rowKey={(i) => i.id} />
         </div>
       ) : (
@@ -500,7 +506,7 @@ function CalendarView({
   });
 
   return (
-    <div className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 overflow-hidden">
+    <div data-tour="interviews-table" className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 py-3 border-b border-gray-200 dark:border-surface-700">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={onPrevWeek} aria-label={t('interviews.calendar.prev', 'Previous week')}>

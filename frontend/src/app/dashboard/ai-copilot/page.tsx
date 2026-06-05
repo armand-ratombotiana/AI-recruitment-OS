@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Sparkles, Bot, User as UserIcon, Trash2, ChevronDown, History, Code as CodeIcon, AlertCircle } from 'lucide-react';
 import { api } from '@/services/api/client';
 import { useToast, useLocalStorage } from '@/hooks';
-import { Button, Badge, Skeleton } from '@/components';
+import { Button, Badge, Skeleton, HelpButton, aiCopilotTour } from '@/components';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
 
 interface ChatMessage {
@@ -258,7 +258,18 @@ export default function AICopilotPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-140px)]">
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-purple-500" aria-hidden="true" />
+            {t('aiCopilot.title', 'AI Copilot')}
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('aiCopilot.subtitleLong', 'Ask questions about your pipeline, candidates, and evaluations.')}</p>
+        </div>
+        <HelpButton tour={aiCopilotTour} />
+      </div>
+      <div className="flex h-[calc(100vh-220px)]">
       <ToastContainer />
       {showHistory && history.length > 0 && (
         <aside
@@ -271,75 +282,99 @@ export default function AICopilotPage() {
                 <History className="h-3 w-3" aria-hidden="true" /> {t('aiCopilot.history', 'History')}
               </h3>
               <button
+                type="button"
                 onClick={clearHistory}
-                className="text-xs text-red-600 hover:text-red-700 dark:text-red-400 inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded px-1"
-                aria-label={t('aiCopilot.clearAria', 'Clear all history')}
+                className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded px-1.5 py-1 inline-flex items-center gap-1"
+                aria-label={t('aiCopilot.clearHistoryAria', 'Clear conversation history')}
               >
                 <Trash2 className="h-3 w-3" aria-hidden="true" /> {t('aiCopilot.clear', 'Clear')}
               </button>
             </div>
           </div>
-          <ul className="divide-y divide-gray-100 dark:divide-surface-700">
-            {history.filter((m) => m.role === 'user').slice(-20).reverse().map((m) => (
-              <li key={m.id}>
-                <button
-                  onClick={() => send(m.content)}
-                  className="w-full text-left px-3 py-2 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-surface-800 focus:outline-none focus-visible:bg-blue-50 dark:focus-visible:bg-brand-500/10"
-                >
-                  <p className="line-clamp-2">{m.content}</p>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{new Date(m.timestamp).toLocaleString()}</p>
-                </button>
-              </li>
-            ))}
+          <ul className="p-2 space-y-1">
+            {history
+              .filter((h) => h.id !== 'init')
+              .slice(-50)
+              .reverse()
+              .map((h) => (
+                <li key={h.id}>
+                  <button
+                    type="button"
+                    onClick={() => setInput(h.content)}
+                    className="w-full text-left text-xs px-2 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-surface-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 line-clamp-2"
+                  >
+                    <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 ${h.role === 'user' ? 'bg-blue-500' : 'bg-purple-500'}`} aria-hidden="true" />
+                    {h.content.slice(0, 80)}
+                  </button>
+                </li>
+              ))}
           </ul>
         </aside>
       )}
-      <div className="flex-1 flex flex-col bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 shadow-sm overflow-hidden">
-        <div className="border-b border-gray-200 dark:border-surface-700 px-4 sm:px-5 py-3 flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-brand-500/10 dark:to-accent-500/10 flex-wrap">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0">
-            <Sparkles className="h-4 w-4 text-white" aria-hidden="true" />
+      <div className="flex-1 flex flex-col bg-white dark:bg-surface-900 border border-gray-200 dark:border-surface-700 rounded-xl overflow-hidden">
+        <div className="border-b border-gray-200 dark:border-surface-700 p-3 sm:p-4 flex items-center justify-between gap-3 bg-gray-50/50 dark:bg-surface-800/50">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0" aria-hidden="true">
+              <Bot className="h-5 w-5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{activeAgentName}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{activeAgentDescription}</p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{activeAgentName}</h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{activeAgentDescription}</p>
-          </div>
-          <div className="relative">
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <button
+                type="button"
+                data-tour="copilot-agents"
+                onClick={() => setShowAgents((s) => !s)}
+                aria-haspopup="listbox"
+                aria-expanded={showAgents}
+                disabled={agentsLoading}
+                className="text-xs px-3 py-1.5 rounded-md border border-gray-200 dark:border-surface-700 bg-white dark:bg-surface-800 hover:bg-gray-50 dark:hover:bg-surface-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 inline-flex items-center gap-1 disabled:opacity-50"
+              >
+                {t('aiCopilot.switchAgent', 'Switch agent')} <ChevronDown className="h-3 w-3" aria-hidden="true" />
+              </button>
+              {showAgents && (
+                <ul
+                  role="listbox"
+                  className="absolute right-0 mt-1 w-72 bg-white dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-lg shadow-lg z-10 max-h-80 overflow-y-auto"
+                >
+                  {allAgents.map((a) => (
+                    <li key={a.agent_type}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={a.agent_type === agentType}
+                        onClick={() => {
+                          setAgentType(a.agent_type);
+                          setShowAgents(false);
+                          push('info', `${t('aiCopilot.switchedTo', 'Switched to')} ${a.name || a.agent_type}`);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-surface-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${a.agent_type === agentType ? 'bg-blue-50 dark:bg-brand-500/20' : ''}`}
+                      >
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{a.name || a.agent_type}</p>
+                        {a.description && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{a.description}</p>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             <button
-              onClick={() => setShowAgents((s) => !s)}
-              disabled={agentsLoading}
-              className="text-xs px-2 py-1 rounded-md bg-white dark:bg-surface-800 border border-gray-200 dark:border-surface-700 hover:bg-gray-50 dark:hover:bg-surface-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 inline-flex items-center gap-1 disabled:opacity-50"
-              aria-haspopup="listbox"
-              aria-expanded={showAgents}
-              aria-label={t('aiCopilot.switchAgentAria', 'Switch agent')}
+              type="button"
+              data-tour="copilot-history"
+              onClick={() => setShowHistory((s) => !s)}
+              aria-label={t('aiCopilot.toggleHistoryAria', 'Toggle history')}
+              aria-pressed={showHistory}
+              className={`text-xs px-2 py-1.5 rounded-md border focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 inline-flex items-center gap-1 ${showHistory ? 'bg-blue-50 dark:bg-brand-500/20 text-blue-700 dark:text-brand-300 border-blue-200 dark:border-brand-500/30' : 'bg-white dark:bg-surface-800 border-gray-200 dark:border-surface-700 text-gray-700 dark:text-gray-200'}`}
             >
-              {t('aiCopilot.switchAgent', 'Switch agent')} <ChevronDown className={`h-3 w-3 transition-transform ${showAgents ? 'rotate-180' : ''}`} aria-hidden="true" />
+              <History className="h-3 w-3" aria-hidden="true" /> {t('aiCopilot.history', 'History')}
             </button>
-            {showAgents && (
-              <ul role="listbox" className="absolute right-0 top-full mt-1 w-64 z-10 bg-white dark:bg-surface-900 border border-gray-200 dark:border-surface-700 rounded-lg shadow-lg py-1 max-h-80 overflow-y-auto">
-                {allAgents.map((a) => (
-                  <li key={a.agent_type}>
-                    <button
-                      onClick={() => { setAgentType(a.agent_type); setShowAgents(false); }}
-                      className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 dark:hover:bg-surface-800 focus:outline-none focus-visible:bg-blue-50 dark:focus-visible:bg-brand-500/10 ${a.agent_type === agentType ? 'font-semibold text-blue-700 dark:text-brand-300' : 'text-gray-700 dark:text-gray-200'}`}
-                    >
-                      <p>{a.name || a.agent_type}</p>
-                      {a.description && <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{a.description}</p>}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
-          <button
-            onClick={() => setShowHistory((s) => !s)}
-            aria-label={t('aiCopilot.toggleHistoryAria', 'Toggle history')}
-            aria-pressed={showHistory}
-            className={`text-xs px-2 py-1 rounded-md border focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 inline-flex items-center gap-1 ${showHistory ? 'bg-blue-50 dark:bg-brand-500/20 text-blue-700 dark:text-brand-300 border-blue-200 dark:border-brand-500/30' : 'bg-white dark:bg-surface-800 border-gray-200 dark:border-surface-700 text-gray-700 dark:text-gray-200'}`}
-          >
-            <History className="h-3 w-3" aria-hidden="true" /> {t('aiCopilot.history', 'History')}
-          </button>
         </div>
-
         <div
           className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 scrollbar-thin"
           role="log"
@@ -405,10 +440,9 @@ export default function AICopilotPage() {
           ))}
           <div ref={endRef} />
         </div>
-
         <div className="border-t border-gray-200 dark:border-surface-700 p-3 sm:p-4 bg-gray-50/50 dark:bg-surface-800/50">
           {history.length === 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-2 mb-3" data-tour="copilot-prompts">
               {suggested.map((q) => (
                 <button
                   key={q}
@@ -457,5 +491,6 @@ export default function AICopilotPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

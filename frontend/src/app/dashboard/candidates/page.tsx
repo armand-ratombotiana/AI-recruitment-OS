@@ -16,6 +16,7 @@ import {
   MapPin,
   Briefcase,
   Star,
+  Upload,
 } from 'lucide-react';
 import { api } from '@/services/api/client';
 import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
@@ -278,7 +279,7 @@ export default function CandidatesPage() {
       label: '',
       sortable: false,
       render: (c) => (
-        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+        <div data-tour="candidates-ai" className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
           <button
             type="button"
             onClick={() => handleEnrich(c.id)}
@@ -319,9 +320,34 @@ export default function CandidatesPage() {
             })}
           </p>
         </div>
-        <Button data-tour="candidates-add" variant="primary" leftIcon={<UserPlus className="h-4 w-4" />} onClick={() => setAddOpen(true)}>
-          {t('candidates.addCandidate', 'Add candidate')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <input
+            ref={(el) => {
+              if (el) (window as any).__candidatesFileInput = el;
+            }}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                push('info', t('candidates.import.started', 'Import started for {name}').replace('{name}', file.name));
+              }
+              e.target.value = '';
+            }}
+          />
+          <Button
+            data-tour="candidates-import"
+            variant="secondary"
+            leftIcon={<Upload className="h-4 w-4" />}
+            onClick={() => (window as any).__candidatesFileInput?.click()}
+          >
+            {t('candidates.import', 'Import CSV')}
+          </Button>
+          <Button data-tour="candidates-add" variant="primary" leftIcon={<UserPlus className="h-4 w-4" />} onClick={() => setAddOpen(true)}>
+            {t('candidates.addCandidate', 'Add candidate')}
+          </Button>
+        </div>
       </div>
 
       <Breadcrumb />
@@ -388,7 +414,7 @@ export default function CandidatesPage() {
       </div>
 
       {selected.size > 0 && (
-        <div className="bg-blue-50 dark:bg-brand-500/10 border border-blue-200 dark:border-brand-500/30 rounded-xl p-3 flex items-center justify-between">
+        <div data-tour="candidates-bulk" className="bg-blue-50 dark:bg-brand-500/10 border border-blue-200 dark:border-brand-500/30 rounded-xl p-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold text-blue-900 dark:text-brand-200">
               {interpolate(t('candidates.selected', '{count} selected'), { count: String(selected.size) })}
