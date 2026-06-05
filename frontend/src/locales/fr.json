@@ -487,6 +487,8 @@
     "noAiMetrics": "Pas encore de métriques IA",
     "noAiMetricsDesc": "Lancez l'orchestrateur IA pour peupler les stats de performance par agent.",
     "productivity": "Signaux de productivité",
+    "rangeLabel": "Plage de temps",
+    "couldntLoad": "Impossible de charger les analyses",
     "metrics": {
       "avgTimeToHire": "Délai moyen d'embauche",
       "hires": "Embauchés cette période",
@@ -798,6 +800,10 @@
         "title": "Ajouter un candidat",
         "desc": "Cliquez ici pour ajouter manuellement un candidat ou importer depuis votre ATS."
       },
+      "import": {
+        "title": "Import en masse",
+        "desc": "Téléversez un CSV ou connectez votre ATS pour importer des centaines de candidats d'un coup."
+      },
       "table": {
         "title": "Table des candidats",
         "desc": "Affichez, triez et sélectionnez des candidats. Lancez l'enrichissement ou le matching IA depuis la colonne d'actions."
@@ -805,6 +811,10 @@
       "ai": {
         "title": "Actions IA",
         "desc": "Cliquez sur Enrichir pour extraire compétences/informations ou sur Matcher pour scorer contre les offres."
+      },
+      "bulk": {
+        "title": "Actions en masse",
+        "desc": "Sélectionnez plusieurs candidats pour exporter en CSV, supprimer ou déclencher des actions IA en masse."
       },
       "details": {
         "title": "Cliquez sur un candidat",
@@ -817,6 +827,10 @@
       "filters": {
         "title": "Filtrer les offres",
         "desc": "Filtrez par statut (ouverte, brouillon, fermée) ou recherchez par titre."
+      },
+      "stats": {
+        "title": "Stats d'un coup d'œil",
+        "desc": "Voyez rapidement le total d'offres, candidats et temps moyen d'embauche."
       },
       "create": {
         "title": "Créer une offre",
@@ -833,6 +847,14 @@
       "choose": {
         "title": "Choisir un problème",
         "desc": "Sélectionnez un problème et un langage. Un template de départ est fourni."
+      },
+      "language": {
+        "title": "Choisir un langage",
+        "desc": "Choisissez parmi Python, JavaScript, TypeScript, Java, Go ou C++."
+      },
+      "timer": {
+        "title": "Minuteur de session",
+        "desc": "Un minuteur en direct suit la durée de votre session une fois le problème lancé."
       },
       "editor": {
         "title": "Éditeur de code",
@@ -857,6 +879,10 @@
       "agents": {
         "title": "Agents IA",
         "desc": "En coulisses, des agents spécialisés gèrent le matching, la présélection et la planification."
+      },
+      "prompts": {
+        "title": "Suggestions de prompts",
+        "desc": "Démarrez rapidement avec des prompts sélectionnés qui montrent ce que le copilote sait faire."
       },
       "input": {
         "title": "Demandez tout",
@@ -891,6 +917,30 @@
         "desc": "Ouvrez un candidat pour voir les prochaines étapes recommandées par l'IA selon son profil."
       }
     },
+    "interviews": {
+      "title": "Entretiens",
+      "intro": "Planifiez, gérez et rejoignez les entretiens avec vos candidats.",
+      "schedule": {
+        "title": "Planifier un entretien",
+        "desc": "Cliquez ici pour planifier un entretien téléphonique, technique, panel ou sur site."
+      },
+      "upcoming": {
+        "title": "À venir cette semaine",
+        "desc": "Vue d'ensemble des entretiens prévus dans les sept prochains jours."
+      },
+      "filters": {
+        "title": "Filtrer les entretiens",
+        "desc": "Recherchez par candidat, filtrez par statut ou type, ou passez à la vue calendrier."
+      },
+      "table": {
+        "title": "Liste des entretiens",
+        "desc": "Consultez les entretiens planifiés avec type, panel et statut d'un coup d'œil."
+      },
+      "join": {
+        "title": "Démarrer ou rejoindre",
+        "desc": "Cliquez sur Démarrer au début de l'entretien, ou Terminer à la fin pour enregistrer le résultat."
+      }
+    },
     "settings": {
       "title": "Paramètres",
       "intro": "Gérez votre compte, sécurité, équipe et facturation en un seul endroit.",
@@ -906,6 +956,14 @@
     "analytics": {
       "title": "Analyses",
       "intro": "Informations en temps réel sur votre entonnoir d'embauche et la performance IA.",
+      "range": {
+        "title": "Plage de temps",
+        "desc": "Basculez entre 7 jours, 30 jours et 90 jours pour comparer les tendances."
+      },
+      "stats": {
+        "title": "Métriques clés",
+        "desc": "Total des candidats, offres actives, entretiens cette semaine et taux de réussite."
+      },
       "funnel": {
         "title": "Entonnoir de pipeline",
         "desc": "Voyez comment les candidats progressent à travers chaque étape de votre pipeline."
@@ -913,14 +971,30 @@
       "ai": {
         "title": "Performance des agents IA",
         "desc": "Suivez la performance de chaque agent IA : tâches complétées, confiance, précision."
+      },
+      "export": {
+        "title": "Exporter et partager",
+        "desc": "Prenez des captures d'écran ou copiez les chiffres. L'export CSV est disponible sur la page rapports."
       }
     },
     "workflows": {
       "title": "Workflows",
       "intro": "Automatisez les tâches répétitives avec des workflows sans code.",
+      "create": {
+        "title": "Créer un workflow",
+        "desc": "Choisissez un modèle ou construisez un workflow personnalisé avec déclencheurs, conditions et actions."
+      },
+      "filter": {
+        "title": "Filtrer les workflows",
+        "desc": "Basculez entre Tous, Actifs et En pause pour vous concentrer sur l'essentiel."
+      },
       "list": {
         "title": "Liste des workflows",
         "desc": "Chaque workflow est une séquence de déclencheurs, conditions, actions et notifications."
+      },
+      "activate": {
+        "title": "Activer les workflows",
+        "desc": "Activez un workflow pour qu'il s'exécute automatiquement. Mettez-le en pause à tout moment."
       },
       "actions": {
         "title": "Actions de workflow",

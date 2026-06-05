@@ -489,6 +489,8 @@
     "noAiMetrics": "No AI metrics yet",
     "noAiMetricsDesc": "Run the AI orchestrator to populate per-agent performance stats.",
     "productivity": "Productivity signals",
+    "rangeLabel": "Time range",
+    "couldntLoad": "Couldn't load analytics",
     "metrics": {
       "avgTimeToHire": "Avg time to hire",
       "hires": "Hires this period",
@@ -800,6 +802,10 @@
         "title": "Add a candidate",
         "desc": "Click here to manually add a candidate or import from your ATS."
       },
+      "import": {
+        "title": "Import in bulk",
+        "desc": "Upload a CSV or connect your ATS to bring in hundreds of candidates at once."
+      },
       "table": {
         "title": "Candidates table",
         "desc": "View, sort, and select candidates. Run AI enrichment or matching from the action column."
@@ -807,6 +813,10 @@
       "ai": {
         "title": "AI actions",
         "desc": "Click Enrich to extract skills/insights or Match to score against open jobs."
+      },
+      "bulk": {
+        "title": "Bulk actions",
+        "desc": "Select multiple candidates to export to CSV, delete, or trigger bulk AI actions."
       },
       "details": {
         "title": "Click any candidate",
@@ -819,6 +829,10 @@
       "filters": {
         "title": "Filter jobs",
         "desc": "Filter by status (open, draft, closed) or search by title."
+      },
+      "stats": {
+        "title": "Job stats at a glance",
+        "desc": "Quickly see total openings, applicants, and average time to hire."
       },
       "create": {
         "title": "Create a job",
@@ -835,6 +849,14 @@
       "choose": {
         "title": "Choose a problem",
         "desc": "Pick a problem and language. A starter template is provided."
+      },
+      "language": {
+        "title": "Pick a language",
+        "desc": "Choose from Python, JavaScript, TypeScript, Java, Go, or C++."
+      },
+      "timer": {
+        "title": "Session timer",
+        "desc": "A live timer tracks your session duration once you start a problem."
       },
       "editor": {
         "title": "Code editor",
@@ -859,6 +881,10 @@
       "agents": {
         "title": "AI agents",
         "desc": "Behind the scenes, specialized agents handle matching, screening, and scheduling."
+      },
+      "prompts": {
+        "title": "Suggested prompts",
+        "desc": "Get started quickly with curated prompts that demonstrate what the copilot can do."
       },
       "input": {
         "title": "Ask anything",
@@ -893,6 +919,30 @@
         "desc": "Open a candidate to see AI-recommended next steps based on their profile."
       }
     },
+    "interviews": {
+      "title": "Interviews",
+      "intro": "Schedule, manage, and join interviews with your candidates.",
+      "schedule": {
+        "title": "Schedule interview",
+        "desc": "Click here to schedule a phone, technical, panel, or onsite interview."
+      },
+      "upcoming": {
+        "title": "Upcoming this week",
+        "desc": "At-a-glance view of interviews happening in the next seven days."
+      },
+      "filters": {
+        "title": "Filter interviews",
+        "desc": "Search by candidate, filter by status or type, or switch to the calendar view."
+      },
+      "table": {
+        "title": "Interview list",
+        "desc": "View scheduled interviews with type, panel, and status at a glance."
+      },
+      "join": {
+        "title": "Start or join",
+        "desc": "Click Start when the interview begins, or Complete when finished to log the outcome."
+      }
+    },
     "settings": {
       "title": "Settings",
       "intro": "Manage your account, security, team, and billing in one place.",
@@ -908,6 +958,14 @@
     "analytics": {
       "title": "Analytics",
       "intro": "Real-time insights into your hiring funnel and AI performance.",
+      "range": {
+        "title": "Time range",
+        "desc": "Switch between 7-day, 30-day, and 90-day windows to compare trends."
+      },
+      "stats": {
+        "title": "Key metrics",
+        "desc": "Total candidates, active jobs, interviews this week, and pass rate."
+      },
       "funnel": {
         "title": "Pipeline funnel",
         "desc": "See how candidates progress through each stage of your pipeline."
@@ -915,14 +973,30 @@
       "ai": {
         "title": "AI agent performance",
         "desc": "Track how each AI agent is performing: tasks completed, confidence, accuracy."
+      },
+      "export": {
+        "title": "Export & share",
+        "desc": "Take screenshots or copy numbers directly. CSV export is available on the reports page."
       }
     },
     "workflows": {
       "title": "Workflows",
       "intro": "Automate repetitive tasks with no-code workflows.",
+      "create": {
+        "title": "Create workflow",
+        "desc": "Pick a template or build a custom workflow from triggers, conditions, and actions."
+      },
+      "filter": {
+        "title": "Filter workflows",
+        "desc": "Toggle between All, Active, and Paused to focus on what matters."
+      },
       "list": {
         "title": "Workflow list",
         "desc": "Each workflow is a sequence of triggers, conditions, actions, and notifications."
+      },
+      "activate": {
+        "title": "Activate workflows",
+        "desc": "Toggle a workflow on to let it run automatically. Pause any time to stop execution."
       },
       "actions": {
         "title": "Workflow actions",

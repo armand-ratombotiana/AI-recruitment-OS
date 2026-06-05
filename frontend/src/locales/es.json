@@ -487,6 +487,8 @@
     "noAiMetrics": "Aún no hay métricas de IA",
     "noAiMetricsDesc": "Ejecuta el orquestador IA para poblar las estadísticas de rendimiento por agente.",
     "productivity": "Señales de productividad",
+    "rangeLabel": "Rango de tiempo",
+    "couldntLoad": "No se pudieron cargar las analíticas",
     "metrics": {
       "avgTimeToHire": "Tiempo medio de contratación",
       "hires": "Contrataciones este período",
