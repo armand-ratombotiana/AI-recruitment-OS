@@ -195,6 +195,9 @@
     "passRate": "Taux de réussite",
     "weeklyActivity": "Activité hebdomadaire",
     "weeklyActivitySub": "Candidats traités par jour",
+    "barChartAria": "Diagramme à barres des candidats hebdomadaires",
+    "quickActionsRegion": "Actions rapides",
+    "recentCandidatesList": "Liste des candidats récents",
     "candidatesCount": "Candidats",
     "thisPeriod": "cette période",
     "pipelineFunnel": "Entonnoir de pipeline",
@@ -656,6 +659,7 @@
     "noCandidatesDesc": "Ajoutez des candidats et ils apparaîtront ici, organisés par étape.",
     "moved": "Déplacé vers {status}",
     "couldntLoad": "Impossible de charger le pipeline",
+    "moveFailed": "Échec du déplacement du candidat",
     "confirmMove": {
       "title": "Confirmer le déplacement",
       "desc": "Déplacer ce candidat de",

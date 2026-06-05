@@ -84,9 +84,9 @@ function DashboardSkeleton() {
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-function BarChart({ data, max }: { data: { label: string; value: number }[]; max: number }) {
+function BarChart({ data, max, ariaLabel }: { data: { label: string; value: number }[]; max: number; ariaLabel: string }) {
   return (
-    <div className="bar-chart" role="img" aria-label="Bar chart of weekly candidates">
+    <div className="bar-chart" role="img" aria-label={ariaLabel}>
       {data.map((b) => (
         <div key={b.label} className="bar-chart-col">
           <div
@@ -94,8 +94,9 @@ function BarChart({ data, max }: { data: { label: string; value: number }[]; max
             style={{ height: `${max > 0 ? (b.value / max) * 100 : 0}%` }}
             data-value={b.value}
             role="presentation"
+            aria-label={`${b.label}: ${b.value}`}
           />
-          <span className="bar-chart-label dark:text-gray-400">{b.label}</span>
+          <span className="bar-chart-label dark:text-gray-400" aria-hidden="true">{b.label}</span>
         </div>
       ))}
     </div>
@@ -275,20 +276,22 @@ export default function DashboardPage() {
         <StatsCard title={t('dashboard.passRate', 'Pass Rate')} value={<AnimatedStat value={passRate} suffix="%" />} icon={<Target className="h-5 w-5" />} />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3" role="group" aria-label={t('dashboard.quickActionsRegion', 'Quick actions')}>
         {QUICK.map((q) => {
           const Icon = q.icon;
+          const label = t(q.key, q.key);
           return (
             <Link
               key={q.key}
               href={q.href}
-              className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-surface-700 dark:bg-surface-900 p-4 hover:border-blue-300 hover:shadow-md transition-all"
+              aria-label={label}
+              className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-surface-700 dark:bg-surface-900 p-4 hover:border-blue-300 hover:shadow-md transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
-              <div className={`h-10 w-10 rounded-lg bg-gradient-to-br ${q.color} flex items-center justify-center mb-3 group-hover:scale-110 transition`}>
+              <div className={`h-10 w-10 rounded-lg bg-gradient-to-br ${q.color} flex items-center justify-center mb-3 group-hover:scale-110 transition`} aria-hidden="true">
                 <Icon className="h-5 w-5 text-white" />
               </div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t(q.key, q.key)}</p>
-              <ArrowUpRight className="absolute top-3 right-3 h-4 w-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{label}</p>
+              <ArrowUpRight className="absolute top-3 right-3 h-4 w-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" aria-hidden="true" />
             </Link>
           );
         })}
@@ -313,7 +316,7 @@ export default function DashboardPage() {
               />
             ) : (
               <>
-                <BarChart data={weekly} max={weeklyMax} />
+                <BarChart data={weekly} max={weeklyMax} ariaLabel={t('dashboard.barChartAria', 'Bar chart of weekly candidates')} />
                 <div className="mt-4 pt-4 border-t border-gray-100 dark:border-surface-700 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                   <span className="flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full bg-gradient-to-br from-blue-500 to-purple-500" />
@@ -452,52 +455,54 @@ export default function DashboardPage() {
             </Link>
           </div>
         </CardHeader>
-        <CardContent>
-          {recent.length === 0 ? (
-            <EmptyState
-              icon={<UserPlus className="h-10 w-10" />}
-              title={t('dashboard.noCandidates', 'No candidates yet')}
-              description={t('dashboard.noCandidatesDesc', 'Add your first candidate to get started.')}
-              action={
-                <Link href="/dashboard/candidates?action=add" className="text-sm text-blue-600 hover:text-blue-700 dark:text-brand-400 font-medium">
-                  {t('dashboard.addCandidate', 'Add candidate')} →
-                </Link>
-              }
-            />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-              {recent.map((c: any) => {
-                const name = c.full_name || c.name || 'Unknown';
-                const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
-                const status = (c.status || 'active').replace(/_/g, ' ');
-                const statusKey = Object.keys(STATUS_COLORS).find((k) => k.toLowerCase() === status.toLowerCase()) || 'Active';
-                return (
-                  <Link
-                    key={c.id}
-                    href={`/dashboard/candidates`}
-                    className="group p-3 rounded-lg border border-gray-100 dark:border-surface-700 hover:border-blue-200 hover:bg-blue-50/30 dark:hover:bg-brand-500/10 transition card-hover"
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
-                        {initials}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{name}</p>
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
-                          {c.experience_years ? `${c.experience_years}y exp` : c.email || ''}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Badge variant={STATUS_COLORS[statusKey] || 'default'} size="sm">{status}</Badge>
-                      {c.score ? <span className="text-xs font-bold text-gray-700 dark:text-gray-200">{Math.round(c.score)}%</span> : null}
-                    </div>
+          <CardContent>
+            {recent.length === 0 ? (
+              <EmptyState
+                icon={<UserPlus className="h-10 w-10" />}
+                title={t('dashboard.noCandidates', 'No candidates yet')}
+                description={t('dashboard.noCandidatesDesc', 'Add your first candidate to get started.')}
+                action={
+                  <Link href="/dashboard/candidates?action=add" className="text-sm text-blue-600 hover:text-blue-700 dark:text-brand-400 font-medium">
+                    {t('dashboard.addCandidate', 'Add candidate')} →
                   </Link>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
+                }
+              />
+            ) : (
+              <div role="list" aria-label={t('dashboard.recentCandidatesList', 'Recent candidates list')} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {recent.map((c: any) => {
+                  const name = c.full_name || c.name || 'Unknown';
+                  const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+                  const status = (c.status || 'active').replace(/_/g, ' ');
+                  const statusKey = Object.keys(STATUS_COLORS).find((k) => k.toLowerCase() === status.toLowerCase()) || 'Active';
+                  return (
+                    <Link
+                      key={c.id}
+                      href={`/dashboard/candidates`}
+                      role="listitem"
+                      aria-label={`${name}${status ? `, ${status}` : ''}${c.score ? `, ${Math.round(c.score)}%` : ''}`}
+                      className="group p-3 rounded-lg border border-gray-100 dark:border-surface-700 hover:border-blue-200 hover:bg-blue-50/30 dark:hover:bg-brand-500/10 transition card-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold" aria-hidden="true">
+                          {initials}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{name}</p>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                            {c.experience_years ? `${c.experience_years}y exp` : c.email || ''}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Badge variant={STATUS_COLORS[statusKey] || 'default'} size="sm">{status}</Badge>
+                        {c.score ? <span className="text-xs font-bold text-gray-700 dark:text-gray-200">{Math.round(c.score)}%</span> : null}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
       </Card>
     </div>
   );

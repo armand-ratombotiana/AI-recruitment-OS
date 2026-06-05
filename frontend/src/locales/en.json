@@ -195,6 +195,9 @@
     "passRate": "Pass Rate",
     "weeklyActivity": "Weekly activity",
     "weeklyActivitySub": "Candidates processed per day",
+    "barChartAria": "Bar chart of weekly candidates",
+    "quickActionsRegion": "Quick actions",
+    "recentCandidatesList": "Recent candidates list",
     "candidatesCount": "Candidates",
     "thisPeriod": "this period",
     "pipelineFunnel": "Pipeline funnel",
@@ -658,6 +661,7 @@
     "noCandidatesDesc": "Add candidates and they will appear here, organized by stage.",
     "moved": "Moved to {status}",
     "couldntLoad": "Couldn't load pipeline",
+    "moveFailed": "Failed to move candidate",
     "confirmMove": {
       "title": "Confirm move",
       "desc": "Move this candidate from",

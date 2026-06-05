@@ -64,7 +64,7 @@ export default function PipelinePage() {
       setCandidates((p) => p.map((c) => (c.id === id ? { ...c, status: newStatus } : c)));
       push('success', interpolate(t('pipeline.moved', 'Moved to {status}'), { status: t(`pipeline.stages.${newStatus}`, newStatus) }));
     } catch (err: any) {
-      push('error', err?.message || 'Failed to move candidate');
+      push('error', err?.message || t('pipeline.moveFailed', 'Failed to move candidate'));
     } finally {
       setMoving(null);
     }
@@ -142,7 +142,7 @@ export default function PipelinePage() {
             return (
               <div
                 key={col.id}
-                data-tour={col.id === 'screening' ? 'pipeline-stages' : col.id === 'active' ? 'pipeline-card' : undefined}
+                data-tour={col.id === 'screening' ? 'pipeline-stages' : undefined}
                 className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 p-3 min-h-[200px] flex flex-col"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
@@ -163,13 +163,16 @@ export default function PipelinePage() {
                   {list.length === 0 ? (
                     <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-6">{t('pipeline.noCandidates', 'No candidates')}</p>
                   ) : (
-                    list.map((c) => {
+                    list.map((c, idx) => {
                       const initials = (c.full_name || '?').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
                       const remainingSkills = (c.skills || []).slice(2);
+                      const tourAttr = col.id === 'active'
+                        ? (idx === 0 ? 'pipeline-card' : idx === 1 ? 'pipeline-drag' : idx === 2 ? 'pipeline-ai' : undefined)
+                        : undefined;
                       return (
                         <div
                           key={c.id}
-                          data-tour={col.id === 'active' ? 'pipeline-card' : undefined}
+                          data-tour={tourAttr}
                           draggable
                           onDragStart={(e) => e.dataTransfer.setData('text/plain', c.id)}
                           onClick={() => setDetail(c)}
