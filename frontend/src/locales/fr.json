@@ -533,7 +533,19 @@
     "agentName": "Copilote recrutement",
     "requestFailed": "Échec de la requête copilote. Veuillez réessayer.",
     "requestFailedDesc": "J'ai des difficultés à joindre le service IA. Veuillez vérifier que le backend fonctionne, puis réessayez.",
-    "requestFailedPanel": "J'ai eu des difficultés à joindre le service IA. Veuillez vérifier que le backend fonctionne et réessayer."
+    "requestFailedPanel": "J'ai eu des difficultés à joindre le service IA. Veuillez vérifier que le backend fonctionne et réessayer.",
+    "processed": "J'ai traité votre demande.",
+    "cleared": "Conversation effacée",
+    "history": "Historique",
+    "historyAria": "Historique de la conversation",
+    "clear": "Effacer",
+    "clearAria": "Effacer tout l'historique",
+    "switchAgent": "Changer d'agent",
+    "switchAgentAria": "Changer d'agent",
+    "toggleHistoryAria": "Afficher/masquer l'historique",
+    "conversationAria": "Conversation",
+    "inputAria": "Demander au copilote",
+    "sendAria": "Envoyer le message"
   },
   "workflows": {
     "title": "Flux de travail",

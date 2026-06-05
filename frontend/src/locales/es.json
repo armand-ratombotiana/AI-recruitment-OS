@@ -533,7 +533,19 @@
     "agentName": "Copiloto de reclutamiento",
     "requestFailed": "Solicitud al copiloto fallida. Inténtalo de nuevo.",
     "requestFailedDesc": "Tengo problemas para contactar con el servicio de IA. Verifica que el backend esté funcionando e inténtalo de nuevo.",
-    "requestFailedPanel": "Tuve problemas para contactar con el servicio de IA. Verifica que el backend esté funcionando e inténtalo de nuevo."
+    "requestFailedPanel": "Tuve problemas para contactar con el servicio de IA. Verifica que el backend esté funcionando e inténtalo de nuevo.",
+    "processed": "He procesado tu solicitud.",
+    "cleared": "Conversación borrada",
+    "history": "Historial",
+    "historyAria": "Historial de conversación",
+    "clear": "Borrar",
+    "clearAria": "Borrar todo el historial",
+    "switchAgent": "Cambiar agente",
+    "switchAgentAria": "Cambiar agente",
+    "toggleHistoryAria": "Mostrar/ocultar historial",
+    "conversationAria": "Conversación",
+    "inputAria": "Preguntar al copiloto",
+    "sendAria": "Enviar mensaje"
   },
   "workflows": {
     "title": "Workflows",

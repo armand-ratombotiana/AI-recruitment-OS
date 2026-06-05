@@ -535,7 +535,19 @@
     "agentName": "Recruiting Copilot",
     "requestFailed": "Copilot request failed. Please try again.",
     "requestFailedDesc": "I'm having trouble reaching the AI service right now. Please check that the backend is running, then try again.",
-    "requestFailedPanel": "I had trouble reaching the AI service. Please verify the backend is running and try again."
+    "requestFailedPanel": "I had trouble reaching the AI service. Please verify the backend is running and try again.",
+    "processed": "I have processed your request.",
+    "cleared": "Conversation cleared",
+    "history": "History",
+    "historyAria": "Conversation history",
+    "clear": "Clear",
+    "clearAria": "Clear all history",
+    "switchAgent": "Switch agent",
+    "switchAgentAria": "Switch agent",
+    "toggleHistoryAria": "Toggle history",
+    "conversationAria": "Conversation",
+    "inputAria": "Ask the copilot",
+    "sendAria": "Send message"
   },
   "workflows": {
     "title": "Workflows",
