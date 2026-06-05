@@ -188,7 +188,7 @@ export default function HelpPage() {
         </CardHeader>
         <CardContent className="space-y-1.5">
           {filteredFaq.length === 0 ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">No matches for "{search}"</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">No matches for &ldquo;{search}&rdquo;</p>
           ) : (
             filteredFaq.map((item, i) => {
               const open = openFaq === i;
