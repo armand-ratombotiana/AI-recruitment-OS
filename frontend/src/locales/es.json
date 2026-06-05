@@ -26,6 +26,8 @@
     "live": "En vivo",
     "refresh": "Actualizar",
     "to": "a",
+    "today": "Hoy",
+    "tomorrow": "Mañana",
     "viewDetails": "Ver detalles"
   },
   "nav": {
@@ -273,7 +275,15 @@
     "matchComplete": "Matching completado",
     "matchCompleteWithScore": "Matching completado — puntuación {score}%",
     "addedToCandidates": "{name} añadido a candidatos",
-    "viewDetails": "Ver detalles del candidato"
+    "viewDetails": "Ver detalles del candidato",
+    "confirmBulkDelete": {
+      "title": "¿Eliminar {count} candidato(s)?",
+      "description": "Esto eliminará permanentemente a los candidatos seleccionados de tu base de talento. Esta acción no se puede deshacer.",
+      "confirm": "Eliminar candidatos",
+      "cancel": "Cancelar"
+    },
+    "createFailed": "No se pudo crear el candidato",
+    "bulkDeleteFailed": "Algunos candidatos no se pudieron eliminar"
   },
   "jobs": {
     "title": "Empleos",
@@ -296,13 +306,19 @@
     },
     "wizard": {
       "title": "Crear nuevo empleo",
-      "desc": "Un asistente de 3 pasos para publicar tu empleo en menos de un minuto.",
-      "steps": ["Bases", "Requisitos", "Pipeline"],
+      "desc": "Un asistente de 3 pasos para publicar tu oferta en menos de un minuto.",
+      "steps": ["Básicos", "Requisitos", "Revisión"],
+      "stepBasics": "Básicos",
+      "stepRequirements": "Requisitos",
+      "stepReview": "Revisión",
       "continue": "Continuar",
       "create": "Crear empleo",
       "ready": "Listo para publicar",
-      "readyDesc": "Tu empleo será publicado y empezará a recibir candidaturas inmediatamente. El filtrado IA clasificará a los candidatos automáticamente."
+      "readyDesc": "Tu oferta se publicará y empezará a recibir candidatos inmediatamente. La IA clasificará los candidatos automáticamente."
     },
+    "filterByStatus": "Filtrar por estado",
+    "searchAria": "Buscar empleos",
+    "createFailed": "No se pudo crear el empleo",
     "fields": {
       "title": "Título del puesto *",
       "department": "Departamento",
@@ -331,29 +347,33 @@
   },
   "interviews": {
     "title": "Entrevistas",
-    "totalUpcoming": "{total} total · {upcoming} próximas",
-    "schedule": "Agendar entrevista",
+    "totalUpcoming": "{total} en total · {upcoming} próximas",
+    "schedule": "Programar entrevista",
     "search": "Buscar entrevistas...",
+    "searchAria": "Buscar entrevistas",
     "upcomingThisWeek": "Próximas esta semana",
+    "minutes": "min",
     "types": {
       "all": "Todos los tipos",
-      "phone": "Llamada",
+      "phone": "Llamada de selección",
       "technical": "Técnica",
       "panel": "Panel",
       "onsite": "Presencial"
     },
     "statuses": {
-      "scheduled": "Agendada",
+      "scheduled": "Programada",
       "in_progress": "En curso",
       "completed": "Completada",
-      "cancelled": "Cancelada"
+      "cancelled": "Cancelada",
+      "no_show": "No se presentó"
     },
     "started": "Entrevista iniciada",
     "completed": "Entrevista marcada como completada",
-    "scheduledWith": "Entrevista agendada con {name}",
+    "scheduledWith": "Entrevista programada con {name}",
+    "formErrorRequired": "Se requieren el nombre del candidato, la fecha y la hora",
     "fields": {
       "candidateName": "Nombre del candidato *",
-      "jobPosition": "Posición *",
+      "jobPosition": "Puesto *",
       "date": "Fecha *",
       "time": "Hora *",
       "duration": "Duración (min)",
@@ -361,10 +381,58 @@
       "location": "Ubicación",
       "panel": "Panel (iniciales, separadas por comas)"
     },
+    "table": {
+      "candidate": "Candidato",
+      "when": "Cuándo",
+      "type": "Tipo",
+      "panel": "Panel",
+      "status": "Estado"
+    },
     "couldntLoad": "No se pudieron cargar las entrevistas",
     "noInterviewsYet": "Aún no hay entrevistas",
     "noInterviewsFound": "No se encontraron entrevistas",
-    "noInterviewsDesc": "Agenda tu primera entrevista para empezar."
+    "noInterviewsDesc": "Programa tu primera entrevista para comenzar.",
+    "tryAdjusting": "Intenta ajustar tus filtros.",
+    "viewList": "Vista de lista",
+    "viewCalendar": "Vista de calendario",
+    "filterByStatus": "Filtrar por estado",
+    "filterByType": "Filtrar por tipo",
+    "actions": {
+      "start": "Iniciar",
+      "complete": "Completar",
+      "startAria": "Iniciar entrevista con {name}",
+      "completeAria": "Marcar como completada la entrevista con {name}"
+    },
+    "calendar": {
+      "today": "Hoy",
+      "prev": "Semana anterior",
+      "next": "Semana siguiente",
+      "weekOf": "Semana del {date}",
+      "noEvents": "Sin entrevistas"
+    },
+    "durations": {
+      "30": "30 minutos",
+      "45": "45 minutos",
+      "60": "1 hora",
+      "90": "1,5 horas",
+      "120": "2 horas"
+    },
+    "modal": {
+      "title": "Programar entrevista",
+      "description": "Configura una nueva entrevista con un candidato."
+    },
+    "createFailed": "No se pudo programar la entrevista",
+    "startFailed": "No se pudo iniciar la entrevista",
+    "completeFailed": "No se pudo completar la entrevista"
+  },
+  "days": {
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mié",
+    "thu": "Jue",
+    "fri": "Vie",
+    "sat": "Sáb",
+    "sun": "Dom"
   },
   "ppe": {
     "title": "Evaluación de pair programming",

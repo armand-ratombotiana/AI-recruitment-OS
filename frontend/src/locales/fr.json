@@ -25,7 +25,9 @@
     "more": "de plus",
     "live": "En direct",
     "refresh": "Actualiser",
-    "to": "vers",
+    "to": "à",
+    "today": "Aujourd'hui",
+    "tomorrow": "Demain",
     "viewDetails": "Voir les détails"
   },
   "nav": {
@@ -273,7 +275,15 @@
     "matchComplete": "Matching terminé",
     "matchCompleteWithScore": "Matching terminé — score {score}%",
     "addedToCandidates": "{name} ajouté aux candidats",
-    "viewDetails": "Voir les détails du candidat"
+    "viewDetails": "Voir les détails du candidat",
+    "confirmBulkDelete": {
+      "title": "Supprimer {count} candidat(s) ?",
+      "description": "Ceci supprimera définitivement les candidats sélectionnés de votre vivier. Cette action est irréversible.",
+      "confirm": "Supprimer les candidats",
+      "cancel": "Annuler"
+    },
+    "createFailed": "Impossible de créer le candidat",
+    "bulkDeleteFailed": "Certains candidats n'ont pas pu être supprimés"
   },
   "jobs": {
     "title": "Offres",
@@ -295,14 +305,20 @@
       "posted": "Publiée"
     },
     "wizard": {
-      "title": "Créer une nouvelle offre",
+      "title": "Créer un nouvel emploi",
       "desc": "Un assistant en 3 étapes pour publier votre offre en moins d'une minute.",
-      "steps": ["Bases", "Exigences", "Pipeline"],
+      "steps": ["Bases", "Exigences", "Révision"],
+      "stepBasics": "Bases",
+      "stepRequirements": "Exigences",
+      "stepReview": "Révision",
       "continue": "Continuer",
-      "create": "Créer l'offre",
+      "create": "Créer l'emploi",
       "ready": "Prêt à publier",
-      "readyDesc": "Votre offre sera publiée et commencera à recevoir des candidatures immédiatement. La présélection IA classera les candidats automatiquement."
+      "readyDesc": "Votre offre sera publiée et commencera à recevoir des candidatures immédiatement. Le tri par IA classera les candidats automatiquement."
     },
+    "filterByStatus": "Filtrer par statut",
+    "searchAria": "Rechercher des emplois",
+    "createFailed": "Impossible de créer l'emploi",
     "fields": {
       "title": "Titre du poste *",
       "department": "Département",
@@ -334,7 +350,9 @@
     "totalUpcoming": "{total} au total · {upcoming} à venir",
     "schedule": "Planifier un entretien",
     "search": "Rechercher des entretiens...",
+    "searchAria": "Rechercher des entretiens",
     "upcomingThisWeek": "À venir cette semaine",
+    "minutes": "min",
     "types": {
       "all": "Tous les types",
       "phone": "Entretien téléphonique",
@@ -346,11 +364,13 @@
       "scheduled": "Planifié",
       "in_progress": "En cours",
       "completed": "Terminé",
-      "cancelled": "Annulé"
+      "cancelled": "Annulé",
+      "no_show": "Absent"
     },
     "started": "Entretien démarré",
     "completed": "Entretien marqué comme terminé",
     "scheduledWith": "Entretien planifié avec {name}",
+    "formErrorRequired": "Le nom du candidat, la date et l'heure sont requis",
     "fields": {
       "candidateName": "Nom du candidat *",
       "jobPosition": "Poste *",
@@ -361,10 +381,58 @@
       "location": "Lieu",
       "panel": "Panel (initiales, séparées par des virgules)"
     },
+    "table": {
+      "candidate": "Candidat",
+      "when": "Quand",
+      "type": "Type",
+      "panel": "Panel",
+      "status": "Statut"
+    },
     "couldntLoad": "Impossible de charger les entretiens",
     "noInterviewsYet": "Pas encore d'entretiens",
     "noInterviewsFound": "Aucun entretien trouvé",
-    "noInterviewsDesc": "Planifiez votre premier entretien pour commencer."
+    "noInterviewsDesc": "Planifiez votre premier entretien pour commencer.",
+    "tryAdjusting": "Essayez d'ajuster vos filtres.",
+    "viewList": "Vue liste",
+    "viewCalendar": "Vue calendrier",
+    "filterByStatus": "Filtrer par statut",
+    "filterByType": "Filtrer par type",
+    "actions": {
+      "start": "Démarrer",
+      "complete": "Terminer",
+      "startAria": "Démarrer l'entretien avec {name}",
+      "completeAria": "Marquer l'entretien avec {name} comme terminé"
+    },
+    "calendar": {
+      "today": "Aujourd'hui",
+      "prev": "Semaine précédente",
+      "next": "Semaine suivante",
+      "weekOf": "Semaine du {date}",
+      "noEvents": "Aucun entretien"
+    },
+    "durations": {
+      "30": "30 minutes",
+      "45": "45 minutes",
+      "60": "1 heure",
+      "90": "1,5 heure",
+      "120": "2 heures"
+    },
+    "modal": {
+      "title": "Planifier un entretien",
+      "description": "Configurez un nouvel entretien avec un candidat."
+    },
+    "createFailed": "Impossible de planifier l'entretien",
+    "startFailed": "Impossible de démarrer l'entretien",
+    "completeFailed": "Impossible de terminer l'entretien"
+  },
+  "days": {
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mer",
+    "thu": "Jeu",
+    "fri": "Ven",
+    "sat": "Sam",
+    "sun": "Dim"
   },
   "ppe": {
     "title": "Évaluation de pair programming",

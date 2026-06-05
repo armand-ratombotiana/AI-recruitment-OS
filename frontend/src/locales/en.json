@@ -26,6 +26,8 @@
     "live": "Live",
     "refresh": "Refresh",
     "to": "to",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
     "viewDetails": "View details"
   },
   "nav": {
@@ -273,7 +275,15 @@
     "matchComplete": "Match complete",
     "matchCompleteWithScore": "Match complete — score {score}%",
     "addedToCandidates": "{name} added to candidates",
-    "viewDetails": "View candidate details"
+    "viewDetails": "View candidate details",
+    "confirmBulkDelete": {
+      "title": "Delete {count} candidate(s)?",
+      "description": "This will permanently remove the selected candidates from your talent pool. This action cannot be undone.",
+      "confirm": "Delete candidates",
+      "cancel": "Cancel"
+    },
+    "createFailed": "Failed to create candidate",
+    "bulkDeleteFailed": "Some candidates could not be deleted"
   },
   "jobs": {
     "title": "Jobs",
@@ -297,12 +307,18 @@
     "wizard": {
       "title": "Create new job",
       "desc": "A 3-step wizard to get your job posted in under a minute.",
-      "steps": ["Basics", "Requirements", "Pipeline"],
+      "steps": ["Basics", "Requirements", "Review"],
+      "stepBasics": "Basics",
+      "stepRequirements": "Requirements",
+      "stepReview": "Review",
       "continue": "Continue",
       "create": "Create job",
       "ready": "Ready to post",
       "readyDesc": "Your job will be published and start receiving applications immediately. The AI screening will rank candidates automatically."
     },
+    "filterByStatus": "Filter by status",
+    "searchAria": "Search jobs",
+    "createFailed": "Failed to create job",
     "fields": {
       "title": "Job title *",
       "department": "Department",
@@ -334,7 +350,9 @@
     "totalUpcoming": "{total} total · {upcoming} upcoming",
     "schedule": "Schedule interview",
     "search": "Search interviews...",
+    "searchAria": "Search interviews",
     "upcomingThisWeek": "Upcoming this week",
+    "minutes": "min",
     "types": {
       "all": "All types",
       "phone": "Phone screen",
@@ -346,11 +364,13 @@
       "scheduled": "Scheduled",
       "in_progress": "In progress",
       "completed": "Completed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "no_show": "No show"
     },
     "started": "Interview started",
     "completed": "Interview marked complete",
     "scheduledWith": "Interview scheduled with {name}",
+    "formErrorRequired": "Candidate name, date and time are required",
     "fields": {
       "candidateName": "Candidate name *",
       "jobPosition": "Job position *",
@@ -361,10 +381,58 @@
       "location": "Location",
       "panel": "Panel (initials, comma separated)"
     },
+    "table": {
+      "candidate": "Candidate",
+      "when": "When",
+      "type": "Type",
+      "panel": "Panel",
+      "status": "Status"
+    },
     "couldntLoad": "Couldn't load interviews",
     "noInterviewsYet": "No interviews yet",
     "noInterviewsFound": "No interviews found",
-    "noInterviewsDesc": "Schedule your first interview to get started."
+    "noInterviewsDesc": "Schedule your first interview to get started.",
+    "tryAdjusting": "Try adjusting your filters.",
+    "viewList": "List view",
+    "viewCalendar": "Calendar view",
+    "filterByStatus": "Filter by status",
+    "filterByType": "Filter by type",
+    "actions": {
+      "start": "Start",
+      "complete": "Complete",
+      "startAria": "Start interview with {name}",
+      "completeAria": "Mark interview with {name} complete"
+    },
+    "calendar": {
+      "today": "Today",
+      "prev": "Previous week",
+      "next": "Next week",
+      "weekOf": "Week of {date}",
+      "noEvents": "No interviews"
+    },
+    "durations": {
+      "30": "30 minutes",
+      "45": "45 minutes",
+      "60": "1 hour",
+      "90": "1.5 hours",
+      "120": "2 hours"
+    },
+    "modal": {
+      "title": "Schedule interview",
+      "description": "Set up a new interview with a candidate."
+    },
+    "createFailed": "Failed to schedule interview",
+    "startFailed": "Failed to start interview",
+    "completeFailed": "Failed to complete interview"
+  },
+  "days": {
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun"
   },
   "ppe": {
     "title": "Pair Programming Evaluation",
