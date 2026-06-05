@@ -617,7 +617,9 @@
       "desc": "Move this candidate from",
       "warning": "This is a significant status change.",
       "confirm": "Move candidate"
-    }
+    },
+    "dropZone": "Drop candidate to move to {stage}",
+    "moreSkills": "{n} more skills: {skills}"
   },
   "matching": {
     "title": "AI Matching",

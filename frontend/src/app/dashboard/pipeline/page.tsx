@@ -105,9 +105,11 @@ export default function PipelinePage() {
         </div>
         <div className="flex items-center gap-2">
           {lastRefresh && (
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 inline-flex items-center gap-1.5" aria-live="polite">
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 inline-flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500 pulse-dot" aria-hidden="true" />
-              {t('common.live', 'Live')} · {lastRefresh.toLocaleTimeString()}
+              <span aria-live="polite" aria-atomic="true">
+                {t('common.live', 'Live')} · {lastRefresh.toLocaleTimeString()}
+              </span>
             </span>
           )}
           <Button variant="ghost" size="sm" leftIcon={<RefreshCw className="h-3.5 w-3.5" />} onClick={() => load(false)} aria-label={t('common.refresh', 'Refresh')}>
@@ -147,6 +149,8 @@ export default function PipelinePage() {
                   const id = e.dataTransfer.getData('text/plain');
                   if (id) moveCandidate(id, col.id);
                 }}
+                aria-label={interpolate(t('pipeline.dropZone', 'Drop candidate to move to {stage}'), { stage: col.title })}
+                role="region"
               >
                 <div className="flex items-center gap-2 mb-3 px-1">
                   <div className={`h-2.5 w-2.5 rounded-full ${col.color}`} />
@@ -157,10 +161,11 @@ export default function PipelinePage() {
                 </div>
                 <div className="space-y-2 flex-1 overflow-y-auto min-h-0">
                   {list.length === 0 ? (
-                    <p className="text-xs text-gray-300 dark:text-gray-600 text-center py-6">{t('pipeline.noCandidates', 'No candidates')}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-6">{t('pipeline.noCandidates', 'No candidates')}</p>
                   ) : (
                     list.map((c) => {
                       const initials = (c.full_name || '?').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+                      const remainingSkills = (c.skills || []).slice(2);
                       return (
                         <div
                           key={c.id}
@@ -168,21 +173,32 @@ export default function PipelinePage() {
                           draggable
                           onDragStart={(e) => e.dataTransfer.setData('text/plain', c.id)}
                           onClick={() => setDetail(c)}
-                          className="bg-gray-50 dark:bg-surface-800 hover:bg-white dark:hover:bg-surface-700 border border-gray-200 dark:border-surface-700 hover:border-blue-300 dark:hover:border-brand-500/40 rounded-lg p-2.5 cursor-grab active:cursor-grabbing transition group"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              setDetail(c);
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
+                          aria-grabbed={false}
+                          aria-roledescription="draggable candidate card"
+                          aria-label={`${c.full_name} — ${t(`pipeline.stages.${c.status || 'active'}`, c.status || 'active')}`}
+                          className="bg-gray-50 dark:bg-surface-800 hover:bg-white dark:hover:bg-surface-700 border border-gray-200 dark:border-surface-700 hover:border-blue-300 dark:hover:border-brand-500/40 rounded-lg p-2.5 cursor-grab active:cursor-grabbing transition group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                         >
                           <div className="flex items-center gap-2 mb-1">
-                            <div className="h-7 w-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold">
+                            <div className="h-7 w-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold" aria-hidden="true">
                               {initials}
                             </div>
                             <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate flex-1">{c.full_name}</p>
-                            {moving === c.id && <Loader2 className="h-3 w-3 animate-spin text-gray-400" />}
+                            {moving === c.id && <Loader2 className="h-3 w-3 animate-spin text-gray-400" aria-hidden="true" />}
                           </div>
                           <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate flex items-center gap-1">
-                            <Mail className="h-2.5 w-2.5" /> {c.email}
+                            <Mail className="h-2.5 w-2.5" aria-hidden="true" /> {c.email}
                           </p>
                           {c.location && (
                             <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate flex items-center gap-1 mt-0.5">
-                              <MapPin className="h-2.5 w-2.5" /> {c.location}
+                              <MapPin className="h-2.5 w-2.5" aria-hidden="true" /> {c.location}
                             </p>
                           )}
                           {c.skills && c.skills.length > 0 && (
@@ -193,7 +209,12 @@ export default function PipelinePage() {
                                 </span>
                               ))}
                               {c.skills.length > 2 && (
-                                <span className="text-[9px] text-gray-400 dark:text-gray-500">+{c.skills.length - 2}</span>
+                                <span
+                                  className="text-[9px] text-gray-400 dark:text-gray-500"
+                                  aria-label={interpolate(t('pipeline.moreSkills', '{n} more skills: {skills}'), { n: String(remainingSkills.length), skills: remainingSkills.join(', ') })}
+                                >
+                                  +{c.skills.length - 2}
+                                </span>
                               )}
                             </div>
                           )}

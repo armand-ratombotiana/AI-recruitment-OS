@@ -615,7 +615,9 @@
       "desc": "Déplacer ce candidat de",
       "warning": "Ceci est un changement de statut important.",
       "confirm": "Déplacer le candidat"
-    }
+    },
+    "dropZone": "Déposer le candidat pour le déplacer vers {stage}",
+    "moreSkills": "{n} compétences supplémentaires : {skills}"
   },
   "matching": {
     "title": "Matching IA",

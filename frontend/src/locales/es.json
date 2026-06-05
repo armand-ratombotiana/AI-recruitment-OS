@@ -615,7 +615,9 @@
       "desc": "Mover este candidato de",
       "warning": "Este es un cambio de estado importante.",
       "confirm": "Mover candidato"
-    }
+    },
+    "dropZone": "Suelta al candidato para moverlo a {stage}",
+    "moreSkills": "{n} habilidades más: {skills}"
   },
   "matching": {
     "title": "Matching IA",
