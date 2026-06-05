@@ -48,6 +48,7 @@ export { QuickActionsFab } from './dashboard/quick-actions-fab';
 export { GlobalSearch } from './dashboard/global-search';
 export { Breadcrumb } from './dashboard/breadcrumb';
 export { OnboardingChecklist } from './dashboard/onboarding-checklist';
+export { ConnectionStatus } from './dashboard/connection-status';
 export { ThemeToggle } from './ui/theme-toggle';
 export { LanguageToggle } from './ui/language-toggle';
 export { FeatureTour } from './onboarding/feature-tour';

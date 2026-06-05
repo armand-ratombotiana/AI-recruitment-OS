@@ -29,6 +29,7 @@ import {
   ErrorBoundary,
   ThemeToggle,
   LanguageToggle,
+  ConnectionStatus,
 } from '@/components';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
 
@@ -165,6 +166,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
             <GlobalSearch />
             <div className="flex items-center gap-2 ml-auto">
+              <ConnectionStatus />
               <ThemeToggle />
               <LanguageToggle />
               <NotificationsBell />

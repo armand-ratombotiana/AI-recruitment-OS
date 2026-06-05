@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Briefcase, Loader2, Mail, MapPin, RefreshCw, HelpCircle } from 'lucide-react';
+import { Briefcase, Loader2, Mail, MapPin, RefreshCw, HelpCircle, Sparkles, AlertCircle, X } from 'lucide-react';
 import { api } from '@/services/api/client';
-import { EmptyState, Button, Skeleton, useToast, Modal, ConfirmDialog, HelpButton } from '@/components';
+import { EmptyState, Button, Skeleton, useToast, Modal, ConfirmDialog, HelpButton, Badge } from '@/components';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
 import { pipelineTour } from '@/components/onboarding/tours';
 
@@ -18,6 +18,17 @@ const STAGE_COLORS: Record<string, string> = {
   rejected: 'bg-gray-400',
 };
 
+interface AiSuggestion {
+  candidate_id?: string;
+  candidate_name?: string;
+  current_stage?: string;
+  suggested_stage?: string;
+  action: string;
+  priority?: 'high' | 'medium' | 'low';
+  reason?: string;
+  confidence?: number;
+}
+
 export default function PipelinePage() {
   const locale = useLocaleStore((s) => s.locale);
   const t = (key: string, fb?: string) => translate(locale, key, fb);
@@ -28,6 +39,10 @@ export default function PipelinePage() {
   const [detail, setDetail] = useState<any | null>(null);
   const [confirmMove, setConfirmMove] = useState<{ id: string; from: string; to: string } | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [aiSuggestions, setAiSuggestions] = useState<AiSuggestion[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [showAiPanel, setShowAiPanel] = useState(true);
   const { push, ToastContainer } = useToast();
 
   const COLUMNS = STAGE_IDS.map((id) => ({ id, title: t(`pipeline.stages.${id}`, id), color: STAGE_COLORS[id] || 'bg-gray-400' }));
@@ -56,6 +71,76 @@ export default function PipelinePage() {
     const timer = setInterval(() => load(true), 60_000);
     return () => clearInterval(timer);
   }, [load]);
+
+  const fetchAiSuggestions = useCallback(async () => {
+    if (candidates.length === 0) {
+      setAiSuggestions([]);
+      return;
+    }
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const r: any = await api.ai.orchestrate({
+        agent_type: 'recruiting_copilot',
+        input: {
+          task: 'pipeline_prioritization',
+          candidates: candidates.slice(0, 20).map((c: any) => ({
+            id: c.id,
+            name: c.full_name,
+            status: c.status,
+            skills: c.skills,
+            score: c.score,
+            days_in_stage: c.days_in_stage,
+          })),
+        },
+        context: { source: 'dashboard_pipeline' },
+      });
+      const result = r?.result || {};
+      const raw: any[] = Array.isArray(result.suggestions)
+        ? result.suggestions
+        : Array.isArray(result.recommendations)
+        ? result.recommendations
+        : [];
+      const items: AiSuggestion[] = raw.slice(0, 8).map((s: any) => {
+        if (typeof s === 'string') return { action: s };
+        return {
+          candidate_id: s.candidate_id || s.id,
+          candidate_name: s.candidate_name || s.name,
+          current_stage: s.current_stage || s.from,
+          suggested_stage: s.suggested_stage || s.to,
+          action: s.action || s.suggestion || s.title || 'Review candidate',
+          priority: s.priority || 'medium',
+          reason: s.reason || s.description,
+          confidence: typeof s.confidence === 'number' ? s.confidence : undefined,
+        };
+      });
+      setAiSuggestions(items);
+    } catch (err: any) {
+      setAiError(err?.message || t('pipeline.ai.error', 'Could not fetch AI suggestions'));
+      setAiSuggestions([]);
+    } finally {
+      setAiLoading(false);
+    }
+  }, [candidates, t]);
+
+  useEffect(() => {
+    if (candidates.length > 0 && aiSuggestions.length === 0 && !aiLoading && !aiError) {
+      fetchAiSuggestions();
+    }
+  }, [candidates, aiSuggestions.length, aiLoading, aiError, fetchAiSuggestions]);
+
+  const applySuggestion = async (s: AiSuggestion) => {
+    if (!s.candidate_id || !s.suggested_stage) {
+      push('info', t('pipeline.ai.applyHint', 'Review the candidate manually and move them from the candidate detail.'));
+      return;
+    }
+    if (s.suggested_stage === 'hired' || s.suggested_stage === 'rejected') {
+      setConfirmMove({ id: s.candidate_id, from: s.current_stage || 'active', to: s.suggested_stage });
+    } else {
+      await doMove(s.candidate_id, s.suggested_stage);
+    }
+    setAiSuggestions((p) => p.filter((x) => x !== s));
+  };
 
   const doMove = async (id: string, newStatus: string) => {
     setMoving(id);

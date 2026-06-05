@@ -172,9 +172,9 @@ export default function AICopilotPage() {
 
       try {
         const r: any = await api.ai.orchestrate({
-          task: message,
-          agents: [agentType],
-          context: { source: 'dashboard_copilot', agent_type: agentType, query: message },
+          agent_type: agentType,
+          input: { query: message, task: message },
+          context: { source: 'dashboard_copilot', query: message },
         });
         const result = r?.result || {};
         const suggestions = Array.isArray(result.suggestions) ? result.suggestions : [];

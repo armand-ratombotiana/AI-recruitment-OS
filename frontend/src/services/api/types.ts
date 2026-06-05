@@ -864,10 +864,12 @@ export namespace AiTypes {
   }
 
   export interface OrchestrateRequest {
-    task: string;
+    task?: string;
+    input?: string | Record<string, unknown>;
     agents?: string[];
     context?: Record<string, unknown>;
     stream?: boolean;
+    agent_type?: string;
   }
 
   export interface OrchestrateResponse {
