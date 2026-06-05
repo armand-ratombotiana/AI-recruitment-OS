@@ -5,8 +5,15 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+
+from shared.auth import (
+    require_admin,
+    require_authenticated_user,
+    require_member,
+    require_tenant_id,
+)
 
 
 # ── In-Memory Store ─────────────────────────────────────────────────────────────
@@ -48,22 +55,35 @@ async def health():
     return HealthResponse()
 
 
-@router.get("/", tags=["Users"], summary="List all users")
-async def list_users():
+@router.get("/", tags=["Users"], summary="List users in caller's tenant")
+async def list_users(
+    caller_tenant_id: str = Depends(require_tenant_id),
+    _user: dict = Depends(require_member),
+):
     items = [
-        {"id": u["id"], "email": u["email"], "full_name": u["full_name"], "role": u["role"], "status": u["status"]}
+        {
+            "id": u["id"], "email": u["email"], "full_name": u["full_name"],
+            "role": u["role"], "status": u["status"], "tenant_id": u["tenant_id"],
+        }
         for u in _users.values()
+        if u.get("tenant_id") == caller_tenant_id
     ]
     return {"data": items, "total": len(items)}
 
 
 @router.post("/", tags=["Users"], summary="Create user")
-async def create_user(data: UserCreateRequest):
+async def create_user(
+    data: UserCreateRequest,
+    caller_tenant_id: str = Depends(require_tenant_id),
+    _admin: dict = Depends(require_admin),
+):
     user_id = f"u_{uuid.uuid4().hex[:12]}"
     now = datetime.now(timezone.utc).isoformat()
     user = {
         "id": user_id, "email": data.email, "full_name": data.full_name,
-        "role": data.role, "status": "active", "created_at": now, "updated_at": now,
+        "role": data.role, "status": "active",
+        "tenant_id": caller_tenant_id,
+        "created_at": now, "updated_at": now,
     }
     _users[user_id] = user
     _user_activity[user_id] = [{"action": "account_created", "timestamp": now}]
@@ -71,34 +91,52 @@ async def create_user(data: UserCreateRequest):
 
 
 @router.get("/{user_id}", tags=["Users"], summary="Get user by ID")
-async def get_user(user_id: str):
-    if user_id not in _users:
+async def get_user(
+    user_id: str,
+    caller_tenant_id: str = Depends(require_tenant_id),
+    _user: dict = Depends(require_member),
+):
+    u = _users.get(user_id)
+    if not u or u.get("tenant_id") != caller_tenant_id:
         raise HTTPException(status_code=404, detail="User not found")
-    u = _users[user_id]
-    return {"id": u["id"], "email": u["email"], "full_name": u["full_name"], "role": u["role"], "status": u["status"]}
+    return {
+        "id": u["id"], "email": u["email"], "full_name": u["full_name"],
+        "role": u["role"], "status": u["status"],
+    }
 
 
 @router.put("/{user_id}", tags=["Users"], summary="Update user")
-async def update_user(user_id: str, data: UserUpdateRequest):
-    if user_id not in _users:
+async def update_user(
+    user_id: str,
+    data: UserUpdateRequest,
+    caller_tenant_id: str = Depends(require_tenant_id),
+    _admin: dict = Depends(require_admin),
+):
+    u = _users.get(user_id)
+    if not u or u.get("tenant_id") != caller_tenant_id:
         raise HTTPException(status_code=404, detail="User not found")
     now = datetime.now(timezone.utc).isoformat()
     if data.email is not None:
-        _users[user_id]["email"] = data.email
+        u["email"] = data.email
     if data.full_name is not None:
-        _users[user_id]["full_name"] = data.full_name
+        u["full_name"] = data.full_name
     if data.role is not None:
-        _users[user_id]["role"] = data.role
+        u["role"] = data.role
     if data.status is not None:
-        _users[user_id]["status"] = data.status
-    _users[user_id]["updated_at"] = now
+        u["status"] = data.status
+    u["updated_at"] = now
     _user_activity.setdefault(user_id, []).append({"action": "profile_updated", "timestamp": now})
     return {"id": user_id, "updated": True}
 
 
 @router.delete("/{user_id}", tags=["Users"], summary="Delete user")
-async def delete_user(user_id: str):
-    if user_id not in _users:
+async def delete_user(
+    user_id: str,
+    caller_tenant_id: str = Depends(require_tenant_id),
+    _admin: dict = Depends(require_admin),
+):
+    u = _users.get(user_id)
+    if not u or u.get("tenant_id") != caller_tenant_id:
         raise HTTPException(status_code=404, detail="User not found")
     del _users[user_id]
     _user_activity.pop(user_id, None)
@@ -106,8 +144,13 @@ async def delete_user(user_id: str):
 
 
 @router.get("/{user_id}/activity", tags=["Users"], summary="Get user activity log")
-async def get_user_activity(user_id: str):
-    if user_id not in _users:
+async def get_user_activity(
+    user_id: str,
+    caller_tenant_id: str = Depends(require_tenant_id),
+    _user: dict = Depends(require_member),
+):
+    u = _users.get(user_id)
+    if not u or u.get("tenant_id") != caller_tenant_id:
         raise HTTPException(status_code=404, detail="User not found")
     activity = _user_activity.get(user_id, [])
     return {"user_id": user_id, "activity": activity}

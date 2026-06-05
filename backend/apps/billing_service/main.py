@@ -20,6 +20,7 @@ from pydantic import BaseModel
 
 from shared.core.config import get_settings
 from shared.core.security import decode_token
+from shared.auth import require_tenant_id
 
 from apps.billing_service import store, events
 from apps.billing_service.models import (
@@ -583,6 +584,12 @@ async def start_trial(
 
 
 def _require_admin(user: dict[str, Any]) -> None:
+    if not user.get("is_authenticated"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required for this endpoint.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     role = (user.get("role") or "").lower()
     if role not in ("super_admin", "tenant_admin", "admin"):
         raise HTTPException(
@@ -594,9 +601,10 @@ def _require_admin(user: dict[str, Any]) -> None:
 @router.get("/admin/subscriptions", tags=["Billing — Admin"], summary="List ALL subscriptions")
 async def admin_list_subscriptions(
     user: dict[str, Any] = Depends(_current_user),
+    tenant_id: str = Depends(require_tenant_id),
 ) -> dict[str, Any]:
     _require_admin(user)
-    subs = [s.model_dump(mode="json") for s in store.list_all_subscriptions()]
+    subs = [s.model_dump(mode="json") for s in store.list_all_subscriptions() if s.tenant_id == tenant_id]
     return {"data": subs, "total": len(subs)}
 
 
@@ -604,10 +612,11 @@ async def admin_list_subscriptions(
 async def admin_refund(
     data: RefundRequest,
     user: dict[str, Any] = Depends(_current_user),
+    tenant_id: str = Depends(require_tenant_id),
 ) -> dict[str, Any]:
     _require_admin(user)
     inv = store.get_invoice_any(data.invoice_id)
-    if not inv:
+    if not inv or inv.tenant_id != tenant_id:
         raise HTTPException(status_code=404, detail="Invoice not found")
     result = refund_invoice(invoice_id=data.invoice_id, amount_cents=data.amount_cents)
     inv.refunded_cents += data.amount_cents or inv.total_cents
@@ -635,10 +644,11 @@ async def admin_refund(
 async def admin_credit(
     data: CreditRequest,
     user: dict[str, Any] = Depends(_current_user),
+    tenant_id: str = Depends(require_tenant_id),
 ) -> dict[str, Any]:
     _require_admin(user)
     sub = store.get_subscription_by_user(data.user_id)
-    if not sub:
+    if not sub or sub.tenant_id != tenant_id:
         raise HTTPException(status_code=404, detail="Target user has no subscription")
     sub.credit_cents = (sub.credit_cents or 0) + data.amount_cents
     sub.updated_at = _utcnow()
@@ -665,10 +675,11 @@ async def admin_force_cancel(
     subscription_id: str,
     reason: str | None = Query(default=None),
     user: dict[str, Any] = Depends(_current_user),
+    tenant_id: str = Depends(require_tenant_id),
 ) -> dict[str, Any]:
     _require_admin(user)
     sub = store.get_subscription(subscription_id)
-    if not sub:
+    if not sub or sub.tenant_id != tenant_id:
         raise HTTPException(status_code=404, detail="Subscription not found")
     sub.status = SubscriptionStatus.CANCELED
     sub.canceled_at = _utcnow()

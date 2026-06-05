@@ -17,6 +17,7 @@ from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.audit import audit
+from shared.auth import require_tenant_id
 from shared.core.database import get_db_dependency
 from shared.core.models.candidate import Candidate, CandidateProfile, CandidateStatus
 from shared.core.models.compliance import (
@@ -173,6 +174,7 @@ async def create_audit_entry(
     data: AuditEntryIn,
     user: dict = Depends(require_user),
     db: AsyncSession = Depends(get_db_dependency),
+    _tenant_id: str = Depends(require_tenant_id),
 ):
     await audit(
         db,
@@ -197,6 +199,7 @@ async def record_consent(
     data: ConsentRecordRequest,
     user: dict = Depends(require_user),
     db: AsyncSession = Depends(get_db_dependency),
+    _tenant_id: str = Depends(require_tenant_id),
 ):
     rec = ConsentRecord(
         tenant_id=user["tenant_id"],
@@ -256,6 +259,7 @@ async def request_data_export(
     data: DataExportRequestIn,
     user: dict = Depends(require_user),
     db: AsyncSession = Depends(get_db_dependency),
+    _tenant_id: str = Depends(require_tenant_id),
 ):
     """Build a real export of the candidate's data and return the populated record."""
     candidate = (
@@ -338,6 +342,7 @@ async def get_data_export(
     export_id: str,
     user: dict = Depends(require_user),
     db: AsyncSession = Depends(get_db_dependency),
+    _tenant_id: str = Depends(require_tenant_id),
 ):
     export = (
         await db.execute(
@@ -370,6 +375,7 @@ async def request_data_deletion(
     data: DataDeletionRequestIn,
     user: dict = Depends(require_user),
     db: AsyncSession = Depends(get_db_dependency),
+    _tenant_id: str = Depends(require_tenant_id),
 ):
     """Anonymise the candidate in place (soft delete) and record the action.
 
@@ -450,10 +456,14 @@ async def request_data_deletion(
 
 
 @router.post("/check", tags=["Compliance"], summary="Run compliance check")
-async def run_compliance_check(data: dict | None = None):
+async def run_compliance_check(
+    data: dict | None = None,
+    tenant_id: str = Depends(require_tenant_id),
+):
     framework = (data or {}).get("framework", "gdpr")
     return {
         "check_id": f"chk_{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}",
+        "tenant_id": tenant_id,
         "framework": framework,
         "status": "passed",
         "passed": 45,
@@ -463,9 +473,13 @@ async def run_compliance_check(data: dict | None = None):
 
 
 @router.get("/report", tags=["Compliance"], summary="Generate compliance report")
-async def get_compliance_report(period: str = "2025-01"):
+async def get_compliance_report(
+    period: str = "2025-01",
+    tenant_id: str = Depends(require_tenant_id),
+):
     return {
         "report_id": f"rpt_{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}",
+        "tenant_id": tenant_id,
         "period": period,
         "overall_score": 88,
         "frameworks": {

@@ -5,8 +5,10 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+
+from shared.auth import require_admin, require_tenant_id
 
 
 # ── In-Memory Store ─────────────────────────────────────────────────────────────
@@ -64,13 +66,20 @@ async def health():
 
 
 @router.get("/", tags=["Tenants"], summary="List tenants")
-async def list_tenants():
+async def list_tenants(
+    caller_tenant_id: str = Depends(require_tenant_id),
+):
     items = list(_tenants.values())
+    if caller_tenant_id != "default":
+        items = [t for t in items if t["id"] == caller_tenant_id]
     return {"data": items, "total": len(items)}
 
 
 @router.post("/", tags=["Tenants"], summary="Create tenant")
-async def create_tenant(data: TenantCreateRequest):
+async def create_tenant(
+    data: TenantCreateRequest,
+    _admin: dict = Depends(require_admin),
+):
     tenant_id = f"t_{uuid.uuid4().hex[:12]}"
     now = datetime.now(timezone.utc).isoformat()
     tenant = {
@@ -90,15 +99,27 @@ async def create_tenant(data: TenantCreateRequest):
 
 
 @router.get("/{tenant_id}", tags=["Tenants"], summary="Get tenant details")
-async def get_tenant(tenant_id: str):
+async def get_tenant(
+    tenant_id: str,
+    caller_tenant_id: str = Depends(require_tenant_id),
+):
     if tenant_id not in _tenants:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    if caller_tenant_id != "default" and tenant_id != caller_tenant_id:
         raise HTTPException(status_code=404, detail="Tenant not found")
     return _tenants[tenant_id]
 
 
 @router.put("/{tenant_id}", tags=["Tenants"], summary="Update tenant")
-async def update_tenant(tenant_id: str, data: TenantUpdateRequest):
+async def update_tenant(
+    tenant_id: str,
+    data: TenantUpdateRequest,
+    caller_tenant_id: str = Depends(require_tenant_id),
+    _admin: dict = Depends(require_admin),
+):
     if tenant_id not in _tenants:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    if caller_tenant_id != "default" and tenant_id != caller_tenant_id:
         raise HTTPException(status_code=404, detail="Tenant not found")
     now = datetime.now(timezone.utc).isoformat()
     if data.name is not None:
@@ -112,8 +133,14 @@ async def update_tenant(tenant_id: str, data: TenantUpdateRequest):
 
 
 @router.delete("/{tenant_id}", tags=["Tenants"], summary="Delete tenant")
-async def delete_tenant(tenant_id: str):
+async def delete_tenant(
+    tenant_id: str,
+    caller_tenant_id: str = Depends(require_tenant_id),
+    _admin: dict = Depends(require_admin),
+):
     if tenant_id not in _tenants:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    if caller_tenant_id != "default" and tenant_id != caller_tenant_id:
         raise HTTPException(status_code=404, detail="Tenant not found")
     del _tenants[tenant_id]
     _tenant_settings.pop(tenant_id, None)
@@ -122,15 +149,27 @@ async def delete_tenant(tenant_id: str):
 
 
 @router.get("/{tenant_id}/settings", tags=["Tenants"], summary="Get tenant settings")
-async def get_tenant_settings(tenant_id: str):
+async def get_tenant_settings(
+    tenant_id: str,
+    caller_tenant_id: str = Depends(require_tenant_id),
+):
     if tenant_id not in _tenant_settings:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    if caller_tenant_id != "default" and tenant_id != caller_tenant_id:
         raise HTTPException(status_code=404, detail="Tenant not found")
     return _tenant_settings[tenant_id]
 
 
 @router.put("/{tenant_id}/settings", tags=["Tenants"], summary="Update tenant settings")
-async def update_tenant_settings(tenant_id: str, data: TenantSettingsUpdateRequest):
+async def update_tenant_settings(
+    tenant_id: str,
+    data: TenantSettingsUpdateRequest,
+    caller_tenant_id: str = Depends(require_tenant_id),
+    _admin: dict = Depends(require_admin),
+):
     if tenant_id not in _tenant_settings:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    if caller_tenant_id != "default" and tenant_id != caller_tenant_id:
         raise HTTPException(status_code=404, detail="Tenant not found")
     settings = _tenant_settings[tenant_id]["settings"]
     if data.notifications is not None:
@@ -147,15 +186,27 @@ async def update_tenant_settings(tenant_id: str, data: TenantSettingsUpdateReque
 
 
 @router.get("/{tenant_id}/branding", tags=["Tenants"], summary="Get tenant branding")
-async def get_branding(tenant_id: str):
+async def get_branding(
+    tenant_id: str,
+    caller_tenant_id: str = Depends(require_tenant_id),
+):
     if tenant_id not in _tenant_branding:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    if caller_tenant_id != "default" and tenant_id != caller_tenant_id:
         raise HTTPException(status_code=404, detail="Tenant not found")
     return _tenant_branding[tenant_id]
 
 
 @router.put("/{tenant_id}/branding", tags=["Tenants"], summary="Update tenant branding")
-async def update_branding(tenant_id: str, data: BrandingUpdateRequest):
+async def update_branding(
+    tenant_id: str,
+    data: BrandingUpdateRequest,
+    caller_tenant_id: str = Depends(require_tenant_id),
+    _admin: dict = Depends(require_admin),
+):
     if tenant_id not in _tenant_branding:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    if caller_tenant_id != "default" and tenant_id != caller_tenant_id:
         raise HTTPException(status_code=404, detail="Tenant not found")
     branding = _tenant_branding[tenant_id]["branding"]
     if data.primary_color is not None:
@@ -172,7 +223,12 @@ async def update_branding(tenant_id: str, data: BrandingUpdateRequest):
 
 
 @router.get("/{tenant_id}/usage", tags=["Tenants"], summary="Get tenant usage")
-async def get_tenant_usage(tenant_id: str):
+async def get_tenant_usage(
+    tenant_id: str,
+    caller_tenant_id: str = Depends(require_tenant_id),
+):
+    if caller_tenant_id != "default" and tenant_id != caller_tenant_id:
+        raise HTTPException(status_code=404, detail="Tenant not found")
     return {
         "tenant_id": tenant_id, "period": "2025-01",
         "users_active": 23, "users_total": 50, "candidates": 156, "jobs": 12,
@@ -181,7 +237,12 @@ async def get_tenant_usage(tenant_id: str):
 
 
 @router.get("/{tenant_id}/usage/history", tags=["Tenants"], summary="Get tenant usage history")
-async def get_tenant_usage_history(tenant_id: str):
+async def get_tenant_usage_history(
+    tenant_id: str,
+    caller_tenant_id: str = Depends(require_tenant_id),
+):
+    if caller_tenant_id != "default" and tenant_id != caller_tenant_id:
+        raise HTTPException(status_code=404, detail="Tenant not found")
     return {
         "tenant_id": tenant_id,
         "history": [
