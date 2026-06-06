@@ -1,13 +1,28 @@
-"""Email template metadata for the new file-based templates.
+"""Email template registry for AI-ROS.
 
-Each entry maps a template name (without ``.html`` suffix) to the metadata
-needed to render and dispatch a complete email:
+Exposes two layers of helpers:
 
-* ``subject``       — Jinja2 template for the email subject line
-* ``default_footer``— Footer text used when callers do not supply their own
-* ``default_cta_label`` / ``default_cta_url`` — Optional CTA button
+* :data:`TEMPLATE_METADATA` and :func:`get_template_metadata` — used by
+  :mod:`apps.mailing_service.main` to render full email envelopes (subject,
+  CTA, footer) from a single template name.
+
+* :func:`get_template` and :func:`render_template` — a thin registry layer
+  that loads a template file by name and renders it through the shared
+  Jinja2 environment.
+
+Template files live alongside this ``__init__`` (``interview_reminder.html``,
+``candidate_status_change.html``, ``weekly_hiring_digest.html``,
+``offer_letter.html`` and the shared ``_base.html`` layout).
 """
 from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+
+# ── Metadata registry (used by mailing_service.main) ──────────────────────────
 
 TEMPLATE_METADATA: dict[str, dict[str, str]] = {
     "interview_reminder": {
@@ -50,5 +65,65 @@ TEMPLATE_METADATA: dict[str, dict[str, str]] = {
 
 
 def get_template_metadata(name: str) -> dict[str, str]:
-    """Return metadata for a template or raise ``KeyError``."""
+    """Return metadata for a template or raise :class:`KeyError`."""
     return TEMPLATE_METADATA[name]
+
+
+def list_templates() -> list[str]:
+    """Return the list of registered template names."""
+    return sorted(TEMPLATE_METADATA.keys())
+
+
+# ── Jinja2 environment & registry helpers ─────────────────────────────────────
+
+_TEMPLATES_DIR = Path(__file__).resolve().parent
+
+_jinja_env = Environment(
+    loader=FileSystemLoader(str(_TEMPLATES_DIR)),
+    autoescape=select_autoescape(enabled_extensions=("html",), default_for_string=False),
+    trim_blocks=True,
+    lstrip_blocks=True,
+)
+
+
+def _normalize_name(name: str) -> str:
+    """Strip a trailing ``.html`` if present so callers can pass either form."""
+    return name[:-5] if name.endswith(".html") else name
+
+
+def get_template(name: str) -> str:
+    """Load the raw contents of a template file by name.
+
+    The ``name`` argument may include or omit the ``.html`` suffix. The file
+    is resolved relative to the ``apps/mailing_service/templates`` directory
+    and the source text is returned verbatim — no rendering is performed.
+
+    Raises
+    ------
+    FileNotFoundError
+        If no matching ``.html`` file exists in the templates directory.
+    """
+    template_name = _normalize_name(name)
+    rel_path = f"{template_name}.html"
+    loader = _jinja_env.loader
+    try:
+        source = loader.get_source(_jinja_env, rel_path)
+    except Exception as exc:  # jinja2.TemplateNotFound inherits from Exception
+        raise FileNotFoundError(
+            f"Email template '{rel_path}' not found in {_TEMPLATES_DIR}"
+        ) from exc
+    return source[0]
+
+
+def render_template(name: str, context: dict[str, Any] | None = None) -> str:
+    """Render ``name`` with the given ``context`` using Jinja2.
+
+    Returns the rendered string. The shared :file:`_base.html` layout is
+    *not* applied here — only the body template is rendered. Callers that
+    want the full email envelope should use
+    :func:`apps.mailing_service.main.render_email_template`.
+    """
+    template_name = _normalize_name(name)
+    rel_path = f"{template_name}.html"
+    template = _jinja_env.get_template(rel_path)
+    return template.render(**(context or {}))

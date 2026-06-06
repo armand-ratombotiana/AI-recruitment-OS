@@ -282,6 +282,7 @@ include_router_safe(app, "apps.support_service.main", "router", "/api/v1/support
 include_router_safe(app, "apps.batch_service.main", "router", "/api/v1", ["Batch"])
 include_router_safe(app, "apps.jobs_status_service.main", "router", "/api/v1/background-jobs", ["Background Jobs"])
 include_router_safe(app, "apps.dashboard_service.main", "router", "/api/v1/dashboard", ["Dashboard"])
+include_router_safe(app, "apps.reports_service.main", "router", "/api/v1/reports", ["Reports"])
 
 # ── Production monitoring & observability ────────────────────────────────────
 try:
