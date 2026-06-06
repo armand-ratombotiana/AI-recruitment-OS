@@ -21,6 +21,7 @@ import { useBulkActions } from '@/hooks/use-bulk-actions';
 import { JobForm } from '@/components/forms';
 import type { JobFormValues } from '@/components/forms';
 import type { Column } from '@/components/ui/data-table';
+import { AdvancedFilter, type FilterDefinition, type FilterValues } from '@/components/ui/advanced-filter';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
 import { jobsTour } from '@/components/onboarding/tours';
 
@@ -49,13 +50,15 @@ const formatSalary = (min: number, max: number, locale: string) => {
 
 const STATUS_KEYS = ['open', 'draft', 'closed', 'on_hold'];
 
+const EMPLOYMENT_TYPE_KEYS = ['full_time', 'part_time', 'contract', 'internship', 'temporary'];
+
 export default function JobsPage() {
   const locale = useLocaleStore((s) => s.locale);
   const t = (key: string, fb?: string) => translate(locale, key, fb);
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [filterValues, setFilterValues] = useState<FilterValues>({});
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
@@ -154,11 +157,128 @@ export default function JobsPage() {
     }
   };
 
-  const filtered = jobs.filter((j) => {
-    if (statusFilter !== 'all' && j.status !== statusFilter) return false;
-    if (search && !j.title.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
+  const departments = useMemo(() => {
+    const s = new Set<string>();
+    jobs.forEach((j) => {
+      const d = (j.department || j.company || '').trim();
+      if (d) s.add(d);
+    });
+    return Array.from(s).sort();
+  }, [jobs]);
+
+  const employmentTypesInUse = useMemo(() => {
+    const s = new Set<string>();
+    jobs.forEach((j) => {
+      const v = (j.employment_type || j.type || '').toString().trim();
+      if (v) s.add(v);
+    });
+    return s;
+  }, [jobs]);
+
+  const filterDefs = useMemo<FilterDefinition[]>(() => {
+    return [
+      {
+        key: 'status',
+        label: t('jobs.filter.status', 'Status'),
+        type: 'multiselect',
+        options: STATUS_KEYS.map((s) => ({
+          value: s,
+          label: t(`jobs.statuses.${s}`, s),
+        })),
+      },
+      {
+        key: 'department',
+        label: t('jobs.filter.department', 'Department'),
+        type: 'multiselect',
+        options: departments.map((d) => ({ value: d, label: d })),
+      },
+      {
+        key: 'employment_type',
+        label: t('jobs.filter.employmentType', 'Employment type'),
+        type: 'multiselect',
+        options: EMPLOYMENT_TYPE_KEYS
+          .filter((k) => employmentTypesInUse.size === 0 || employmentTypesInUse.has(k))
+          .map((k) => ({
+            value: k,
+            label: t(`jobs.employmentTypes.${k}`, k.replace('_', ' ')),
+          })),
+      },
+      {
+        key: 'location',
+        label: t('jobs.filter.location', 'Location'),
+        type: 'text',
+        placeholder: t('jobs.filter.locationPh', 'City, country, or remote'),
+      },
+      {
+        key: 'salary',
+        label: t('jobs.filter.salary', 'Salary range'),
+        type: 'numberrange',
+        min: 0,
+        max: 1000000,
+        step: 5000,
+        minLabel: t('jobs.filter.min', 'Min'),
+        maxLabel: t('jobs.filter.max', 'Max'),
+        minPlaceholder: '0',
+        maxPlaceholder: '500k',
+      },
+    ];
+  }, [departments, employmentTypesInUse, t]);
+
+  const filtered = useMemo(() => {
+    const statusFilter = filterValues.status;
+    const departmentFilter = filterValues.department;
+    const employmentTypeFilter = filterValues.employment_type;
+    const locationFilter = filterValues.location;
+    const salaryFilter = filterValues.salary;
+    return jobs.filter((j) => {
+      if (
+        Array.isArray(statusFilter) &&
+        statusFilter.length > 0 &&
+        !statusFilter.includes(j.status)
+      ) {
+        return false;
+      }
+      if (
+        Array.isArray(departmentFilter) &&
+        departmentFilter.length > 0
+      ) {
+        const dep = (j.department || j.company || '').trim();
+        if (!departmentFilter.includes(dep)) return false;
+      }
+      if (
+        Array.isArray(employmentTypeFilter) &&
+        employmentTypeFilter.length > 0
+      ) {
+        const et = (j.employment_type || j.type || '').toString().trim();
+        if (!employmentTypeFilter.includes(et)) return false;
+      }
+      if (typeof locationFilter === 'string' && locationFilter.trim()) {
+        const q = locationFilter.trim().toLowerCase();
+        const loc = (j.location || '').toLowerCase();
+        if (!loc.includes(q)) return false;
+      }
+      if (
+        salaryFilter &&
+        typeof salaryFilter === 'object' &&
+        !Array.isArray(salaryFilter) &&
+        'min' in salaryFilter
+      ) {
+        const { min, max } = salaryFilter as { min: number | null; max: number | null };
+        const salaryMin = typeof j.salary_min === 'number' ? j.salary_min : null;
+        const salaryMax = typeof j.salary_max === 'number' ? j.salary_max : null;
+        if (min !== null) {
+          if (salaryMax !== null && salaryMax < min) return false;
+          if (salaryMax === null && salaryMin !== null && salaryMin < min) return false;
+        }
+        if (max !== null) {
+          if (salaryMin !== null && salaryMin > max) return false;
+          if (salaryMin === null && salaryMax !== null && salaryMax > max) return false;
+        }
+      }
+      if (search && !j.title.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    });
+  }, [jobs, filterValues, search]);
 
   const totalApplicants = filtered.reduce((sum, j) => sum + (j.applicants || 0), 0);
   const openCount = jobs.filter((j) => j.status === 'open').length;
@@ -401,16 +521,16 @@ export default function JobsPage() {
               aria-label={t('jobs.search', 'Search jobs')}
             />
           </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100"
-            aria-label={t('jobs.filterByStatus', 'Filter by status')}
-          >
-            {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
         </div>
       </div>
+
+      <AdvancedFilter
+        filters={filterDefs}
+        value={filterValues}
+        onChange={setFilterValues}
+        locale={locale}
+        defaultOpen
+      />
 
       {selected.size > 0 && (
         <div data-tour="jobs-bulk" className="bg-blue-50 dark:bg-brand-500/10 border border-blue-200 dark:border-brand-500/30 rounded-xl p-3 flex items-center justify-between">

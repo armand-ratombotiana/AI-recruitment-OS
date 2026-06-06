@@ -7,7 +7,6 @@ import {
   LayoutGrid,
   List,
   Trash2,
-  Filter,
   UserPlus,
   Mail,
   Phone,
@@ -24,6 +23,7 @@ import { useBulkActions } from '@/hooks/use-bulk-actions';
 import { CandidateForm } from '@/components/forms';
 import type { CandidateFormValues } from '@/components/forms';
 import type { Column } from '@/components/ui/data-table';
+import { AdvancedFilter, type FilterDefinition, type FilterValues } from '@/components/ui/advanced-filter';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
 import { candidatesTour } from '@/components/onboarding/tours';
 
@@ -62,9 +62,7 @@ export default function CandidatesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<'table' | 'grid'>('table');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [skillFilter, setSkillFilter] = useState<string[]>([]);
-  const [minScore, setMinScore] = useState(0);
+  const [filterValues, setFilterValues] = useState<FilterValues>({});
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addOpen, setAddOpen] = useState(false);
@@ -192,18 +190,88 @@ export default function CandidatesPage() {
     return Array.from(s).sort();
   }, [candidates]);
 
+  const filterDefs = useMemo<FilterDefinition[]>(() => {
+    return [
+      {
+        key: 'status',
+        label: t('candidates.filter.status', 'Status'),
+        type: 'multiselect',
+        options: STATUS_VALUES.filter((v) => v !== 'all').map((v) => ({
+          value: v,
+          label: t(`candidates.statuses.${v}`, v.charAt(0).toUpperCase() + v.slice(1)),
+        })),
+      },
+      {
+        key: 'location',
+        label: t('candidates.filter.location', 'Location'),
+        type: 'text',
+        placeholder: t('candidates.filter.locationPh', 'City, country, or remote'),
+      },
+      {
+        key: 'skills',
+        label: t('candidates.filter.skills', 'Skills'),
+        type: 'multiselect',
+        options: allSkills.map((s) => ({ value: s, label: s })),
+      },
+      {
+        key: 'experience',
+        label: t('candidates.filter.experience', 'Experience (years)'),
+        type: 'numberrange',
+        min: 0,
+        max: 50,
+        step: 1,
+        minLabel: t('candidates.filter.min', 'Min'),
+        maxLabel: t('candidates.filter.max', 'Max'),
+        minPlaceholder: '0',
+        maxPlaceholder: '20+',
+        unit: t('candidates.filter.years', 'y'),
+      },
+    ];
+  }, [allSkills, t]);
+
   const filtered = useMemo(() => {
+    const statusFilter = filterValues.status;
+    const skillFilter = filterValues.skills;
+    const locationFilter = filterValues.location;
+    const experienceFilter = filterValues.experience;
     return candidates.filter((c) => {
-      if (statusFilter !== 'all' && c.status !== statusFilter) return false;
-      if (skillFilter.length > 0 && !skillFilter.every((s) => c.skills?.includes(s))) return false;
-      if ((c.score || 0) < minScore) return false;
+      if (
+        Array.isArray(statusFilter) &&
+        statusFilter.length > 0 &&
+        !statusFilter.includes(c.status)
+      ) {
+        return false;
+      }
+      if (
+        Array.isArray(skillFilter) &&
+        skillFilter.length > 0 &&
+        !skillFilter.every((s) => c.skills?.includes(s))
+      ) {
+        return false;
+      }
+      if (typeof locationFilter === 'string' && locationFilter.trim()) {
+        const q = locationFilter.trim().toLowerCase();
+        const loc = (c.location || '').toLowerCase();
+        if (!loc.includes(q)) return false;
+      }
+      if (
+        experienceFilter &&
+        typeof experienceFilter === 'object' &&
+        !Array.isArray(experienceFilter) &&
+        'min' in experienceFilter
+      ) {
+        const yrs = c.experience_years || 0;
+        const { min, max } = experienceFilter as { min: number | null; max: number | null };
+        if (min !== null && yrs < min) return false;
+        if (max !== null && yrs > max) return false;
+      }
       if (search) {
         const q = search.toLowerCase();
         if (!c.full_name?.toLowerCase().includes(q) && !c.email?.toLowerCase().includes(q)) return false;
       }
       return true;
     });
-  }, [candidates, statusFilter, skillFilter, minScore, search]);
+  }, [candidates, filterValues, search]);
 
   const toggleSelect = (id: string) => {
     setSelected((p) => {
@@ -453,53 +521,24 @@ export default function CandidatesPage() {
               aria-label={t('candidates.searchAria', 'Search candidates')}
             />
           </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100"
-            aria-label={t('jobs.filterByStatus', t('candidates.filterByStatus', 'Filter by status'))}
-          >
-            {STATUS_VALUES.map((v) => (
-              <option key={v} value={v}>
-                {v === 'all'
-                  ? t('candidates.allStatuses', 'All statuses')
-                  : t(`candidates.statuses.${v}`, v.charAt(0).toUpperCase() + v.slice(1))}
-              </option>
-            ))}
-          </select>
           <div className="flex items-center gap-2 bg-white dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-lg p-1">
             <button onClick={() => setView('table')} className={`p-1.5 rounded ${view === 'table' ? 'bg-blue-50 text-blue-600 dark:bg-brand-500/20 dark:text-brand-300' : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-surface-700'}`} aria-label={t('candidates.viewTable', 'Table view')} aria-pressed={view === 'table'}>
               <List className="h-4 w-4" />
             </button>
-            <button onClick={() => setView('grid')} className={`p-1.5 rounded ${view === 'grid' ? 'bg-blue-50 text-blue-600 dark:bg-brand-500/20 dark:text-brand-300' : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-surface-700'}`} aria-label={t('candidates.viewGrid', 'Grid view')} aria-pressed={view === 'grid'}>
+            <button onClick={() => setView('grid')} className={`p-1.5 rounded ${view === 'grid' ? 'bg-blue-50 text-blue-600 dark:bg-brand-500/20 dark:text-brand-300' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-surface-700'}`} aria-label={t('candidates.viewGrid', 'Grid view')} aria-pressed={view === 'grid'}>
               <LayoutGrid className="h-4 w-4" />
             </button>
           </div>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-            <Filter className="h-3.5 w-3.5" /> {t('candidates.filterSkills', 'Skills:')}
-          </div>
-          {allSkills.slice(0, 8).map((s) => (
-            <button
-              key={s}
-              onClick={() => setSkillFilter((p) => p.includes(s) ? p.filter((x) => x !== s) : [...p, s])}
-              className={`px-2.5 py-1 text-xs font-medium rounded-full border transition ${
-                skillFilter.includes(s)
-                  ? 'bg-blue-100 border-blue-300 text-blue-700 dark:bg-brand-500/30 dark:border-brand-500/50 dark:text-brand-200'
-                  : 'bg-white dark:bg-surface-800 border-gray-200 dark:border-surface-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-surface-700'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-          <div className="ml-auto flex items-center gap-2 text-xs">
-            <label className="text-gray-500 dark:text-gray-400">{t('candidates.minScore', 'Min score:')} <strong className="text-gray-900 dark:text-gray-100">{minScore}</strong></label>
-            <input type="range" min="0" max="100" value={minScore} onChange={(e) => setMinScore(Number(e.target.value))} className="w-24" aria-label="Minimum score" />
-          </div>
-        </div>
       </div>
+
+      <AdvancedFilter
+        filters={filterDefs}
+        value={filterValues}
+        onChange={setFilterValues}
+        locale={locale}
+        defaultOpen
+      />
 
       {selected.size > 0 && (
         <div data-tour="candidates-bulk" className="bg-blue-50 dark:bg-brand-500/10 border border-blue-200 dark:border-brand-500/30 rounded-xl p-3 flex items-center justify-between">
