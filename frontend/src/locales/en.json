@@ -417,6 +417,99 @@
     "remote": "Remote",
     "fullTime": "Full-time"
   },
+  "jobDetail": {
+    "tabs": {
+      "overview": "Overview",
+      "applicants": "Applicants"
+    }
+  },
+  "jobKanban": {
+    "title": "Applicant tracking",
+    "subtitle": "Drag candidates between stages. Click a card to view full details.",
+    "search": "Search applicants…",
+    "couldntLoad": "Couldn't load applicants",
+    "moveFailed": "Failed to move candidate",
+    "moved": "Moved to {stage}",
+    "stages": {
+      "applied": "Applied",
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer",
+      "hired": "Hired",
+      "rejected": "Rejected"
+    },
+    "stats": {
+      "total": "Total applicants",
+      "inProgress": "In progress",
+      "hired": "Hired",
+      "rejected": "Rejected"
+    },
+    "empty": {
+      "title": "No applicants yet",
+      "desc": "When candidates apply for this job, they will appear here organized by stage."
+    },
+    "emptyColumn": "No candidates in this stage",
+    "columnAria": "Drop candidate to move to {stage}",
+    "selectAllInColumn": "Select all in {stage}",
+    "deselectAllInColumn": "Deselect all in {stage}",
+    "selectAllVisible": "Select all visible applicants",
+    "selectApplicant": "Select {name}",
+    "deselectApplicant": "Deselect {name}",
+    "openApplicant": "Open {name}",
+    "unnamed": "Unnamed",
+    "terminalWarning": "Terminal",
+    "scoreAria": "Match score {score}",
+    "yearsFmt": "{n} years",
+    "detail": {
+      "status": "Status",
+      "phone": "Phone",
+      "appliedOn": "Applied on",
+      "notes": "Notes",
+      "openFull": "Open full profile"
+    },
+    "confirmMove": {
+      "title": "Confirm move",
+      "desc": "Move {name} to {stage}? This is a significant status change.",
+      "confirm": "Move candidate"
+    },
+    "bulk": {
+      "region": "Bulk actions",
+      "selected": "{count} selected",
+      "fromStage": "from",
+      "moveStage": "Move to stage",
+      "reject": "Reject with reason",
+      "moveTitle": "Move candidates to stage",
+      "moveDesc": "Choose the target stage for {count} candidate(s).",
+      "moveConfirm": "Move",
+      "movedCount": "{count} candidate(s) moved to {stage}",
+      "movedPartial": "{success} moved, {failed} failed",
+      "moveFailed": "Bulk move failed",
+      "rejectTitle": "Reject candidates",
+      "rejectDesc": "Provide a reason. This will be recorded as a note on each of the {count} candidate(s).",
+      "rejectConfirm": "Reject {count}",
+      "rejectedCount": "{count} candidate(s) rejected",
+      "rejectedPartial": "{success} rejected, {failed} failed",
+      "rejectFailed": "Bulk reject failed",
+      "reasonLabel": "Reason",
+      "detailsLabel": "Additional details (optional)",
+      "detailsPh": "Add any context for the candidate record…",
+      "confirmTerminal": {
+        "title": "Confirm terminal move",
+        "desc": "You are about to move {count} candidate(s) to {stage}. This is a significant status change."
+      }
+    },
+    "rejectReasons": {
+      "not_a_fit": "Not a fit for the role",
+      "experience": "Insufficient experience",
+      "skills": "Missing required skills",
+      "availability": "Availability mismatch",
+      "salary": "Salary expectations",
+      "culture": "Culture mismatch",
+      "withdrew": "Candidate withdrew",
+      "duplicate": "Duplicate application",
+      "other": "Other"
+    }
+  },
   "public": {
     "nav": {
       "home": "Home",

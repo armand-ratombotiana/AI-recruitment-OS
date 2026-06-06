@@ -415,6 +415,99 @@
     "remote": "Remoto",
     "fullTime": "Tiempo completo"
   },
+  "jobDetail": {
+    "tabs": {
+      "overview": "Resumen",
+      "applicants": "Candidatos"
+    }
+  },
+  "jobKanban": {
+    "title": "Seguimiento de candidatos",
+    "subtitle": "Arrastra candidatos entre etapas. Haz clic en una tarjeta para ver los detalles.",
+    "search": "Buscar candidatos…",
+    "couldntLoad": "No se pudieron cargar los candidatos",
+    "moveFailed": "No se pudo mover al candidato",
+    "moved": "Movido a {stage}",
+    "stages": {
+      "applied": "Aplicado",
+      "screening": "Filtrado",
+      "interview": "Entrevista",
+      "offer": "Oferta",
+      "hired": "Contratado",
+      "rejected": "Rechazado"
+    },
+    "stats": {
+      "total": "Total de candidatos",
+      "inProgress": "En curso",
+      "hired": "Contratados",
+      "rejected": "Rechazados"
+    },
+    "empty": {
+      "title": "Aún no hay candidatos",
+      "desc": "Cuando los candidatos se postulen a este puesto, aparecerán aquí organizados por etapa."
+    },
+    "emptyColumn": "No hay candidatos en esta etapa",
+    "columnAria": "Suelta al candidato para moverlo a {stage}",
+    "selectAllInColumn": "Seleccionar todo en {stage}",
+    "deselectAllInColumn": "Deseleccionar todo en {stage}",
+    "selectAllVisible": "Seleccionar todos los candidatos visibles",
+    "selectApplicant": "Seleccionar {name}",
+    "deselectApplicant": "Deseleccionar {name}",
+    "openApplicant": "Abrir {name}",
+    "unnamed": "Sin nombre",
+    "terminalWarning": "Terminal",
+    "scoreAria": "Puntuación de coincidencia {score}",
+    "yearsFmt": "{n} años",
+    "detail": {
+      "status": "Estado",
+      "phone": "Teléfono",
+      "appliedOn": "Aplicó el",
+      "notes": "Notas",
+      "openFull": "Abrir perfil completo"
+    },
+    "confirmMove": {
+      "title": "Confirmar movimiento",
+      "desc": "¿Mover a {name} a {stage}? Este es un cambio de estado importante.",
+      "confirm": "Mover candidato"
+    },
+    "bulk": {
+      "region": "Acciones en lote",
+      "selected": "{count} seleccionado(s)",
+      "fromStage": "de",
+      "moveStage": "Mover a etapa",
+      "reject": "Rechazar con motivo",
+      "moveTitle": "Mover candidatos a etapa",
+      "moveDesc": "Elige la etapa de destino para {count} candidato(s).",
+      "moveConfirm": "Mover",
+      "movedCount": "{count} candidato(s) movido(s) a {stage}",
+      "movedPartial": "{success} movidos, {failed} fallaron",
+      "moveFailed": "Movimiento en lote falló",
+      "rejectTitle": "Rechazar candidatos",
+      "rejectDesc": "Proporciona un motivo. Se registrará en las notas de cada uno de los {count} candidato(s).",
+      "rejectConfirm": "Rechazar {count}",
+      "rejectedCount": "{count} candidato(s) rechazado(s)",
+      "rejectedPartial": "{success} rechazados, {failed} fallaron",
+      "rejectFailed": "Rechazo en lote falló",
+      "reasonLabel": "Motivo",
+      "detailsLabel": "Detalles adicionales (opcional)",
+      "detailsPh": "Añade contexto al registro del candidato…",
+      "confirmTerminal": {
+        "title": "Confirmar movimiento terminal",
+        "desc": "Estás a punto de mover {count} candidato(s) a {stage}. Este es un cambio de estado importante."
+      }
+    },
+    "rejectReasons": {
+      "not_a_fit": "No encaja con el puesto",
+      "experience": "Experiencia insuficiente",
+      "skills": "Faltan habilidades requeridas",
+      "availability": "Disponibilidad incompatible",
+      "salary": "Expectativas salariales",
+      "culture": "Incompatibilidad cultural",
+      "withdrew": "El candidato se retiró",
+      "duplicate": "Candidatura duplicada",
+      "other": "Otro"
+    }
+  },
   "public": {
     "nav": {
       "home": "Inicio",
@@ -474,6 +567,7 @@
         "label": "Ordenar por",
         "newest": "Más recientes",
         "oldest": "Más antiguos",
+        "popular": "Más populares",
         "salaryHigh": "Salario: de mayor a menor",
         "salaryLow": "Salario: de menor a mayor",
         "titleAsc": "Título: A→Z"
@@ -495,6 +589,70 @@
       "resultsCount": "{count, plural, one {# puesto abierto} other {# puestos abiertos}}",
       "resultsCountFiltered": "Mostrando {shown} de {total} puestos",
       "loadMore": "Cargar más",
+      "pagination": {
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "page": "Página {page} de {total}",
+        "rangeAria": "Paginación"
+      },
+      "savedLink": "Puestos guardados",
+      "savedLinkCount": "Guardados ({count})",
+      "alertsCta": "Crear alerta de empleo",
+      "save": {
+        "save": "Guardar puesto",
+        "saved": "Guardado",
+        "unsave": "Quitar",
+        "toastSaved": "Puesto añadido a tu lista",
+        "toastUnsaved": "Eliminado de los puestos guardados"
+      },
+      "share": {
+        "title": "Compartir",
+        "openMenu": "Compartir este puesto",
+        "linkedin": "LinkedIn",
+        "twitter": "Twitter / X",
+        "email": "Email",
+        "copyLink": "Copiar enlace",
+        "copied": "Enlace copiado"
+      },
+      "alerts": {
+        "title": "Recibir alertas",
+        "subtitle": "Dinos qué buscas y te enviaremos los nuevos puestos por email.",
+        "subtitleJob": "Recibe notificaciones de puestos similares a {title}.",
+        "emailLabel": "Email",
+        "keywordsLabel": "Palabras clave o título del puesto",
+        "keywordsHint": "ej. «Ingeniero React senior», «Product Designer»",
+        "locationLabel": "Ubicación (opcional)",
+        "frequencyLabel": "Frecuencia",
+        "frequency": {
+          "instant": "Instantánea",
+          "daily": "Resumen diario",
+          "weekly": "Resumen semanal"
+        },
+        "remoteOnly": "Solo puestos en remoto",
+        "submit": "Crear alerta",
+        "submitting": "Guardando…",
+        "successTitle": "Alertas activadas",
+        "successDescription": "Te enviaremos los nuevos puestos relevantes. Puedes gestionar tus alertas cuando quieras.",
+        "emailSubject": "Tus alertas de empleo AI-ROS están activas",
+        "emailBody": "Recibirás alertas {frequency} para: {keywords}",
+        "errors": {
+          "keywords": "Introduce al menos una palabra clave"
+        }
+      },
+      "saved": {
+        "title": "Puestos guardados",
+        "subtitle": "Los puestos que has marcado al explorar empleos en AI-ROS.",
+        "empty": {
+          "title": "Aún no tienes puestos guardados",
+          "description": "Pulsa el icono de marcador en cualquier puesto para conservarlo aquí.",
+          "cta": "Ver puestos abiertos"
+        },
+        "count": "{count, plural, one {# puesto guardado} other {# puestos guardados}}",
+        "savedAt": "Guardado {when}",
+        "viewJob": "Ver puesto",
+        "unsave": "Quitar",
+        "clearAll": "Eliminar todos"
+      },
       "noResults": {
         "title": "Ningún puesto coincide con tus filtros",
         "description": "Prueba a ajustar la búsqueda o limpia los filtros para ver más puestos.",
@@ -543,6 +701,39 @@
         "stepPersonal": "Tus datos",
         "stepResume": "CV y carta de presentación",
         "stepReview": "Revisar y enviar",
+        "steps": {
+          "resume": "CV",
+          "cover": "Carta",
+          "questions": "Preguntas",
+          "review": "Revisar",
+          "stepLabel": "Paso {current} de {total}",
+          "complete": "Completo",
+          "progress": "Progreso de la candidatura"
+        },
+        "draft": {
+          "resume": "Puedes salir cuando quieras — guardamos tu borrador automáticamente.",
+          "saved": "Borrador guardado",
+          "resumed": "Hemos restaurado tu último borrador.",
+          "discard": "Descartar borrador",
+          "discarded": "Borrador descartado",
+          "lastSaved": "Último guardado {when}"
+        },
+        "questions": {
+          "title": "Algunas preguntas más",
+          "description": "Ayudan al equipo a valorar tu encaje. Ninguna es obligatoria salvo indicación.",
+          "workAuth": "¿Tienes autorización para trabajar en la ubicación del puesto?",
+          "workAuthYes": "Sí, tengo autorización",
+          "workAuthNo": "No, necesitaría patrocinio",
+          "workAuthUnsure": "No estoy seguro / prefiero no decirlo",
+          "noticeLabel": "Fecha disponible / preaviso",
+          "noticePlaceholder": "ej. 2 semanas, 30 días, inmediato",
+          "salaryLabel": "Expectativas salariales (opcional)",
+          "salaryPlaceholder": "ej. 60k EUR base + bonus",
+          "referralLabel": "¿Cómo conociste este puesto?",
+          "referralPlaceholder": "LinkedIn, contacto en la empresa, evento…",
+          "moreLabel": "¿Algo más que quieras contarnos?",
+          "morePlaceholder": "Opcional — contexto, adaptaciones, enlaces…"
+        },
         "fields": {
           "fullName": "Nombre completo *",
           "email": "Email *",
@@ -552,20 +743,26 @@
           "portfolio": "URL de portfolio",
           "resume": "CV (PDF, DOC, DOCX) *",
           "resumeHelp": "Máx. 5 MB. PDF, DOC o DOCX.",
+          "resumeReplace": "Reemplazar archivo",
+          "resumeRemove": "Quitar archivo",
           "coverLetter": "Carta de presentación",
-          "coverLetterHelp": "Cuéntanos por qué encajas con el puesto (opcional)."
+          "coverLetterHelp": "Cuéntanos por qué encajas con el puesto (opcional).",
+          "coverLetterCount": "{count} / {max} caracteres"
         },
         "actions": {
           "submit": "Enviar candidatura",
           "submitting": "Enviando…",
           "next": "Continuar",
           "back": "Atrás",
-          "cancel": "Cancelar"
+          "cancel": "Cancelar",
+          "saveAndExit": "Guardar y salir"
         },
         "review": {
           "title": "Revisa tu candidatura",
+          "subtitle": "Comprueba todo antes de enviarlo al equipo.",
           "personal": "Datos personales",
           "documents": "Documentos",
+          "questions": "Preguntas y respuestas",
           "notProvided": "No proporcionado",
           "change": "Editar",
           "consent": "Acepto el tratamiento de mis datos personales con fines de reclutamiento conforme a la Política de Privacidad de AI-ROS y la normativa aplicable (RGPD/CCPA).",
@@ -581,12 +778,28 @@
           "submit": "No pudimos enviar tu candidatura. Inténtalo de nuevo.",
           "loadJob": "No pudimos cargar este puesto. Inténtalo de nuevo."
         },
+        "status": {
+          "title": "Estado de la candidatura",
+          "submitted": "Enviada",
+          "received": "Recibida",
+          "reviewing": "En revisión",
+          "failed": "Fallo al enviar",
+          "submittedDesc": "Tu candidatura está en camino.",
+          "receivedDesc": "Confirmamos la recepción de tu candidatura.",
+          "reviewingDesc": "Nuestro equipo está revisando tu candidatura.",
+          "failedDesc": "No pudimos entregar tu candidatura. Reinténtalo.",
+          "referenceLabel": "Referencia",
+          "applicationId": "ID de candidatura",
+          "submittedAt": "Enviada {when}"
+        },
         "success": {
           "title": "¡Candidatura enviada!",
           "subtitle": "Gracias por postular a {title}.",
           "description": "Nuestro equipo revisará tu candidatura y te responderá en 5 días hábiles. Recibirás un email de confirmación en {email}.",
           "browseMore": "Ver más puestos abiertos",
-          "backHome": "Volver al inicio"
+          "backHome": "Volver al inicio",
+          "viewSaved": "Ver puestos guardados",
+          "createAlert": "Crear alerta para puestos similares"
         }
       }
     }

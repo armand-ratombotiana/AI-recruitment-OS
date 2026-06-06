@@ -21,6 +21,7 @@ import {
   Globe,
   TrendingUp,
   Award,
+  LayoutGrid,
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
 import {
@@ -32,8 +33,10 @@ import {
   EmptyState,
   ErrorState,
   Breadcrumb,
+  Tabs,
   useToast,
 } from '@/components';
+import { JobApplicantsKanban } from '@/components/dashboard/job-applicants-kanban';
 import { useLocaleStore, translate, formatDate, formatRelativeTime, formatNumber } from '@/stores/locale-store';
 
 const STATUS_VARIANT: Record<string, 'info' | 'warning' | 'success' | 'purple' | 'default' | 'danger' | 'orange' | 'teal'> = {
@@ -115,6 +118,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'applicants'>('overview');
   const { push, ToastContainer } = useToast();
 
   const load = useCallback(async () => {
@@ -594,7 +598,35 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Tabs
+        tabs={[
+          {
+            id: 'overview',
+            label: t('jobDetail.tabs.overview', 'Overview'),
+            icon: <LayoutGrid className="h-4 w-4" aria-hidden="true" />,
+          },
+          {
+            id: 'applicants',
+            label: t('jobDetail.tabs.applicants', 'Applicants'),
+            icon: <Users className="h-4 w-4" aria-hidden="true" />,
+            badge: (
+              <Badge variant="info" size="sm">
+                {formatNumber(totalApplicants, locale)}
+              </Badge>
+            ),
+          },
+        ]}
+        activeTab={activeTab}
+        onChange={(id) => setActiveTab(id as 'overview' | 'applicants')}
+        variant="underline"
+        size="md"
+      >
+        {(active) => (
+          <div className={active === 'overview' ? 'space-y-6' : ''}>
+            {active === 'applicants' ? (
+              <JobApplicantsKanban jobId={params.id} />
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <section aria-labelledby="description-section-title">
             <Card>
@@ -917,6 +949,10 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           )}
         </aside>
       </div>
+            )}
+          </div>
+        )}
+      </Tabs>
     </div>
   );
 }

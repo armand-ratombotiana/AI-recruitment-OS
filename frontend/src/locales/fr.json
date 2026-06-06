@@ -415,6 +415,99 @@
     "remote": "À distance",
     "fullTime": "Temps plein"
   },
+  "jobDetail": {
+    "tabs": {
+      "overview": "Aperçu",
+      "applicants": "Candidats"
+    }
+  },
+  "jobKanban": {
+    "title": "Suivi des candidats",
+    "subtitle": "Glissez les candidats entre les étapes. Cliquez sur une carte pour voir les détails.",
+    "search": "Rechercher des candidats…",
+    "couldntLoad": "Impossible de charger les candidats",
+    "moveFailed": "Échec du déplacement du candidat",
+    "moved": "Déplacé vers {stage}",
+    "stages": {
+      "applied": "Candidature",
+      "screening": "Présélection",
+      "interview": "Entretien",
+      "offer": "Offre",
+      "hired": "Embauché",
+      "rejected": "Refusé"
+    },
+    "stats": {
+      "total": "Total des candidats",
+      "inProgress": "En cours",
+      "hired": "Embauchés",
+      "rejected": "Refusés"
+    },
+    "empty": {
+      "title": "Aucun candidat pour le moment",
+      "desc": "Lorsque des candidats postulent à cette offre, ils apparaîtront ici organisés par étape."
+    },
+    "emptyColumn": "Aucun candidat dans cette étape",
+    "columnAria": "Déposez le candidat pour le déplacer vers {stage}",
+    "selectAllInColumn": "Tout sélectionner dans {stage}",
+    "deselectAllInColumn": "Tout désélectionner dans {stage}",
+    "selectAllVisible": "Sélectionner tous les candidats visibles",
+    "selectApplicant": "Sélectionner {name}",
+    "deselectApplicant": "Désélectionner {name}",
+    "openApplicant": "Ouvrir {name}",
+    "unnamed": "Sans nom",
+    "terminalWarning": "Terminal",
+    "scoreAria": "Score de correspondance {score}",
+    "yearsFmt": "{n} ans",
+    "detail": {
+      "status": "Statut",
+      "phone": "Téléphone",
+      "appliedOn": "Postulé le",
+      "notes": "Notes",
+      "openFull": "Ouvrir le profil complet"
+    },
+    "confirmMove": {
+      "title": "Confirmer le déplacement",
+      "desc": "Déplacer {name} vers {stage} ? Ceci est un changement de statut important.",
+      "confirm": "Déplacer le candidat"
+    },
+    "bulk": {
+      "region": "Actions groupées",
+      "selected": "{count} sélectionné(s)",
+      "fromStage": "de",
+      "moveStage": "Déplacer vers une étape",
+      "reject": "Refuser avec motif",
+      "moveTitle": "Déplacer les candidats vers une étape",
+      "moveDesc": "Choisissez l'étape cible pour {count} candidat(s).",
+      "moveConfirm": "Déplacer",
+      "movedCount": "{count} candidat(s) déplacé(s) vers {stage}",
+      "movedPartial": "{success} déplacés, {failed} échoués",
+      "moveFailed": "Échec du déplacement groupé",
+      "rejectTitle": "Refuser les candidats",
+      "rejectDesc": "Indiquez un motif. Il sera enregistré dans les notes de chacun des {count} candidat(s).",
+      "rejectConfirm": "Refuser {count}",
+      "rejectedCount": "{count} candidat(s) refusé(s)",
+      "rejectedPartial": "{success} refusés, {failed} échoués",
+      "rejectFailed": "Échec du refus groupé",
+      "reasonLabel": "Motif",
+      "detailsLabel": "Détails supplémentaires (facultatif)",
+      "detailsPh": "Ajoutez du contexte pour le dossier du candidat…",
+      "confirmTerminal": {
+        "title": "Confirmer le déplacement terminal",
+        "desc": "Vous êtes sur le point de déplacer {count} candidat(s) vers {stage}. Ceci est un changement de statut important."
+      }
+    },
+    "rejectReasons": {
+      "not_a_fit": "Pas adapté au poste",
+      "experience": "Expérience insuffisante",
+      "skills": "Compétences requises manquantes",
+      "availability": "Disponibilités incompatibles",
+      "salary": "Prétentions salariales",
+      "culture": "Inadéquation culturelle",
+      "withdrew": "Candidat s'est retiré",
+      "duplicate": "Candidature en doublon",
+      "other": "Autre"
+    }
+  },
   "public": {
     "nav": {
       "home": "Accueil",
@@ -543,6 +636,39 @@
         "stepPersonal": "Vos informations",
         "stepResume": "CV & lettre de motivation",
         "stepReview": "Vérifier & envoyer",
+        "steps": {
+          "resume": "CV",
+          "cover": "Lettre",
+          "questions": "Questions",
+          "review": "Vérifier",
+          "stepLabel": "Étape {current} sur {total}",
+          "complete": "Terminé",
+          "progress": "Progression de la candidature"
+        },
+        "draft": {
+          "resume": "Vous pouvez quitter à tout moment — nous sauvegardons votre brouillon automatiquement.",
+          "saved": "Brouillon sauvegardé",
+          "resumed": "Nous avons restauré votre dernier brouillon.",
+          "discard": "Supprimer le brouillon",
+          "discarded": "Brouillon supprimé",
+          "lastSaved": "Dernier enregistrement {when}"
+        },
+        "questions": {
+          "title": "Quelques questions supplémentaires",
+          "description": "Elles aident l'équipe à évaluer votre profil. Aucune n'est obligatoire sauf indication.",
+          "workAuth": "Êtes-vous autorisé à travailler dans le lieu du poste ?",
+          "workAuthYes": "Oui, je suis autorisé",
+          "workAuthNo": "Non, j'aurais besoin d'un sponsoring",
+          "workAuthUnsure": "Je ne sais pas / je préfère ne pas répondre",
+          "noticeLabel": "Date de disponibilité / préavis",
+          "noticePlaceholder": "ex. 2 semaines, 30 jours, immédiatement",
+          "salaryLabel": "Prétentions salariales (optionnel)",
+          "salaryPlaceholder": "ex. 120k EUR + actions",
+          "referralLabel": "Comment avez-vous entendu parler de ce poste ?",
+          "referralPlaceholder": "LinkedIn, ami dans l'entreprise, conférence…",
+          "moreLabel": "Souhaitez-vous nous dire autre chose ?",
+          "morePlaceholder": "Optionnel — contexte, accommodations, liens…"
+        },
         "fields": {
           "fullName": "Nom complet *",
           "email": "Email *",
@@ -552,20 +678,26 @@
           "portfolio": "URL Portfolio",
           "resume": "CV (PDF, DOC, DOCX) *",
           "resumeHelp": "Max 5 Mo. PDF, DOC ou DOCX.",
+          "resumeReplace": "Remplacer le fichier",
+          "resumeRemove": "Retirer le fichier",
           "coverLetter": "Lettre de motivation",
-          "coverLetterHelp": "Expliquez pourquoi ce poste vous intéresse (optionnel)."
+          "coverLetterHelp": "Expliquez pourquoi ce poste vous intéresse (optionnel).",
+          "coverLetterCount": "{count} / {max} caractères"
         },
         "actions": {
           "submit": "Envoyer ma candidature",
           "submitting": "Envoi…",
           "next": "Continuer",
           "back": "Retour",
-          "cancel": "Annuler"
+          "cancel": "Annuler",
+          "saveAndExit": "Enregistrer & quitter"
         },
         "review": {
           "title": "Vérifiez votre candidature",
+          "subtitle": "Relisez l'ensemble avant de l'envoyer à l'équipe.",
           "personal": "Informations personnelles",
           "documents": "Documents",
+          "questions": "Questions & réponses",
           "notProvided": "Non renseigné",
           "change": "Modifier",
           "consent": "J'accepte le traitement de mes données personnelles à des fins de recrutement conformément à la politique de confidentialité d'AI-ROS et à la réglementation applicable (RGPD).",
@@ -581,12 +713,28 @@
           "submit": "Impossible d'envoyer votre candidature. Veuillez réessayer.",
           "loadJob": "Impossible de charger cette offre. Veuillez réessayer."
         },
+        "status": {
+          "title": "Statut de la candidature",
+          "submitted": "Envoyée",
+          "received": "Reçue",
+          "reviewing": "En cours d'examen",
+          "failed": "Échec de l'envoi",
+          "submittedDesc": "Votre candidature est en route.",
+          "receivedDesc": "Nous avons confirmé la réception de votre candidature.",
+          "reviewingDesc": "Notre équipe examine votre candidature.",
+          "failedDesc": "Nous n'avons pas pu envoyer votre candidature. Veuillez réessayer.",
+          "referenceLabel": "Référence",
+          "applicationId": "ID candidature",
+          "submittedAt": "Envoyée {when}"
+        },
         "success": {
           "title": "Candidature envoyée !",
           "subtitle": "Merci d'avoir postulé à {title}.",
           "description": "Notre équipe va examiner votre candidature et vous répondre sous 5 jours ouvrés. Un email de confirmation est envoyé à {email}.",
           "browseMore": "Voir d'autres postes ouverts",
-          "backHome": "Retour à l'accueil"
+          "backHome": "Retour à l'accueil",
+          "viewSaved": "Voir les postes sauvegardés",
+          "createAlert": "Créer une alerte pour des postes similaires"
         }
       }
     }
