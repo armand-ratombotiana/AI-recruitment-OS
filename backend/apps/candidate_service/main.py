@@ -25,10 +25,12 @@ from shared.core.models.candidate_activity import (
     CandidateActivity,
     CandidateActivityType,
 )
+from shared.core.models.recruitment import Job, JobStatus
 from shared.core.security import require_tenant, require_user, decode_token
 from shared.core.rate_limit_deps import candidate_write_rate
 from shared.audit import audit
 from shared.webhooks import safe_dispatch_event
+from shared.scoring.engine import score_candidate as _engine_score_candidate
 
 
 # ── Auth Dependency ────────────────────────────────────────────────────────────
@@ -1152,4 +1154,440 @@ async def get_candidate_score(
         recommended_next_action="schedule-onsite" if overall > 0.7 else "additional-screening",
         model_version="airos-score-v1",
         generated_at=datetime.now(timezone.utc).isoformat(),
+    )
+
+
+# ── Real candidate ↔ job scoring (backed by shared.scoring.engine) ─────────────
+
+
+class ScoreWeights(BaseModel):
+    """Optional per-request weight overrides for the scoring engine.
+
+    Any field left as ``None`` falls back to the engine's default weight.
+    All five values must sum to a positive number (the engine normalises
+    by the total weight, so values do not need to add to 1.0).
+    """
+
+    skills: float | None = Field(default=None, ge=0.0)
+    experience: float | None = Field(default=None, ge=0.0)
+    location: float | None = Field(default=None, ge=0.0)
+    salary: float | None = Field(default=None, ge=0.0)
+    culture: float | None = Field(default=None, ge=0.0)
+
+    def to_engine_weights(self) -> dict[str, float] | None:
+        data = {k: v for k, v in self.model_dump().items() if v is not None}
+        return data or None
+
+
+class ScoreForJobRequest(BaseModel):
+    job_id: str = Field(..., min_length=1, description="Target job id")
+    weights: ScoreWeights | None = None
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {"job_id": "job-123", "weights": {"skills": 0.5, "experience": 0.3}}
+            ]
+        }
+    }
+
+
+class CandidateJobScoreResponse(BaseModel):
+    candidate_id: str
+    job_id: str
+    skills_score: float
+    experience_score: float
+    location_score: float
+    salary_score: float
+    culture_score: float
+    total_score: float
+    recommendation: str
+
+
+class JobCandidateScoreItem(BaseModel):
+    candidate_id: str
+    candidate_name: str
+    score: float
+    recommendation: str
+    rank: int
+
+
+class JobCandidatesScoreResponse(BaseModel):
+    job_id: str
+    candidates: list[JobCandidateScoreItem]
+    total_scored: int
+
+
+class BulkScoreRequest(BaseModel):
+    candidate_ids: list[str] = Field(..., min_length=1)
+    job_ids: list[str] = Field(..., min_length=1)
+    weights: ScoreWeights | None = None
+
+
+class BulkScoreCell(BaseModel):
+    candidate_id: str
+    job_id: str
+    score: float
+    recommendation: str
+
+
+class BulkScoreResponse(BaseModel):
+    candidate_ids: list[str]
+    job_ids: list[str]
+    matrix: list[BulkScoreCell]
+    total: int
+
+
+class BestJobMatch(BaseModel):
+    job_id: str
+    job_title: str
+    score: float
+    recommendation: str
+
+
+class BestJobsResponse(BaseModel):
+    candidate_id: str
+    matches: list[BestJobMatch]
+    total: int
+
+
+# ── Loaders that translate DB rows into the dicts the engine expects ──────────
+
+
+def _job_to_dict(job: Job) -> dict[str, Any]:
+    """Translate a :class:`Job` row into the shape ``score_candidate`` expects."""
+    try:
+        required_skills = json.loads(job.required_skills) if job.required_skills else []
+    except (TypeError, ValueError):
+        required_skills = []
+    try:
+        preferred_skills = json.loads(job.preferred_skills) if job.preferred_skills else []
+    except (TypeError, ValueError):
+        preferred_skills = []
+    remote_policy = (job.remote_policy or "").strip().lower()
+    return {
+        "required_skills": required_skills,
+        "preferred_skills": preferred_skills,
+        "required_experience_years": None,
+        "location": job.location,
+        "salary_min": job.salary_min,
+        "salary_max": job.salary_max,
+        "remote_ok": remote_policy in {"remote", "hybrid"},
+    }
+
+
+async def _load_candidate_for_scoring(
+    db: AsyncSession, candidate_id: str, tenant_id: str
+) -> tuple[Candidate, dict[str, Any]] | None:
+    """Load a candidate + profile + skills as the dict the engine consumes.
+
+    Returns ``None`` if the candidate does not exist or belongs to another
+    tenant.  Otherwise returns ``(candidate_row, candidate_dict)``.
+    """
+    cand_result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == candidate_id, Candidate.tenant_id == tenant_id
+        )
+    )
+    candidate = cand_result.scalar_one_or_none()
+    if candidate is None:
+        return None
+
+    profile_result = await db.execute(
+        select(CandidateProfile).where(
+            CandidateProfile.candidate_id == candidate_id,
+            CandidateProfile.tenant_id == tenant_id,
+        )
+    )
+    profile = profile_result.scalar_one_or_none()
+
+    skills_result = await db.execute(
+        select(Skill.name)
+        .join(CandidateSkill, CandidateSkill.skill_id == Skill.id)
+        .where(
+            CandidateSkill.candidate_id == candidate_id,
+            CandidateSkill.tenant_id == tenant_id,
+        )
+    )
+    skills = [row[0] for row in skills_result.all()]
+
+    return candidate, {
+        "skills": skills,
+        "experience_years": profile.years_experience if profile else None,
+        "location": candidate.location,
+        "expected_salary": None,
+        "metadata": {},
+    }
+
+
+async def _load_jobs_for_tenant(
+    db: AsyncSession, tenant_id: str, *, job_ids: list[str] | None = None
+) -> list[Job]:
+    """Load every job for a tenant (optionally filtered by a list of ids)."""
+    stmt = select(Job).where(Job.tenant_id == tenant_id)
+    if job_ids is not None:
+        if not job_ids:
+            return []
+        stmt = stmt.where(Job.id.in_(job_ids))
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def _load_candidates_for_tenant(
+    db: AsyncSession,
+    tenant_id: str,
+    *,
+    candidate_ids: list[str] | None = None,
+) -> list[Candidate]:
+    """Load every candidate for a tenant (optionally filtered by a list of ids)."""
+    stmt = select(Candidate).where(Candidate.tenant_id == tenant_id)
+    if candidate_ids is not None:
+        if not candidate_ids:
+            return []
+        stmt = stmt.where(Candidate.id.in_(candidate_ids))
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def _build_candidate_dicts(
+    db: AsyncSession, candidates: list[Candidate], tenant_id: str
+) -> dict[str, dict[str, Any]]:
+    """Build candidate dicts for a batch of candidates (skills + profile prefetched)."""
+    if not candidates:
+        return {}
+    ids = [c.id for c in candidates]
+
+    profile_result = await db.execute(
+        select(CandidateProfile).where(
+            CandidateProfile.candidate_id.in_(ids),
+            CandidateProfile.tenant_id == tenant_id,
+        )
+    )
+    profiles_by_id: dict[str, CandidateProfile] = {
+        p.candidate_id: p for p in profile_result.scalars().all()
+    }
+
+    skills_result = await db.execute(
+        select(CandidateSkill.candidate_id, Skill.name)
+        .join(Skill, CandidateSkill.skill_id == Skill.id)
+        .where(
+            CandidateSkill.candidate_id.in_(ids),
+            CandidateSkill.tenant_id == tenant_id,
+        )
+    )
+    skills_by_candidate: dict[str, list[str]] = {}
+    for cand_id, name in skills_result.all():
+        skills_by_candidate.setdefault(cand_id, []).append(name)
+
+    out: dict[str, dict[str, Any]] = {}
+    for c in candidates:
+        profile = profiles_by_id.get(c.id)
+        out[c.id] = {
+            "skills": skills_by_candidate.get(c.id, []),
+            "experience_years": profile.years_experience if profile else None,
+            "location": c.location,
+            "expected_salary": None,
+            "metadata": {},
+        }
+    return out
+
+
+def _score_to_response(
+    candidate_id: str, job_id: str, score
+) -> CandidateJobScoreResponse:
+    return CandidateJobScoreResponse(
+        candidate_id=candidate_id,
+        job_id=job_id,
+        skills_score=score.skills_score,
+        experience_score=score.experience_score,
+        location_score=score.location_score,
+        salary_score=score.salary_score,
+        culture_score=score.culture_score,
+        total_score=score.total_score,
+        recommendation=score.recommendation,
+    )
+
+
+# ── Endpoints (candidate router) ──────────────────────────────────────────────
+
+
+@router.post(
+    "/{candidate_id}/score-for-job",
+    response_model=CandidateJobScoreResponse,
+    tags=["Candidates"],
+    summary="Score a candidate against a specific job",
+    description="Run the deterministic scoring engine for a single (candidate, job) "
+                "pair within the caller's tenant.  Supports optional weight overrides.",
+)
+async def score_candidate_for_job(
+    candidate_id: str,
+    payload: ScoreForJobRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+) -> CandidateJobScoreResponse:
+    """Score a single candidate against a single job, both scoped to the tenant."""
+    loaded = await _load_candidate_for_scoring(db, candidate_id, tenant_id)
+    if loaded is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
+    _candidate_row, candidate_dict = loaded
+
+    job_result = await db.execute(
+        select(Job).where(Job.id == payload.job_id, Job.tenant_id == tenant_id)
+    )
+    job = job_result.scalar_one_or_none()
+    if job is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
+        )
+
+    weights = payload.weights.to_engine_weights() if payload.weights else None
+    score = _engine_score_candidate(candidate_dict, _job_to_dict(job), weights=weights)
+    return _score_to_response(candidate_id, payload.job_id, score)
+
+
+@router.post(
+    "/bulk-score",
+    response_model=BulkScoreResponse,
+    tags=["Candidates"],
+    summary="Score a matrix of candidates against a matrix of jobs",
+    description="Score every (candidate, job) pair from the two id lists.  IDs that "
+                "do not belong to the caller's tenant are silently dropped from the "
+                "output so a noisy input list never leaks cross-tenant data.",
+)
+async def bulk_score_candidates(
+    payload: BulkScoreRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+) -> BulkScoreResponse:
+    """Compute a score for every (candidate, job) pair."""
+    candidates = await _load_candidates_for_tenant(
+        db, tenant_id, candidate_ids=payload.candidate_ids
+    )
+    jobs = await _load_jobs_for_tenant(db, tenant_id, job_ids=payload.job_ids)
+    candidate_dicts = await _build_candidate_dicts(db, candidates, tenant_id)
+    weights = payload.weights.to_engine_weights() if payload.weights else None
+
+    matrix: list[BulkScoreCell] = []
+    for c in candidates:
+        c_dict = candidate_dicts.get(c.id, {})
+        for j in jobs:
+            score = _engine_score_candidate(c_dict, _job_to_dict(j), weights=weights)
+            matrix.append(
+                BulkScoreCell(
+                    candidate_id=c.id,
+                    job_id=j.id,
+                    score=score.total_score,
+                    recommendation=score.recommendation,
+                )
+            )
+
+    return BulkScoreResponse(
+        candidate_ids=[c.id for c in candidates],
+        job_ids=[j.id for j in jobs],
+        matrix=matrix,
+        total=len(matrix),
+    )
+
+
+@router.get(
+    "/{candidate_id}/best-jobs",
+    response_model=BestJobsResponse,
+    tags=["Candidates"],
+    summary="Find best-matching jobs for a candidate",
+    description="Score the candidate against every job in the tenant and return them "
+                "sorted from highest to lowest match score.",
+)
+async def best_jobs_for_candidate(
+    candidate_id: str,
+    limit: int = Query(20, ge=1, le=100, description="Maximum jobs to return"),
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+) -> BestJobsResponse:
+    """Rank every tenant job against this candidate by total score."""
+    loaded = await _load_candidate_for_scoring(db, candidate_id, tenant_id)
+    if loaded is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
+    _candidate_row, candidate_dict = loaded
+
+    jobs = await _load_jobs_for_tenant(db, tenant_id)
+    scored: list[BestJobMatch] = []
+    for j in jobs:
+        score = _engine_score_candidate(candidate_dict, _job_to_dict(j))
+        scored.append(
+            BestJobMatch(
+                job_id=j.id,
+                job_title=j.title,
+                score=score.total_score,
+                recommendation=score.recommendation,
+            )
+        )
+    scored.sort(key=lambda m: m.score, reverse=True)
+    top = scored[:limit]
+    return BestJobsResponse(
+        candidate_id=candidate_id, matches=top, total=len(top)
+    )
+
+
+# ── Companion router for the /jobs/{id}/score-candidates endpoint ─────────────
+#
+# The candidate router is mounted under ``/api/v1/candidates`` so the
+# ``/jobs/{job_id}/score-candidates`` path lives on a separate router that
+# the API gateway mounts under ``/api/v1/jobs``.  Co-locating the handler
+# here keeps every scoring endpoint in one file.
+
+jobs_scoring_router = APIRouter()
+
+
+@jobs_scoring_router.post(
+    "/{job_id}/score-candidates",
+    response_model=JobCandidatesScoreResponse,
+    tags=["Jobs", "Candidates"],
+    summary="Score every candidate against a job and return the top matches",
+    description="Score every candidate in the caller's tenant against the given job "
+                "and return the ranked top ``limit`` (default 20).",
+)
+async def score_candidates_for_job(
+    job_id: str,
+    limit: int = Query(20, ge=1, le=100, description="Maximum candidates to return"),
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+) -> JobCandidatesScoreResponse:
+    """Score every tenant candidate against the job and return the top ``limit``."""
+    job_result = await db.execute(
+        select(Job).where(Job.id == job_id, Job.tenant_id == tenant_id)
+    )
+    job = job_result.scalar_one_or_none()
+    if job is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
+        )
+
+    candidates = await _load_candidates_for_tenant(db, tenant_id)
+    candidate_dicts = await _build_candidate_dicts(db, candidates, tenant_id)
+    job_dict = _job_to_dict(job)
+
+    scored: list[tuple[Candidate, Any]] = []
+    for c in candidates:
+        c_dict = candidate_dicts.get(c.id, {})
+        score = _engine_score_candidate(c_dict, job_dict)
+        scored.append((c, score))
+
+    scored.sort(key=lambda pair: pair[1].total_score, reverse=True)
+    top = scored[:limit]
+    items = [
+        JobCandidateScoreItem(
+            candidate_id=c.id,
+            candidate_name=c.full_name,
+            score=score.total_score,
+            recommendation=score.recommendation,
+            rank=idx + 1,
+        )
+        for idx, (c, score) in enumerate(top)
+    ]
+    return JobCandidatesScoreResponse(
+        job_id=job_id, candidates=items, total_scored=len(items)
     )
