@@ -11,7 +11,7 @@ import {
   Calendar,
   DollarSign,
   Globe2,
-  Share2,
+  Bell,
   ExternalLink,
   Users,
   Clock,
@@ -24,9 +24,11 @@ import {
   translate,
   interpolate,
   formatRelativeTime,
-  formatNumber,
 } from '@/stores/locale-store';
 import { useToast } from '@/hooks';
+import { SaveJobButton } from '@/components/public/save-job-button';
+import { ShareMenu } from '@/components/public/share-menu';
+import { JobAlertsDialog } from '@/components/public/job-alerts-dialog';
 
 type JobDetail = {
   id: string;
@@ -177,19 +179,31 @@ export default function PublicJobDetailPage() {
         )
       : '';
 
-  const handleShare = async () => {
-    const url = typeof window !== 'undefined' ? window.location.href : '';
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: job?.title, url });
-        return;
+  const [alertsOpen, setAlertsOpen] = useState(false);
+
+  const shareUrl =
+    typeof window !== 'undefined' && id ? `${window.location.origin}/jobs/${id}` : '';
+  const shareText = job?.title
+    ? interpolate(
+        t('public.jobs.share.message', 'Check out this role: {title}'),
+        { title: job.title },
+      )
+    : '';
+
+  const savedJobSnapshot = job
+    ? {
+        id: job.id,
+        title: job.title,
+        location: job.location,
+        company: job.company,
+        department: job.department,
+        employment_type: job.employment_type,
+        remote: job.remote,
+        salary_min: job.salary_min,
+        salary_max: job.salary_max,
+        currency: job.currency,
       }
-      await navigator.clipboard.writeText(url);
-      push('success', t('public.jobs.detail.shareCopied', 'Link copied to clipboard'));
-    } catch {
-      /* noop */
-    }
-  };
+    : null;
 
   if (loading) {
     return <DetailSkeleton />;
@@ -289,14 +303,26 @@ export default function PublicJobDetailPage() {
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
                 {t('public.jobs.detail.applyCta', 'Apply now')}
               </Link>
-              <button
-                type="button"
-                onClick={handleShare}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-surface-700 dark:bg-surface-800 dark:text-gray-200 dark:hover:bg-surface-700"
-              >
-                <Share2 className="h-4 w-4" aria-hidden="true" />
-                {t('public.jobs.detail.share', 'Share')}
-              </button>
+              <div className="flex items-center gap-2">
+                {savedJobSnapshot && (
+                  <SaveJobButton job={savedJobSnapshot} variant="label" size="sm" />
+                )}
+                <ShareMenu
+                  url={shareUrl}
+                  title={job.title}
+                  description={job.location}
+                  size="sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setAlertsOpen(true)}
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-surface-700 dark:bg-surface-800 dark:text-gray-200 dark:hover:bg-surface-700"
+                  aria-label={t('public.jobs.alerts.cta', 'Get job alerts')}
+                >
+                  <Bell className="h-3.5 w-3.5" aria-hidden="true" />
+                  {t('public.jobs.alerts.ctaShort', 'Alerts')}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -469,6 +495,19 @@ export default function PublicJobDetailPage() {
               >
                 {t('public.jobs.detail.applyCta', 'Apply now')}
               </Link>
+              <div className="mt-3 flex items-center justify-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                {savedJobSnapshot && (
+                  <SaveJobButton job={savedJobSnapshot} variant="icon" size="sm" showLabel />
+                )}
+                <button
+                  type="button"
+                  onClick={() => setAlertsOpen(true)}
+                  className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                >
+                  <Bell className="h-3.5 w-3.5" aria-hidden="true" />
+                  {t('public.jobs.alerts.cta', 'Get job alerts')}
+                </button>
+              </div>
               <a
                 href={typeof window !== 'undefined' ? window.location.href : '#'}
                 target="_blank"
@@ -482,6 +521,14 @@ export default function PublicJobDetailPage() {
           </aside>
         </div>
       </section>
+      <JobAlertsDialog
+        open={alertsOpen}
+        onClose={() => setAlertsOpen(false)}
+        initialKeywords={skills.join(', ')}
+        initialLocation={job?.location || ''}
+        jobId={job.id}
+        jobTitle={job.title}
+      />
       <ToastContainer />
     </article>
   );

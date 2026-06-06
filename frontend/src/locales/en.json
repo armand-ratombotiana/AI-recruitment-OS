@@ -514,6 +514,7 @@
     "nav": {
       "home": "Home",
       "jobs": "Open Positions",
+      "saved": "Saved",
       "login": "Sign in",
       "signup": "Get started",
       "tagline": "AI-native recruitment"
@@ -569,9 +570,80 @@
         "label": "Sort by",
         "newest": "Newest",
         "oldest": "Oldest",
+        "popular": "Most popular",
         "salaryHigh": "Salary: high to low",
         "salaryLow": "Salary: low to high",
         "titleAsc": "Title: A→Z"
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "page": "Page {page} of {total}",
+        "rangeAria": "Pagination"
+      },
+      "savedLink": "Saved jobs",
+      "savedLinkCount": "Saved ({count})",
+      "alertsCta": "Create job alert",
+      "save": {
+        "save": "Save job",
+        "saved": "Saved",
+        "toastSaved": "Job saved to your list",
+        "toastUnsaved": "Removed from saved jobs"
+      },
+      "share": {
+        "title": "Share",
+        "openMenu": "Share this job",
+        "linkedin": "LinkedIn",
+        "twitter": "Twitter / X",
+        "email": "Email",
+        "copyLink": "Copy link",
+        "copied": "Link copied",
+        "message": "Check out this role: {title}"
+      },
+      "alerts": {
+        "title": "Get job alerts",
+        "subtitle": "Tell us what you are looking for and we will email you new matching roles.",
+        "subtitleJob": "Be notified about roles similar to {title}.",
+        "emailLabel": "Email address",
+        "keywordsLabel": "Keywords or job title",
+        "keywordsHint": "e.g. \"Senior React Engineer\", \"Product Designer\"",
+        "locationLabel": "Location (optional)",
+        "frequencyLabel": "Frequency",
+        "frequency": {
+          "instant": "Instant",
+          "daily": "Daily digest",
+          "weekly": "Weekly digest"
+        },
+        "remoteOnly": "Remote roles only",
+        "cta": "Get job alerts",
+        "ctaShort": "Alerts",
+        "submit": "Create alert",
+        "submitting": "Saving…",
+        "successTitle": "Alerts activated",
+        "successDescription": "We will email you when new matching roles open up. You can manage your alerts any time.",
+        "emailSubject": "Your AI-ROS job alerts are active",
+        "emailBody": "You will receive {frequency} alerts for: {keywords}",
+        "errors": {
+          "keywords": "Please enter at least one keyword"
+        }
+      },
+      "saved": {
+        "eyebrow": "Your shortlist",
+        "title": "Saved jobs",
+        "subtitle": "{count, plural, one {# job saved} other {# jobs saved}}",
+        "searchAria": "Search saved jobs",
+        "searchPlaceholder": "Filter by title, company, location…",
+        "savedOn": "Saved {when}",
+        "clearAll": "Clear all",
+        "clearConfirm": "Remove all saved jobs?",
+        "cleared": "All saved jobs removed.",
+        "clearSearch": "Clear search",
+        "noMatches": "No saved jobs match \"{query}\".",
+        "empty": {
+          "title": "No saved jobs yet",
+          "description": "Tap the bookmark icon on any role to keep track of it here.",
+          "cta": "Browse open roles"
+        }
       },
       "experience": {
         "entry": "Entry level",
@@ -635,20 +707,76 @@
         "backToJob": "← Back to job details",
         "title": "Apply for {title}",
         "subtitle": "at {company} · {location}",
+        "eyebrow": "Apply",
+        "back": "← Back",
+        "notFound": "This job is no longer accepting applications.",
+        "discard": "Discard draft",
+        "discardConfirm": "Discard this draft?",
+        "draft": "Auto-saved",
+        "continue": "Continue",
+        "personalHelp": "We will use these to contact you about this application.",
         "stepPersonal": "Your details",
         "stepResume": "Resume & cover letter",
         "stepReview": "Review & submit",
+        "steps": {
+          "label": "Application steps",
+          "personal": "Your details",
+          "cover": "Cover letter",
+          "questions": "Questions",
+          "review": "Review"
+        },
+        "coverHelp": "Optional. A short note about why you are a great fit for {title}.",
+        "coverPlaceholder": "Tell the team what excites you about this role…",
+        "coverCount": "{count} characters",
+        "coverMin": "Minimum 30 characters to enable submission.",
+        "questionsHelp": "These help the team evaluate your application.",
         "fields": {
-          "fullName": "Full name *",
-          "email": "Email *",
+          "fullName": "Full name",
+          "email": "Email",
           "phone": "Phone",
           "location": "Current location",
           "linkedin": "LinkedIn URL",
           "portfolio": "Portfolio URL",
-          "resume": "Resume (PDF, DOC, DOCX) *",
+          "headline": "Headline",
+          "headlinePlaceholder": "e.g. Senior Frontend Engineer",
+          "resume": "Resume (PDF, DOC, DOCX)",
           "resumeHelp": "Max 5 MB. PDF, DOC or DOCX.",
           "coverLetter": "Cover letter",
           "coverLetterHelp": "Tell us why you are a great fit (optional)."
+        },
+        "resume": {
+          "title": "Resume",
+          "help": "PDF, DOC, or DOCX — up to 5 MB. Optional but recommended.",
+          "uploadLabel": "Upload resume",
+          "uploadDesc": "Drag and drop or click to browse",
+          "remove": "Remove resume"
+        },
+        "questions": {
+          "workAuth": "Are you legally authorized to work in the role's location?",
+          "workAuthOptions": {
+            "yes": "Yes, I am authorized",
+            "no": "No, I am not authorized",
+            "sponsorship": "I will need visa sponsorship"
+          },
+          "notice": "Notice period",
+          "noticeOptions": {
+            "immediate": "Immediately",
+            "two_weeks": "2 weeks",
+            "one_month": "1 month",
+            "two_months": "2 months",
+            "other": "Other"
+          },
+          "salary": "Salary expectation (annual, optional)",
+          "startDate": "Earliest start date",
+          "referral": "How did you hear about us?",
+          "referralOptions": {
+            "job_board": "Job board",
+            "social": "Social media",
+            "referral": "Employee referral",
+            "search": "Search engine",
+            "company_site": "Company site",
+            "other": "Other"
+          }
         },
         "actions": {
           "submit": "Submit application",
@@ -660,11 +788,14 @@
         "review": {
           "title": "Review your application",
           "personal": "Personal details",
+          "cover": "Cover letter",
+          "questions": "Your answers",
+          "target": "Applying for",
+          "coverEmpty": "Not provided.",
           "documents": "Documents",
           "notProvided": "Not provided",
           "change": "Change",
-          "consent": "I agree to the processing of my personal data for recruitment purposes in accordance with the AI-ROS Privacy Policy and applicable law (GDPR / CCPA).",
-          "consentRequired": "You must consent to the processing of your personal data to submit."
+          "consent": "I confirm the information above is accurate and consent to the hiring team processing my application."
         },
         "errors": {
           "name": "Please enter your full name",
@@ -679,9 +810,21 @@
         "success": {
           "title": "Application submitted!",
           "subtitle": "Thanks for applying to {title}.",
-          "description": "Our team will review your application and get back to you within 5 business days. A confirmation email is on its way to {email}.",
+          "description": "Thanks for applying to {title}. The team will review your application and reach out if there is a match.",
+          "reference": "Reference code",
+          "viewJobs": "Browse more roles",
+          "viewSaved": "View saved jobs",
+          "statusTitle": "What happens next?",
           "browseMore": "Browse more open positions",
           "backHome": "Back to homepage"
+        },
+        "status": {
+          "received": "Application received",
+          "receivedHelp": "We've logged your submission and the recruiter will see it shortly.",
+          "reviewing": "Initial review",
+          "reviewingHelp": "A recruiter reviews your background and decides on next steps.",
+          "interview": "Interview loop",
+          "interviewHelp": "Selected candidates are invited to chat with the team."
         }
       }
     }

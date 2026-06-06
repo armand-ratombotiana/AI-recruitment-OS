@@ -23,6 +23,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   const navLinks = [
     { label: t('public.nav.home', 'Home'), href: '/' },
     { label: t('public.nav.jobs', 'Open Positions'), href: '/jobs' },
+    { label: t('public.nav.saved', 'Saved'), href: '/jobs/saved' },
   ];
 
   return (

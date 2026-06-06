@@ -512,6 +512,7 @@
     "nav": {
       "home": "Accueil",
       "jobs": "Postes ouverts",
+      "saved": "Favoris",
       "login": "Se connecter",
       "signup": "Commencer",
       "tagline": "Recrutement natif IA"
@@ -567,9 +568,80 @@
         "label": "Trier par",
         "newest": "Plus récents",
         "oldest": "Plus anciens",
+        "popular": "Les plus populaires",
         "salaryHigh": "Salaire : du plus élevé au plus bas",
         "salaryLow": "Salaire : du plus bas au plus élevé",
         "titleAsc": "Titre : A→Z"
+      },
+      "pagination": {
+        "previous": "Précédent",
+        "next": "Suivant",
+        "page": "Page {page} sur {total}",
+        "rangeAria": "Pagination"
+      },
+      "savedLink": "Postes favoris",
+      "savedLinkCount": "Favoris ({count})",
+      "alertsCta": "Créer une alerte",
+      "save": {
+        "save": "Enregistrer",
+        "saved": "Enregistré",
+        "toastSaved": "Poste ajouté à vos favoris",
+        "toastUnsaved": "Retiré des favoris"
+      },
+      "share": {
+        "title": "Partager",
+        "openMenu": "Partager ce poste",
+        "linkedin": "LinkedIn",
+        "twitter": "Twitter / X",
+        "email": "E-mail",
+        "copyLink": "Copier le lien",
+        "copied": "Lien copié",
+        "message": "Découvrez ce poste : {title}"
+      },
+      "alerts": {
+        "title": "Recevoir des alertes",
+        "subtitle": "Dites-nous ce que vous cherchez et nous vous enverrons les nouveaux postes par e-mail.",
+        "subtitleJob": "Soyez prévenu(e) des postes similaires à {title}.",
+        "emailLabel": "Adresse e-mail",
+        "keywordsLabel": "Mots-clés ou intitulé",
+        "keywordsHint": "ex. « Ingénieur React Senior », « Product Designer »",
+        "locationLabel": "Lieu (facultatif)",
+        "frequencyLabel": "Fréquence",
+        "frequency": {
+          "instant": "Instantané",
+          "daily": "Quotidien",
+          "weekly": "Hebdomadaire"
+        },
+        "remoteOnly": "Postes en télétravail uniquement",
+        "cta": "Recevoir des alertes",
+        "ctaShort": "Alertes",
+        "submit": "Créer l'alerte",
+        "submitting": "Enregistrement…",
+        "successTitle": "Alertes activées",
+        "successDescription": "Vous recevrez un e-mail dès qu'un nouveau poste correspondant sera ouvert. Vous pouvez gérer vos alertes à tout moment.",
+        "emailSubject": "Vos alertes AI-ROS sont actives",
+        "emailBody": "Vous recevrez des alertes {frequency} pour : {keywords}",
+        "errors": {
+          "keywords": "Veuillez saisir au moins un mot-clé"
+        }
+      },
+      "saved": {
+        "eyebrow": "Votre sélection",
+        "title": "Postes favoris",
+        "subtitle": "{count, plural, one {# poste enregistré} other {# postes enregistrés}}",
+        "searchAria": "Rechercher dans les favoris",
+        "searchPlaceholder": "Filtrer par titre, entreprise, lieu…",
+        "savedOn": "Enregistré {when}",
+        "clearAll": "Tout effacer",
+        "clearConfirm": "Supprimer tous les postes favoris ?",
+        "cleared": "Tous les postes favoris ont été supprimés.",
+        "clearSearch": "Effacer la recherche",
+        "noMatches": "Aucun favori ne correspond à « {query} ».",
+        "empty": {
+          "title": "Aucun poste favori",
+          "description": "Appuyez sur l'icône signet d'un poste pour le retrouver ici.",
+          "cta": "Parcourir les postes ouverts"
+        }
       },
       "experience": {
         "entry": "Débutant",
@@ -633,18 +705,33 @@
         "backToJob": "← Retour aux détails de l'offre",
         "title": "Postuler à {title}",
         "subtitle": "chez {company} · {location}",
+        "eyebrow": "Candidature",
+        "back": "← Retour",
+        "notFound": "Ce poste n'accepte plus de candidatures.",
+        "discard": "Supprimer le brouillon",
+        "discardConfirm": "Supprimer ce brouillon ?",
+        "draft": "Sauvegardé",
+        "continue": "Continuer",
+        "personalHelp": "Nous les utiliserons pour vous contacter au sujet de cette candidature.",
         "stepPersonal": "Vos informations",
         "stepResume": "CV & lettre de motivation",
         "stepReview": "Vérifier & envoyer",
         "steps": {
+          "label": "Étapes de la candidature",
           "resume": "CV",
           "cover": "Lettre",
           "questions": "Questions",
           "review": "Vérifier",
+          "personal": "Vos informations",
           "stepLabel": "Étape {current} sur {total}",
           "complete": "Terminé",
           "progress": "Progression de la candidature"
         },
+        "coverHelp": "Facultatif. Une courte note expliquant pourquoi ce poste {title} vous attire.",
+        "coverPlaceholder": "Parlez à l'équipe de ce qui vous motive pour ce poste…",
+        "coverCount": "{count} caractères",
+        "coverMin": "Minimum 30 caractères pour pouvoir envoyer.",
+        "questionsHelp": "Elles aident l'équipe à évaluer votre candidature.",
         "draft": {
           "resume": "Vous pouvez quitter à tout moment — nous sauvegardons votre brouillon automatiquement.",
           "saved": "Brouillon sauvegardé",
@@ -660,6 +747,30 @@
           "workAuthYes": "Oui, je suis autorisé",
           "workAuthNo": "Non, j'aurais besoin d'un sponsoring",
           "workAuthUnsure": "Je ne sais pas / je préfère ne pas répondre",
+          "workAuthOptions": {
+            "yes": "Oui, je suis autorisé",
+            "no": "Non, je ne suis pas autorisé",
+            "sponsorship": "J'aurai besoin d'un visa"
+          },
+          "notice": "Préavis",
+          "noticeOptions": {
+            "immediate": "Immédiatement",
+            "two_weeks": "2 semaines",
+            "one_month": "1 mois",
+            "two_months": "2 mois",
+            "other": "Autre"
+          },
+          "salary": "Prétention salariale annuelle (optionnel)",
+          "startDate": "Date de début la plus proche",
+          "referral": "Comment avez-vous entendu parler de nous ?",
+          "referralOptions": {
+            "job_board": "Site d'emploi",
+            "social": "Réseaux sociaux",
+            "referral": "Recommandation",
+            "search": "Moteur de recherche",
+            "company_site": "Site de l'entreprise",
+            "other": "Autre"
+          },
           "noticeLabel": "Date de disponibilité / préavis",
           "noticePlaceholder": "ex. 2 semaines, 30 jours, immédiatement",
           "salaryLabel": "Prétentions salariales (optionnel)",
@@ -670,19 +781,28 @@
           "morePlaceholder": "Optionnel — contexte, accommodations, liens…"
         },
         "fields": {
-          "fullName": "Nom complet *",
-          "email": "Email *",
+          "fullName": "Nom complet",
+          "email": "E-mail",
           "phone": "Téléphone",
           "location": "Lieu actuel",
           "linkedin": "URL LinkedIn",
           "portfolio": "URL Portfolio",
-          "resume": "CV (PDF, DOC, DOCX) *",
+          "headline": "Titre",
+          "headlinePlaceholder": "ex. Ingénieur Frontend Senior",
+          "resume": "CV (PDF, DOC, DOCX)",
           "resumeHelp": "Max 5 Mo. PDF, DOC ou DOCX.",
           "resumeReplace": "Remplacer le fichier",
           "resumeRemove": "Retirer le fichier",
           "coverLetter": "Lettre de motivation",
           "coverLetterHelp": "Expliquez pourquoi ce poste vous intéresse (optionnel).",
           "coverLetterCount": "{count} / {max} caractères"
+        },
+        "resume": {
+          "title": "CV",
+          "help": "PDF, DOC ou DOCX — jusqu'à 5 Mo. Facultatif mais recommandé.",
+          "uploadLabel": "Téléverser le CV",
+          "uploadDesc": "Glissez-déposez ou cliquez pour parcourir",
+          "remove": "Retirer le CV"
         },
         "actions": {
           "submit": "Envoyer ma candidature",
@@ -696,12 +816,14 @@
           "title": "Vérifiez votre candidature",
           "subtitle": "Relisez l'ensemble avant de l'envoyer à l'équipe.",
           "personal": "Informations personnelles",
+          "cover": "Lettre de motivation",
+          "coverEmpty": "Non fournie.",
+          "questions": "Vos réponses",
+          "target": "Candidature pour",
           "documents": "Documents",
-          "questions": "Questions & réponses",
           "notProvided": "Non renseigné",
           "change": "Modifier",
-          "consent": "J'accepte le traitement de mes données personnelles à des fins de recrutement conformément à la politique de confidentialité d'AI-ROS et à la réglementation applicable (RGPD).",
-          "consentRequired": "Vous devez consentir au traitement de vos données pour envoyer votre candidature."
+          "consent": "Je confirme l'exactitude des informations ci-dessus et consens au traitement de ma candidature par l'équipe de recrutement."
         },
         "errors": {
           "name": "Veuillez saisir votre nom complet",
@@ -725,15 +847,24 @@
           "failedDesc": "Nous n'avons pas pu envoyer votre candidature. Veuillez réessayer.",
           "referenceLabel": "Référence",
           "applicationId": "ID candidature",
-          "submittedAt": "Envoyée {when}"
+          "submittedAt": "Envoyée {when}",
+          "received": "Candidature reçue",
+          "receivedHelp": "Nous avons enregistré votre envoi et le recruteur va le consulter sous peu.",
+          "reviewing": "Première évaluation",
+          "reviewingHelp": "Un recruteur examine votre profil et décide de la suite.",
+          "interview": "Entretiens",
+          "interviewHelp": "Les candidats retenus sont invités à échanger avec l'équipe."
         },
         "success": {
           "title": "Candidature envoyée !",
           "subtitle": "Merci d'avoir postulé à {title}.",
-          "description": "Notre équipe va examiner votre candidature et vous répondre sous 5 jours ouvrés. Un email de confirmation est envoyé à {email}.",
+          "description": "Merci d'avoir postulé à {title}. L'équipe examinera votre candidature et vous recontactera s'il y a une correspondance.",
+          "reference": "Code de référence",
+          "viewJobs": "Voir d'autres postes",
+          "viewSaved": "Voir les postes sauvegardés",
+          "statusTitle": "Et maintenant ?",
           "browseMore": "Voir d'autres postes ouverts",
           "backHome": "Retour à l'accueil",
-          "viewSaved": "Voir les postes sauvegardés",
           "createAlert": "Créer une alerte pour des postes similaires"
         }
       }

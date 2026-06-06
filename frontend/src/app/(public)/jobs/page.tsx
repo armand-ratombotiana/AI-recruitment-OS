@@ -15,6 +15,10 @@ import {
   ArrowUpRight,
   Sparkles,
   Users,
+  Bookmark,
+  BellRing,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
 import {
@@ -23,9 +27,13 @@ import {
   interpolate,
   formatRelativeTime,
   formatNumber,
-  pluralize,
 } from '@/stores/locale-store';
 import { cn } from '@/lib/utils';
+import { useSavedJobs } from '@/lib/public-job-store';
+import { SaveJobButton } from '@/components/public/save-job-button';
+import { ShareMenu } from '@/components/public/share-menu';
+import { JobAlertsDialog } from '@/components/public/job-alerts-dialog';
+import { useToast } from '@/hooks';
 
 type Job = {
   id: string;
@@ -47,7 +55,7 @@ type Job = {
   skills?: string[];
 };
 
-type SortKey = 'newest' | 'oldest' | 'salaryHigh' | 'salaryLow' | 'titleAsc';
+type SortKey = 'newest' | 'oldest' | 'popular' | 'salaryHigh' | 'salaryLow' | 'titleAsc';
 
 const EMPLOYMENT_KEYS = ['full_time', 'part_time', 'contract', 'internship', 'temporary'];
 
@@ -103,6 +111,8 @@ function isOpen(j: Job): boolean {
 export default function PublicJobsPage() {
   const locale = useLocaleStore((s) => s.locale);
   const t = (key: string, fb?: string) => translate(locale, key, fb);
+  const { push, ToastContainer } = useToast();
+  const { list: savedList } = useSavedJobs();
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -118,6 +128,12 @@ export default function PublicJobsPage() {
   const [sort, setSort] = useState<SortKey>('newest');
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [alertsOpen, setAlertsOpen] = useState(false);
+  const [origin, setOrigin] = useState<string>('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') setOrigin(window.location.origin);
+  }, []);
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(query.trim().toLowerCase()), 250);
@@ -130,7 +146,9 @@ export default function PublicJobsPage() {
     try {
       const params: Record<string, string> = { status: 'open', limit: '100' };
       const res = await api.jobs.list(params);
-      const list = ((res as any)?.data || (res as any)?.items || []) as Job[];
+      const list = ((res as unknown as { data?: Job[]; items?: Job[] })?.data ||
+        (res as unknown as { items?: Job[] })?.items ||
+        []) as Job[];
       setJobs(list.filter(isOpen));
     } catch (err) {
       const e = err as APIError;
@@ -199,10 +217,15 @@ export default function PublicJobsPage() {
       switch (sort) {
         case 'oldest':
           return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+        case 'popular':
+          return (b.applicants_count || 0) - (a.applicants_count || 0);
         case 'salaryHigh':
           return (b.salary_max || 0) - (a.salary_max || 0);
         case 'salaryLow':
-          return (a.salary_min || Number.MAX_SAFE_INTEGER) - (b.salary_min || Number.MAX_SAFE_INTEGER);
+          return (
+            (a.salary_min || Number.MAX_SAFE_INTEGER) -
+            (b.salary_min || Number.MAX_SAFE_INTEGER)
+          );
         case 'titleAsc':
           return a.title.localeCompare(b.title);
         case 'newest':
@@ -217,8 +240,13 @@ export default function PublicJobsPage() {
     setPage(1);
   }, [debouncedQuery, department, location, employmentType, experience, remoteOnly, sort]);
 
-  const visible = useMemo(() => filtered.slice(0, page * PAGE_SIZE), [filtered, page]);
-  const hasMore = visible.length < filtered.length;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * PAGE_SIZE;
+  const visible = useMemo(
+    () => filtered.slice(start, start + PAGE_SIZE),
+    [filtered, start],
+  );
 
   const activeFilterCount =
     (department !== 'all' ? 1 : 0) +
@@ -237,15 +265,22 @@ export default function PublicJobsPage() {
   };
 
   const companiesCount = useMemo(
-    () => new Set(jobs.map((j) => (j.company || j.department || '').trim()).filter(Boolean)).size,
+    () =>
+      new Set(jobs.map((j) => (j.company || j.department || '').trim()).filter(Boolean)).size,
     [jobs],
   );
 
   const resultsLabel = useMemo(() => {
     if (filtered.length === jobs.length) {
-      return interpolate(t('public.jobs.resultsCount', '{count, plural, one {# open position} other {# open positions}}'), {
-        count: filtered.length,
-      });
+      return interpolate(
+        t(
+          'public.jobs.resultsCount',
+          '{count, plural, one {# open position} other {# open positions}}',
+        ),
+        {
+          count: filtered.length,
+        },
+      );
     }
     return t('public.jobs.resultsCountFiltered', 'Showing {shown} of {total} positions')
       .replace('{shown}', String(filtered.length))
@@ -259,6 +294,14 @@ export default function PublicJobsPage() {
     ),
     { count: jobs.length },
   );
+
+  const goToPage = (next: number) => {
+    const clamped = Math.min(Math.max(1, next), totalPages);
+    setPage(clamped);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
     <div>
@@ -316,12 +359,37 @@ export default function PublicJobsPage() {
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-gray-500 dark:text-gray-400">
               <span className="inline-flex items-center gap-1.5">
                 <Briefcase className="h-3.5 w-3.5" aria-hidden="true" />
-                {formatNumber(jobs.length, locale as any)} {t('public.jobs.hero.eyebrow', 'open positions')}
+                {formatNumber(jobs.length, locale)}{' '}
+                {t('public.jobs.hero.eyebrow', 'open positions')}
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
-                {formatNumber(companiesCount, locale as any)} {t('public.footer.company', 'companies')}
+                {formatNumber(companiesCount, locale)}{' '}
+                {t('public.footer.company', 'companies')}
               </span>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+              <Link
+                href="/jobs/saved"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-surface-700 dark:bg-surface-900 dark:text-gray-200 dark:hover:bg-surface-800"
+              >
+                <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />
+                {savedList.length > 0
+                  ? t('public.jobs.savedLinkCount', 'Saved ({count})').replace(
+                      '{count}',
+                      String(savedList.length),
+                    )
+                  : t('public.jobs.savedLink', 'Saved jobs')}
+              </Link>
+              <button
+                type="button"
+                onClick={() => setAlertsOpen(true)}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-brand-50 px-3.5 text-xs font-semibold text-brand-700 hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-300 dark:hover:bg-brand-500/20"
+              >
+                <BellRing className="h-3.5 w-3.5" aria-hidden="true" />
+                {t('public.jobs.alertsCta', 'Create job alert')}
+              </button>
             </div>
           </div>
         </div>
@@ -444,26 +512,72 @@ export default function PublicJobsPage() {
                 <>
                   <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                     {visible.map((j) => (
-                      <JobCard key={j.id} job={j} />
+                      <JobCard
+                        key={j.id}
+                        job={j}
+                        origin={origin}
+                        onSavedChange={(saved) =>
+                          push(
+                            'success',
+                            saved
+                              ? t('public.jobs.save.toastSaved', 'Job saved to your list')
+                              : t(
+                                  'public.jobs.save.toastUnsaved',
+                                  'Removed from saved jobs',
+                                ),
+                          )
+                        }
+                      />
                     ))}
                   </div>
-                  {hasMore && (
-                    <div className="mt-10 flex justify-center">
+
+                  {totalPages > 1 && (
+                    <nav
+                      aria-label={t('public.jobs.pagination.rangeAria', 'Pagination')}
+                      className="mt-10 flex items-center justify-center gap-2"
+                    >
                       <button
                         type="button"
-                        onClick={() => setPage((p) => p + 1)}
-                        className="inline-flex h-11 items-center rounded-lg border border-gray-200 bg-white px-6 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-surface-700 dark:bg-surface-800 dark:text-gray-200 dark:hover:bg-surface-700"
+                        onClick={() => goToPage(safePage - 1)}
+                        disabled={safePage <= 1}
+                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-700 dark:bg-surface-800 dark:text-gray-200 dark:hover:bg-surface-700"
                       >
-                        {t('public.jobs.loadMore', 'Load more')}
+                        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                        {t('public.jobs.pagination.previous', 'Previous')}
                       </button>
-                    </div>
+
+                      <PageNumbers
+                        current={safePage}
+                        total={totalPages}
+                        onGo={goToPage}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => goToPage(safePage + 1)}
+                        disabled={safePage >= totalPages}
+                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-700 dark:bg-surface-800 dark:text-gray-200 dark:hover:bg-surface-700"
+                      >
+                        {t('public.jobs.pagination.next', 'Next')}
+                        <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                      </button>
+                    </nav>
                   )}
+
+                  <p className="mt-3 text-center text-xs text-gray-500 dark:text-gray-400">
+                    {t('public.jobs.pagination.page', 'Page {page} of {total}')
+                      .replace('{page}', String(safePage))
+                      .replace('{total}', String(totalPages))}
+                  </p>
                 </>
               )}
             </div>
           </div>
         </div>
       </section>
+
+      <JobAlertsDialog open={alertsOpen} onClose={() => setAlertsOpen(false)} />
+      <ToastContainer />
     </div>
   );
 }
@@ -513,9 +627,10 @@ function SortControl({
   const t = (key: string, fb?: string) => translate(locale, key, fb);
   const options: { value: SortKey; label: string }[] = [
     { value: 'newest', label: t('public.jobs.sort.newest', 'Newest') },
-    { value: 'oldest', label: t('public.jobs.sort.oldest', 'Oldest') },
+    { value: 'popular', label: t('public.jobs.sort.popular', 'Most popular') },
     { value: 'salaryHigh', label: t('public.jobs.sort.salaryHigh', 'Salary: high to low') },
     { value: 'salaryLow', label: t('public.jobs.sort.salaryLow', 'Salary: low to high') },
+    { value: 'oldest', label: t('public.jobs.sort.oldest', 'Oldest') },
     { value: 'titleAsc', label: t('public.jobs.sort.titleAsc', 'Title: A→Z') },
   ];
   return (
@@ -536,7 +651,69 @@ function SortControl({
   );
 }
 
-function JobCard({ job }: { job: Job }) {
+function PageNumbers({
+  current,
+  total,
+  onGo,
+}: {
+  current: number;
+  total: number;
+  onGo: (n: number) => void;
+}) {
+  const items: (number | 'ellipsis-left' | 'ellipsis-right')[] = [];
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) items.push(i);
+  } else {
+    items.push(1);
+    if (current > 3) items.push('ellipsis-left');
+    const startN = Math.max(2, current - 1);
+    const endN = Math.min(total - 1, current + 1);
+    for (let i = startN; i <= endN; i++) items.push(i);
+    if (current < total - 2) items.push('ellipsis-right');
+    items.push(total);
+  }
+
+  return (
+    <div className="hidden sm:flex items-center gap-1">
+      {items.map((p, idx) =>
+        typeof p === 'number' ? (
+          <button
+            key={p}
+            type="button"
+            onClick={() => onGo(p)}
+            aria-current={p === current ? 'page' : undefined}
+            className={cn(
+              'min-w-[2.25rem] h-9 rounded-lg text-sm font-medium',
+              p === current
+                ? 'bg-gradient-to-r from-brand-500 to-accent-600 text-white shadow-sm shadow-brand-500/30'
+                : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-surface-700 dark:bg-surface-800 dark:text-gray-200 dark:hover:bg-surface-700',
+            )}
+          >
+            {p}
+          </button>
+        ) : (
+          <span
+            key={`${p}-${idx}`}
+            className="px-1 text-sm text-gray-400 select-none"
+            aria-hidden="true"
+          >
+            …
+          </span>
+        ),
+      )}
+    </div>
+  );
+}
+
+function JobCard({
+  job,
+  origin,
+  onSavedChange,
+}: {
+  job: Job;
+  origin: string;
+  onSavedChange?: (saved: boolean) => void;
+}) {
   const locale = useLocaleStore((s) => s.locale);
   const t = (key: string, fb?: string) => translate(locale, key, fb);
   const salary = formatSalaryRange(job.salary_min, job.salary_max, job.currency || null, locale);
@@ -547,7 +724,10 @@ function JobCard({ job }: { job: Job }) {
     return ageMs < 1000 * 60 * 60 * 24 * 7;
   }, [job.created_at]);
   const postedLabel = job.created_at
-    ? t('public.jobs.card.posted', 'Posted {when}').replace('{when}', formatRelativeTime(job.created_at, locale))
+    ? t('public.jobs.card.posted', 'Posted {when}').replace(
+        '{when}',
+        formatRelativeTime(job.created_at, locale),
+      )
     : '';
   const applicantsLabel = interpolate(
     t('public.jobs.card.applicants', '{count} applicants'),
@@ -556,6 +736,8 @@ function JobCard({ job }: { job: Job }) {
   const employmentLabel = job.employment_type
     ? t(`public.jobs.employment.${job.employment_type}`, job.employment_type.replace('_', ' '))
     : null;
+
+  const url = origin ? `${origin}/jobs/${job.id}` : `/jobs/${job.id}`;
 
   return (
     <article className="group relative flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lg hover:shadow-brand-500/10 dark:border-surface-800 dark:bg-surface-900 dark:hover:border-brand-500/50 dark:hover:shadow-brand-500/5">
@@ -579,12 +761,32 @@ function JobCard({ job }: { job: Job }) {
             )}
           </div>
           <h3 className="mt-2 text-lg font-semibold text-gray-900 group-hover:text-brand-700 dark:text-white dark:group-hover:text-brand-300">
-            <Link href={`/jobs/${job.id}`} className="line-clamp-2 focus:outline-none focus-visible:underline">
+            <Link
+              href={`/jobs/${job.id}`}
+              className="line-clamp-2 focus:outline-none focus-visible:underline"
+            >
               <span aria-hidden="true" className="absolute inset-0 rounded-2xl" />
               {job.title}
             </Link>
           </h3>
         </div>
+        <SaveJobButton
+          job={{
+            id: job.id,
+            title: job.title,
+            company: job.company,
+            department: job.department,
+            location: job.location,
+            employment_type: job.employment_type,
+            remote: job.remote,
+            salary_min: job.salary_min,
+            salary_max: job.salary_max,
+            currency: job.currency,
+          }}
+          size="sm"
+          onSaved={onSavedChange}
+          stopPropagation
+        />
       </div>
 
       <dl className="mt-4 grid grid-cols-1 gap-2 text-sm text-gray-600 dark:text-gray-300">
@@ -606,7 +808,9 @@ function JobCard({ job }: { job: Job }) {
         ) : (
           <div className="flex items-center gap-2 text-gray-400">
             <DollarSign className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span className="italic">{t('public.jobs.card.salaryUndisclosed', 'Salary undisclosed')}</span>
+            <span className="italic">
+              {t('public.jobs.card.salaryUndisclosed', 'Salary undisclosed')}
+            </span>
           </div>
         )}
         {postedLabel && (
@@ -624,10 +828,20 @@ function JobCard({ job }: { job: Job }) {
         </div>
       )}
 
-      <div className="mt-6 flex items-center justify-end pt-4 border-t border-gray-100 dark:border-surface-800 relative z-10">
+      <div className="mt-6 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-surface-800 relative z-10">
+        <ShareMenu
+          url={url}
+          title={`${job.title} – ${department || 'AI-ROS'}`}
+          description={job.location}
+          align="left"
+          size="sm"
+        />
         <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 group-hover:text-brand-700 dark:text-brand-400 dark:group-hover:text-brand-300">
           {t('public.jobs.card.viewDetails', 'View details')}
-          <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
+          <ArrowUpRight
+            className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+            aria-hidden="true"
+          />
         </span>
       </div>
     </article>
@@ -636,7 +850,10 @@ function JobCard({ job }: { job: Job }) {
 
 function JobsGridSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3" aria-hidden="true">
+    <div
+      className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
+      aria-hidden="true"
+    >
       {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}

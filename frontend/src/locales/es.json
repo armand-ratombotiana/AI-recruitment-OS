@@ -512,6 +512,7 @@
     "nav": {
       "home": "Inicio",
       "jobs": "Puestos abiertos",
+      "saved": "Guardados",
       "login": "Iniciar sesión",
       "signup": "Empezar",
       "tagline": "Reclutamiento nativo de IA"
@@ -612,7 +613,8 @@
         "twitter": "Twitter / X",
         "email": "Email",
         "copyLink": "Copiar enlace",
-        "copied": "Enlace copiado"
+        "copied": "Enlace copiado",
+        "message": "Echa un vistazo a este puesto: {title}"
       },
       "alerts": {
         "title": "Recibir alertas",
@@ -629,6 +631,8 @@
           "weekly": "Resumen semanal"
         },
         "remoteOnly": "Solo puestos en remoto",
+        "cta": "Recibir alertas",
+        "ctaShort": "Alertas",
         "submit": "Crear alerta",
         "submitting": "Guardando…",
         "successTitle": "Alertas activadas",
@@ -640,6 +644,7 @@
         }
       },
       "saved": {
+        "eyebrow": "Tu selección",
         "title": "Puestos guardados",
         "subtitle": "Los puestos que has marcado al explorar empleos en AI-ROS.",
         "empty": {
@@ -649,9 +654,16 @@
         },
         "count": "{count, plural, one {# puesto guardado} other {# puestos guardados}}",
         "savedAt": "Guardado {when}",
+        "savedOn": "Guardado {when}",
+        "searchAria": "Buscar en guardados",
+        "searchPlaceholder": "Filtrar por título, empresa, ubicación…",
+        "clearAll": "Eliminar todos",
+        "clearConfirm": "¿Eliminar todos los puestos guardados?",
+        "cleared": "Todos los puestos guardados han sido eliminados.",
+        "clearSearch": "Borrar búsqueda",
+        "noMatches": "Ningún guardado coincide con «{query}».",
         "viewJob": "Ver puesto",
-        "unsave": "Quitar",
-        "clearAll": "Eliminar todos"
+        "unsave": "Quitar"
       },
       "noResults": {
         "title": "Ningún puesto coincide con tus filtros",
@@ -698,18 +710,33 @@
         "backToJob": "← Volver a los detalles del puesto",
         "title": "Postular a {title}",
         "subtitle": "en {company} · {location}",
+        "eyebrow": "Postular",
+        "back": "← Atrás",
+        "notFound": "Este puesto ya no acepta candidaturas.",
+        "discard": "Descartar borrador",
+        "discardConfirm": "¿Descartar este borrador?",
+        "draft": "Guardado",
+        "continue": "Continuar",
+        "personalHelp": "Los usaremos para contactarte sobre esta candidatura.",
         "stepPersonal": "Tus datos",
         "stepResume": "CV y carta de presentación",
         "stepReview": "Revisar y enviar",
         "steps": {
+          "label": "Pasos de la candidatura",
           "resume": "CV",
           "cover": "Carta",
           "questions": "Preguntas",
           "review": "Revisar",
+          "personal": "Tus datos",
           "stepLabel": "Paso {current} de {total}",
           "complete": "Completo",
           "progress": "Progreso de la candidatura"
         },
+        "coverHelp": "Opcional. Una nota breve sobre por qué encajas con el puesto {title}.",
+        "coverPlaceholder": "Cuenta al equipo qué te motiva de este puesto…",
+        "coverCount": "{count} caracteres",
+        "coverMin": "Mínimo 30 caracteres para poder enviar.",
+        "questionsHelp": "Ayudan al equipo a evaluar tu candidatura.",
         "draft": {
           "resume": "Puedes salir cuando quieras — guardamos tu borrador automáticamente.",
           "saved": "Borrador guardado",
@@ -725,6 +752,30 @@
           "workAuthYes": "Sí, tengo autorización",
           "workAuthNo": "No, necesitaría patrocinio",
           "workAuthUnsure": "No estoy seguro / prefiero no decirlo",
+          "workAuthOptions": {
+            "yes": "Sí, estoy autorizado",
+            "no": "No, no estoy autorizado",
+            "sponsorship": "Necesitaré visado"
+          },
+          "notice": "Preaviso",
+          "noticeOptions": {
+            "immediate": "Inmediato",
+            "two_weeks": "2 semanas",
+            "one_month": "1 mes",
+            "two_months": "2 meses",
+            "other": "Otro"
+          },
+          "salary": "Expectativa salarial anual (opcional)",
+          "startDate": "Fecha de inicio más temprana",
+          "referral": "¿Cómo nos conociste?",
+          "referralOptions": {
+            "job_board": "Portal de empleo",
+            "social": "Redes sociales",
+            "referral": "Recomendación",
+            "search": "Buscador",
+            "company_site": "Web de la empresa",
+            "other": "Otro"
+          },
           "noticeLabel": "Fecha disponible / preaviso",
           "noticePlaceholder": "ej. 2 semanas, 30 días, inmediato",
           "salaryLabel": "Expectativas salariales (opcional)",
@@ -735,19 +786,28 @@
           "morePlaceholder": "Opcional — contexto, adaptaciones, enlaces…"
         },
         "fields": {
-          "fullName": "Nombre completo *",
-          "email": "Email *",
+          "fullName": "Nombre completo",
+          "email": "Email",
           "phone": "Teléfono",
           "location": "Ubicación actual",
           "linkedin": "URL de LinkedIn",
           "portfolio": "URL de portfolio",
-          "resume": "CV (PDF, DOC, DOCX) *",
+          "headline": "Titular",
+          "headlinePlaceholder": "ej. Ingeniero Frontend Senior",
+          "resume": "CV (PDF, DOC, DOCX)",
           "resumeHelp": "Máx. 5 MB. PDF, DOC o DOCX.",
           "resumeReplace": "Reemplazar archivo",
           "resumeRemove": "Quitar archivo",
           "coverLetter": "Carta de presentación",
           "coverLetterHelp": "Cuéntanos por qué encajas con el puesto (opcional).",
           "coverLetterCount": "{count} / {max} caracteres"
+        },
+        "resume": {
+          "title": "CV",
+          "help": "PDF, DOC o DOCX — hasta 5 MB. Opcional pero recomendado.",
+          "uploadLabel": "Subir CV",
+          "uploadDesc": "Arrastra y suelta o haz clic para examinar",
+          "remove": "Quitar CV"
         },
         "actions": {
           "submit": "Enviar candidatura",
@@ -761,12 +821,14 @@
           "title": "Revisa tu candidatura",
           "subtitle": "Comprueba todo antes de enviarlo al equipo.",
           "personal": "Datos personales",
+          "cover": "Carta de presentación",
+          "coverEmpty": "No proporcionada.",
+          "questions": "Tus respuestas",
+          "target": "Postulando a",
           "documents": "Documentos",
-          "questions": "Preguntas y respuestas",
           "notProvided": "No proporcionado",
           "change": "Editar",
-          "consent": "Acepto el tratamiento de mis datos personales con fines de reclutamiento conforme a la Política de Privacidad de AI-ROS y la normativa aplicable (RGPD/CCPA).",
-          "consentRequired": "Debes consentir el tratamiento de tus datos para enviar la candidatura."
+          "consent": "Confirmo que la información es correcta y consiento al equipo de reclutamiento procesar mi candidatura."
         },
         "errors": {
           "name": "Introduce tu nombre completo",
@@ -790,15 +852,24 @@
           "failedDesc": "No pudimos entregar tu candidatura. Reinténtalo.",
           "referenceLabel": "Referencia",
           "applicationId": "ID de candidatura",
-          "submittedAt": "Enviada {when}"
+          "submittedAt": "Enviada {when}",
+          "received": "Candidatura recibida",
+          "receivedHelp": "Hemos registrado tu envío y el reclutador lo verá pronto.",
+          "reviewing": "Revisión inicial",
+          "reviewingHelp": "Un reclutador revisa tu perfil y decide los siguientes pasos.",
+          "interview": "Ronda de entrevistas",
+          "interviewHelp": "Los candidatos seleccionados son invitados a charlar con el equipo."
         },
         "success": {
           "title": "¡Candidatura enviada!",
           "subtitle": "Gracias por postular a {title}.",
-          "description": "Nuestro equipo revisará tu candidatura y te responderá en 5 días hábiles. Recibirás un email de confirmación en {email}.",
+          "description": "Gracias por postular a {title}. El equipo revisará tu candidatura y se pondrá en contacto si hay un match.",
+          "reference": "Código de referencia",
+          "viewJobs": "Ver más puestos",
+          "viewSaved": "Ver puestos guardados",
+          "statusTitle": "¿Qué sigue?",
           "browseMore": "Ver más puestos abiertos",
           "backHome": "Volver al inicio",
-          "viewSaved": "Ver puestos guardados",
           "createAlert": "Crear alerta para puestos similares"
         }
       }
