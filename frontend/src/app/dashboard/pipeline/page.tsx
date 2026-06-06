@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Briefcase, Loader2, Mail, MapPin, RefreshCw, HelpCircle, Sparkles, AlertCircle, X } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Briefcase, Loader2, Mail, MapPin, RefreshCw, HelpCircle, Sparkles, AlertCircle, X, Wifi, WifiOff } from 'lucide-react';
 import { api } from '@/services/api/client';
-import { EmptyState, Button, Skeleton, useToast, Modal, ConfirmDialog, HelpButton, Badge } from '@/components';
+import { EmptyState, Button, Skeleton, Modal, ConfirmDialog, HelpButton, Badge } from '@/components';
+import { useToast } from '@/components/ui/toast';
+import { useWebSocket } from '@/hooks/use-websocket';
+import type { CandidateCreatedPayload, CandidateUpdatedPayload, CandidateDeletedPayload, PipelineMovedPayload } from '@/services/websocket/types';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
 import { pipelineTour } from '@/components/onboarding/tours';
 
@@ -43,7 +46,9 @@ export default function PipelinePage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [showAiPanel, setShowAiPanel] = useState(true);
-  const { push, ToastContainer } = useToast();
+  const { toast } = useToast();
+  const { isConnected, isReconnecting, state: wsState, subscribe } = useWebSocket();
+  const lastEventAtRef = useRef<number>(0);
 
   const COLUMNS = STAGE_IDS.map((id) => ({ id, title: t(`pipeline.stages.${id}`, id), color: STAGE_COLORS[id] || 'bg-gray-400' }));
 
@@ -71,6 +76,62 @@ export default function PipelinePage() {
     const timer = setInterval(() => load(true), 60_000);
     return () => clearInterval(timer);
   }, [load]);
+
+  useEffect(() => {
+    const unsubCreated = subscribe('candidate.created', (rawData) => {
+      const data = rawData as Partial<CandidateCreatedPayload>;
+      const candidate = (data?.candidate || {}) as { id?: string; full_name?: string };
+      const name = candidate.full_name || 'New candidate';
+      toast({ variant: 'success', title: t('pipeline.live.newCandidate', 'New candidate added'), description: name });
+      lastEventAtRef.current = Date.now();
+      setCandidates((prev) => {
+        const incoming = candidate as any;
+        if (!incoming.id || prev.some((c) => c.id === incoming.id)) return prev;
+        return [incoming, ...prev];
+      });
+    });
+    const unsubUpdated = subscribe('candidate.updated', (rawData) => {
+      const data = rawData as Partial<CandidateUpdatedPayload>;
+      const candidate = (data?.candidate || {}) as { id?: string; full_name?: string; status?: string };
+      if (!candidate.id) return;
+      const name = candidate.full_name || candidate.id;
+      toast({ variant: 'info', title: t('pipeline.live.candidateUpdated', 'Candidate updated'), description: name });
+      lastEventAtRef.current = Date.now();
+      setCandidates((prev) => prev.map((c) => (c.id === candidate.id ? { ...c, ...(candidate as any) } : c)));
+    });
+    const unsubDeleted = subscribe('candidate.deleted', (rawData) => {
+      const data = rawData as Partial<CandidateDeletedPayload>;
+      if (!data?.id) return;
+      toast({ variant: 'warning', title: t('pipeline.live.candidateRemoved', 'Candidate removed'), description: data.id });
+      lastEventAtRef.current = Date.now();
+      setCandidates((prev) => prev.filter((c) => c.id !== data.id));
+    });
+    const unsubMoved = subscribe('pipeline.moved', (rawData) => {
+      const data = rawData as Partial<PipelineMovedPayload>;
+      if (!data?.candidate_id) return;
+      const stageLabel = data.to ? t(`pipeline.stages.${data.to}`, data.to) : '';
+      toast({
+        variant: 'info',
+        title: t('pipeline.live.pipelineMoved', 'Pipeline updated'),
+        description: data.candidate?.full_name
+          ? interpolate(t('pipeline.live.movedTo', 'Moved to {stage}'), { stage: stageLabel })
+          : stageLabel,
+      });
+      lastEventAtRef.current = Date.now();
+      if (data.to) {
+        setCandidates((prev) => prev.map((c) => (c.id === data.candidate_id ? { ...c, status: data.to } : c)));
+      } else if (data.candidate) {
+        setCandidates((prev) => prev.map((c) => (c.id === data.candidate_id ? { ...c, ...(data.candidate as any) } : c)));
+      }
+    });
+
+    return () => {
+      unsubCreated();
+      unsubUpdated();
+      unsubDeleted();
+      unsubMoved();
+    };
+  }, [subscribe, toast, t]);
 
   const fetchAiSuggestions = useCallback(async () => {
     if (candidates.length === 0) {
@@ -131,7 +192,7 @@ export default function PipelinePage() {
 
   const applySuggestion = async (s: AiSuggestion) => {
     if (!s.candidate_id || !s.suggested_stage) {
-      push('info', t('pipeline.ai.applyHint', 'Review the candidate manually and move them from the candidate detail.'));
+      toast({ variant: 'info', title: t('pipeline.ai.applyHint', 'Review the candidate manually and move them from the candidate detail.') });
       return;
     }
     if (s.suggested_stage === 'hired' || s.suggested_stage === 'rejected') {
@@ -147,9 +208,9 @@ export default function PipelinePage() {
     try {
       await api.updateCandidate(id, { status: newStatus });
       setCandidates((p) => p.map((c) => (c.id === id ? { ...c, status: newStatus } : c)));
-      push('success', interpolate(t('pipeline.moved', 'Moved to {status}'), { status: t(`pipeline.stages.${newStatus}`, newStatus) }));
+      toast({ variant: 'success', title: interpolate(t('pipeline.moved', 'Moved to {status}'), { status: t(`pipeline.stages.${newStatus}`, newStatus) }) });
     } catch (err: any) {
-      push('error', err?.message || t('pipeline.moveFailed', 'Failed to move candidate'));
+      toast({ variant: 'error', title: err?.message || t('pipeline.moveFailed', 'Failed to move candidate') });
     } finally {
       setMoving(null);
     }
@@ -174,7 +235,6 @@ export default function PipelinePage() {
 
   return (
     <div className="space-y-6">
-      <ToastContainer />
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <div>
@@ -189,14 +249,37 @@ export default function PipelinePage() {
           <HelpButton tour={pipelineTour} />
         </div>
         <div className="flex items-center gap-2">
-          {lastRefresh && (
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 inline-flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500 pulse-dot" aria-hidden="true" />
-              <span aria-live="polite" aria-atomic="true">
-                {t('common.live', 'Live')} · {lastRefresh.toLocaleTimeString()}
-              </span>
+          <span
+            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-semibold border ${
+              isConnected
+                ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-300 dark:border-green-800'
+                : isReconnecting
+                ? 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/40 dark:text-yellow-300 dark:border-yellow-800'
+                : 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-surface-800 dark:text-gray-300 dark:border-surface-700'
+            }`}
+            aria-live="polite"
+            aria-atomic="true"
+            title={`WebSocket: ${wsState}`}
+          >
+            {isConnected ? (
+              <Wifi className="h-3 w-3" aria-hidden="true" />
+            ) : (
+              <WifiOff className="h-3 w-3" aria-hidden="true" />
+            )}
+            <span className={`h-1.5 w-1.5 rounded-full ${
+              isConnected ? 'bg-green-500 pulse-dot' : isReconnecting ? 'bg-yellow-500 animate-pulse' : 'bg-gray-400'
+            }`} aria-hidden="true" />
+            <span>
+              {isConnected
+                ? t('common.live', 'Live')
+                : isReconnecting
+                ? t('common.reconnecting', 'Reconnecting…')
+                : t('common.offline', 'Offline')}
             </span>
-          )}
+            {lastRefresh && (
+              <span className="text-gray-400 dark:text-gray-500 font-normal">· {lastRefresh.toLocaleTimeString()}</span>
+            )}
+          </span>
           <Button variant="ghost" size="sm" leftIcon={<RefreshCw className="h-3.5 w-3.5" />} onClick={() => load(false)} aria-label={t('common.refresh', 'Refresh')}>
             {t('common.refresh', 'Refresh')}
           </Button>

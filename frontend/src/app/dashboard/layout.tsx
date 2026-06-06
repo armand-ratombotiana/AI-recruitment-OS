@@ -31,6 +31,7 @@ import {
   LanguageToggle,
   ConnectionStatus,
 } from '@/components';
+import { ToastProvider } from '@/components/ui/toast';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
 
 const NAV_ITEMS = [
@@ -54,7 +55,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const locale = useLocaleStore((s) => s.locale);
 
   return (
-    <NotificationProvider position="top-right" maxNotifications={5}>
+    <ToastProvider>
+      <NotificationProvider position="top-right" maxNotifications={5}>
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:shadow-lg"
@@ -182,5 +184,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </div>
     </NotificationProvider>
+    </ToastProvider>
   );
 }
