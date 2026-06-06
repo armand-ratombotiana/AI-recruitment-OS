@@ -6,10 +6,23 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional, Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from apps.ai_orchestrator.agents import AGENT_REGISTRY, build_agent
+from shared.ai.task_queue import (
+    AgentTask,
+    AgentTaskStatus,
+    enqueue_task,
+    get_task,
+    list_tasks,
+    task_to_dict,
+    update_task_status,
+)
+from shared.auth import require_tenant_id
+from shared.core.database import get_db_dependency
 from shared.middleware.rate_limit import rate_limit_ai as _rate_limit_ai_dep
 
 logger = logging.getLogger("ai.orchestrator")
@@ -151,6 +164,8 @@ AGENTS_DB: dict[str, dict] = {
 }
 
 TASKS_DB: dict[str, dict] = {}
+"""Backwards-compat alias kept for tests that still poke at the in-memory
+store.  All new task lifecycle state lives in the ``ai_agent_tasks`` table."""
 
 
 # ── Request Models ──────────────────────────────────────────────────────────────
@@ -165,9 +180,30 @@ class OrchestrateRequest(BaseModel):
     tenant_id: Optional[str] = Field(default=None, description="Tenant scope (defaults to 'default')")
 
 
-class CreateTaskRequest(BaseModel):
+class EnqueueTaskRequest(BaseModel):
+    agent_type: str = Field(..., description="Agent type to execute (e.g. 'outreach', 'evaluation')")
+    input: dict = Field(default_factory=dict, description="Input data for the agent")
+
+
+class TaskRead(BaseModel):
+    id: str
+    tenant_id: str
     agent_type: str
-    payload: dict = Field(default_factory=dict)
+    status: str
+    progress: float
+    error: Optional[str] = None
+    retry_count: int = 0
+    input: dict = Field(default_factory=dict)
+    output: Optional[dict] = None
+    created_at: Optional[str] = None
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+
+
+class TaskListResponse(BaseModel):
+    data: list[TaskRead]
+    total: int
+    limit: int
 
 
 router = APIRouter(dependencies=[Depends(_rate_limit_ai_dep)])
@@ -499,73 +535,181 @@ async def orchestrate(data: OrchestrateRequest):
     }
 
 
-@router.post("/tasks")
-async def create_task(data: CreateTaskRequest):
-    agent = next((a for a in AGENTS_DB.values() if a["type"] == data.agent_type), None)
-    if not agent:
-        raise HTTPException(status_code=404, detail=f"Agent type '{data.agent_type}' not found")
+@router.post(
+    "/tasks",
+    response_model=TaskRead,
+    status_code=201,
+    tags=["AI"],
+    summary="Enqueue a new AI agent task for asynchronous processing",
+)
+async def enqueue_task_endpoint(
+    data: EnqueueTaskRequest,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> TaskRead:
+    """Create a new pending :class:`AgentTask` row and return it.
 
-    task_id = f"task_{uuid.uuid4().hex[:12]}"
-    task = {
-        "id": task_id,
-        "agent_type": data.agent_type,
-        "agent_id": agent["id"],
-        "agent_name": agent["name"],
-        "status": "queued",
-        "payload": data.payload,
-        "result": None,
-        "reasoning_chain": None,
-        "confidence_score": None,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "completed_at": None,
-    }
-    TASKS_DB[task_id] = task
-
-    return {
-        "task_id": task_id,
-        "status": "queued",
-        "agent_type": data.agent_type,
-    }
+    The actual execution happens out-of-band via
+    :mod:`shared.ai.worker` (poll-and-run loop).  Callers can poll
+    ``GET /tasks/{id}`` for status, or ``GET /tasks?status=...`` to
+    list recent tasks.
+    """
+    if data.agent_type not in AGENT_REGISTRY and data.agent_type not in {a["type"] for a in AGENTS_DB.values()}:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Agent type '{data.agent_type}' is not supported",
+        )
+    task = await enqueue_task(
+        db,
+        tenant_id=tenant_id,
+        agent_type=data.agent_type,
+        input=data.input,
+    )
+    return TaskRead(**task_to_dict(task))
 
 
-@router.get("/tasks/{task_id}")
-async def get_task(task_id: str):
-    task = TASKS_DB.get(task_id)
+@router.get(
+    "/tasks",
+    response_model=TaskListResponse,
+    tags=["AI"],
+    summary="List AI agent tasks for the current tenant",
+)
+async def list_tasks_endpoint(
+    status_filter: Optional[AgentTaskStatus] = Query(default=None, alias="status"),
+    limit: int = Query(default=50, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> TaskListResponse:
+    rows = await list_tasks(
+        db,
+        tenant_id=tenant_id,
+        status=status_filter,
+        limit=limit,
+        offset=offset,
+    )
+    return TaskListResponse(
+        data=[TaskRead(**task_to_dict(r)) for r in rows],
+        total=len(rows),
+        limit=limit,
+    )
+
+
+@router.get(
+    "/tasks/{task_id}",
+    response_model=TaskRead,
+    tags=["AI"],
+    summary="Get the status of a single AI agent task",
+)
+async def get_task_endpoint(
+    task_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> TaskRead:
+    task = await get_task(db, task_id, tenant_id=tenant_id)
     if not task:
         raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
-    return {
-        "task_id": task["id"],
-        "status": task["status"],
-        "agent_type": task["agent_type"],
-        "agent_name": task.get("agent_name"),
-        "model_used": task.get("model_used"),
-        "result": task["result"],
-        "reasoning_chain": task.get("reasoning_chain"),
-        "confidence_score": task.get("confidence_score"),
-        "created_at": task["created_at"],
-        "completed_at": task["completed_at"],
-    }
+    return TaskRead(**task_to_dict(task))
 
 
-@router.get("/tasks/{task_id}/result")
-async def get_task_result(task_id: str):
-    task = TASKS_DB.get(task_id)
+@router.delete(
+    "/tasks/{task_id}",
+    response_model=TaskRead,
+    tags=["AI"],
+    summary="Cancel a pending or running AI agent task",
+)
+async def cancel_task_endpoint(
+    task_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> TaskRead:
+    task = await get_task(db, task_id, tenant_id=tenant_id)
     if not task:
         raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
-    if task["status"] != "completed":
-        raise HTTPException(status_code=409, detail=f"Task {task_id} is not yet complete (status={task['status']})")
+    if task.status not in ("pending", "running"):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Task {task_id} is in '{task.status}' state and cannot be cancelled; "
+                "only pending or running tasks can be cancelled"
+            ),
+        )
+    updated = await update_task_status(
+        db,
+        task_id,
+        "cancelled",
+        error=task.error,
+        progress=task.progress,
+        tenant_id=tenant_id,
+    )
+    assert updated is not None
+    return TaskRead(**task_to_dict(updated))
+
+
+@router.post(
+    "/tasks/{task_id}/retry",
+    response_model=TaskRead,
+    tags=["AI"],
+    summary="Retry a failed or cancelled AI agent task",
+)
+async def retry_task_endpoint(
+    task_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> TaskRead:
+    task = await get_task(db, task_id, tenant_id=tenant_id)
+    if not task:
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+    if task.status not in ("failed", "cancelled"):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Task {task_id} is in '{task.status}' state; only failed or "
+                "cancelled tasks can be retried"
+            ),
+        )
+    # Reset to pending with a fresh attempt.  Bump retry_count for
+    # observability.  Output is cleared so a stale result does not
+    # leak through between cycles.
+    stmt = select(AgentTask).where(
+        AgentTask.id == task_id, AgentTask.tenant_id == tenant_id
+    )
+    row = (await db.execute(stmt)).scalar_one()
+    row.status = "pending"
+    row.error = None
+    row.output = None
+    row.progress = 0.0
+    row.started_at = None
+    row.completed_at = None
+    row.retry_count = (row.retry_count or 0) + 1
+    db.add(row)
+    await db.commit()
+    await db.refresh(row)
+    return TaskRead(**task_to_dict(row))
+
+
+@router.get(
+    "/tasks/{task_id}/result",
+    tags=["AI"],
+    summary="Get the result of a completed task (legacy compatibility)",
+)
+async def get_task_result_endpoint(
+    task_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> dict:
+    task = await get_task(db, task_id, tenant_id=tenant_id)
+    if not task:
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+    if task.status != "completed":
+        raise HTTPException(
+            status_code=409,
+            detail=f"Task {task_id} is not yet complete (status={task.status})",
+        )
     return {
-        "task_id": task["id"],
-        "agent_type": task["agent_type"],
-        "agent_name": task.get("agent_name"),
-        "model_used": task.get("model_used"),
-        "result": task["result"],
-        "reasoning_chain": task.get("reasoning_chain"),
-        "confidence_score": task.get("confidence_score"),
-        "context": {
-            "job_id": task.get("job_id"),
-            "candidate_id": task.get("candidate_id"),
-            "resume_id": task.get("resume_id"),
-        },
-        "completed_at": task["completed_at"],
+        "task_id": task.id,
+        "agent_type": task.agent_type,
+        "status": task.status,
+        "result": task.output,
+        "completed_at": task.completed_at.isoformat() if task.completed_at else None,
     }
