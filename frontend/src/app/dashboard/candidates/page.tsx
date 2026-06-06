@@ -6,7 +6,6 @@ import {
   Search,
   LayoutGrid,
   List,
-  Download,
   Trash2,
   Filter,
   UserPlus,
@@ -20,6 +19,8 @@ import {
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
 import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
+import { ExportMenu } from '@/components/ui/export-menu';
+import { useBulkActions } from '@/hooks/use-bulk-actions';
 import { CandidateForm } from '@/components/forms';
 import type { CandidateFormValues } from '@/components/forms';
 import type { Column } from '@/components/ui/data-table';
@@ -233,17 +234,59 @@ export default function CandidatesPage() {
     push('success', t('candidates.exported', 'Exported {count} candidate(s) to CSV').replace('{count}', String(data.length)));
   };
 
+  const exportWithFormat = async (format: 'csv' | 'xlsx' | 'pdf') => {
+    const ids = selected.size > 0 ? Array.from(selected) : undefined;
+    if (format === 'csv') {
+      exportCSV();
+      return;
+    }
+    try {
+      const res = await api.candidates.export(format, ids);
+      if (res?.url) {
+        window.open(res.url, '_blank');
+        push('success', t('candidates.exportedFormat', 'Exported {count} candidate(s) to {format}')
+          .replace('{count}', String(ids ? ids.length : filtered.length))
+          .replace('{format}', format.toUpperCase()));
+      } else if (res?.data) {
+        const blob = new Blob([res.data], {
+          type: format === 'xlsx'
+            ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            : 'application/pdf',
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `candidates-${new Date().toISOString().slice(0, 10)}.${format}`;
+        a.click();
+        URL.revokeObjectURL(url);
+        push('success', t('candidates.exportedFormat', 'Exported {count} candidate(s) to {format}')
+          .replace('{count}', String(ids ? ids.length : filtered.length))
+          .replace('{format}', format.toUpperCase()));
+      } else {
+        exportCSV();
+      }
+    } catch (err: any) {
+      push('error', err?.message || t('candidates.exportFailed', 'Export failed'));
+    }
+  };
+
   const bulkDelete = async () => {
     setBulkDeleting(true);
     const ids = Array.from(selected);
     let removed = 0;
     let failed = 0;
-    for (const id of ids) {
-      try {
-        await api.candidates.delete(id);
-        removed++;
-      } catch {
-        failed++;
+    try {
+      const res = await api.candidates.bulkDelete(ids);
+      removed = ids.length;
+      void res;
+    } catch {
+      for (const id of ids) {
+        try {
+          await api.candidates.delete(id);
+          removed++;
+        } catch {
+          failed++;
+        }
       }
     }
     setBulkDeleting(false);
@@ -388,6 +431,7 @@ export default function CandidatesPage() {
           >
             {t('candidates.import', 'Import CSV')}
           </Button>
+          <ExportMenu onExport={exportWithFormat} disabled={filtered.length === 0} />
           <Button data-tour="candidates-add" variant="primary" leftIcon={<UserPlus className="h-4 w-4" />} onClick={() => setAddOpen(true)}>
             {t('candidates.addCandidate', 'Add candidate')}
           </Button>
@@ -466,7 +510,7 @@ export default function CandidatesPage() {
             <button onClick={() => setSelected(new Set())} className="text-xs text-blue-700 dark:text-brand-300 hover:underline">{t('candidates.clear', 'Clear')}</button>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" leftIcon={<Download className="h-3.5 w-3.5" />} onClick={exportCSV}>{t('common.export', 'Export')}</Button>
+            <ExportMenu onExport={exportWithFormat} />
             <Button variant="danger" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => setConfirmBulkDelete(true)}>{t('common.delete', 'Delete')}</Button>
           </div>
         </div>

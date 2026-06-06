@@ -371,6 +371,16 @@ class APIClient {
       this.request<CandidateTypes.MatchCandidateResponse>(`/candidates/${candidateId}/match`, {
         method: 'POST',
       }),
+    bulkDelete: (candidateIds: string[]) =>
+      this.request<MessageResponse>('/candidates/bulk-delete', {
+        method: 'POST',
+        body: JSON.stringify({ ids: candidateIds }),
+      }),
+    export: (format: 'csv' | 'xlsx' | 'pdf', candidateIds?: string[]) =>
+      this.request<{ url: string; data?: string }>('/candidates/export', {
+        method: 'POST',
+        body: JSON.stringify({ format, ids: candidateIds }),
+      }),
   };
 
   // ========================================================================
@@ -422,6 +432,16 @@ class APIClient {
       }),
     delete: (jobId: string) =>
       this.request<JobTypes.JobDeleteResponse>(`/jobs/${jobId}`, { method: 'DELETE' }),
+    bulkDelete: (jobIds: string[]) =>
+      this.request<MessageResponse>('/jobs/bulk-delete', {
+        method: 'POST',
+        body: JSON.stringify({ ids: jobIds }),
+      }),
+    export: (format: 'csv' | 'xlsx' | 'pdf', jobIds?: string[]) =>
+      this.request<{ url: string; data?: string }>('/jobs/export', {
+        method: 'POST',
+        body: JSON.stringify({ format, ids: jobIds }),
+      }),
     getMatchedCandidates: (jobId: string) =>
       this.request<JobTypes.MatchedCandidatesResponse>(`/jobs/${jobId}/candidates`),
   };

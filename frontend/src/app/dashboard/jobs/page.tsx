@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Plus,
   Briefcase,
@@ -11,9 +11,13 @@ import {
   TrendingUp,
   Search,
   Pencil,
+  Trash2,
+  Download,
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
-import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton } from '@/components';
+import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
+import { ExportMenu } from '@/components/ui/export-menu';
+import { useBulkActions } from '@/hooks/use-bulk-actions';
 import { JobForm } from '@/components/forms';
 import type { JobFormValues } from '@/components/forms';
 import type { Column } from '@/components/ui/data-table';
@@ -57,6 +61,9 @@ export default function JobsPage() {
   const [editing, setEditing] = useState<any | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [avgTime, setAvgTime] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const { push, ToastContainer } = useToast();
 
   const load = async () => {
@@ -156,7 +163,118 @@ export default function JobsPage() {
   const totalApplicants = filtered.reduce((sum, j) => sum + (j.applicants || 0), 0);
   const openCount = jobs.filter((j) => j.status === 'open').length;
 
+  const exportCSV = () => {
+    const rows = [['Title', 'Department', 'Location', 'Type', 'Salary Min', 'Salary Max', 'Status', 'Applicants']];
+    const data = selected.size > 0 ? filtered.filter((j) => selected.has(j.id)) : filtered;
+    data.forEach((j) => rows.push([
+      j.title,
+      j.department || j.company || '',
+      j.location || '',
+      j.employment_type || j.type || '',
+      String(j.salary_min || 0),
+      String(j.salary_max || 0),
+      j.status,
+      String(j.applicants || 0),
+    ]));
+    const csv = rows.map((r) => r.map((v) => `"${(v || '').replace(/"/g, '""')}"`).join('\n')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `jobs-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    push('success', t('jobs.exported', 'Exported {count} job(s) to CSV').replace('{count}', String(data.length)));
+  };
+
+  const exportWithFormat = async (format: 'csv' | 'xlsx' | 'pdf') => {
+    const ids = selected.size > 0 ? Array.from(selected) : undefined;
+    if (format === 'csv') {
+      exportCSV();
+      return;
+    }
+    try {
+      const res = await api.jobs.export(format, ids);
+      if (res?.url) {
+        window.open(res.url, '_blank');
+        push('success', t('jobs.exportedFormat', 'Exported {count} job(s) to {format}')
+          .replace('{count}', String(ids ? ids.length : filtered.length))
+          .replace('{format}', format.toUpperCase()));
+      } else if (res?.data) {
+        const blob = new Blob([res.data], {
+          type: format === 'xlsx'
+            ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            : 'application/pdf',
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `jobs-${new Date().toISOString().slice(0, 10)}.${format}`;
+        a.click();
+        URL.revokeObjectURL(url);
+        push('success', t('jobs.exportedFormat', 'Exported {count} job(s) to {format}')
+          .replace('{count}', String(ids ? ids.length : filtered.length))
+          .replace('{format}', format.toUpperCase()));
+      } else {
+        exportCSV();
+      }
+    } catch (err: any) {
+      push('error', err?.message || t('jobs.exportFailed', 'Export failed'));
+    }
+  };
+
+  const bulkDelete = async () => {
+    setBulkDeleting(true);
+    const ids = Array.from(selected);
+    let removed = 0;
+    let failed = 0;
+    try {
+      const res = await api.jobs.bulkDelete(ids);
+      removed = ids.length;
+      void res;
+    } catch {
+      for (const id of ids) {
+        try {
+          await api.jobs.delete(id);
+          removed++;
+        } catch {
+          failed++;
+        }
+      }
+    }
+    setBulkDeleting(false);
+    setConfirmBulkDelete(false);
+    if (failed > 0) {
+      push('error', t('jobs.bulkDeleteFailed', 'Some jobs could not be deleted'));
+    } else {
+      push('success', t('jobs.removed', 'Removed {count} job(s)').replace('{count}', String(removed)));
+    }
+    setSelected(new Set());
+    await load();
+  };
+
   const columns: Column<any>[] = [
+    {
+      key: 'select',
+      label: '',
+      sortable: false,
+      render: (j) => (
+        <input
+          type="checkbox"
+          checked={selected.has(j.id)}
+          onChange={() => {
+            setSelected((p) => {
+              const n = new Set(p);
+              if (n.has(j.id)) n.delete(j.id);
+              else n.add(j.id);
+              return n;
+            });
+          }}
+          onClick={(e) => e.stopPropagation()}
+          aria-label={t('jobs.select', 'Select {title}').replace('{title}', j.title)}
+        />
+      ),
+    },
     {
       key: 'title',
       label: t('jobs.table.position', 'Position'),
@@ -238,6 +356,7 @@ export default function JobsPage() {
         <Button data-tour="jobs-create" variant="primary" leftIcon={<Plus className="h-4 w-4" />} onClick={() => { setCreateOpen(true); }}>
           {t('jobs.createJob', 'Create job')}
         </Button>
+        <ExportMenu onExport={exportWithFormat} disabled={filtered.length === 0} />
       </div>
 
       <Breadcrumb />
@@ -292,6 +411,21 @@ export default function JobsPage() {
           </select>
         </div>
       </div>
+
+      {selected.size > 0 && (
+        <div data-tour="jobs-bulk" className="bg-blue-50 dark:bg-brand-500/10 border border-blue-200 dark:border-brand-500/30 rounded-xl p-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold text-blue-900 dark:text-brand-200">
+              {interpolate(t('jobs.selected', '{count} selected'), { count: String(selected.size) })}
+            </span>
+            <button onClick={() => setSelected(new Set())} className="text-xs text-blue-700 dark:text-brand-300 hover:underline">{t('candidates.clear', 'Clear')}</button>
+          </div>
+          <div className="flex items-center gap-2">
+            <ExportMenu onExport={exportWithFormat} />
+            <Button variant="danger" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => setConfirmBulkDelete(true)}>{t('common.delete', 'Delete')}</Button>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-2" aria-busy="true">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} height={56} />)}</div>
@@ -360,6 +494,19 @@ export default function JobsPage() {
           />
         )}
       </Modal>
+
+      <ConfirmDialog
+        isOpen={confirmBulkDelete}
+        onClose={() => !bulkDeleting && setConfirmBulkDelete(false)}
+        onConfirm={bulkDelete}
+        title={interpolate(t('jobs.confirmBulkDelete.title', 'Delete {count} job(s)?'), { count: String(selected.size) })}
+        description={t('jobs.confirmBulkDelete.description', 'This will permanently remove the selected jobs. This action cannot be undone.')}
+        confirmLabel={t('jobs.confirmBulkDelete.confirm', 'Delete jobs')}
+        cancelLabel={t('common.cancel', 'Cancel')}
+        variant="danger"
+        loading={bulkDeleting}
+        destructive
+      />
     </div>
   );
 }
