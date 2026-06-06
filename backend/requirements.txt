@@ -23,6 +23,13 @@ redis[hiredis]==5.2.1
 celery[redis]==5.4.0
 aiokafka==0.11.0
 
+# === Rate limiting ===
+# slowapi provides a FastAPI/Starlette-friendly decorator-style limiter that
+# can be used as a drop-in alongside the in-house multi-window limiter in
+# ``shared/middleware/rate_limit.py``.  The in-house limiter is the primary
+# implementation; slowapi is kept available for ad-hoc endpoint limits.
+slowapi==0.1.9
+
 # === AI & ML ===
 openai==1.58.1
 anthropic==0.42.0

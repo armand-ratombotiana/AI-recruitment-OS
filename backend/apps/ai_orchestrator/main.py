@@ -6,10 +6,11 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional, Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from apps.ai_orchestrator.agents import AGENT_REGISTRY, build_agent
+from shared.middleware.rate_limit import rate_limit_ai as _rate_limit_ai_dep
 
 logger = logging.getLogger("ai.orchestrator")
 
@@ -169,7 +170,7 @@ class CreateTaskRequest(BaseModel):
     payload: dict = Field(default_factory=dict)
 
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(_rate_limit_ai_dep)])
 
 
 # ── Response Generation Helpers ─────────────────────────────────────────────────

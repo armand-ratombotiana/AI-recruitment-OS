@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useId } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Plus,
   Calendar,
@@ -15,10 +15,27 @@ import {
   Play,
   ChevronLeft,
   ChevronRight,
+  List as ListIcon,
+  Pencil,
 } from 'lucide-react';
-import { api } from '@/services/api/client';
-import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, interviewsTour } from '@/components';
+import { api, APIError } from '@/services/api/client';
+import {
+  DataTable,
+  EmptyState,
+  Badge,
+  Button,
+  Skeleton,
+  Modal,
+  useToast,
+  Breadcrumb,
+  HelpButton,
+  interviewsTour,
+  Tabs,
+} from '@/components';
+import type { Tab } from '@/components/ui/tabs';
 import type { Column } from '@/components/ui/data-table';
+import { InterviewForm, type InterviewFormValues, type InterviewOption } from '@/components/forms';
+import { InterviewCalendar, type InterviewCalendarItem } from '@/components/dashboard/interview-calendar';
 import { useLocaleStore, translate, interpolate, formatDate } from '@/stores/locale-store';
 
 const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'info' | 'danger' | 'purple' | 'default'> = {
@@ -34,6 +51,11 @@ const TYPE_META: Record<string, { icon: typeof Phone; classes: string; dark: str
     icon: Phone,
     classes: 'bg-blue-100 text-blue-700',
     dark: 'dark:bg-blue-500/20 dark:text-blue-300',
+  },
+  video: {
+    icon: Video,
+    classes: 'bg-indigo-100 text-indigo-700',
+    dark: 'dark:bg-indigo-500/20 dark:text-indigo-300',
   },
   technical: {
     icon: Code2,
@@ -88,8 +110,15 @@ export default function InterviewsPage() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [editingInterview, setEditingInterview] = useState<any | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [weekStart, setWeekStart] = useState<Date>(() => startOfMonday(new Date()));
+  const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
+
+  const [candidateOptions, setCandidateOptions] = useState<InterviewOption[]>([]);
+  const [jobOptions, setJobOptions] = useState<InterviewOption[]>([]);
+  const [interviewerOptions, setInterviewerOptions] = useState<string[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
   const { push, ToastContainer } = useToast();
 
   const load = useCallback(async (isBackground = false) => {
@@ -115,6 +144,66 @@ export default function InterviewsPage() {
     return () => clearInterval(timer);
   }, [load]);
 
+  useEffect(() => {
+    let mounted = true;
+    setLoadingOptions(true);
+    Promise.allSettled([api.candidates.list({ page_size: '200' } as any), api.jobs.list({ page_size: '200' } as any), api.users.list({ page_size: '200' } as any)])
+      .then((results) => {
+        if (!mounted) return;
+        const cands: InterviewOption[] = [];
+        const jobs: InterviewOption[] = [];
+        const interviewers = new Set<string>();
+        const candRes = results[0];
+        if (candRes.status === 'fulfilled') {
+          const data = (candRes.value as any)?.data || candRes.value;
+          (Array.isArray(data) ? data : []).forEach((c: any) => {
+            if (c?.id) {
+              cands.push({
+                id: c.id,
+                label: c.full_name || c.name || c.email || c.id,
+                sublabel: c.email || undefined,
+              });
+            }
+          });
+        }
+        const jobRes = results[1];
+        if (jobRes.status === 'fulfilled') {
+          const data = (jobRes.value as any)?.data || jobRes.value;
+          (Array.isArray(data) ? data : []).forEach((j: any) => {
+            if (j?.id) {
+              jobs.push({
+                id: j.id,
+                label: j.title || j.id,
+                sublabel: j.location || j.department || undefined,
+              });
+            }
+          });
+        }
+        const userRes = results[2];
+        if (userRes.status === 'fulfilled') {
+          const data = (userRes.value as any)?.data || userRes.value;
+          (Array.isArray(data) ? data : []).forEach((u: any) => {
+            if (!u) return;
+            const name = u.full_name || u.name;
+            if (typeof name === 'string' && name.trim()) interviewers.add(name.trim());
+            else if (u.email && typeof u.email === 'string') interviewers.add(u.email);
+          });
+        }
+        setCandidateOptions(cands);
+        setJobOptions(jobs);
+        setInterviewerOptions(Array.from(interviewers).sort());
+      })
+      .catch(() => {
+        /* options stay empty */
+      })
+      .finally(() => {
+        if (mounted) setLoadingOptions(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const handleStart = async (id: string) => {
     try {
       await api.startInterview(id);
@@ -135,42 +224,89 @@ export default function InterviewsPage() {
     }
   };
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (values: InterviewFormValues) => {
     setSubmitting(true);
     try {
-      await api.createInterview({
-        candidate_id: data.candidate_id || data.candidate_name,
-        job_id: data.job_id || data.job_title,
-        scheduled_at: data.scheduled_at,
-        duration_min: data.duration_min,
-        type: data.type,
-        panel: data.panel,
-        location: data.location,
-        status: 'scheduled',
-      });
+      await api.interviews.create({
+        candidate_id: values.candidate_id,
+        job_id: values.job_id,
+        scheduled_at: values.scheduled_at,
+        duration_minutes: values.duration_minutes,
+        type: values.type,
+        interviewer: values.interviewers.join(', '),
+        notes: values.notes || undefined,
+      } as any);
       setScheduleOpen(false);
-      push('success', interpolate(t('interviews.scheduledWith', 'Interview scheduled with {name}'), { name: data.candidate_name }));
+      const candidateLabel =
+        candidateOptions.find((c) => c.id === values.candidate_id)?.label ??
+        t('interviews.calendar.unnamed', 'Untitled');
+      push('success', interpolate(t('interviews.scheduledWith', 'Interview scheduled with {name}'), { name: candidateLabel }));
       await load();
     } catch (err: any) {
-      push('error', err?.message || t('interviews.createFailed', 'Failed to schedule interview'));
+      const e = err as APIError;
+      push('error', e?.message || t('interviews.createFailed', 'Failed to schedule interview'));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const filtered = interviews.filter((i) => {
-    if (statusFilter !== 'all' && i.status !== statusFilter) return false;
-    if (typeFilter !== 'all' && i.type !== typeFilter) return false;
-    if (search) {
-      const q = search.toLowerCase();
-      if (!i.candidate_name?.toLowerCase().includes(q) && !i.job_title?.toLowerCase().includes(q)) return false;
+  const handleUpdate = async (id: string, values: InterviewFormValues) => {
+    setSubmitting(true);
+    try {
+      await api.interviews.create({
+        candidate_id: values.candidate_id,
+        job_id: values.job_id,
+        scheduled_at: values.scheduled_at,
+        duration_minutes: values.duration_minutes,
+        type: values.type,
+        interviewer: values.interviewers.join(', '),
+        notes: values.notes || undefined,
+      } as any);
+      setEditingInterview(null);
+      push('success', t('interviews.updated', 'Interview updated'));
+      await load();
+    } catch (err: any) {
+      const e = err as APIError;
+      push('error', e?.message || t('interviews.updateFailed', 'Failed to update interview'));
+    } finally {
+      setSubmitting(false);
     }
-    return true;
-  });
+  };
 
-  const upcoming = filtered
-    .filter((i) => new Date(i.scheduled_at) >= new Date() && i.status === 'scheduled')
-    .slice(0, 5);
+  const openCreate = () => {
+    setEditingInterview(null);
+    setScheduleOpen(true);
+  };
+
+  const openEdit = (interview: any) => {
+    setEditingInterview(interview);
+  };
+
+  const closeModal = () => {
+    if (submitting) return;
+    setScheduleOpen(false);
+    setEditingInterview(null);
+  };
+
+  const filtered = useMemo(() => {
+    return interviews.filter((i) => {
+      if (statusFilter !== 'all' && i.status !== statusFilter) return false;
+      if (typeFilter !== 'all' && i.type !== typeFilter) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        if (!i.candidate_name?.toLowerCase().includes(q) && !i.job_title?.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }, [interviews, statusFilter, typeFilter, search]);
+
+  const upcoming = useMemo(
+    () =>
+      filtered
+        .filter((i) => new Date(i.scheduled_at) >= new Date() && i.status === 'scheduled')
+        .slice(0, 5),
+    [filtered]
+  );
 
   const STATUS_OPTIONS = [
     { value: 'all', label: t('candidates.allStatuses', 'All statuses') },
@@ -180,6 +316,7 @@ export default function InterviewsPage() {
   const TYPE_OPTIONS = [
     { value: 'all', label: t('interviews.types.all', 'All types') },
     { value: 'phone', label: t('interviews.types.phone', 'Phone screen') },
+    { value: 'video', label: t('interviews.types.video', 'Video call') },
     { value: 'technical', label: t('interviews.types.technical', 'Technical') },
     { value: 'panel', label: t('interviews.types.panel', 'Panel') },
     { value: 'onsite', label: t('interviews.types.onsite', 'Onsite') },
@@ -208,7 +345,7 @@ export default function InterviewsPage() {
         <div>
           <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{formatDateTime(i.scheduled_at, locale, t('common.today', 'Today'), t('common.tomorrow', 'Tomorrow'))}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            {i.duration_min || 60} {t('interviews.minutes', 'min')} · {i.location || t('jobs.remote', 'Remote')}
+            {i.duration_minutes || i.duration_min || 60} {t('interviews.minutes', 'min')} · {i.location || t('jobs.remote', 'Remote')}
           </p>
         </div>
       ),
@@ -227,21 +364,30 @@ export default function InterviewsPage() {
       },
     },
     {
-      key: 'panel',
+      key: 'interviewer',
       label: t('interviews.table.panel', 'Panel'),
-      render: (i) => (
-        <div className="flex -space-x-1.5">
-          {i.panel?.slice(0, 3).map((p: string, idx: number) => (
-            <div
-              key={idx}
-              title={p}
-              className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 border-2 border-white dark:border-surface-900 text-white text-[10px] font-bold flex items-center justify-center"
-            >
-              {p}
-            </div>
-          ))}
-        </div>
-      ),
+      render: (i) => {
+        const raw = i.interviewer || i.panel;
+        const arr: string[] = Array.isArray(raw)
+          ? raw
+          : typeof raw === 'string'
+            ? raw.split(',').map((s: string) => s.trim()).filter(Boolean)
+            : [];
+        if (arr.length === 0) return <span className="text-xs text-gray-400">—</span>;
+        return (
+          <div className="flex -space-x-1.5">
+            {arr.slice(0, 3).map((p: string, idx: number) => (
+              <div
+                key={idx}
+                title={p}
+                className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 border-2 border-white dark:border-surface-900 text-white text-[10px] font-bold flex items-center justify-center"
+              >
+                {p}
+              </div>
+            ))}
+          </div>
+        );
+      },
     },
     {
       key: 'status',
@@ -256,38 +402,91 @@ export default function InterviewsPage() {
       key: 'actions',
       label: '',
       sortable: false,
-      render: (i) =>
-        i.status === 'scheduled' ? (
+      render: (i) => (
+        <div className="flex items-center justify-end gap-1.5">
           <Button
-            data-tour="interviews-join"
             size="sm"
-            variant="primary"
-            leftIcon={<Play className="h-3 w-3" />}
+            variant="ghost"
+            leftIcon={<Pencil className="h-3 w-3" />}
             onClick={(e) => {
               e.stopPropagation();
-              handleStart(i.id);
+              openEdit(i);
             }}
-            aria-label={t('interviews.actions.startAria', 'Start interview with {name}').replace('{name}', i.candidate_name)}
+            aria-label={t('interviews.actions.editAria', 'Edit interview with {name}').replace(
+              '{name}',
+              i.candidate_name ?? ''
+            )}
           >
-            {t('interviews.actions.start', 'Start')}
+            {t('common.edit', 'Edit')}
           </Button>
-        ) : i.status === 'in_progress' ? (
-          <Button
-            data-tour="interviews-join"
-            size="sm"
-            variant="success"
-            leftIcon={<CheckCircle2 className="h-3 w-3" />}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleComplete(i.id);
-            }}
-            aria-label={t('interviews.actions.completeAria', 'Mark interview with {name} complete').replace('{name}', i.candidate_name)}
-          >
-            {t('interviews.actions.complete', 'Complete')}
-          </Button>
-        ) : null,
+          {i.status === 'scheduled' ? (
+            <Button
+              data-tour="interviews-join"
+              size="sm"
+              variant="primary"
+              leftIcon={<Play className="h-3 w-3" />}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleStart(i.id);
+              }}
+              aria-label={t('interviews.actions.startAria', 'Start interview with {name}').replace('{name}', i.candidate_name)}
+            >
+              {t('interviews.actions.start', 'Start')}
+            </Button>
+          ) : i.status === 'in_progress' ? (
+            <Button
+              data-tour="interviews-join"
+              size="sm"
+              variant="success"
+              leftIcon={<CheckCircle2 className="h-3 w-3" />}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleComplete(i.id);
+              }}
+              aria-label={t('interviews.actions.completeAria', 'Mark interview with {name} complete').replace('{name}', i.candidate_name)}
+            >
+              {t('interviews.actions.complete', 'Complete')}
+            </Button>
+          ) : null}
+        </div>
+      ),
     },
   ];
+
+  const calendarItems: InterviewCalendarItem[] = useMemo(
+    () =>
+      filtered.map((i) => ({
+        id: i.id,
+        scheduled_at: i.scheduled_at,
+        duration_minutes: i.duration_minutes ?? i.duration_min ?? 60,
+        type: i.type,
+        status: i.status,
+        candidate_id: i.candidate_id,
+        job_id: i.job_id,
+        candidate_name: i.candidate_name,
+        job_title: i.job_title,
+        interviewer: i.interviewer,
+        location: i.location,
+        notes: i.notes,
+      })),
+    [filtered]
+  );
+
+  const tabs: Tab[] = useMemo(
+    () => [
+      {
+        id: 'list',
+        label: t('interviews.viewList', 'List view'),
+        icon: <ListIcon className="h-4 w-4" />,
+      },
+      {
+        id: 'calendar',
+        label: t('interviews.viewCalendar', 'Calendar view'),
+        icon: <Calendar className="h-4 w-4" />,
+      },
+    ],
+    [t]
+  );
 
   return (
     <div className="space-y-6">
@@ -312,7 +511,7 @@ export default function InterviewsPage() {
           data-tour="interviews-schedule"
           variant="primary"
           leftIcon={<Plus className="h-4 w-4" />}
-          onClick={() => setScheduleOpen(true)}
+          onClick={openCreate}
           aria-haspopup="dialog"
         >
           {t('interviews.schedule', 'Schedule interview')}
@@ -335,9 +534,15 @@ export default function InterviewsPage() {
               const meta = TYPE_META[i.type];
               const Icon = meta?.icon || Video;
               return (
-                <div
+                <button
+                  type="button"
                   key={i.id}
-                  className="bg-white dark:bg-surface-900 rounded-lg p-3 border border-purple-100 dark:border-purple-500/20 hover:border-purple-300 dark:hover:border-purple-500/50 transition"
+                  onClick={() => openEdit(i)}
+                  className="text-left bg-white dark:bg-surface-900 rounded-lg p-3 border border-purple-100 dark:border-purple-500/20 hover:border-purple-300 dark:hover:border-purple-500/50 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+                  aria-label={t('interviews.actions.editAria', 'Edit interview with {name}').replace(
+                    '{name}',
+                    i.candidate_name ?? ''
+                  )}
                 >
                   <p className="text-xs font-bold text-purple-700 dark:text-purple-300">
                     {formatDateTime(i.scheduled_at, locale, t('common.today', 'Today'), t('common.tomorrow', 'Tomorrow'))}
@@ -351,7 +556,7 @@ export default function InterviewsPage() {
                       <Icon className="h-2.5 w-2.5" aria-hidden="true" /> {t(`interviews.types.${i.type}`, i.type)}
                     </span>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -395,23 +600,19 @@ export default function InterviewsPage() {
               </option>
             ))}
           </select>
-          <div className="flex items-center gap-1 bg-white dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-lg p-1">
-            <button
-              onClick={() => setView('list')}
-              className={`p-1.5 rounded ${view === 'list' ? 'bg-blue-50 text-blue-600 dark:bg-brand-500/20 dark:text-brand-300' : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-surface-700'}`}
-              aria-label={t('interviews.viewList', 'List view')}
-              aria-pressed={view === 'list'}
-            >
-              <Calendar className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setView('calendar')}
-              className={`p-1.5 rounded ${view === 'calendar' ? 'bg-blue-50 text-blue-600 dark:bg-brand-500/20 dark:text-brand-300' : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-surface-700'}`}
-              aria-label={t('interviews.viewCalendar', 'Calendar view')}
-              aria-pressed={view === 'calendar'}
-            >
-              <Video className="h-4 w-4" />
-            </button>
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-3 border-t border-gray-100 dark:border-surface-700 pt-3">
+          <Tabs
+            tabs={tabs}
+            activeTab={view}
+            onChange={(v) => setView(v as 'list' | 'calendar')}
+            variant="pills"
+            size="sm"
+          />
+          <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            {view === 'list'
+              ? t('interviews.view.listHint', 'Showing all interviews in a sortable list.')
+              : t('interviews.view.calendarHint', 'See interviews at a glance by month.')}
           </div>
         </div>
       </div>
@@ -439,7 +640,7 @@ export default function InterviewsPage() {
           title={interviews.length === 0 ? t('interviews.noInterviewsYet', 'No interviews yet') : t('interviews.noInterviewsFound', 'No interviews found')}
           description={interviews.length === 0 ? t('interviews.noInterviewsDesc', 'Schedule your first interview to get started.') : t('interviews.tryAdjusting', 'Try adjusting your filters.')}
           action={
-            <Button variant="primary" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setScheduleOpen(true)}>
+            <Button variant="primary" leftIcon={<Plus className="h-4 w-4" />} onClick={openCreate}>
               {t('interviews.schedule', 'Schedule interview')}
             </Button>
           }
@@ -449,39 +650,91 @@ export default function InterviewsPage() {
           <DataTable columns={columns} data={filtered} searchable={false} pageSize={10} rowKey={(i) => i.id} />
         </div>
       ) : (
-        <CalendarView
-          interviews={filtered}
-          weekStart={weekStart}
-          onPrevWeek={() => {
-            const d = new Date(weekStart);
-            d.setDate(d.getDate() - 7);
-            setWeekStart(d);
-          }}
-          onNextWeek={() => {
-            const d = new Date(weekStart);
-            d.setDate(d.getDate() + 7);
-            setWeekStart(d);
-          }}
-          onToday={() => setWeekStart(startOfMonday(new Date()))}
-          locale={locale}
-          t={t}
-        />
+        <div data-tour="interviews-table" className="space-y-4">
+          <InterviewCalendar
+            interviews={calendarItems}
+            locale={locale}
+            onSelectInterview={(iv) => {
+              const original = interviews.find((i) => i.id === iv.id);
+              if (original) openEdit(original);
+            }}
+            onSelectDay={(d) => {
+              if (d) setCalendarMonth(d);
+            }}
+            initialMonth={calendarMonth}
+          />
+          <CalendarWeekSummary
+            interviews={filtered}
+            weekStart={weekStart}
+            onPrevWeek={() => {
+              const d = new Date(weekStart);
+              d.setDate(d.getDate() - 7);
+              setWeekStart(d);
+            }}
+            onNextWeek={() => {
+              const d = new Date(weekStart);
+              d.setDate(d.getDate() + 7);
+              setWeekStart(d);
+            }}
+            onToday={() => setWeekStart(startOfMonday(new Date()))}
+            locale={locale}
+            t={t}
+            onSelect={openEdit}
+          />
+        </div>
       )}
 
       <Modal
-        isOpen={scheduleOpen}
-        onClose={() => !submitting && setScheduleOpen(false)}
-        title={t('interviews.modal.title', 'Schedule interview')}
-        description={t('interviews.modal.description', 'Set up a new interview with a candidate.')}
+        isOpen={scheduleOpen || editingInterview !== null}
+        onClose={closeModal}
+        title={
+          editingInterview
+            ? t('interviews.modal.editTitle', 'Edit interview')
+            : t('interviews.modal.title', 'Schedule interview')
+        }
+        description={
+          editingInterview
+            ? t('interviews.modal.editDescription', 'Update the interview details.')
+            : t('interviews.modal.description', 'Set up a new interview with a candidate.')
+        }
         size="lg"
       >
-        <ScheduleForm onCancel={() => !submitting && setScheduleOpen(false)} onSubmit={handleCreate} submitting={submitting} locale={locale} t={t} />
+        <InterviewForm
+          initial={
+            editingInterview
+              ? {
+                  id: editingInterview.id,
+                  candidate_id: editingInterview.candidate_id,
+                  job_id: editingInterview.job_id,
+                  scheduled_at: editingInterview.scheduled_at,
+                  duration_minutes:
+                    editingInterview.duration_minutes ?? editingInterview.duration_min ?? 60,
+                  type: editingInterview.type,
+                  interviewer: editingInterview.interviewer,
+                  location: editingInterview.location,
+                  notes: editingInterview.notes,
+                }
+              : null
+          }
+          submitting={submitting}
+          onCancel={closeModal}
+          onSubmit={
+            editingInterview
+              ? (values) => handleUpdate(editingInterview.id, values)
+              : handleCreate
+          }
+          locale={locale}
+          candidates={candidateOptions}
+          jobs={jobOptions}
+          interviewers={interviewerOptions}
+          loadingOptions={loadingOptions}
+        />
       </Modal>
     </div>
   );
 }
 
-function CalendarView({
+function CalendarWeekSummary({
   interviews,
   weekStart,
   onPrevWeek,
@@ -489,6 +742,7 @@ function CalendarView({
   onToday,
   locale,
   t,
+  onSelect,
 }: {
   interviews: any[];
   weekStart: Date;
@@ -497,6 +751,7 @@ function CalendarView({
   onToday: () => void;
   locale: string;
   t: (k: string, fb?: string) => string;
+  onSelect: (i: any) => void;
 }) {
   const today = new Date();
   const weekDays = Array.from({ length: 7 }, (_, i) => {
@@ -506,7 +761,7 @@ function CalendarView({
   });
 
   return (
-    <div data-tour="interviews-table" className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 overflow-hidden">
+    <div className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 py-3 border-b border-gray-200 dark:border-surface-700">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={onPrevWeek} aria-label={t('interviews.calendar.prev', 'Previous week')}>
@@ -520,7 +775,9 @@ function CalendarView({
           </Button>
         </div>
         <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-          {interpolate(t('interviews.calendar.weekOf', 'Week of {date}'), { date: formatDate(weekStart, locale as any, { month: 'short', day: 'numeric', year: 'numeric' }) })}
+          {interpolate(t('interviews.calendar.weekOf', 'Week of {date}'), {
+            date: formatDate(weekStart, locale as any, { month: 'short', day: 'numeric', year: 'numeric' }),
+          })}
         </p>
       </div>
       <div className="grid grid-cols-7 border-b border-gray-200 dark:border-surface-700">
@@ -539,14 +796,14 @@ function CalendarView({
           );
         })}
       </div>
-      <div className="grid grid-cols-7 min-h-[280px] sm:min-h-[400px]">
+      <div className="grid grid-cols-7 min-h-[200px] sm:min-h-[260px]">
         {weekDays.map((d, i) => {
           const dayInterviews = interviews.filter((iv) => new Date(iv.scheduled_at).toDateString() === d.toDateString());
           const isToday = d.toDateString() === today.toDateString();
           return (
             <div
               key={i}
-              className={`p-1.5 sm:p-2 border-r border-gray-200 dark:border-surface-700 last:border-r-0 space-y-1.5 min-h-[280px] sm:min-h-[400px] ${isToday ? 'bg-blue-50/30 dark:bg-brand-500/5' : ''}`}
+              className={`p-1.5 sm:p-2 border-r border-gray-200 dark:border-surface-700 last:border-r-0 space-y-1.5 min-h-[200px] sm:min-h-[260px] ${isToday ? 'bg-blue-50/30 dark:bg-brand-500/5' : ''}`}
               role="gridcell"
               aria-label={formatDate(d, locale as any, { weekday: 'long', month: 'long', day: 'numeric' })}
             >
@@ -556,16 +813,18 @@ function CalendarView({
                 dayInterviews.map((iv) => {
                   const meta = TYPE_META[iv.type];
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={iv.id}
-                      className={`p-2 rounded text-xs border-l-2 ${meta?.classes || 'bg-gray-50 text-gray-700'} ${meta?.dark || 'dark:bg-gray-500/10 dark:text-gray-300'}`}
+                      onClick={() => onSelect(iv)}
+                      className={`block w-full text-left p-2 rounded text-xs border-l-2 ${meta?.classes || 'bg-gray-50 text-gray-700'} ${meta?.dark || 'dark:bg-gray-500/10 dark:text-gray-300'} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
                     >
                       <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{iv.candidate_name}</p>
                       <p className="text-gray-600 dark:text-gray-300 truncate">{iv.job_title}</p>
                       <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
                         {new Date(iv.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
-                    </div>
+                    </button>
                   );
                 })
               )}
@@ -574,181 +833,5 @@ function CalendarView({
         })}
       </div>
     </div>
-  );
-}
-
-function ScheduleForm({
-  onCancel,
-  onSubmit,
-  submitting,
-  locale,
-  t,
-}: {
-  onCancel: () => void;
-  onSubmit: (data: any) => void;
-  submitting?: boolean;
-  locale: string;
-  t: (k: string, fb?: string) => string;
-}) {
-  const candidateId = useId();
-  const jobId = useId();
-  const dateId = useId();
-  const timeId = useId();
-  const durationId = useId();
-  const typeId = useId();
-  const locationId = useId();
-  const panelId = useId();
-  const [form, setForm] = useState({ candidate_name: '', job_title: '', date: '', time: '', duration_min: 60, type: 'technical', panel: '', location: 'Remote' });
-  const [error, setError] = useState('');
-
-  const update = (k: string, v: any) => setForm((p) => ({ ...p, [k]: v }));
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.candidate_name || !form.date || !form.time) {
-      setError(t('interviews.formErrorRequired', 'Candidate name, date and time are required'));
-      return;
-    }
-    setError('');
-    const scheduled_at = new Date(`${form.date}T${form.time}`).toISOString();
-    onSubmit({
-      ...form,
-      scheduled_at,
-      panel: form.panel.split(',').map((p: string) => p.trim()).filter(Boolean),
-    });
-  };
-
-  return (
-    <form onSubmit={submit} className="space-y-4" noValidate>
-      {error && (
-        <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 dark:bg-red-500/10 dark:border-red-500/30 dark:text-red-300">
-          {error}
-        </div>
-      )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label htmlFor={candidateId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {t('interviews.fields.candidateName', 'Candidate name *')}
-          </label>
-          <input
-            id={candidateId}
-            value={form.candidate_name}
-            onChange={(e) => update('candidate_name', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100"
-            required
-            aria-required="true"
-          />
-        </div>
-        <div>
-          <label htmlFor={jobId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {t('interviews.fields.jobPosition', 'Job position *')}
-          </label>
-          <input
-            id={jobId}
-            value={form.job_title}
-            onChange={(e) => update('job_title', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100"
-            required
-            aria-required="true"
-          />
-        </div>
-        <div>
-          <label htmlFor={dateId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {t('interviews.fields.date', 'Date *')}
-          </label>
-          <input
-            id={dateId}
-            type="date"
-            value={form.date}
-            onChange={(e) => update('date', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100"
-            required
-            aria-required="true"
-          />
-        </div>
-        <div>
-          <label htmlFor={timeId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {t('interviews.fields.time', 'Time *')}
-          </label>
-          <input
-            id={timeId}
-            type="time"
-            value={form.time}
-            onChange={(e) => update('time', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100"
-            required
-            aria-required="true"
-          />
-        </div>
-        <div>
-          <label htmlFor={durationId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {t('interviews.fields.duration', 'Duration (min)')}
-          </label>
-          <select
-            id={durationId}
-            value={form.duration_min}
-            onChange={(e) => update('duration_min', Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100"
-          >
-            {[30, 45, 60, 90, 120].map((d) => (
-              <option key={d} value={d}>
-                {t(`interviews.durations.${d}`, `${d} minutes`)}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor={typeId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {t('interviews.fields.type', 'Type')}
-          </label>
-          <select
-            id={typeId}
-            value={form.type}
-            onChange={(e) => update('type', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100"
-          >
-            {Object.entries(TYPE_META).map(([k, m]) => {
-              const Icon = m.icon;
-              return (
-                <option key={k} value={k}>
-                  {t(`interviews.types.${k}`, k)}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-        <div>
-          <label htmlFor={locationId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {t('interviews.fields.location', 'Location')}
-          </label>
-          <input
-            id={locationId}
-            value={form.location}
-            onChange={(e) => update('location', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100"
-          />
-        </div>
-        <div>
-          <label htmlFor={panelId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {t('interviews.fields.panel', 'Panel (initials, comma separated)')}
-          </label>
-          <input
-            id={panelId}
-            value={form.panel}
-            onChange={(e) => update('panel', e.target.value)}
-            placeholder="JD, MJ"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100"
-          />
-        </div>
-      </div>
-      <div className="flex justify-end gap-2 pt-4 border-t border-gray-100 dark:border-surface-700">
-        <Button variant="secondary" onClick={onCancel} disabled={submitting}>
-          {t('common.cancel', 'Cancel')}
-        </Button>
-        <Button variant="primary" type="submit" loading={submitting} leftIcon={<Calendar className="h-4 w-4" />}>
-          {t('interviews.modal.title', 'Schedule')}
-        </Button>
-      </div>
-    </form>
   );
 }

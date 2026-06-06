@@ -61,6 +61,7 @@ from apps.auth_service.helpers import (
     seed_demo_account,
     should_lock_account,
 )
+from shared.middleware.rate_limit import rate_limit_auth as _rate_limit_auth_dep
 
 
 logger = logging.getLogger("auth_service")
@@ -340,6 +341,7 @@ async def register(
     request: Request,
     background: BackgroundTasks,
     db: AsyncSession = Depends(get_db_dependency),
+    _: None = Depends(_rate_limit_auth_dep),
 ):
     # Rate limit per-IP+email
     allowed, _ = await auth_rate_limiter.check(
@@ -456,6 +458,7 @@ async def login(
     data: LoginRequest,
     request: Request,
     db: AsyncSession = Depends(get_db_dependency),
+    _: None = Depends(_rate_limit_auth_dep),
 ):
     # Rate limit per-IP+email
     allowed, _ = await auth_rate_limiter.check(
@@ -884,6 +887,7 @@ async def forgot_password(
     request: Request,
     background: BackgroundTasks,
     db: AsyncSession = Depends(get_db_dependency),
+    _: None = Depends(_rate_limit_auth_dep),
 ):
     allowed, _ = await auth_rate_limiter.check(
         f"forgot:{_client_key(request, data.email)}",
