@@ -1,8 +1,9 @@
-"""Audit logging helper — write a single row to the audit_entries table.
+"""Backward-compatible GDPR audit entry writer.
 
-Use ``await audit(...)`` from any service handler to record an action.  The
-helper swallows any exception so an audit-write failure never breaks a user
-request; we still log the failure via stdlib logging for ops visibility.
+The original ``shared/audit.py`` module lived at this location; it was
+promoted to a package (``shared/audit/``) so we can ship additional
+operational audit helpers without breaking the existing
+``from shared.audit import audit`` import path used by several services.
 """
 from __future__ import annotations
 

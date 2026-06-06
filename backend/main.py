@@ -22,6 +22,7 @@ from shared.core.health import health_checker
 from shared.core.validation import ValidationMiddleware
 from shared.middleware.cache_headers import CacheHeadersMiddleware
 from shared.middleware.compression import CompressionMiddleware
+from shared.middleware.rate_limit import RateLimitMiddleware, rate_limit_router
 from shared.middleware.versioning import APIVersioningMiddleware
 
 cache_manager = get_cache_manager()
@@ -39,6 +40,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await init_rate_limiters()
     except Exception as exc:
         logger.warning("Rate limiter init on startup failed: %s", exc)
+    # Connect the multi-window rate limiters used by the middleware layer.
+    try:
+        from shared.middleware.rate_limit import init_rate_limiters as init_mw_limiters
+        await init_mw_limiters()
+    except Exception as exc:
+        logger.warning("Middleware rate limiter init on startup failed: %s", exc)
     # Seed the demo account (idempotent, non-fatal on failure).
     try:
         from apps.auth_service.main import seed_demo_on_startup
@@ -110,6 +117,7 @@ app = FastAPI(
         {"name": "Batch", "description": "Bulk import / update / delete operations"},
         {"name": "Background Jobs", "description": "Background job status, history, cancellation"},
         {"name": "Dashboard", "description": "Pre-aggregated dashboard widgets (KPIs, recent activity, upcoming, funnel)"},
+        {"name": "Audit", "description": "Tenant-scoped operational audit log (admin-only read access)"},
     ],
     lifespan=lifespan,
 )
@@ -122,6 +130,7 @@ app.add_middleware(RequestIDMiddleware)
 app.add_middleware(APIVersioningMiddleware)
 app.add_middleware(CacheHeadersMiddleware)
 app.add_middleware(CompressionMiddleware)
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -284,6 +293,10 @@ include_router_safe(app, "apps.jobs_status_service.main", "router", "/api/v1/bac
 include_router_safe(app, "apps.dashboard_service.main", "router", "/api/v1/dashboard", ["Dashboard"])
 include_router_safe(app, "apps.reports_service.main", "router", "/api/v1/reports", ["Reports"])
 include_router_safe(app, "apps.import_service.main", "router", "/api/v1/imports", ["Imports"])
+
+# ── Rate-limit introspection ──────────────────────────────────────────────────
+app.include_router(rate_limit_router, prefix="/api/v1", tags=["Rate Limit"])
+include_router_safe(app, "apps.audit_service.main", "router", "/api/v1/audit", ["Audit"])
 
 # ── Production monitoring & observability ────────────────────────────────────
 try:
