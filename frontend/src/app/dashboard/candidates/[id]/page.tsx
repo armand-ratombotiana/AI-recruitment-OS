@@ -32,6 +32,7 @@ import {
   Timeline,
 } from '@/components';
 import type { TimelineItem } from '@/components/ui/timeline';
+import { ScoreCard } from '@/components/candidates/score-card';
 import { useLocaleStore, translate, formatRelativeTime, formatDate } from '@/stores/locale-store';
 
 const STATUS_VARIANT: Record<string, 'info' | 'warning' | 'success' | 'purple' | 'default' | 'danger'> = {
@@ -335,6 +336,15 @@ export default function CandidateDetailPage({ params }: { params: { id: string }
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         {t('candidateDetail.backToCandidates', 'Back to candidates')}
       </Link>
+
+      <ScoreCard
+        candidateId={candidate.id}
+        defaultJobId={
+          candidate.match_scores && typeof candidate.match_scores === 'object'
+            ? Object.keys(candidate.match_scores)[0] || undefined
+            : undefined
+        }
+      />
 
       <Card>
         <CardContent className="p-6">

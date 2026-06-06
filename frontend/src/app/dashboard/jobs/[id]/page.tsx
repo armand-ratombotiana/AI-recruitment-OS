@@ -37,6 +37,7 @@ import {
   useToast,
 } from '@/components';
 import { JobApplicantsKanban } from '@/components/dashboard/job-applicants-kanban';
+import { RankingTable } from '@/components/candidates/ranking-table';
 import { useLocaleStore, translate, formatDate, formatRelativeTime, formatNumber } from '@/stores/locale-store';
 
 const STATUS_VARIANT: Record<string, 'info' | 'warning' | 'success' | 'purple' | 'default' | 'danger' | 'orange' | 'teal'> = {

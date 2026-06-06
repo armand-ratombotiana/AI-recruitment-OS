@@ -24,6 +24,18 @@ import { CandidateForm } from '@/components/forms';
 import type { CandidateFormValues } from '@/components/forms';
 import type { Column } from '@/components/ui/data-table';
 import { AdvancedFilter, type FilterDefinition, type FilterValues } from '@/components/ui/advanced-filter';
+import {
+  SavedSearchToolbar,
+  SaveSearchDialog,
+  SmartFilters,
+} from '@/components/ui/saved-search';
+import {
+  useSavedSearches,
+  getSmartFilter,
+  matchesSmartCriteria,
+  type SmartFilterCriteria,
+  type SmartFilterId,
+} from '@/hooks/use-saved-searches';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
 import { candidatesTour } from '@/components/onboarding/tours';
 
@@ -52,6 +64,8 @@ interface Candidate {
   score?: number;
   avatar?: string;
   created_at?: string;
+  updated_at?: string;
+  last_activity_at?: string;
   notes?: string | null;
 }
 
@@ -73,7 +87,17 @@ export default function CandidatesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [activeSmartFilter, setActiveSmartFilter] = useState<SmartFilterId | null>(null);
+  const [smartFilterCriteria, setSmartFilterCriteria] = useState<SmartFilterCriteria>({});
   const { push, ToastContainer } = useToast();
+
+  const {
+    searches: savedSearches,
+    hydrated: savedSearchesHydrated,
+    save: persistSearch,
+    remove: removeSavedSearch,
+  } = useSavedSearches({ scope: 'candidates' });
 
   const load = useCallback(async () => {
     setLoading(true);
