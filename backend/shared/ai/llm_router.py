@@ -200,7 +200,7 @@ class LLMRouter:
                         "total_tokens": response.total_tokens,
                         "provider": response.provider,
                     },
-                    ttl=600,
+                    ttl=3600,
                 )
             except Exception as exc:  # pragma: no cover - cache is best-effort
                 logger.debug("llm.cache.set.failed err=%s", exc)
@@ -408,9 +408,12 @@ def get_llm_router() -> LLMRouter:
     """
     global _router
     if _router is None:
-        from shared.core.caching import get_cache_manager
+        try:
+            from shared.ai.cache import get_llm_cache
 
-        _router = LLMRouter(cache=get_cache_manager())
+            _router = LLMRouter(cache=get_llm_cache())
+        except Exception:  # pragma: no cover - defensive fallback
+            _router = LLMRouter(cache=None)
     return _router
 
 

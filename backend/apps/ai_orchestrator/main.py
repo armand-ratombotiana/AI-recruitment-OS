@@ -11,7 +11,14 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from apps.ai_orchestrator.agents import AGENT_REGISTRY, build_agent
+from apps.ai_orchestrator.agents import (
+    AGENT_REGISTRY,
+    BiasDetectionAgent,
+    ImprovementSuggestionAgent,
+    JobDescriptionParserAgent,
+    ResumeEvaluationAgent,
+    build_agent,
+)
 from shared.ai.task_queue import (
     AgentTask,
     AgentTaskStatus,
@@ -713,3 +720,186 @@ async def get_task_result_endpoint(
         "result": task.output,
         "completed_at": task.completed_at.isoformat() if task.completed_at else None,
     }
+
+
+# ── Evaluation request / response models ───────────────────────────────────────
+
+
+class EvaluateResumeRequest(BaseModel):
+    resume_text: str = Field(..., min_length=10, description="Raw resume text to parse and score")
+    job_description: Optional[str] = Field(
+        default=None, description="Optional job description; when provided the resume is scored against it"
+    )
+    candidate_id: Optional[str] = Field(default=None, description="Optional candidate id to attach to the result")
+    job_id: Optional[str] = Field(default=None, description="Optional job id to attach to the result")
+
+
+class ParseJobDescriptionRequest(BaseModel):
+    job_description: str = Field(..., min_length=10, description="Free-form job description to parse")
+    job_id: Optional[str] = Field(default=None, description="Optional job id to attach to the result")
+
+
+class SuggestImprovementsRequest(BaseModel):
+    job_description: str = Field(..., min_length=10, description="Job posting text to review")
+    job_id: Optional[str] = Field(default=None, description="Optional job id to attach to the result")
+
+
+class DetectBiasRequest(BaseModel):
+    text: str = Field(..., min_length=10, description="Text to scan for biased language")
+    job_id: Optional[str] = Field(default=None, description="Optional job id to attach to the result")
+    context: Optional[str] = Field(
+        default=None,
+        description="Optional context hint (e.g. 'job_description', 'candidate_feedback')",
+    )
+
+
+def _attach_request_meta(result: dict[str, Any], **refs: Any) -> dict[str, Any]:
+    """Attach optional resource refs and a fresh request id to a result dict."""
+    result = dict(result)
+    for key, value in refs.items():
+        if value is not None:
+            result[key] = value
+    result["request_id"] = f"req_{uuid.uuid4().hex[:12]}"
+    result["completed_at"] = datetime.now(timezone.utc).isoformat()
+    return result
+
+
+# ── Evaluation endpoints ──────────────────────────────────────────────────────
+
+
+@router.post(
+    "/evaluate-resume",
+    tags=["AI"],
+    summary="Parse a resume and score it against an optional job description",
+)
+async def evaluate_resume(
+    data: EvaluateResumeRequest,
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
+    """Run :class:`ResumeEvaluationAgent` against ``resume_text``.
+
+    Returns the parsed candidate profile, a 0..1 fit score (against
+    ``job_description`` when provided), a per-dimension breakdown, and a
+    recommendation.  LLM responses are cached for 1 hour so identical
+    requests within the window return instantly without billing the user.
+    """
+    agent = ResumeEvaluationAgent(tenant_id=tenant_id)
+    try:
+        result = await agent.process_task({
+            "resume_text": data.resume_text,
+            "job_description": data.job_description or "",
+        })
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("evaluate_resume.failed tenant=%s", tenant_id)
+        raise HTTPException(status_code=500, detail=f"Resume evaluation failed: {exc}") from exc
+
+    return _attach_request_meta(
+        result,
+        candidate_id=data.candidate_id,
+        job_id=data.job_id,
+    )
+
+
+@router.post(
+    "/parse-job-description",
+    tags=["AI"],
+    summary="Extract structured data from a free-form job description",
+)
+async def parse_job_description(
+    data: ParseJobDescriptionRequest,
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
+    """Run :class:`JobDescriptionParserAgent` against ``job_description``.
+
+    Returns the structured representation (title, seniority, skills, salary
+    range, benefits, etc.) suitable for downstream matching or templating.
+    """
+    agent = JobDescriptionParserAgent(tenant_id=tenant_id)
+    try:
+        result = await agent.process_task({"job_description": data.job_description})
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("parse_job_description.failed tenant=%s", tenant_id)
+        raise HTTPException(
+            status_code=500, detail=f"Job description parsing failed: {exc}"
+        ) from exc
+
+    return _attach_request_meta(result, job_id=data.job_id)
+
+
+@router.post(
+    "/suggest-improvements",
+    tags=["AI"],
+    summary="Suggest concrete improvements for a job posting",
+)
+async def suggest_improvements(
+    data: SuggestImprovementsRequest,
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
+    """Run :class:`ImprovementSuggestionAgent` against ``job_description``.
+
+    Returns a 0..1 quality score, per-dimension breakdown, and a list of
+    high-, medium-, and low-severity suggestions with concrete rewrites.
+    """
+    agent = ImprovementSuggestionAgent(tenant_id=tenant_id)
+    try:
+        result = await agent.process_task({"job_description": data.job_description})
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("suggest_improvements.failed tenant=%s", tenant_id)
+        raise HTTPException(
+            status_code=500, detail=f"Improvement suggestion failed: {exc}"
+        ) from exc
+
+    return _attach_request_meta(result, job_id=data.job_id)
+
+
+@router.post(
+    "/detect-bias",
+    tags=["AI"],
+    summary="Detect biased language in a job description or other text",
+)
+async def detect_bias(
+    data: DetectBiasRequest,
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
+    """Run :class:`BiasDetectionAgent` against ``text``.
+
+    Returns an overall bias score (0..1), per-category breakdown, flagged
+    phrases with neutral replacements, and a recommended bias level
+    (``none`` | ``low`` | ``medium`` | ``high``).
+    """
+    agent = BiasDetectionAgent(tenant_id=tenant_id)
+    try:
+        result = await agent.process_task({
+            "text": data.text,
+            "context": data.context or "",
+        })
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("detect_bias.failed tenant=%s", tenant_id)
+        raise HTTPException(status_code=500, detail=f"Bias detection failed: {exc}") from exc
+
+    return _attach_request_meta(result, job_id=data.job_id)
+
+
+# ── Cache introspection ──────────────────────────────────────────────────────
+
+
+@router.get(
+    "/cache/stats",
+    tags=["AI"],
+    summary="Get LLM response cache statistics",
+)
+async def llm_cache_stats(
+    tenant_id: str = Depends(require_tenant_id),  # noqa: ARG001 - require auth
+) -> dict[str, Any]:
+    """Return hit / miss counters for the shared LLM response cache."""
+    from shared.ai.cache import get_llm_cache
+
+    return get_llm_cache().stats()
