@@ -417,6 +417,182 @@
     "remote": "Remote",
     "fullTime": "Full-time"
   },
+  "public": {
+    "nav": {
+      "home": "Home",
+      "jobs": "Open Positions",
+      "login": "Sign in",
+      "signup": "Get started",
+      "tagline": "AI-native recruitment"
+    },
+    "footer": {
+      "tagline": "AI-native recruitment platform for modern teams. Hire faster, fairer, smarter.",
+      "rights": "© 2026 AI-ROS. All rights reserved.",
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal",
+      "links": {
+        "features": "Features",
+        "pricing": "Pricing",
+        "integrations": "Integrations",
+        "api": "API Docs",
+        "about": "About",
+        "careers": "Careers",
+        "contact": "Contact",
+        "privacy": "Privacy",
+        "terms": "Terms",
+        "cookies": "Cookies"
+      }
+    },
+    "home": {
+      "positionsCta": "View all open positions",
+      "positionsCtaDesc": "Browse {count} open roles across {companies} companies and apply in minutes."
+    },
+    "jobs": {
+      "metaTitle": "Open Positions · AI-ROS",
+      "metaDescription": "Browse open roles at companies hiring with AI-ROS.",
+      "hero": {
+        "eyebrow": "Careers",
+        "title": "Find your next role",
+        "subtitle": "Browse {count} open positions at companies using AI-ROS to hire smarter.",
+        "searchPlaceholder": "Search by title, keyword…",
+        "searchAria": "Search open positions"
+      },
+      "filters": {
+        "title": "Filters",
+        "clearAll": "Clear all",
+        "department": "Department",
+        "departmentAll": "All departments",
+        "location": "Location",
+        "locationAll": "All locations",
+        "employmentType": "Employment type",
+        "employmentTypeAll": "All types",
+        "experienceLevel": "Experience level",
+        "experienceLevelAll": "All levels",
+        "remote": "Remote only",
+        "activeCount": "{count} active"
+      },
+      "sort": {
+        "label": "Sort by",
+        "newest": "Newest",
+        "oldest": "Oldest",
+        "salaryHigh": "Salary: high to low",
+        "salaryLow": "Salary: low to high",
+        "titleAsc": "Title: A→Z"
+      },
+      "experience": {
+        "entry": "Entry level",
+        "mid": "Mid level",
+        "senior": "Senior",
+        "lead": "Lead / Principal",
+        "executive": "Executive"
+      },
+      "employment": {
+        "full_time": "Full-time",
+        "part_time": "Part-time",
+        "contract": "Contract",
+        "internship": "Internship",
+        "temporary": "Temporary"
+      },
+      "resultsCount": "{count, plural, one {# open position} other {# open positions}}",
+      "resultsCountFiltered": "Showing {shown} of {total} positions",
+      "loadMore": "Load more",
+      "noResults": {
+        "title": "No open positions match your filters",
+        "description": "Try adjusting your search or clearing the filters to see more roles.",
+        "cta": "Clear all filters"
+      },
+      "card": {
+        "posted": "Posted {when}",
+        "new": "New",
+        "applicants": "{count} applicants",
+        "salaryUndisclosed": "Salary undisclosed",
+        "apply": "Apply now",
+        "viewDetails": "View details",
+        "departmentFallback": "General"
+      },
+      "detail": {
+        "metaTitle": "{title} · AI-ROS Careers",
+        "notFound": "Job not found",
+        "notFoundDesc": "This position may have been filled or removed.",
+        "backToJobs": "← Back to all open positions",
+        "posted": "Posted {when}",
+        "applicantsCount": "{count} applicants so far",
+        "departmentFallback": "General",
+        "salaryUndisclosed": "Salary undisclosed",
+        "section": {
+          "description": "About the role",
+          "requirements": "Requirements",
+          "niceToHave": "Nice to have",
+          "skills": "Skills",
+          "benefits": "Benefits"
+        },
+        "employmentType": "Employment",
+        "experience": "Experience",
+        "experienceYears": "{min}–{max} years",
+        "location": "Location",
+        "department": "Department",
+        "applyCta": "Apply now",
+        "share": "Share",
+        "shareCopied": "Link copied to clipboard",
+        "openInNewTab": "Open in new tab"
+      },
+      "apply": {
+        "metaTitle": "Apply for {title} · AI-ROS Careers",
+        "backToJob": "← Back to job details",
+        "title": "Apply for {title}",
+        "subtitle": "at {company} · {location}",
+        "stepPersonal": "Your details",
+        "stepResume": "Resume & cover letter",
+        "stepReview": "Review & submit",
+        "fields": {
+          "fullName": "Full name *",
+          "email": "Email *",
+          "phone": "Phone",
+          "location": "Current location",
+          "linkedin": "LinkedIn URL",
+          "portfolio": "Portfolio URL",
+          "resume": "Resume (PDF, DOC, DOCX) *",
+          "resumeHelp": "Max 5 MB. PDF, DOC or DOCX.",
+          "coverLetter": "Cover letter",
+          "coverLetterHelp": "Tell us why you are a great fit (optional)."
+        },
+        "actions": {
+          "submit": "Submit application",
+          "submitting": "Submitting…",
+          "next": "Continue",
+          "back": "Back",
+          "cancel": "Cancel"
+        },
+        "review": {
+          "title": "Review your application",
+          "personal": "Personal details",
+          "documents": "Documents",
+          "notProvided": "Not provided",
+          "change": "Change",
+          "consent": "I agree to the processing of my personal data for recruitment purposes in accordance with the AI-ROS Privacy Policy and applicable law (GDPR / CCPA).",
+          "consentRequired": "You must consent to the processing of your personal data to submit."
+        },
+        "errors": {
+          "name": "Please enter your full name",
+          "email": "Please enter a valid email address",
+          "phone": "Please enter a valid phone number",
+          "resumeRequired": "Please attach your resume",
+          "resumeSize": "Resume must be smaller than 5 MB",
+          "resumeType": "Resume must be a PDF, DOC or DOCX file",
+          "submit": "We could not submit your application. Please try again.",
+          "loadJob": "We could not load this job. Please try again."
+        },
+        "success": {
+          "title": "Application submitted!",
+          "subtitle": "Thanks for applying to {title}.",
+          "description": "Our team will review your application and get back to you within 5 business days. A confirmation email is on its way to {email}.",
+          "browseMore": "Browse more open positions",
+          "backHome": "Back to homepage"
+        }
+      }
+    }
+  },
   "interviews": {
     "title": "Interviews",
     "totalUpcoming": "{total} total · {upcoming} upcoming",
@@ -1298,13 +1474,37 @@
     "viewAll": "View all activity",
     "page": {
       "subtitle": "Stay on top of interviews, candidates, and system activity.",
+      "search": {
+        "placeholder": "Search notifications…",
+        "label": "Search notifications",
+        "clear": "Clear search",
+        "noResults": "No notifications match your search."
+      },
       "filters": {
         "all": "All",
         "unread": "Unread",
-        "interviews": "Interviews",
-        "candidates": "Candidates",
+        "mentions": "Mentions",
         "system": "System"
       },
+      "groups": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "thisWeek": "This Week",
+        "older": "Older"
+      },
+      "bulk": {
+        "selected": "{count} selected",
+        "selectAll": "Select all visible",
+        "clearSelection": "Clear selection",
+        "delete": "Delete selected",
+        "deleteConfirmTitle": "Delete {count} notification(s)?",
+        "deleteConfirmDescription": "This action cannot be undone. The selected notifications will be permanently removed.",
+        "deleted": "Deleted {count} notification(s)",
+        "deleteFailed": "Some notifications could not be deleted"
+      },
+      "newItem": "New notification",
+      "realtime": "Live",
+      "reconnecting": "Reconnecting…",
       "clearRead": "Clear read",
       "refreshing": "Refreshing…",
       "refresh": "Refresh",
@@ -1313,6 +1513,7 @@
       "markAsRead": "Mark as read",
       "open": "Open notification",
       "dismiss": "Dismiss notification",
+      "select": "Select notification",
       "empty": {
         "title": "You're all caught up",
         "description": "No notifications match the current filter. We'll let you know when something new comes in."
@@ -1323,7 +1524,8 @@
       },
       "counts": {
         "total": "Total",
-        "unread": "Unread"
+        "unread": "Unread",
+        "read": "Read"
       },
       "tabs": {
         "aria": "Filter notifications by category"
@@ -1334,6 +1536,64 @@
       "actions": {
         "aria": "Bulk notification actions"
       }
+    },
+    "settings": {
+      "title": "Notification preferences",
+      "subtitle": "Choose how and where AI-ROS notifies you.",
+      "channels": {
+        "title": "Channels",
+        "subtitle": "Master switches for each delivery channel. Turning a channel off silences every event in that channel.",
+        "email": "Email",
+        "emailDesc": "Daily digests, important alerts, and weekly summaries.",
+        "inApp": "In-app",
+        "inAppDesc": "Alerts that appear in the notification bell and the top of your dashboard.",
+        "push": "Push",
+        "pushDesc": "Real-time browser push notifications when something urgent happens."
+      },
+      "matrix": {
+        "event": "Event",
+        "email": "Email",
+        "inApp": "In-app",
+        "push": "Push",
+        "enableAll": "Enable all",
+        "disableAll": "Disable all"
+      },
+      "categories": {
+        "applications": "Applications",
+        "applicationsDesc": "New candidates, status changes, and pipeline updates.",
+        "interviews": "Interviews",
+        "interviewsDesc": "Schedule changes, reminders, and feedback requests.",
+        "messages": "Messages",
+        "messagesDesc": "Mentions, replies, and direct messages from your team.",
+        "system": "System",
+        "systemDesc": "Security alerts, billing, and product maintenance notices.",
+        "marketing": "Marketing",
+        "marketingDesc": "Product updates, newsletters, and recruiter tips."
+      },
+      "events": {
+        "applicationReceived": "New application received",
+        "applicationStatusChanged": "Application status changed",
+        "candidateShortlisted": "Candidate shortlisted",
+        "interviewScheduled": "Interview scheduled",
+        "interviewReminder": "Interview reminder",
+        "interviewRescheduled": "Interview rescheduled",
+        "interviewFeedbackRequested": "Feedback requested",
+        "newMessage": "New team message",
+        "mention": "You were @-mentioned",
+        "teamReply": "Reply to your comment",
+        "systemAlert": "System alert",
+        "securityAlert": "Security alert",
+        "billingUpdate": "Billing & subscription update",
+        "productUpdates": "Product updates",
+        "newsletter": "Weekly newsletter",
+        "tipsAndTricks": "Recruiter tips & tricks"
+      },
+      "saved": "Preferences saved",
+      "savedDesc": "Your notification settings have been updated.",
+      "saveFailed": "Save failed",
+      "save": "Save preferences",
+      "saving": "Saving…",
+      "loadError": "Could not load your preferences. Defaults are shown."
     }
   },
   "userMenu": {

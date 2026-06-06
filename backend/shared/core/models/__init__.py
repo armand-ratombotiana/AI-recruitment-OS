@@ -11,6 +11,10 @@ from shared.core.models.candidate import (
     SeniorityLevel, CandidateStatus,
     CandidateCreate, CandidateRead, CandidateUpdate, CandidateProfileRead, SkillRead,
 )
+from shared.core.models.candidate_activity import (
+    CandidateActivity,
+    CandidateActivityType,
+)
 from shared.core.models.recruitment import (
     Job, Pipeline, Application,
     JobStatus, JobType, ApplicationStatus,
@@ -72,6 +76,7 @@ __all__ = [
     "Candidate", "CandidateProfile", "Skill", "CandidateSkill", "ExperienceEntry",
     "SeniorityLevel", "CandidateStatus",
     "CandidateCreate", "CandidateRead", "CandidateUpdate", "CandidateProfileRead", "SkillRead",
+    "CandidateActivity", "CandidateActivityType",
     "Job", "Pipeline", "Application",
     "JobStatus", "JobType", "ApplicationStatus",
     "JobCreate", "JobRead", "JobUpdate",

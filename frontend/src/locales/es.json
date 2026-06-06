@@ -415,6 +415,182 @@
     "remote": "Remoto",
     "fullTime": "Tiempo completo"
   },
+  "public": {
+    "nav": {
+      "home": "Inicio",
+      "jobs": "Puestos abiertos",
+      "login": "Iniciar sesión",
+      "signup": "Empezar",
+      "tagline": "Reclutamiento nativo de IA"
+    },
+    "footer": {
+      "tagline": "Plataforma de reclutamiento nativa de IA para equipos modernos. Contrata más rápido, más justo, más inteligente.",
+      "rights": "© 2026 AI-ROS. Todos los derechos reservados.",
+      "product": "Producto",
+      "company": "Empresa",
+      "legal": "Legal",
+      "links": {
+        "features": "Funcionalidades",
+        "pricing": "Precios",
+        "integrations": "Integraciones",
+        "api": "Documentación API",
+        "about": "Acerca de",
+        "careers": "Empleos",
+        "contact": "Contacto",
+        "privacy": "Privacidad",
+        "terms": "Términos",
+        "cookies": "Cookies"
+      }
+    },
+    "home": {
+      "positionsCta": "Ver todos los puestos abiertos",
+      "positionsCtaDesc": "Explora {count} puestos abiertos en {companies} empresas y postula en minutos."
+    },
+    "jobs": {
+      "metaTitle": "Puestos abiertos · AI-ROS",
+      "metaDescription": "Explora los puestos abiertos en empresas que contratan con AI-ROS.",
+      "hero": {
+        "eyebrow": "Empleos",
+        "title": "Encuentra tu próximo puesto",
+        "subtitle": "Explora {count} puestos abiertos en empresas que contratan con AI-ROS.",
+        "searchPlaceholder": "Buscar por título, palabra clave…",
+        "searchAria": "Buscar puestos abiertos"
+      },
+      "filters": {
+        "title": "Filtros",
+        "clearAll": "Limpiar todo",
+        "department": "Departamento",
+        "departmentAll": "Todos los departamentos",
+        "location": "Ubicación",
+        "locationAll": "Todas las ubicaciones",
+        "employmentType": "Tipo de contrato",
+        "employmentTypeAll": "Todos los tipos",
+        "experienceLevel": "Nivel de experiencia",
+        "experienceLevelAll": "Todos los niveles",
+        "remote": "Solo en remoto",
+        "activeCount": "{count} activo(s)"
+      },
+      "sort": {
+        "label": "Ordenar por",
+        "newest": "Más recientes",
+        "oldest": "Más antiguos",
+        "salaryHigh": "Salario: de mayor a menor",
+        "salaryLow": "Salario: de menor a mayor",
+        "titleAsc": "Título: A→Z"
+      },
+      "experience": {
+        "entry": "Junior",
+        "mid": "Mid",
+        "senior": "Senior",
+        "lead": "Lead / Principal",
+        "executive": "Dirección"
+      },
+      "employment": {
+        "full_time": "Tiempo completo",
+        "part_time": "Tiempo parcial",
+        "contract": "Contrato",
+        "internship": "Prácticas",
+        "temporary": "Temporal"
+      },
+      "resultsCount": "{count, plural, one {# puesto abierto} other {# puestos abiertos}}",
+      "resultsCountFiltered": "Mostrando {shown} de {total} puestos",
+      "loadMore": "Cargar más",
+      "noResults": {
+        "title": "Ningún puesto coincide con tus filtros",
+        "description": "Prueba a ajustar la búsqueda o limpia los filtros para ver más puestos.",
+        "cta": "Limpiar filtros"
+      },
+      "card": {
+        "posted": "Publicado {when}",
+        "new": "Nuevo",
+        "applicants": "{count} candidatos",
+        "salaryUndisclosed": "Salario no comunicado",
+        "apply": "Postular",
+        "viewDetails": "Ver detalles",
+        "departmentFallback": "General"
+      },
+      "detail": {
+        "metaTitle": "{title} · Empleos AI-ROS",
+        "notFound": "Puesto no encontrado",
+        "notFoundDesc": "Este puesto puede haber sido cubierto o retirado.",
+        "backToJobs": "← Volver a todos los puestos abiertos",
+        "posted": "Publicado {when}",
+        "applicantsCount": "{count} candidatos por el momento",
+        "departmentFallback": "General",
+        "salaryUndisclosed": "Salario no comunicado",
+        "section": {
+          "description": "Sobre el puesto",
+          "requirements": "Requisitos",
+          "niceToHave": "Plus",
+          "skills": "Habilidades",
+          "benefits": "Beneficios"
+        },
+        "employmentType": "Tipo de contrato",
+        "experience": "Experiencia",
+        "experienceYears": "{min}–{max} años",
+        "location": "Ubicación",
+        "department": "Departamento",
+        "applyCta": "Postular",
+        "share": "Compartir",
+        "shareCopied": "Enlace copiado al portapapeles",
+        "openInNewTab": "Abrir en una nueva pestaña"
+      },
+      "apply": {
+        "metaTitle": "Postular a {title} · Empleos AI-ROS",
+        "backToJob": "← Volver a los detalles del puesto",
+        "title": "Postular a {title}",
+        "subtitle": "en {company} · {location}",
+        "stepPersonal": "Tus datos",
+        "stepResume": "CV y carta de presentación",
+        "stepReview": "Revisar y enviar",
+        "fields": {
+          "fullName": "Nombre completo *",
+          "email": "Email *",
+          "phone": "Teléfono",
+          "location": "Ubicación actual",
+          "linkedin": "URL de LinkedIn",
+          "portfolio": "URL de portfolio",
+          "resume": "CV (PDF, DOC, DOCX) *",
+          "resumeHelp": "Máx. 5 MB. PDF, DOC o DOCX.",
+          "coverLetter": "Carta de presentación",
+          "coverLetterHelp": "Cuéntanos por qué encajas con el puesto (opcional)."
+        },
+        "actions": {
+          "submit": "Enviar candidatura",
+          "submitting": "Enviando…",
+          "next": "Continuar",
+          "back": "Atrás",
+          "cancel": "Cancelar"
+        },
+        "review": {
+          "title": "Revisa tu candidatura",
+          "personal": "Datos personales",
+          "documents": "Documentos",
+          "notProvided": "No proporcionado",
+          "change": "Editar",
+          "consent": "Acepto el tratamiento de mis datos personales con fines de reclutamiento conforme a la Política de Privacidad de AI-ROS y la normativa aplicable (RGPD/CCPA).",
+          "consentRequired": "Debes consentir el tratamiento de tus datos para enviar la candidatura."
+        },
+        "errors": {
+          "name": "Introduce tu nombre completo",
+          "email": "Introduce un email válido",
+          "phone": "Introduce un teléfono válido",
+          "resumeRequired": "Adjunta tu CV",
+          "resumeSize": "El CV debe pesar menos de 5 MB",
+          "resumeType": "El CV debe ser PDF, DOC o DOCX",
+          "submit": "No pudimos enviar tu candidatura. Inténtalo de nuevo.",
+          "loadJob": "No pudimos cargar este puesto. Inténtalo de nuevo."
+        },
+        "success": {
+          "title": "¡Candidatura enviada!",
+          "subtitle": "Gracias por postular a {title}.",
+          "description": "Nuestro equipo revisará tu candidatura y te responderá en 5 días hábiles. Recibirás un email de confirmación en {email}.",
+          "browseMore": "Ver más puestos abiertos",
+          "backHome": "Volver al inicio"
+        }
+      }
+    }
+  },
   "interviews": {
     "title": "Entrevistas",
     "totalUpcoming": "{total} en total · {upcoming} próximas",
@@ -1296,13 +1472,37 @@
     "viewAll": "Ver toda la actividad",
     "page": {
       "subtitle": "Mantente al día con entrevistas, candidatos y actividad del sistema.",
+      "search": {
+        "placeholder": "Buscar notificaciones…",
+        "label": "Buscar notificaciones",
+        "clear": "Borrar búsqueda",
+        "noResults": "Ninguna notificación coincide con tu búsqueda."
+      },
       "filters": {
         "all": "Todas",
         "unread": "No leídas",
-        "interviews": "Entrevistas",
-        "candidates": "Candidatos",
+        "mentions": "Menciones",
         "system": "Sistema"
       },
+      "groups": {
+        "today": "Hoy",
+        "yesterday": "Ayer",
+        "thisWeek": "Esta semana",
+        "older": "Anteriores"
+      },
+      "bulk": {
+        "selected": "{count} seleccionada(s)",
+        "selectAll": "Seleccionar todas",
+        "clearSelection": "Limpiar selección",
+        "delete": "Eliminar selección",
+        "deleteConfirmTitle": "¿Eliminar {count} notificación(es)?",
+        "deleteConfirmDescription": "Esta acción no se puede deshacer. Las notificaciones seleccionadas se eliminarán permanentemente.",
+        "deleted": "{count} notificación(es) eliminada(s)",
+        "deleteFailed": "Algunas notificaciones no se pudieron eliminar"
+      },
+      "newItem": "Nueva notificación",
+      "realtime": "En vivo",
+      "reconnecting": "Reconectando…",
       "clearRead": "Borrar leídas",
       "refreshing": "Actualizando…",
       "refresh": "Actualizar",
@@ -1311,6 +1511,7 @@
       "markAsRead": "Marcar como leída",
       "open": "Abrir notificación",
       "dismiss": "Descartar notificación",
+      "select": "Seleccionar notificación",
       "empty": {
         "title": "Estás al día",
         "description": "Ninguna notificación coincide con el filtro actual. Te avisaremos cuando llegue algo nuevo."
@@ -1321,7 +1522,8 @@
       },
       "counts": {
         "total": "Total",
-        "unread": "No leídas"
+        "unread": "No leídas",
+        "read": "Leídas"
       },
       "tabs": {
         "aria": "Filtrar notificaciones por categoría"
@@ -1332,6 +1534,64 @@
       "actions": {
         "aria": "Acciones masivas de notificaciones"
       }
+    },
+    "settings": {
+      "title": "Preferencias de notificaciones",
+      "subtitle": "Elige cómo y dónde AI-ROS te avisa.",
+      "channels": {
+        "title": "Canales",
+        "subtitle": "Interruptores maestros para cada canal. Apagar un canal silencia todos los eventos de ese canal.",
+        "email": "Correo",
+        "emailDesc": "Resúmenes diarios, alertas importantes y resúmenes semanales.",
+        "inApp": "En la app",
+        "inAppDesc": "Alertas que aparecen en la campana y arriba del panel.",
+        "push": "Push",
+        "pushDesc": "Notificaciones push del navegador en tiempo real para eventos urgentes."
+      },
+      "matrix": {
+        "event": "Evento",
+        "email": "Correo",
+        "inApp": "En la app",
+        "push": "Push",
+        "enableAll": "Activar todo",
+        "disableAll": "Desactivar todo"
+      },
+      "categories": {
+        "applications": "Candidaturas",
+        "applicationsDesc": "Nuevos candidatos, cambios de estado y avances del pipeline.",
+        "interviews": "Entrevistas",
+        "interviewsDesc": "Cambios de agenda, recordatorios y solicitudes de feedback.",
+        "messages": "Mensajes",
+        "messagesDesc": "Menciones, respuestas y mensajes directos del equipo.",
+        "system": "Sistema",
+        "systemDesc": "Alertas de seguridad, facturación y mantenimiento.",
+        "marketing": "Marketing",
+        "marketingDesc": "Actualizaciones del producto, newsletter y consejos de selección."
+      },
+      "events": {
+        "applicationReceived": "Nueva candidatura recibida",
+        "applicationStatusChanged": "Cambio de estado de candidatura",
+        "candidateShortlisted": "Candidato preseleccionado",
+        "interviewScheduled": "Entrevista programada",
+        "interviewReminder": "Recordatorio de entrevista",
+        "interviewRescheduled": "Entrevista reprogramada",
+        "interviewFeedbackRequested": "Feedback solicitado",
+        "newMessage": "Nuevo mensaje del equipo",
+        "mention": "Te han mencionado",
+        "teamReply": "Respuesta a tu comentario",
+        "systemAlert": "Alerta del sistema",
+        "securityAlert": "Alerta de seguridad",
+        "billingUpdate": "Facturación y suscripción",
+        "productUpdates": "Actualizaciones del producto",
+        "newsletter": "Newsletter semanal",
+        "tipsAndTricks": "Consejos para reclutadores"
+      },
+      "saved": "Preferencias guardadas",
+      "savedDesc": "Tu configuración de notificaciones se ha actualizado.",
+      "saveFailed": "Error al guardar",
+      "save": "Guardar preferencias",
+      "saving": "Guardando…",
+      "loadError": "No se pudieron cargar tus preferencias. Se muestran los valores por defecto."
     }
   },
   "userMenu": {

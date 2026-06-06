@@ -415,6 +415,182 @@
     "remote": "À distance",
     "fullTime": "Temps plein"
   },
+  "public": {
+    "nav": {
+      "home": "Accueil",
+      "jobs": "Postes ouverts",
+      "login": "Se connecter",
+      "signup": "Commencer",
+      "tagline": "Recrutement natif IA"
+    },
+    "footer": {
+      "tagline": "Plateforme de recrutement native IA pour les équipes modernes. Embauchez plus vite, plus équitablement, plus intelligemment.",
+      "rights": "© 2026 AI-ROS. Tous droits réservés.",
+      "product": "Produit",
+      "company": "Entreprise",
+      "legal": "Mentions légales",
+      "links": {
+        "features": "Fonctionnalités",
+        "pricing": "Tarifs",
+        "integrations": "Intégrations",
+        "api": "Documentation API",
+        "about": "À propos",
+        "careers": "Carrières",
+        "contact": "Contact",
+        "privacy": "Confidentialité",
+        "terms": "Conditions",
+        "cookies": "Cookies"
+      }
+    },
+    "home": {
+      "positionsCta": "Voir tous les postes ouverts",
+      "positionsCtaDesc": "Parcourez {count} postes ouverts dans {companies} entreprises et postulez en quelques minutes."
+    },
+    "jobs": {
+      "metaTitle": "Postes ouverts · AI-ROS",
+      "metaDescription": "Parcourez les postes ouverts dans les entreprises qui recrutent avec AI-ROS.",
+      "hero": {
+        "eyebrow": "Carrières",
+        "title": "Trouvez votre prochain poste",
+        "subtitle": "Parcourez {count} postes ouverts dans des entreprises qui recrutent avec AI-ROS.",
+        "searchPlaceholder": "Rechercher par titre, mot-clé…",
+        "searchAria": "Rechercher des postes ouverts"
+      },
+      "filters": {
+        "title": "Filtres",
+        "clearAll": "Tout effacer",
+        "department": "Département",
+        "departmentAll": "Tous les départements",
+        "location": "Lieu",
+        "locationAll": "Tous les lieux",
+        "employmentType": "Type de contrat",
+        "employmentTypeAll": "Tous les types",
+        "experienceLevel": "Niveau d'expérience",
+        "experienceLevelAll": "Tous les niveaux",
+        "remote": "Télétravail uniquement",
+        "activeCount": "{count} actif(s)"
+      },
+      "sort": {
+        "label": "Trier par",
+        "newest": "Plus récents",
+        "oldest": "Plus anciens",
+        "salaryHigh": "Salaire : du plus élevé au plus bas",
+        "salaryLow": "Salaire : du plus bas au plus élevé",
+        "titleAsc": "Titre : A→Z"
+      },
+      "experience": {
+        "entry": "Débutant",
+        "mid": "Intermédiaire",
+        "senior": "Senior",
+        "lead": "Lead / Principal",
+        "executive": "Direction"
+      },
+      "employment": {
+        "full_time": "Temps plein",
+        "part_time": "Temps partiel",
+        "contract": "Contrat",
+        "internship": "Stage",
+        "temporary": "Intérim"
+      },
+      "resultsCount": "{count, plural, one {# poste ouvert} other {# postes ouverts}}",
+      "resultsCountFiltered": "Affichage de {shown} sur {total} postes",
+      "loadMore": "Charger plus",
+      "noResults": {
+        "title": "Aucun poste ne correspond à vos filtres",
+        "description": "Essayez d'ajuster votre recherche ou de réinitialiser les filtres pour voir plus de postes.",
+        "cta": "Réinitialiser les filtres"
+      },
+      "card": {
+        "posted": "Publié {when}",
+        "new": "Nouveau",
+        "applicants": "{count} candidats",
+        "salaryUndisclosed": "Salaire non communiqué",
+        "apply": "Postuler",
+        "viewDetails": "Voir les détails",
+        "departmentFallback": "Général"
+      },
+      "detail": {
+        "metaTitle": "{title} · Carrières AI-ROS",
+        "notFound": "Offre introuvable",
+        "notFoundDesc": "Ce poste a peut-être été pourvu ou retiré.",
+        "backToJobs": "← Retour à tous les postes ouverts",
+        "posted": "Publié {when}",
+        "applicantsCount": "{count} candidats pour le moment",
+        "departmentFallback": "Général",
+        "salaryUndisclosed": "Salaire non communiqué",
+        "section": {
+          "description": "À propos du poste",
+          "requirements": "Exigences",
+          "niceToHave": "Atouts",
+          "skills": "Compétences",
+          "benefits": "Avantages"
+        },
+        "employmentType": "Type de contrat",
+        "experience": "Expérience",
+        "experienceYears": "{min}–{max} ans",
+        "location": "Lieu",
+        "department": "Département",
+        "applyCta": "Postuler",
+        "share": "Partager",
+        "shareCopied": "Lien copié dans le presse-papier",
+        "openInNewTab": "Ouvrir dans un nouvel onglet"
+      },
+      "apply": {
+        "metaTitle": "Postuler à {title} · Carrières AI-ROS",
+        "backToJob": "← Retour aux détails de l'offre",
+        "title": "Postuler à {title}",
+        "subtitle": "chez {company} · {location}",
+        "stepPersonal": "Vos informations",
+        "stepResume": "CV & lettre de motivation",
+        "stepReview": "Vérifier & envoyer",
+        "fields": {
+          "fullName": "Nom complet *",
+          "email": "Email *",
+          "phone": "Téléphone",
+          "location": "Lieu actuel",
+          "linkedin": "URL LinkedIn",
+          "portfolio": "URL Portfolio",
+          "resume": "CV (PDF, DOC, DOCX) *",
+          "resumeHelp": "Max 5 Mo. PDF, DOC ou DOCX.",
+          "coverLetter": "Lettre de motivation",
+          "coverLetterHelp": "Expliquez pourquoi ce poste vous intéresse (optionnel)."
+        },
+        "actions": {
+          "submit": "Envoyer ma candidature",
+          "submitting": "Envoi…",
+          "next": "Continuer",
+          "back": "Retour",
+          "cancel": "Annuler"
+        },
+        "review": {
+          "title": "Vérifiez votre candidature",
+          "personal": "Informations personnelles",
+          "documents": "Documents",
+          "notProvided": "Non renseigné",
+          "change": "Modifier",
+          "consent": "J'accepte le traitement de mes données personnelles à des fins de recrutement conformément à la politique de confidentialité d'AI-ROS et à la réglementation applicable (RGPD).",
+          "consentRequired": "Vous devez consentir au traitement de vos données pour envoyer votre candidature."
+        },
+        "errors": {
+          "name": "Veuillez saisir votre nom complet",
+          "email": "Veuillez saisir une adresse email valide",
+          "phone": "Veuillez saisir un numéro de téléphone valide",
+          "resumeRequired": "Veuillez joindre votre CV",
+          "resumeSize": "Le CV doit faire moins de 5 Mo",
+          "resumeType": "Le CV doit être au format PDF, DOC ou DOCX",
+          "submit": "Impossible d'envoyer votre candidature. Veuillez réessayer.",
+          "loadJob": "Impossible de charger cette offre. Veuillez réessayer."
+        },
+        "success": {
+          "title": "Candidature envoyée !",
+          "subtitle": "Merci d'avoir postulé à {title}.",
+          "description": "Notre équipe va examiner votre candidature et vous répondre sous 5 jours ouvrés. Un email de confirmation est envoyé à {email}.",
+          "browseMore": "Voir d'autres postes ouverts",
+          "backHome": "Retour à l'accueil"
+        }
+      }
+    }
+  },
   "interviews": {
     "title": "Entretiens",
     "totalUpcoming": "{total} au total · {upcoming} à venir",
@@ -1296,13 +1472,37 @@
     "viewAll": "Voir toute l'activité",
     "page": {
       "subtitle": "Suivez vos entretiens, candidats et activité système en un coup d'œil.",
+      "search": {
+        "placeholder": "Rechercher des notifications…",
+        "label": "Rechercher des notifications",
+        "clear": "Effacer la recherche",
+        "noResults": "Aucune notification ne correspond à votre recherche."
+      },
       "filters": {
         "all": "Toutes",
         "unread": "Non lues",
-        "interviews": "Entretiens",
-        "candidates": "Candidats",
+        "mentions": "Mentions",
         "system": "Système"
       },
+      "groups": {
+        "today": "Aujourd'hui",
+        "yesterday": "Hier",
+        "thisWeek": "Cette semaine",
+        "older": "Plus ancien"
+      },
+      "bulk": {
+        "selected": "{count} sélectionnée(s)",
+        "selectAll": "Tout sélectionner",
+        "clearSelection": "Effacer la sélection",
+        "delete": "Supprimer la sélection",
+        "deleteConfirmTitle": "Supprimer {count} notification(s) ?",
+        "deleteConfirmDescription": "Cette action est irréversible. Les notifications sélectionnées seront définitivement supprimées.",
+        "deleted": "{count} notification(s) supprimée(s)",
+        "deleteFailed": "Certaines notifications n'ont pas pu être supprimées"
+      },
+      "newItem": "Nouvelle notification",
+      "realtime": "Temps réel",
+      "reconnecting": "Reconnexion…",
       "clearRead": "Effacer les lues",
       "refreshing": "Actualisation…",
       "refresh": "Actualiser",
@@ -1311,6 +1511,7 @@
       "markAsRead": "Marquer comme lu",
       "open": "Ouvrir la notification",
       "dismiss": "Ignorer la notification",
+      "select": "Sélectionner la notification",
       "empty": {
         "title": "Tout est à jour",
         "description": "Aucune notification ne correspond au filtre actuel. Nous vous préviendrons lorsqu'il y aura du nouveau."
@@ -1321,7 +1522,8 @@
       },
       "counts": {
         "total": "Total",
-        "unread": "Non lues"
+        "unread": "Non lues",
+        "read": "Lues"
       },
       "tabs": {
         "aria": "Filtrer les notifications par catégorie"
@@ -1332,6 +1534,64 @@
       "actions": {
         "aria": "Actions groupées sur les notifications"
       }
+    },
+    "settings": {
+      "title": "Préférences de notifications",
+      "subtitle": "Choisissez comment et où AI-ROS vous notifie.",
+      "channels": {
+        "title": "Canaux",
+        "subtitle": "Interrupteurs principaux pour chaque canal. Désactiver un canal coupe tous les événements de ce canal.",
+        "email": "E-mail",
+        "emailDesc": "Résumés quotidiens, alertes importantes et synthèses hebdomadaires.",
+        "inApp": "Dans l'app",
+        "inAppDesc": "Alertes qui s'affichent dans la cloche et en haut du tableau de bord.",
+        "push": "Push",
+        "pushDesc": "Notifications push navigateur en temps réel pour les événements urgents."
+      },
+      "matrix": {
+        "event": "Événement",
+        "email": "E-mail",
+        "inApp": "Dans l'app",
+        "push": "Push",
+        "enableAll": "Tout activer",
+        "disableAll": "Tout désactiver"
+      },
+      "categories": {
+        "applications": "Candidatures",
+        "applicationsDesc": "Nouveaux candidats, changements de statut et avancement du pipeline.",
+        "interviews": "Entretiens",
+        "interviewsDesc": "Changements de planning, rappels et demandes de feedback.",
+        "messages": "Messages",
+        "messagesDesc": "Mentions, réponses et messages directs de votre équipe.",
+        "system": "Système",
+        "systemDesc": "Alertes de sécurité, facturation et maintenance.",
+        "marketing": "Marketing",
+        "marketingDesc": "Mises à jour produit, newsletter et conseils recruteurs."
+      },
+      "events": {
+        "applicationReceived": "Nouvelle candidature reçue",
+        "applicationStatusChanged": "Statut de candidature modifié",
+        "candidateShortlisted": "Candidat présélectionné",
+        "interviewScheduled": "Entretien planifié",
+        "interviewReminder": "Rappel d'entretien",
+        "interviewRescheduled": "Entretien replanifié",
+        "interviewFeedbackRequested": "Feedback demandé",
+        "newMessage": "Nouveau message d'équipe",
+        "mention": "Vous avez été mentionné(e)",
+        "teamReply": "Réponse à votre commentaire",
+        "systemAlert": "Alerte système",
+        "securityAlert": "Alerte de sécurité",
+        "billingUpdate": "Facturation & abonnement",
+        "productUpdates": "Mises à jour produit",
+        "newsletter": "Newsletter hebdomadaire",
+        "tipsAndTricks": "Conseils recruteurs"
+      },
+      "saved": "Préférences enregistrées",
+      "savedDesc": "Vos paramètres de notification ont été mis à jour.",
+      "saveFailed": "Échec de l'enregistrement",
+      "save": "Enregistrer les préférences",
+      "saving": "Enregistrement…",
+      "loadError": "Impossible de charger vos préférences. Les valeurs par défaut sont affichées."
     }
   },
   "userMenu": {

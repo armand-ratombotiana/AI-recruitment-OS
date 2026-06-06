@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import json
+import logging
+import uuid
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,6 +20,10 @@ from shared.core.models.candidate import (
     SeniorityLevel,
     Skill,
     CandidateSkill,
+)
+from shared.core.models.candidate_activity import (
+    CandidateActivity,
+    CandidateActivityType,
 )
 from shared.core.security import require_tenant, require_user, decode_token
 from shared.core.rate_limit_deps import candidate_write_rate
@@ -193,9 +200,198 @@ class CandidateScoreResponse(BaseModel):
     generated_at: str
 
 
+# ── Activity / Notes models ────────────────────────────────────────────────────
+
+
+class NoteCreateRequest(BaseModel):
+    title: str | None = Field(None, max_length=255, description="Optional title (defaults to 'Note')")
+    content: str = Field(..., min_length=1, description="Note body")
+    meta: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Free-form structured context (e.g. visibility, mentions, …)",
+    )
+
+
+class NoteUpdateRequest(BaseModel):
+    title: str | None = Field(None, max_length=255)
+    content: str | None = Field(None, min_length=1)
+    meta: dict[str, Any] | None = None
+
+
+class ActivityResponse(BaseModel):
+    id: str
+    candidate_id: str
+    user_id: str | None = None
+    activity_type: str
+    title: str
+    content: str | None = None
+    meta: dict[str, Any] = {}
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class NoteResponse(BaseModel):
+    id: str
+    candidate_id: str
+    user_id: str | None = None
+    title: str
+    content: str | None = None
+    meta: dict[str, Any] = {}
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class NotesListResponse(BaseModel):
+    candidate_id: str
+    data: list[NoteResponse]
+    total: int
+
+
+class TimelineActivityItem(BaseModel):
+    id: str
+    type: str
+    title: str
+    description: str
+    actor: str | None = None
+    timestamp: str
+    meta: dict[str, Any] = {}
+
+
+class TimelineListResponse(BaseModel):
+    candidate_id: str
+    events: list[TimelineActivityItem]
+    total: int
+
+
+class InterviewScheduleRequest(BaseModel):
+    """Payload for scheduling an interview on a candidate's timeline."""
+
+    title: str = Field(..., min_length=1, max_length=255)
+    scheduled_at: datetime = Field(..., description="Interview start time (ISO-8601)")
+    interviewer: str | None = Field(None, description="Interviewer name or identifier")
+    interview_type: str | None = Field("technical", description="phone | technical | onsite | ai")
+    notes: str | None = None
+    meta: dict[str, Any] = Field(default_factory=dict)
+
+
+class InterviewScheduleResponse(BaseModel):
+    id: str
+    candidate_id: str
+    title: str
+    scheduled_at: datetime
+    interviewer: str | None = None
+    interview_type: str | None = None
+    activity_id: str
+    created: bool = True
+
+
 # ── Router ──────────────────────────────────────────────────────────────────────
 
 router = APIRouter()
+
+
+# ── Activity helpers ───────────────────────────────────────────────────────────
+
+
+async def log_activity(
+    db: AsyncSession,
+    *,
+    tenant_id: str,
+    candidate_id: str,
+    activity_type: CandidateActivityType | str,
+    title: str,
+    content: str | None = None,
+    user_id: str | None = None,
+    meta: dict[str, Any] | None = None,
+) -> CandidateActivity:
+    """Append a row to the candidate activity feed.
+
+    Wraps the insert in a SAVEPOINT so a failure here never rolls back the
+    outer transaction (mirrors the behaviour of ``shared.audit.audit``).
+    """
+    type_value = activity_type.value if isinstance(activity_type, CandidateActivityType) else activity_type
+    sp = None
+    try:
+        sp = await db.begin_nested()
+        activity = CandidateActivity(
+            tenant_id=tenant_id,
+            candidate_id=candidate_id,
+            user_id=user_id,
+            activity_type=type_value,
+            title=title,
+            content=content,
+            meta=dict(meta or {}),
+        )
+        db.add(activity)
+        await sp.commit()
+        await db.flush()
+        await db.refresh(activity)
+        return activity
+    except Exception:
+        logger.exception(
+            "log_activity failed: tenant=%s candidate=%s type=%s",
+            tenant_id, candidate_id, type_value,
+        )
+        if sp is not None:
+            try:
+                await sp.rollback()
+            except Exception:
+                pass
+        # Re-raise so the caller can decide how to react.  In the candidate
+        # service we never let a timeline write break the user-facing action
+        # that triggered it — see the *_try_log wrappers below.
+        raise
+
+
+async def _safe_log_activity(
+    db: AsyncSession,
+    *,
+    tenant_id: str,
+    candidate_id: str,
+    activity_type: CandidateActivityType | str,
+    title: str,
+    content: str | None = None,
+    user_id: str | None = None,
+    meta: dict[str, Any] | None = None,
+) -> CandidateActivity | None:
+    """Best-effort wrapper around :func:`log_activity`.
+
+    Returns the activity on success, or ``None`` if the write failed.
+    Use this for auto-logged events so a transient DB error never blocks
+    the user-facing action.
+    """
+    try:
+        return await log_activity(
+            db,
+            tenant_id=tenant_id,
+            candidate_id=candidate_id,
+            activity_type=activity_type,
+            title=title,
+            content=content,
+            user_id=user_id,
+            meta=meta,
+        )
+    except Exception:
+        return None
+
+
+def _activity_to_timeline_item(activity: CandidateActivity) -> TimelineActivityItem:
+    """Map a :class:`CandidateActivity` row to the public timeline shape."""
+    description = activity.content or ""
+    return TimelineActivityItem(
+        id=activity.id,
+        type=activity.activity_type,
+        title=activity.title,
+        description=description,
+        actor=activity.user_id,
+        timestamp=activity.created_at.isoformat() if activity.created_at else "",
+        meta=dict(activity.meta or {}),
+    )
+
+
+
 
 
 @router.get("/health", response_model=HealthResponse, tags=["Candidates"], summary="Candidate service health check")
@@ -547,80 +743,365 @@ async def match_candidate_to_jobs(
 
 @router.get(
     "/{candidate_id}/timeline",
-    response_model=TimelineResponse,
+    response_model=TimelineListResponse,
     tags=["Candidates"],
     summary="Candidate activity timeline",
     description="Return the chronological activity timeline for a candidate: creation, status changes, "
-                "interviews, offers, and notes.",
+                "interviews, offers, and notes — sourced from the ``candidate_activities`` table.",
 )
 async def get_candidate_timeline(
     candidate_id: str,
     db: AsyncSession = Depends(get_db_dependency),
     tenant_id: str = Depends(require_tenant),
     limit: int = Query(50, ge=1, le=200, description="Maximum events to return"),
-) -> TimelineResponse:
-    """Compose a deterministic per-candidate timeline.
+    offset: int = Query(0, ge=0, description="Number of events to skip (for pagination)"),
+) -> TimelineListResponse:
+    """Return the real, persisted activity feed for a candidate.
 
-    In production this would query the audit log + interview/offer/note
-    services.  We synthesise a stable set of events here so the frontend
-    can render a meaningful widget out of the box.
+    Verifies the candidate belongs to the caller's tenant (returns 404
+    otherwise) and then lists activities oldest-first so the UI can render
+    them in chronological order.
     """
-    result = await db.execute(
-        select(Candidate).where(Candidate.id == candidate_id, Candidate.tenant_id == tenant_id)
+    cand_result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == candidate_id, Candidate.tenant_id == tenant_id
+        )
     )
-    candidate = result.scalar_one_or_none()
-    if not candidate:
-        # Synthesise a placeholder so the widget renders in dev/seed mode.
-        candidate = type("C", (), {"id": candidate_id, "full_name": candidate_id, "created_at": None})()
+    if not cand_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
 
-    base_ts = candidate.created_at or datetime(2025, 1, 1, 12, 0, 0)
-    events: list[TimelineEvent] = [
-        TimelineEvent(
-            id=f"evt_{candidate_id}_create",
-            type="created",
-            title="Candidate created",
-            description=f"Candidate {candidate.full_name} added to the system",
-            actor="system",
-            timestamp=base_ts.isoformat(),
-        ),
-        TimelineEvent(
-            id=f"evt_{candidate_id}_screen",
-            type="screening",
-            title="Screening started",
-            description="AI screening initiated",
-            actor="ai_orchestrator",
-            timestamp=(base_ts + timedelta(hours=2)).isoformat(),
-        ),
-        TimelineEvent(
-            id=f"evt_{candidate_id}_interview",
-            type="interview",
-            title="Interview scheduled",
-            description="Technical interview with the engineering team",
-            actor="recruiter",
-            timestamp=(base_ts + timedelta(days=1)).isoformat(),
-        ),
-        TimelineEvent(
-            id=f"evt_{candidate_id}_note",
-            type="note",
-            title="Recruiter note added",
-            description="Strong communicator, recommend moving to onsite",
-            actor="recruiter",
-            timestamp=(base_ts + timedelta(days=2)).isoformat(),
-        ),
-        TimelineEvent(
-            id=f"evt_{candidate_id}_offer",
-            type="offer",
-            title="Offer extended",
-            description="Offer sent to candidate",
-            actor="hiring_manager",
-            timestamp=(base_ts + timedelta(days=5)).isoformat(),
-        ),
-    ][:limit]
-    return TimelineResponse(
+    total = await db.execute(
+        select(func.count())
+        .select_from(CandidateActivity)
+        .where(
+            CandidateActivity.candidate_id == candidate_id,
+            CandidateActivity.tenant_id == tenant_id,
+        )
+    )
+    total_count = total.scalar_one()
+
+    result = await db.execute(
+        select(CandidateActivity)
+        .where(
+            CandidateActivity.candidate_id == candidate_id,
+            CandidateActivity.tenant_id == tenant_id,
+        )
+        .order_by(CandidateActivity.created_at.asc(), CandidateActivity.id.asc())
+        .offset(offset)
+        .limit(limit)
+    )
+    activities = result.scalars().all()
+    return TimelineListResponse(
         candidate_id=candidate_id,
-        events=events,
-        total=len(events),
-        generated_at=datetime.now(timezone.utc).isoformat(),
+        events=[_activity_to_timeline_item(a) for a in activities],
+        total=total_count,
+    )
+
+
+@router.get(
+    "/{candidate_id}/notes",
+    response_model=NotesListResponse,
+    tags=["Candidates"],
+    summary="List notes for a candidate",
+    description="Return every note (user-authored ``activity_type='note'``) recorded against a candidate, "
+                "newest first.",
+)
+async def list_candidate_notes(
+    candidate_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+    limit: int = Query(50, ge=1, le=200, description="Maximum notes to return"),
+    offset: int = Query(0, ge=0, description="Number of notes to skip"),
+) -> NotesListResponse:
+    """List every note on the candidate's timeline, newest first."""
+    cand_result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == candidate_id, Candidate.tenant_id == tenant_id
+        )
+    )
+    if not cand_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
+
+    total = await db.execute(
+        select(func.count())
+        .select_from(CandidateActivity)
+        .where(
+            CandidateActivity.candidate_id == candidate_id,
+            CandidateActivity.tenant_id == tenant_id,
+            CandidateActivity.activity_type == CandidateActivityType.NOTE.value,
+        )
+    )
+    total_count = total.scalar_one()
+
+    result = await db.execute(
+        select(CandidateActivity)
+        .where(
+            CandidateActivity.candidate_id == candidate_id,
+            CandidateActivity.tenant_id == tenant_id,
+            CandidateActivity.activity_type == CandidateActivityType.NOTE.value,
+        )
+        .order_by(CandidateActivity.created_at.desc(), CandidateActivity.id.desc())
+        .offset(offset)
+        .limit(limit)
+    )
+    notes = result.scalars().all()
+    return NotesListResponse(
+        candidate_id=candidate_id,
+        data=[
+            NoteResponse(
+                id=n.id,
+                candidate_id=n.candidate_id,
+                user_id=n.user_id,
+                title=n.title,
+                content=n.content,
+                meta=dict(n.meta or {}),
+                created_at=n.created_at,
+            )
+            for n in notes
+        ],
+        total=total_count,
+    )
+
+
+@router.post(
+    "/{candidate_id}/notes",
+    response_model=NoteResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Candidates"],
+    summary="Add a note to a candidate",
+    description="Record a free-form note against a candidate.  The note is also "
+                "written to the candidate's activity timeline.",
+)
+async def add_candidate_note(
+    candidate_id: str,
+    payload: NoteCreateRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+    user: dict = Depends(require_user),
+    _rl: None = Depends(candidate_write_rate),
+) -> NoteResponse:
+    """Append a new note to the candidate's activity feed."""
+    cand_result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == candidate_id, Candidate.tenant_id == tenant_id
+        )
+    )
+    if not cand_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
+
+    activity = await log_activity(
+        db,
+        tenant_id=tenant_id,
+        candidate_id=candidate_id,
+        activity_type=CandidateActivityType.NOTE,
+        title=payload.title or "Note",
+        content=payload.content,
+        user_id=user.get("id"),
+        meta=payload.meta,
+    )
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.note.create",
+        resource_type="candidate_note",
+        resource_id=activity.id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+        details={"candidate_id": candidate_id},
+    )
+    return NoteResponse(
+        id=activity.id,
+        candidate_id=activity.candidate_id,
+        user_id=activity.user_id,
+        title=activity.title,
+        content=activity.content,
+        meta=dict(activity.meta or {}),
+        created_at=activity.created_at,
+    )
+
+
+@router.put(
+    "/{candidate_id}/notes/{note_id}",
+    response_model=NoteResponse,
+    tags=["Candidates"],
+    summary="Update a note on a candidate",
+    description="Update the title, content, or metadata of an existing note.  The note must "
+                "belong to the caller's tenant and be of activity_type ``note``.",
+)
+async def update_candidate_note(
+    candidate_id: str,
+    note_id: str,
+    payload: NoteUpdateRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+    user: dict = Depends(require_user),
+    _rl: None = Depends(candidate_write_rate),
+) -> NoteResponse:
+    """Update an existing note in place."""
+    result = await db.execute(
+        select(CandidateActivity).where(
+            CandidateActivity.id == note_id,
+            CandidateActivity.candidate_id == candidate_id,
+            CandidateActivity.tenant_id == tenant_id,
+            CandidateActivity.activity_type == CandidateActivityType.NOTE.value,
+        )
+    )
+    note = result.scalar_one_or_none()
+    if not note:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Note not found"
+        )
+
+    update_data = payload.model_dump(exclude_unset=True)
+    if "title" in update_data and update_data["title"] is not None:
+        note.title = update_data["title"]
+    if "content" in update_data and update_data["content"] is not None:
+        note.content = update_data["content"]
+    if "meta" in update_data and update_data["meta"] is not None:
+        note.meta = dict(update_data["meta"])
+    db.add(note)
+    await db.flush()
+    await db.refresh(note)
+
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.note.update",
+        resource_type="candidate_note",
+        resource_id=note.id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+        details={"candidate_id": candidate_id, "fields": list(update_data.keys())},
+    )
+
+    return NoteResponse(
+        id=note.id,
+        candidate_id=note.candidate_id,
+        user_id=note.user_id,
+        title=note.title,
+        content=note.content,
+        meta=dict(note.meta or {}),
+        created_at=note.created_at,
+    )
+
+
+@router.delete(
+    "/{candidate_id}/notes/{note_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    tags=["Candidates"],
+    summary="Delete a note from a candidate",
+    description="Hard-delete a note from the candidate's activity feed.  The activity is "
+                "removed from the timeline as well.",
+)
+async def delete_candidate_note(
+    candidate_id: str,
+    note_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+    user: dict = Depends(require_user),
+    _rl: None = Depends(candidate_write_rate),
+) -> Response:
+    """Delete a note permanently."""
+    result = await db.execute(
+        select(CandidateActivity).where(
+            CandidateActivity.id == note_id,
+            CandidateActivity.candidate_id == candidate_id,
+            CandidateActivity.tenant_id == tenant_id,
+            CandidateActivity.activity_type == CandidateActivityType.NOTE.value,
+        )
+    )
+    note = result.scalar_one_or_none()
+    if not note:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Note not found"
+        )
+
+    await db.delete(note)
+    await db.flush()
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.note.delete",
+        resource_type="candidate_note",
+        resource_id=note_id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+        details={"candidate_id": candidate_id},
+    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(
+    "/{candidate_id}/interviews",
+    response_model=InterviewScheduleResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Candidates"],
+    summary="Schedule an interview for a candidate",
+    description="Schedule an interview and auto-log an ``interview_scheduled`` activity on "
+                "the candidate's timeline.",
+)
+async def schedule_interview(
+    candidate_id: str,
+    payload: InterviewScheduleRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+    user: dict = Depends(require_user),
+    _rl: None = Depends(candidate_write_rate),
+) -> InterviewScheduleResponse:
+    """Schedule an interview and record it on the candidate's timeline."""
+    cand_result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == candidate_id, Candidate.tenant_id == tenant_id
+        )
+    )
+    if not cand_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
+
+    interview_id = str(uuid.uuid4())
+    activity = await log_activity(
+        db,
+        tenant_id=tenant_id,
+        candidate_id=candidate_id,
+        activity_type=CandidateActivityType.INTERVIEW_SCHEDULED,
+        title=f"Interview scheduled: {payload.title}",
+        content=payload.notes,
+        user_id=user.get("id"),
+        meta={
+            "interview_id": interview_id,
+            "interview_type": payload.interview_type,
+            "interviewer": payload.interviewer,
+            "scheduled_at": payload.scheduled_at.isoformat(),
+            **payload.meta,
+        },
+    )
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.interview.schedule",
+        resource_type="candidate_interview",
+        resource_id=interview_id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+        details={"candidate_id": candidate_id, "title": payload.title},
+    )
+    return InterviewScheduleResponse(
+        id=interview_id,
+        candidate_id=candidate_id,
+        title=payload.title,
+        scheduled_at=payload.scheduled_at,
+        interviewer=payload.interviewer,
+        interview_type=payload.interview_type,
+        activity_id=activity.id,
+        created=True,
     )
 
 
