@@ -4,6 +4,21 @@ Manages WebSocket connections, per-user and per-tenant rooms, and event
 subscriptions.  Integrates with the shared :class:`EventDispatcher` so that
 domain events (candidate created, job created, interview scheduled, …) are
 pushed to the relevant clients in real time, with strict tenant isolation.
+
+Public API (used by the dashboard / notification endpoints)::
+
+    await broadcaster.connect(user_id, ws, tenant_id="default")   -> connection_id
+    await broadcaster.disconnect(user_id, ws)
+    await broadcaster.broadcast(event_type, data, tenant_id=None) -> recipient_count
+    await broadcaster.send_to_user(user_id, event_type, data, tenant_id="default")
+
+Advanced room / subscription API (used by the dispatcher's event handlers
+and the WebSocket service for channel-style subscriptions)::
+
+    await broadcaster.subscribe(connection_id, "candidate.created")
+    await broadcaster.unsubscribe(connection_id, "candidate.created")
+    await broadcaster.join_room(connection_id, "tenant:t1:event:job.created")
+    await broadcaster.handle_event(event_envelope)
 """
 from __future__ import annotations
 
@@ -78,15 +93,23 @@ class Broadcaster:
         self._lock = asyncio.Lock()
         self._dispatcher_registered: set[str] = set()
 
-    # ── Connection lifecycle ──────────────────────────────────────────────
+    # ── Public user-friendly API ────────────────────────────────────────
 
     async def connect(
         self,
-        websocket: WebSocket,
-        tenant_id: str,
         user_id: str,
+        websocket: WebSocket,
+        tenant_id: str = "default",
         extra_rooms: Iterable[str] | None = None,
-    ) -> Subscription:
+    ) -> str:
+        """Register a WebSocket connection for ``user_id``.
+
+        Returns the generated ``connection_id`` which can be used with
+        :meth:`subscribe` / :meth:`unsubscribe` for fine-grained channel
+        management.
+        """
+        if not user_id or not isinstance(user_id, str):
+            raise ValueError("user_id must be a non-empty string")
         await websocket.accept()
         connection_id = str(uuid.uuid4())
         sub = Subscription(
@@ -106,25 +129,73 @@ class Broadcaster:
             self._by_tenant[tenant_id].add(connection_id)
             for room in sub.rooms:
                 self._by_room[room].add(connection_id)
-        return sub
+        return connection_id
 
-    async def disconnect(self, connection_id: str) -> None:
+    async def disconnect(self, user_id: str, websocket: WebSocket) -> int:
+        """Disconnect every connection for ``user_id`` bound to ``websocket``.
+
+        Returns the number of connections removed (0 or 1 in practice).
+        """
+        targets: list[str] = []
         async with self._lock:
-            sub = self._connections.pop(connection_id, None)
-            if not sub:
-                return
-            self._by_user[sub.user_id].discard(connection_id)
-            if not self._by_user[sub.user_id]:
-                self._by_user.pop(sub.user_id, None)
-            self._by_tenant[sub.tenant_id].discard(connection_id)
-            if not self._by_tenant[sub.tenant_id]:
-                self._by_tenant.pop(sub.tenant_id, None)
-            for room in sub.rooms:
-                self._by_room[room].discard(connection_id)
-                if not self._by_room[room]:
-                    self._by_room.pop(room, None)
+            for cid, sub in self._connections.items():
+                if sub.user_id == user_id and sub.websocket is websocket:
+                    targets.append(cid)
+        for cid in targets:
+            await self._disconnect_locked(cid)
+        return len(targets)
 
-    # ── Subscription / room management ──────────────────────────────────
+    async def broadcast(
+        self,
+        event_type: str,
+        data: dict[str, Any],
+        tenant_id: str | None = None,
+    ) -> int:
+        """Send ``{"event": event_type, "data": data}`` to all matching clients.
+
+        If ``tenant_id`` is provided, only clients in that tenant receive the
+        event.  If ``tenant_id`` is ``None``, every active connection is
+        eligible.  Returns the number of recipients the event was fanned out
+        to.
+        """
+        if not event_type:
+            return 0
+        message: dict[str, Any] = {"event": event_type, "data": data}
+        if tenant_id is None:
+            recipients = list(self._connections.values())
+        else:
+            recipients = [
+                sub
+                for cid in self._by_tenant.get(tenant_id, set())
+                if (sub := self._connections.get(cid)) is not None
+            ]
+        await self._fan_out(recipients, message)
+        return len(recipients)
+
+    async def send_to_user(
+        self,
+        user_id: str,
+        event_type: str,
+        data: dict[str, Any],
+        tenant_id: str = "default",
+    ) -> int:
+        """Send ``{"event": event_type, "data": data}`` to one user.
+
+        Returns the number of connections that received the message (a user
+        may be connected from multiple browsers / tabs).
+        """
+        if not event_type:
+            return 0
+        message: dict[str, Any] = {"event": event_type, "data": data}
+        recipients: list[Subscription] = []
+        for cid in self._by_user.get(user_id, set()):
+            sub = self._connections.get(cid)
+            if sub is not None and sub.tenant_id == tenant_id:
+                recipients.append(sub)
+        await self._fan_out(recipients, message)
+        return len(recipients)
+
+    # ── Advanced connection lifecycle (rooms / connection_id) ──────────
 
     async def subscribe(self, connection_id: str, event_type: str) -> bool:
         if not event_type:
@@ -214,7 +285,7 @@ class Broadcaster:
         )
         await self._fan_out(recipients, event)
 
-    # ── Direct broadcast API ────────────────────────────────────────────
+    # ── Direct broadcast API (low-level) ───────────────────────────────
 
     async def broadcast_to_tenant(
         self, tenant_id: str, message: dict[str, Any]
@@ -240,10 +311,26 @@ class Broadcaster:
             await sub.websocket.send_json(message)
             return True
         except Exception:
-            await self.disconnect(connection_id)
+            await self._disconnect_locked(connection_id)
             return False
 
     # ── Internals ───────────────────────────────────────────────────────
+
+    async def _disconnect_locked(self, connection_id: str) -> None:
+        async with self._lock:
+            sub = self._connections.pop(connection_id, None)
+            if not sub:
+                return
+            self._by_user[sub.user_id].discard(connection_id)
+            if not self._by_user[sub.user_id]:
+                self._by_user.pop(sub.user_id, None)
+            self._by_tenant[sub.tenant_id].discard(connection_id)
+            if not self._by_tenant[sub.tenant_id]:
+                self._by_tenant.pop(sub.tenant_id, None)
+            for room in sub.rooms:
+                self._by_room[room].discard(connection_id)
+                if not self._by_room[room]:
+                    self._by_room.pop(room, None)
 
     def _connections_in_rooms(
         self, rooms: Iterable[str]
@@ -288,7 +375,7 @@ class Broadcaster:
             except Exception:
                 dead.append(sub.connection_id)
         for cid in dead:
-            await self.disconnect(cid)
+            await self._disconnect_locked(cid)
 
     # ── Stats / introspection ───────────────────────────────────────────
 
@@ -312,6 +399,12 @@ class Broadcaster:
             for sub in self._connections.values()
             if sub.tenant_id == tenant_id
         ]
+
+    def is_connected(self, user_id: str) -> bool:
+        return bool(self._by_user.get(user_id))
+
+    def connection_count(self, user_id: str) -> int:
+        return len(self._by_user.get(user_id, set()))
 
     async def reset(self) -> None:
         async with self._lock:

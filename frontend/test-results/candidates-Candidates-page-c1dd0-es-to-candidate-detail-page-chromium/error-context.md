@@ -1,0 +1,451 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: candidates.spec.ts >> Candidates page >> navigates to candidate detail page
+- Location: tests\e2e\candidates.spec.ts:46:7
+
+# Error details
+
+```
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: apiRequestContext.get: Target page, context or browser has been closed
+Call log:
+  - → GET http://localhost:3000/api/v1/candidates/?page_size=1
+    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+  - ← 308 Permanent Redirect
+    - location: /api/v1/candidates?page_size=1
+    - refresh: 0;url=/api/v1/candidates?page_size=1
+    - date: Fri, 05 Jun 2026 20:19:57 GMT
+    - connection: keep-alive
+    - keep-alive: timeout=5
+    - transfer-encoding: chunked
+  - → GET http://localhost:3000/api/v1/candidates?page_size=1
+    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+
+```
+
+```
+Tearing down "context" exceeded the test timeout of 30000ms.
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - link "Skip to main content" [ref=e3] [cursor=pointer]:
+    - /url: "#main-content"
+  - link "Skip to navigation" [ref=e4] [cursor=pointer]:
+    - /url: "#primary-nav"
+  - generic [ref=e5]:
+    - complementary "Sidebar navigation" [ref=e6]:
+      - link "AI-ROS" [ref=e8] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e10]
+        - generic [ref=e13]: AI-ROS
+      - navigation "Main" [ref=e14]:
+        - paragraph [ref=e15]: Workspace
+        - link "Dashboard" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e17]
+          - generic [ref=e22]: Dashboard
+        - link "Candidates 24" [ref=e24] [cursor=pointer]:
+          - /url: /dashboard/candidates
+          - img [ref=e25]
+          - generic [ref=e30]: Candidates
+          - generic [ref=e31]: "24"
+        - link "Jobs 5" [ref=e32] [cursor=pointer]:
+          - /url: /dashboard/jobs
+          - img [ref=e33]
+          - generic [ref=e36]: Jobs
+          - generic [ref=e37]: "5"
+        - link "Interviews" [ref=e38] [cursor=pointer]:
+          - /url: /dashboard/interviews
+          - img [ref=e39]
+          - generic [ref=e41]: Interviews
+        - link "PPE" [ref=e42] [cursor=pointer]:
+          - /url: /dashboard/ppe
+          - img [ref=e43]
+          - generic [ref=e47]: PPE
+        - link "Analytics" [ref=e48] [cursor=pointer]:
+          - /url: /dashboard/analytics
+          - img [ref=e49]
+          - generic [ref=e51]: Analytics
+        - link "AI Copilot new" [ref=e52] [cursor=pointer]:
+          - /url: /dashboard/ai-copilot
+          - img [ref=e53]
+          - generic [ref=e56]: AI Copilot
+          - generic [ref=e57]: new
+        - link "Workflows" [ref=e58] [cursor=pointer]:
+          - /url: /dashboard/workflows
+          - img [ref=e59]
+          - generic [ref=e63]: Workflows
+        - link "Pipeline" [ref=e64] [cursor=pointer]:
+          - /url: /dashboard/pipeline
+          - img [ref=e65]
+          - generic [ref=e67]: Pipeline
+        - link "AI Matching" [ref=e68] [cursor=pointer]:
+          - /url: /dashboard/matching
+          - img [ref=e69]
+          - generic [ref=e71]: AI Matching
+        - link "Schedule" [ref=e72] [cursor=pointer]:
+          - /url: /dashboard/schedule
+          - img [ref=e73]
+          - generic [ref=e75]: Schedule
+        - link "Settings" [ref=e76] [cursor=pointer]:
+          - /url: /dashboard/settings
+          - img [ref=e77]
+          - generic [ref=e80]: Settings
+      - generic [ref=e82]:
+        - generic [ref=e83]:
+          - img [ref=e84]
+          - paragraph [ref=e86]: Press
+        - paragraph [ref=e87]: Press ⌘K to open search and jump anywhere.
+    - generic [ref=e88]:
+      - banner [ref=e89]:
+        - generic [ref=e91]:
+          - img [ref=e92]
+          - searchbox "Search" [ref=e95]
+          - generic [ref=e96]: ⌘K
+        - generic [ref=e97]:
+          - 'button "Realtime status: Reconnecting" [ref=e98] [cursor=pointer]':
+            - img [ref=e100]
+            - generic [ref=e105]: Reconnecting
+          - radiogroup "Theme" [ref=e106]:
+            - radio "Light" [ref=e107] [cursor=pointer]:
+              - img [ref=e108]
+            - radio "Dark" [ref=e114] [cursor=pointer]:
+              - img [ref=e115]
+            - radio "System" [checked] [ref=e117] [cursor=pointer]:
+              - img [ref=e118]
+          - button "en" [ref=e121] [cursor=pointer]:
+            - img [ref=e122]
+            - generic [ref=e125]: EN
+            - img [ref=e126]
+          - generic [ref=e128]:
+            - region "Notifications"
+            - button "Notifications (0 unread)" [ref=e129] [cursor=pointer]:
+              - img [ref=e130]
+          - button "Open user menu" [ref=e134] [cursor=pointer]:
+            - generic [ref=e135]: DU
+            - img [ref=e136]
+      - main [ref=e138]:
+        - generic [ref=e139]:
+          - generic [ref=e140]:
+            - generic [ref=e141]:
+              - heading "Welcome back" [level=1] [ref=e142]
+              - paragraph [ref=e143]: Here's what's happening with your hiring today.
+            - generic [ref=e144]:
+              - button "7 days" [pressed] [ref=e145] [cursor=pointer]
+              - button "30 days" [ref=e146] [cursor=pointer]
+              - button "90 days" [ref=e147] [cursor=pointer]
+            - generic [ref=e148]: Live · 11:19:51 PM
+          - region "Getting started checklist" [ref=e150]:
+            - generic [ref=e151]:
+              - generic [ref=e152]:
+                - generic [ref=e153]:
+                  - img [ref=e155]
+                  - generic [ref=e160]:
+                    - heading "Welcome to AI-ROS" [level=3] [ref=e161]
+                    - paragraph [ref=e162]: 3 of 5 complete · 60%
+                - button "Dismiss onboarding" [ref=e163] [cursor=pointer]:
+                  - img [ref=e164]
+              - list [ref=e169]:
+                - listitem [ref=e170]:
+                  - link "Complete your profile" [ref=e171] [cursor=pointer]:
+                    - /url: /dashboard/settings
+                    - img [ref=e173]
+                    - img [ref=e176]
+                    - paragraph [ref=e180]: Complete your profile
+                - listitem [ref=e181]:
+                  - link "Post your first job" [ref=e182] [cursor=pointer]:
+                    - /url: /dashboard/jobs
+                    - img [ref=e184]
+                    - img [ref=e187]
+                    - paragraph [ref=e191]: Post your first job
+                - listitem [ref=e192]:
+                  - link "Add a candidate" [ref=e193] [cursor=pointer]:
+                    - /url: /dashboard/candidates
+                    - img [ref=e195]
+                    - img [ref=e198]
+                    - paragraph [ref=e204]: Add a candidate
+                - listitem [ref=e205]:
+                  - link "Try the AI Copilot Ask the AI to evaluate, match, or summarize" [ref=e206] [cursor=pointer]:
+                    - /url: /dashboard/ai-copilot
+                    - img [ref=e208]
+                    - img [ref=e210]
+                    - generic [ref=e213]:
+                      - paragraph [ref=e214]: Try the AI Copilot
+                      - paragraph [ref=e215]: Ask the AI to evaluate, match, or summarize
+                - listitem [ref=e216]:
+                  - link "Set up your pipeline Customize stages for your hiring workflow" [ref=e217] [cursor=pointer]:
+                    - /url: /dashboard/pipeline
+                    - img [ref=e219]
+                    - img [ref=e221]
+                    - generic [ref=e223]:
+                      - paragraph [ref=e224]: Set up your pipeline
+                      - paragraph [ref=e225]: Customize stages for your hiring workflow
+          - generic [ref=e226]:
+            - generic [ref=e228]:
+              - generic [ref=e229]:
+                - paragraph [ref=e230]: Total Candidates
+                - paragraph [ref=e231]:
+                  - generic [ref=e232]: "0"
+              - img [ref=e234]
+            - generic [ref=e240]:
+              - generic [ref=e241]:
+                - paragraph [ref=e242]: Active Jobs
+                - paragraph [ref=e243]:
+                  - generic [ref=e244]: "0"
+              - img [ref=e246]
+            - generic [ref=e250]:
+              - generic [ref=e251]:
+                - paragraph [ref=e252]: Interviews This Week
+                - paragraph [ref=e253]:
+                  - generic [ref=e254]: "0"
+              - img [ref=e256]
+            - generic [ref=e259]:
+              - generic [ref=e260]:
+                - paragraph [ref=e261]: Pass Rate
+                - paragraph [ref=e262]:
+                  - generic [ref=e263]: 0%
+              - img [ref=e265]
+          - group "Quick actions" [ref=e269]:
+            - link "Add candidate" [ref=e270] [cursor=pointer]:
+              - /url: /dashboard/candidates
+              - img [ref=e272]
+              - paragraph [ref=e275]: Add candidate
+              - img [ref=e276]
+            - link "Create job" [ref=e279] [cursor=pointer]:
+              - /url: /dashboard/jobs
+              - img [ref=e281]
+              - paragraph [ref=e284]: Create job
+              - img [ref=e285]
+            - link "Schedule interview" [ref=e288] [cursor=pointer]:
+              - /url: /dashboard/interviews
+              - img [ref=e290]
+              - paragraph [ref=e292]: Schedule interview
+              - img [ref=e293]
+            - link "Ask AI Copilot" [ref=e296] [cursor=pointer]:
+              - /url: /dashboard/ai-copilot
+              - img [ref=e298]
+              - paragraph [ref=e301]: Ask AI Copilot
+              - img [ref=e302]
+          - generic [ref=e305]:
+            - generic [ref=e306]:
+              - generic [ref=e309]:
+                - heading "Weekly activity" [level=3] [ref=e310]
+                - paragraph [ref=e311]: Candidates processed per day
+              - status [ref=e313]:
+                - img [ref=e315]
+                - heading "No activity data yet" [level=3] [ref=e318]
+                - paragraph [ref=e319]: Charts will populate once candidates start flowing through the pipeline.
+            - generic [ref=e320]:
+              - heading "Pipeline funnel" [level=3] [ref=e323]
+              - status [ref=e325]:
+                - img [ref=e327]
+                - heading "No funnel data" [level=3] [ref=e329]
+                - paragraph [ref=e330]: Add candidates and start screening to see your funnel.
+          - generic [ref=e331]:
+            - generic [ref=e332]:
+              - generic [ref=e334]:
+                - generic [ref=e335]:
+                  - img [ref=e336]
+                  - heading "Recent activity" [level=3] [ref=e338]
+                - link "View all" [ref=e339] [cursor=pointer]:
+                  - /url: /dashboard/analytics
+                  - text: View all
+                  - img [ref=e340]
+              - status [ref=e343]:
+                - img [ref=e345]
+                - heading "No activity yet" [level=3] [ref=e347]
+                - paragraph [ref=e348]: AI actions, screening runs, and workflow events will show up here.
+            - generic [ref=e349]:
+              - generic [ref=e351]:
+                - generic [ref=e352]:
+                  - img [ref=e353]
+                  - heading "Upcoming" [level=3] [ref=e355]
+                - generic [ref=e356]: 3 events
+              - list [ref=e358]:
+                - listitem [ref=e359]:
+                  - generic [ref=e360]: 05:00 PM
+                  - generic [ref=e361]:
+                    - paragraph [ref=e362]: Candidate
+                    - paragraph [ref=e363]: pair_programming
+                - listitem [ref=e364]:
+                  - generic [ref=e365]: 01:00 PM
+                  - generic [ref=e366]:
+                    - paragraph [ref=e367]: Candidate
+                    - paragraph [ref=e368]: system_design
+                - listitem [ref=e369]:
+                  - generic [ref=e370]: 02:00 PM
+                  - generic [ref=e371]:
+                    - paragraph [ref=e372]: Candidate
+                    - paragraph [ref=e373]: hr_screening
+          - generic [ref=e374]:
+            - generic [ref=e376]:
+              - generic [ref=e377]:
+                - img [ref=e378]
+                - heading "Recent candidates" [level=3] [ref=e383]
+              - link "View all" [ref=e384] [cursor=pointer]:
+                - /url: /dashboard/candidates
+                - text: View all
+                - img [ref=e385]
+            - list "Recent candidates list" [ref=e388]:
+              - listitem "New Candidate, new" [ref=e389] [cursor=pointer]:
+                - generic [ref=e390]:
+                  - generic [ref=e391]: NC
+                  - generic [ref=e392]:
+                    - paragraph [ref=e393]: New Candidate
+                    - paragraph [ref=e394]: new@email.com
+                - generic [ref=e396]: new
+              - listitem "Pipeline Candidate 5, new" [ref=e397] [cursor=pointer]:
+                - generic [ref=e398]:
+                  - generic [ref=e399]: PC
+                  - generic [ref=e400]:
+                    - paragraph [ref=e401]: Pipeline Candidate 5
+                    - paragraph [ref=e402]: pipe_c4+c0cb35cfb9@airos-test.com
+                - generic [ref=e404]: new
+              - listitem "Pipeline Candidate 4, new" [ref=e405] [cursor=pointer]:
+                - generic [ref=e406]:
+                  - generic [ref=e407]: PC
+                  - generic [ref=e408]:
+                    - paragraph [ref=e409]: Pipeline Candidate 4
+                    - paragraph [ref=e410]: pipe_c3+108617fa21@airos-test.com
+                - generic [ref=e412]: new
+              - listitem "Pipeline Candidate 3, new" [ref=e413] [cursor=pointer]:
+                - generic [ref=e414]:
+                  - generic [ref=e415]: PC
+                  - generic [ref=e416]:
+                    - paragraph [ref=e417]: Pipeline Candidate 3
+                    - paragraph [ref=e418]: pipe_c2+c9b0b9bc94@airos-test.com
+                - generic [ref=e420]: new
+              - listitem "Pipeline Candidate 2, new" [ref=e421] [cursor=pointer]:
+                - generic [ref=e422]:
+                  - generic [ref=e423]: PC
+                  - generic [ref=e424]:
+                    - paragraph [ref=e425]: Pipeline Candidate 2
+                    - paragraph [ref=e426]: pipe_c1+7bff64ce64@airos-test.com
+                - generic [ref=e428]: new
+              - listitem "Pipeline Candidate 1, new" [ref=e429] [cursor=pointer]:
+                - generic [ref=e430]:
+                  - generic [ref=e431]: PC
+                  - generic [ref=e432]:
+                    - paragraph [ref=e433]: Pipeline Candidate 1
+                    - paragraph [ref=e434]: pipe_c0+1e195e7021@airos-test.com
+                - generic [ref=e436]: new
+              - listitem "AI Test Cand, new" [ref=e437] [cursor=pointer]:
+                - generic [ref=e438]:
+                  - generic [ref=e439]: AT
+                  - generic [ref=e440]:
+                    - paragraph [ref=e441]: AI Test Cand
+                    - paragraph [ref=e442]: ai_cand+c264b4682e@airos-test.com
+                - generic [ref=e444]: new
+              - listitem "Jane Candidate, new" [ref=e445] [cursor=pointer]:
+                - generic [ref=e446]:
+                  - generic [ref=e447]: JC
+                  - generic [ref=e448]:
+                    - paragraph [ref=e449]: Jane Candidate
+                    - paragraph [ref=e450]: cand+97953ce17a@airos-test.com
+                - generic [ref=e452]: new
+              - listitem "New Candidate, new" [ref=e453] [cursor=pointer]:
+                - generic [ref=e454]:
+                  - generic [ref=e455]: NC
+                  - generic [ref=e456]:
+                    - paragraph [ref=e457]: New Candidate
+                    - paragraph [ref=e458]: new.candidate@test.com
+                - generic [ref=e460]: new
+              - listitem "Match, new" [ref=e461] [cursor=pointer]:
+                - generic [ref=e462]:
+                  - generic [ref=e463]: M
+                  - generic [ref=e464]:
+                    - paragraph [ref=e465]: Match
+                    - paragraph [ref=e466]: match_fec1fe00@example.com
+                - generic [ref=e468]: new
+              - listitem "Enrich, new" [ref=e469] [cursor=pointer]:
+                - generic [ref=e470]:
+                  - generic [ref=e471]: E
+                  - generic [ref=e472]:
+                    - paragraph [ref=e473]: Enrich
+                    - paragraph [ref=e474]: enrich_9b97af20@example.com
+                - generic [ref=e476]: new
+              - listitem "Dup, new" [ref=e477] [cursor=pointer]:
+                - generic [ref=e478]:
+                  - generic [ref=e479]: D
+                  - generic [ref=e480]:
+                    - paragraph [ref=e481]: Dup
+                    - paragraph [ref=e482]: dupc_0d18a38f@example.com
+                - generic [ref=e484]: new
+              - listitem "Updated Name, contacted" [ref=e485] [cursor=pointer]:
+                - generic [ref=e486]:
+                  - generic [ref=e487]: UN
+                  - generic [ref=e488]:
+                    - paragraph [ref=e489]: Updated Name
+                    - paragraph [ref=e490]: upd_05408006@example.com
+                - generic [ref=e492]: contacted
+              - listitem "Get Candidate, new" [ref=e493] [cursor=pointer]:
+                - generic [ref=e494]:
+                  - generic [ref=e495]: GC
+                  - generic [ref=e496]:
+                    - paragraph [ref=e497]: Get Candidate
+                    - paragraph [ref=e498]: get_1acfc09d@example.com
+                - generic [ref=e500]: new
+              - listitem "Test Candidate, new" [ref=e501] [cursor=pointer]:
+                - generic [ref=e502]:
+                  - generic [ref=e503]: TC
+                  - generic [ref=e504]:
+                    - paragraph [ref=e505]: Test Candidate
+                    - paragraph [ref=e506]: cand_bbfff219@example.com
+                - generic [ref=e508]: new
+              - listitem "Pipeline Candidate 5, new" [ref=e509] [cursor=pointer]:
+                - generic [ref=e510]:
+                  - generic [ref=e511]: PC
+                  - generic [ref=e512]:
+                    - paragraph [ref=e513]: Pipeline Candidate 5
+                    - paragraph [ref=e514]: pipe_c4+35e5a9aab5@airos-test.com
+                - generic [ref=e516]: new
+              - listitem "Pipeline Candidate 4, new" [ref=e517] [cursor=pointer]:
+                - generic [ref=e518]:
+                  - generic [ref=e519]: PC
+                  - generic [ref=e520]:
+                    - paragraph [ref=e521]: Pipeline Candidate 4
+                    - paragraph [ref=e522]: pipe_c3+bed3def746@airos-test.com
+                - generic [ref=e524]: new
+              - listitem "Pipeline Candidate 3, new" [ref=e525] [cursor=pointer]:
+                - generic [ref=e526]:
+                  - generic [ref=e527]: PC
+                  - generic [ref=e528]:
+                    - paragraph [ref=e529]: Pipeline Candidate 3
+                    - paragraph [ref=e530]: pipe_c2+1dddbe3c84@airos-test.com
+                - generic [ref=e532]: new
+              - listitem "Pipeline Candidate 2, new" [ref=e533] [cursor=pointer]:
+                - generic [ref=e534]:
+                  - generic [ref=e535]: PC
+                  - generic [ref=e536]:
+                    - paragraph [ref=e537]: Pipeline Candidate 2
+                    - paragraph [ref=e538]: pipe_c1+b699da1dd3@airos-test.com
+                - generic [ref=e540]: new
+              - listitem "Pipeline Candidate 1, new" [ref=e541] [cursor=pointer]:
+                - generic [ref=e542]:
+                  - generic [ref=e543]: PC
+                  - generic [ref=e544]:
+                    - paragraph [ref=e545]: Pipeline Candidate 1
+                    - paragraph [ref=e546]: pipe_c0+e6c8a1d16f@airos-test.com
+                - generic [ref=e548]: new
+      - region "Notifications"
+      - button "Open quick actions" [ref=e550] [cursor=pointer]:
+        - img [ref=e551]
+  - region "Notifications"
+```
