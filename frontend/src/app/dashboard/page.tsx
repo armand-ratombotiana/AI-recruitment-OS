@@ -78,13 +78,13 @@ function DashboardSkeleton() {
   return (
     <div className="space-y-6">
       <Skeleton variant="text" width="40%" height={32} />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <SkeletonCard key={i} />
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="md:col-span-2 xl:col-span-2">
           <SkeletonCard />
         </div>
         <SkeletonCard />
@@ -338,9 +338,9 @@ export default function DashboardPage() {
 
       {!configHydrated && <DashboardSkeleton />}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 rounded-xl border border-gray-200 bg-white shadow-sm dark:border-surface-700 dark:bg-surface-900">
-          <div className="p-6 pb-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+        <div className="md:col-span-2 xl:col-span-2 rounded-xl border border-gray-200 bg-white shadow-sm dark:border-surface-700 dark:bg-surface-900">
+          <div className="p-4 sm:p-6 pb-3">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -352,7 +352,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-          <div className="px-6 pb-6 pt-0">
+          <div className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0">
             {weekly.length === 0 ? (
               <EmptyState
                 icon={<TrendingUp className="h-10 w-10" />}
@@ -390,7 +390,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-surface-700 dark:bg-surface-900">
-        <div className="p-6 pb-3">
+        <div className="p-4 sm:p-6 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-blue-600 dark:text-brand-400" />
@@ -406,7 +406,7 @@ export default function DashboardPage() {
             </Link>
           </div>
         </div>
-        <div className="px-6 pb-6 pt-0">
+        <div className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0">
           {recent.length === 0 ? (
             <EmptyState
               icon={<UserPlus className="h-10 w-10" />}
@@ -425,7 +425,7 @@ export default function DashboardPage() {
             <div
               role="list"
               aria-label={t('dashboard.recentCandidatesList', 'Recent candidates list')}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3"
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3"
             >
               {recent.map((c: any) => {
                 const name = c.full_name || c.name || 'Unknown';
@@ -481,7 +481,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-surface-700 dark:bg-surface-900 p-6">
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-surface-700 dark:bg-surface-900 p-4 sm:p-6">
         <div className="flex items-start gap-3">
           <Sparkles className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
           <div>

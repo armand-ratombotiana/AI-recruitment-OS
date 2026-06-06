@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -15,26 +15,23 @@ import {
   Workflow as WorkflowIcon,
   KanbanSquare,
   Settings as SettingsIcon,
+  Menu,
   X,
   Sparkles,
   Zap,
+  type LucideIcon,
 } from 'lucide-react';
-import {
-  UserMenu,
-  NotificationsBell,
-  QuickActionsFab,
-  GlobalSearch,
-  NotificationProvider,
-  ErrorBoundary,
-  ThemeToggle,
-  LanguageToggle,
-  ConnectionStatus,
-  MobileNav,
-} from '@/components';
-import { ToastProvider } from '@/components/ui/toast';
+import { useIsMobile } from '@/hooks/use-media-query';
 import { useLocaleStore, translate } from '@/stores/locale-store';
 
-const NAV_ITEMS = [
+export interface MobileNavItem {
+  href: string;
+  key: string;
+  icon: LucideIcon;
+  badge?: string;
+}
+
+export const MOBILE_NAV_ITEMS: MobileNavItem[] = [
   { href: '/dashboard', key: 'nav.dashboard', icon: LayoutDashboard },
   { href: '/dashboard/candidates', key: 'nav.candidates', icon: Users, badge: '24' },
   { href: '/dashboard/jobs', key: 'nav.jobs', icon: Briefcase, badge: '5' },
@@ -49,33 +46,80 @@ const NAV_ITEMS = [
   { href: '/dashboard/settings', key: 'nav.settings', icon: SettingsIcon },
 ];
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+interface MobileNavProps {
+  className?: string;
+}
+
+export function MobileNav({ className }: MobileNavProps) {
+  const isMobile = useIsMobile();
+  const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const locale = useLocaleStore((s) => s.locale);
 
+  useEffect(() => {
+    if (!isMobile) {
+      setOpen(false);
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (open) {
+      const previous = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = previous;
+      };
+    }
+    return undefined;
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  if (!isMobile) {
+    return null;
+  }
+
   return (
-    <ToastProvider>
-      <NotificationProvider position="top-right" maxNotifications={5}>
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:shadow-lg"
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={translate(locale, 'mobileNav.open', 'Open navigation')}
+        aria-expanded={open}
+        aria-controls="mobile-nav-drawer"
+        className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-surface-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${className ?? ''}`}
+      >
+        <Menu className="h-5 w-5" aria-hidden="true" />
+      </button>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex"
+          role="dialog"
+          aria-modal="true"
+          aria-label={translate(locale, 'mobileNav.dialog', 'Navigation')}
         >
-          Skip to main content
-        </a>
-        <a
-          href="#primary-nav"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-32 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:shadow-lg"
-        >
-          Skip to navigation
-        </a>
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 dark:from-surface-950 dark:via-surface-900 dark:to-surface-950">
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
+            onClick={() => setOpen(false)}
+            aria-hidden="true"
+          />
           <aside
-            className="fixed inset-y-0 left-0 z-40 hidden lg:flex w-64 bg-white dark:bg-surface-900 border-r border-gray-200 dark:border-surface-700 flex-col shadow-sm"
-            aria-label="Sidebar navigation"
+            id="mobile-nav-drawer"
+            className="relative w-72 max-w-[85vw] h-full bg-white dark:bg-surface-900 border-r border-gray-200 dark:border-surface-700 flex flex-col shadow-2xl animate-slide-in-left"
+            aria-label={translate(locale, 'mobileNav.dialog', 'Navigation')}
           >
             <div className="flex items-center justify-between gap-2 px-5 h-16 border-b border-gray-200 dark:border-surface-700 shrink-0">
               <Link
                 href="/dashboard"
+                onClick={() => setOpen(false)}
                 className="flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:rounded-md p-1 -m-1"
               >
                 <div className="h-9 w-9 rounded-lg bg-gradient-brand flex items-center justify-center shadow-brand">
@@ -85,27 +129,34 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   AI-ROS
                 </span>
               </Link>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label={translate(locale, 'mobileNav.close', 'Close navigation')}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-surface-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
+              </button>
             </div>
 
             <nav
-              id="primary-nav"
               className="flex-1 p-3 space-y-0.5 overflow-y-auto"
-              aria-label="Main"
+              aria-label={translate(locale, 'nav.workspace', 'Main')}
             >
               <p className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 {translate(locale, 'nav.workspace', 'Workspace')}
               </p>
-              {NAV_ITEMS.map((item) => {
+              {MOBILE_NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const active =
-                  pathname === item.href ||
-                  (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                  pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={() => setOpen(false)}
                     aria-current={active ? 'page' : undefined}
-                    className={`group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                    className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                       active
                         ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 shadow-sm dark:from-brand-500/10 dark:to-accent-500/10 dark:text-brand-300'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-surface-800 dark:hover:text-gray-100'
@@ -157,34 +208,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
           </aside>
-
-          <div className="lg:ml-64">
-            <header className="sticky top-0 z-30 bg-white/80 dark:bg-surface-900/80 backdrop-blur-md border-b border-gray-200 dark:border-surface-700 h-16 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 lg:px-6">
-              <MobileNav />
-              <div className="flex-1 min-w-0">
-                <GlobalSearch />
-              </div>
-              <div className="flex items-center gap-1 sm:gap-2 ml-auto">
-                <ConnectionStatus />
-                <ThemeToggle />
-                <LanguageToggle />
-                <NotificationsBell />
-                <UserMenu />
-              </div>
-            </header>
-            <main
-              id="main-content"
-              tabIndex={-1}
-              className="p-3 sm:p-4 lg:p-6 pb-24 outline-none"
-            >
-              <ErrorBoundary level="page" showHomeButton>
-                {children}
-              </ErrorBoundary>
-            </main>
-            <QuickActionsFab />
-          </div>
         </div>
-      </NotificationProvider>
-    </ToastProvider>
+      )}
+    </>
   );
 }

@@ -57,6 +57,11 @@
     "proTip": "Press",
     "proTipCommand": "to open search and jump anywhere."
   },
+  "mobileNav": {
+    "open": "Open navigation",
+    "close": "Close navigation",
+    "dialog": "Navigation"
+  },
   "auth": {
     "signIn": "Sign in",
     "signOut": "Sign out",

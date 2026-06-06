@@ -13,6 +13,8 @@ export type {
   WSMessageListener,
 } from './use-websocket';
 
+export { useMediaQuery, useIsMobile, useIsTablet, useIsDesktop, breakpoints } from './use-media-query';
+
 export function useCountUp(end: number, duration = 1500) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLDivElement>(null);

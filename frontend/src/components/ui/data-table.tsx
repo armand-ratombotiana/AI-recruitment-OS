@@ -41,6 +41,8 @@ export interface Column<T> {
   accessor?: (item: T) => unknown;
   className?: string;
   headerClassName?: string;
+  primary?: boolean;
+  mobileHidden?: boolean;
 }
 
 export interface SortState {
@@ -123,6 +125,8 @@ interface DataTableProps<T> {
   pageCount?: number;
   onPageChange?: (page: number) => void;
   onSortChange?: (sort: SortState | null) => void;
+
+  responsiveCards?: boolean;
 }
 
 const DENSITY: Record<'compact' | 'normal' | 'comfortable', { cell: string; header: string }> = {
@@ -182,6 +186,7 @@ export function DataTable<T extends Record<string, any>>({
   pageCount: pageCountProp,
   onPageChange: onPageChangeProp,
   onSortChange,
+  responsiveCards = true,
 }: DataTableProps<T>) {
   const baseId = useId();
   const labelId = `${baseId}-label`;
@@ -748,6 +753,7 @@ export function DataTable<T extends Record<string, any>>({
       <div
         className={cn(
           'overflow-x-auto rounded-lg border border-gray-200 dark:border-surface-700',
+          responsiveCards && 'hidden md:block',
           containerClassName
         )}
         style={maxHeight ? { maxHeight } : undefined}
@@ -915,6 +921,111 @@ export function DataTable<T extends Record<string, any>>({
           </tbody>
         </table>
       </div>
+
+      {responsiveCards && (
+        <div
+          className={cn('md:hidden space-y-3', containerClassName)}
+          role="list"
+          aria-label={ariaLabel}
+        >
+          {paged.map((item, i) => {
+            const id = resolveRowId(item, (currentPage - 1) * pageSize + i);
+            const isSelected = selectedKeys.has(id);
+            const cardColumns = visibleColumns.filter((c) => !c.mobileHidden);
+            const primaryCol = cardColumns.find((c) => c.primary) ?? cardColumns[0];
+            const otherCols = cardColumns.filter((c) => c !== primaryCol);
+            return (
+              <div
+                key={id}
+                data-row-id={id}
+                role="listitem"
+                data-selected={selectable ? isSelected : undefined}
+                onClick={() => onRowClick?.(item)}
+                onKeyDown={(e) => {
+                  if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    onRowClick(item);
+                  }
+                }}
+                tabIndex={onRowClick ? 0 : undefined}
+                className={cn(
+                  'rounded-lg border bg-white dark:bg-surface-900 p-3 transition-colors',
+                  onRowClick && 'cursor-pointer',
+                  isSelected
+                    ? 'border-blue-300 dark:border-brand-500/40 bg-blue-50/60 dark:bg-brand-500/10'
+                    : 'border-gray-200 dark:border-surface-700 hover:border-gray-300 dark:hover:border-surface-600',
+                  onRowClick && 'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
+                )}
+              >
+                {selectable && (
+                  <div className="mb-2 flex items-center gap-2">
+                    <SelectionCheckbox
+                      state={isSelected ? 'all' : 'none'}
+                      onToggle={() => toggleRow(id)}
+                      ariaLabel={`Select row ${(item as any).label ?? id}`}
+                    />
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {isSelected ? 'Selected' : 'Select'}
+                    </span>
+                  </div>
+                )}
+                {primaryCol && (
+                  <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+                    {primaryCol.render
+                      ? primaryCol.render(item, {
+                          index: i,
+                          selected: isSelected,
+                          selectable,
+                          row: item,
+                        })
+                      : ((getCellValue(item, primaryCol) as React.ReactNode) ?? '—')}
+                  </div>
+                )}
+                {otherCols.length > 0 && (
+                  <dl className="mt-2 space-y-1.5 text-xs">
+                    {otherCols.map((col) => {
+                      const align =
+                        col.align === 'right'
+                          ? 'text-right'
+                          : col.align === 'center'
+                            ? 'text-center'
+                            : 'text-left';
+                      return (
+                        <div
+                          key={col.key}
+                          className={cn(
+                            'flex items-start justify-between gap-3',
+                            align === 'text-right' && 'flex-row-reverse'
+                          )}
+                        >
+                          <dt className="shrink-0 text-gray-500 dark:text-gray-400">
+                            {col.label}
+                          </dt>
+                          <dd
+                            className={cn(
+                              'flex-1 min-w-0 text-gray-700 dark:text-gray-200 text-right break-words',
+                              align
+                            )}
+                          >
+                            {col.render
+                              ? col.render(item, {
+                                  index: i,
+                                  selected: isSelected,
+                                  selectable,
+                                  row: item,
+                                })
+                              : ((getCellValue(item, col) as React.ReactNode) ?? '—')}
+                          </dd>
+                        </div>
+                      );
+                    })}
+                  </dl>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {totalItems > 0 && (
         <div

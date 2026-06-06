@@ -57,6 +57,11 @@
     "proTip": "Appuyez sur",
     "proTipCommand": "pour ouvrir la recherche et accéder à n'importe où."
   },
+  "mobileNav": {
+    "open": "Ouvrir la navigation",
+    "close": "Fermer la navigation",
+    "dialog": "Navigation"
+  },
   "auth": {
     "signIn": "Se connecter",
     "signOut": "Se déconnecter",

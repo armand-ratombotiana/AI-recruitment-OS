@@ -57,6 +57,11 @@
     "proTip": "Pulsa",
     "proTipCommand": "para abrir la búsqueda y saltar a cualquier sitio."
   },
+  "mobileNav": {
+    "open": "Abrir navegación",
+    "close": "Cerrar navegación",
+    "dialog": "Navegación"
+  },
   "auth": {
     "signIn": "Iniciar sesión",
     "signOut": "Cerrar sesión",

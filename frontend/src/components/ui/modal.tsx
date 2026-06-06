@@ -22,11 +22,11 @@ const FOCUSABLE_SELECTOR =
   'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex]:not([tabindex="-1"]), [contenteditable]';
 
 const SIZES = {
-  sm: 'max-w-md',
-  md: 'max-w-lg',
-  lg: 'max-w-2xl',
-  xl: 'max-w-4xl',
-  full: 'max-w-[95vw] h-[95vh]',
+  sm: 'sm:max-w-md',
+  md: 'sm:max-w-lg',
+  lg: 'sm:max-w-2xl',
+  xl: 'sm:max-w-4xl',
+  full: 'sm:max-w-[95vw] sm:h-[95vh]',
 } as const;
 
 export function Modal({
@@ -109,7 +109,10 @@ export function Modal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="presentation">
+    <div
+      className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center sm:p-4"
+      role="presentation"
+    >
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
         onClick={closeOnBackdropClick ? onClose : undefined}
@@ -123,12 +126,14 @@ export function Modal({
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
         className={cn(
-          'relative w-full bg-white dark:bg-surface-900 rounded-xl shadow-2xl dark:shadow-black/40 flex flex-col max-h-[90vh] outline-none animate-scale-in',
+          'relative w-full bg-white dark:bg-surface-900 flex flex-col outline-none animate-scale-in',
+          'h-full sm:h-auto sm:max-h-[90vh] sm:rounded-xl',
+          'shadow-2xl dark:shadow-black/40',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-brand-400 dark:focus-visible:ring-offset-surface-900',
           SIZES[size]
         )}
       >
-        <div className="flex items-start justify-between gap-4 p-6 border-b border-gray-100 dark:border-surface-700">
+        <div className="flex items-start justify-between gap-4 p-4 sm:p-6 border-b border-gray-100 dark:border-surface-700">
           <div className="flex-1 min-w-0">
             <h2 id={titleId} className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {title}
@@ -150,9 +155,9 @@ export function Modal({
             </button>
           )}
         </div>
-        <div className="flex-1 overflow-y-auto p-6">{children}</div>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</div>
         {footer && (
-          <div className="border-t border-gray-100 dark:border-surface-700 p-4 bg-gray-50 dark:bg-surface-800 rounded-b-xl">
+          <div className="border-t border-gray-100 dark:border-surface-700 p-4 bg-gray-50 dark:bg-surface-800 sm:rounded-b-xl">
             {footer}
           </div>
         )}
