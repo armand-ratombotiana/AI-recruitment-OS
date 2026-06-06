@@ -399,6 +399,7 @@
     "types": {
       "all": "Todos los tipos",
       "phone": "Llamada de selección",
+      "video": "Videollamada",
       "technical": "Técnica",
       "panel": "Panel",
       "onsite": "Presencial"
@@ -412,17 +413,41 @@
     },
     "started": "Entrevista iniciada",
     "completed": "Entrevista marcada como completada",
+    "updated": "Entrevista actualizada",
     "scheduledWith": "Entrevista programada con {name}",
     "formErrorRequired": "Se requieren el nombre del candidato, la fecha y la hora",
     "fields": {
+      "candidate": "Candidato",
       "candidateName": "Nombre del candidato *",
+      "job": "Empleo",
       "jobPosition": "Puesto *",
       "date": "Fecha *",
       "time": "Hora *",
+      "scheduledAt": "Fecha y hora",
+      "scheduledAtHelp": "Zona horaria local. Formato: AAAA-MM-DDTHH:mm",
       "duration": "Duración (min)",
       "type": "Tipo",
       "location": "Ubicación",
+      "interviewers": "Entrevistadores",
+      "interviewersHelp": "Pulsa Enter o coma para añadir. Pulsa × para quitar.",
+      "notes": "Notas",
       "panel": "Panel (iniciales, separadas por comas)"
+    },
+    "formErrors": {
+      "candidateRequired": "Selecciona un candidato",
+      "jobRequired": "Selecciona un empleo",
+      "scheduledAtRequired": "La fecha y la hora son obligatorias",
+      "scheduledAtInvalid": "Introduce una fecha y hora válidas",
+      "durationInvalid": "La duración debe ser un número positivo de minutos",
+      "durationTooLong": "La duración no puede superar las 24 horas",
+      "typeRequired": "Selecciona un tipo de entrevista"
+    },
+    "placeholders": {
+      "candidate": "Seleccionar candidato…",
+      "job": "Seleccionar empleo…",
+      "interviewers": "Añade o elige entrevistadores…",
+      "location": "ej. enlace de Zoom, dirección de oficina o «Remoto»",
+      "notes": "Agenda, temas a tratar o notas de preparación…"
     },
     "table": {
       "candidate": "Candidato",
@@ -438,33 +463,52 @@
     "tryAdjusting": "Intenta ajustar tus filtros.",
     "viewList": "Vista de lista",
     "viewCalendar": "Vista de calendario",
+    "view": {
+      "listHint": "Mostrando todas las entrevistas en una lista ordenable.",
+      "calendarHint": "Ve las entrevistas de un vistazo por mes."
+    },
     "filterByStatus": "Filtrar por estado",
     "filterByType": "Filtrar por tipo",
     "actions": {
       "start": "Iniciar",
       "complete": "Completar",
+      "edit": "Editar",
       "startAria": "Iniciar entrevista con {name}",
-      "completeAria": "Marcar como completada la entrevista con {name}"
+      "completeAria": "Marcar como completada la entrevista con {name}",
+      "editAria": "Editar entrevista con {name}"
     },
     "calendar": {
       "today": "Hoy",
       "prev": "Semana anterior",
       "next": "Semana siguiente",
+      "prevMonth": "Mes anterior",
+      "nextMonth": "Mes siguiente",
       "weekOf": "Semana del {date}",
-      "noEvents": "Sin entrevistas"
+      "monthOf": "{month} {year}",
+      "monthCount": "{count} este mes",
+      "noEvents": "Sin entrevistas",
+      "moreCount": "+{n} más",
+      "interviewsOn": "Entrevistas del {date}",
+      "clearDay": "Quitar selección de día",
+      "pickDay": "Haz clic en un día para ver las entrevistas programadas.",
+      "unnamed": "Sin título"
     },
     "durations": {
       "30": "30 minutos",
       "45": "45 minutos",
       "60": "1 hora",
       "90": "1,5 horas",
-      "120": "2 horas"
+      "120": "2 horas",
+      "short": "{n} min"
     },
     "modal": {
       "title": "Programar entrevista",
-      "description": "Configura una nueva entrevista con un candidato."
+      "description": "Configura una nueva entrevista con un candidato.",
+      "editTitle": "Editar entrevista",
+      "editDescription": "Actualiza los detalles de la entrevista."
     },
     "createFailed": "No se pudo programar la entrevista",
+    "updateFailed": "No se pudo actualizar la entrevista",
     "startFailed": "No se pudo iniciar la entrevista",
     "completeFailed": "No se pudo completar la entrevista"
   },
@@ -545,13 +589,46 @@
   "aiCopilot": {
     "title": "Copiloto IA de reclutamiento",
     "subtitle": "Impulsado por GPT-4o · enrutado a través del orquestador",
-    "welcome": "¡Hola! Soy tu copiloto IA de reclutamiento. Puedo ayudarte a resumir candidatos, explicar puntuaciones de evaluación IA, comparar candidatos, recomendar decisiones de contratación y generar preguntas de entrevista. ¿En qué puedo ayudarte?",
+    "subtitleLong": "Haz preguntas sobre tu pipeline, candidatos y evaluaciones.",
+    "welcome": "¡Hola! Soy tu copiloto IA de reclutamiento. Puedo ayudarte a resumir candidatos, explicar puntuaciones de evaluación IA, comparar candidatos, recomendar decisiones de contratación y generar preguntas de entrevista. Elige una sugerencia abajo o escribe tu propia pregunta para empezar.",
     "placeholder": "Pregunta sobre candidatos, evaluaciones, pipeline…",
     "send": "Enviar",
     "sending": "Enviando…",
     "thinking": "La IA está pensando…",
     "reasoning": "Ver razonamiento",
     "confidence": "confianza",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "copyAria": "Copiar mensaje",
+    "copiedAria": "Copiado",
+    "copyFailed": "No se pudo copiar",
+    "regenerate": "Regenerar",
+    "regenerateAria": "Regenerar respuesta",
+    "regenNotFound": "No se encontró el mensaje original para regenerar.",
+    "stop": "Detener",
+    "stopAria": "Detener generación",
+    "error": "Error del servicio de IA",
+    "feedbackAria": "Calificar respuesta",
+    "thumbUpAria": "Pulgar arriba",
+    "thumbDownAria": "Pulgar abajo",
+    "feedbackThanks": "¡Gracias por tu feedback!",
+    "feedbackRecorded": "Feedback registrado — aprenderemos de esto.",
+    "newConversation": "Nueva conversación",
+    "newConversationAria": "Iniciar nueva conversación",
+    "startedNew": "Nueva conversación iniciada",
+    "searchConversations": "Buscar conversaciones…",
+    "searchConversationsAria": "Buscar conversaciones",
+    "noConversations": "Aún no hay conversaciones",
+    "noMatches": "Ninguna conversación coincide con tu búsqueda",
+    "messageSingular": "mensaje",
+    "messagePlural": "mensajes",
+    "deleteAria": "Eliminar conversación",
+    "conversationDeleted": "Conversación eliminada",
+    "clearAll": "Borrar todas las conversaciones",
+    "confirmClearAll": "¿Eliminar todas las conversaciones? Esta acción no se puede deshacer.",
+    "clearedAll": "Todas las conversaciones borradas",
+    "sidebarAria": "Barra lateral de conversaciones",
+    "toggleSidebarAria": "Mostrar/ocultar barra lateral de conversaciones",
     "suggested": [
       "Resume mis mejores candidatos",
       "¿A quién debería pasar a entrevista?",
@@ -564,6 +641,28 @@
       "Comparar candidatos",
       "Identificar riesgos"
     ],
+    "cards": {
+      "topCandidates": {
+        "title": "Encuentra los mejores candidatos para X",
+        "subtitle": "Destaca los mejores perfiles de tu pipeline",
+        "prompt": "Encuentra mis 5 mejores candidatos en todos los puestos abiertos, clasificados por puntuación de evaluación IA, y explica por qué cada uno destaca."
+      },
+      "jobDescription": {
+        "title": "Escribe una descripción de puesto para Y",
+        "subtitle": "Genera una descripción de puesto inclusiva y convincente",
+        "prompt": "Escribe una descripción de puesto estructurada e inclusiva para un Ingeniero Full-Stack Senior (React, Node.js, 5+ años de experiencia, remoto posible). Incluye responsabilidades, habilidades imprescindibles y deseables, y una breve declaración de igualdad de oportunidades."
+      },
+      "analyzeResume": {
+        "title": "Analiza este currículum",
+        "subtitle": "Puntuación, fortalezas, brechas y riesgos",
+        "prompt": "Analiza el currículum subido más recientemente. Proporciona una puntuación global de coincidencia, las 3 principales fortalezas, los 3 principales riesgos/brechas, y la próxima acción recomendada (entrevista, espera, rechazo)."
+      },
+      "interviewQuestions": {
+        "title": "Genera preguntas de entrevista",
+        "subtitle": "Conductuales + técnicas + específicas del puesto",
+        "prompt": "Genera 8 preguntas de entrevista para una entrevista de Ingeniero Frontend Senior: 3 conductuales, 3 técnicas (React, TypeScript, rendimiento), y 2 de diseño de sistemas. Para cada una, incluye cómo sería una buena respuesta."
+      }
+    },
     "pipelineSummary": "Resumen del pipeline",
     "suggestedActions": "Acciones sugeridas",
     "emailDrafts": "Borradores de email",

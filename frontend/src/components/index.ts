@@ -38,6 +38,8 @@ export type { ComboboxOption } from './ui/combobox';
 export { MentionInput } from './ui/mention-input';
 export type { MentionItem } from './ui/mention-input';
 export { RichTextEditor } from './ui/rich-text-editor';
+export { Markdown } from './ui/markdown';
+export type { MarkdownProps } from './ui/markdown';
 export { StatsCard } from './dashboard/stats-card';
 export { InterviewChat } from './interview/interview-chat';
 export { PPEEditor } from './coding-editor/ppe-editor';

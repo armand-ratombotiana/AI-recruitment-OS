@@ -13,14 +13,12 @@ import {
   Check,
   AlertCircle,
   FileText,
-  Code as CodeIcon,
   Clock,
   Hash,
   Cpu,
   Activity,
   ChevronRight,
   RotateCcw,
-  Send,
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
 import {
@@ -32,51 +30,10 @@ import {
   EmptyState,
   ErrorState,
   Breadcrumb,
+  Markdown,
   useToast,
 } from '@/components';
 import { useLocaleStore, translate, formatDate, formatRelativeTime } from '@/stores/locale-store';
-
-function formatCodeBlocks(text: string): React.ReactNode[] {
-  const parts: React.ReactNode[] = [];
-  const regex = /```(\w+)?\n?([\s\S]*?)```/g;
-  let lastIdx = 0;
-  let match: RegExpExecArray | null;
-  let key = 0;
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIdx) {
-      parts.push(<span key={key++}>{text.slice(lastIdx, match.index)}</span>);
-    }
-    parts.push(
-      <pre
-        key={key++}
-        className="my-2 p-2.5 bg-gray-900 text-green-300 font-mono text-xs rounded overflow-x-auto"
-        aria-label={match[1] ? `${match[1]} code` : 'Code block'}
-      >
-        {match[2]}
-      </pre>
-    );
-    lastIdx = match.index + match[0].length;
-  }
-  if (lastIdx < text.length) {
-    parts.push(<span key={key++}>{text.slice(lastIdx)}</span>);
-  }
-  return parts;
-}
-
-function renderMarkdown(text: string): React.ReactNode {
-  const lines = text.split('\n');
-  return lines.map((line, i) => {
-    if (/^#\s+/.test(line)) return <h3 key={i} className="text-base font-bold mt-2 mb-1">{line.slice(2)}</h3>;
-    if (/^##\s+/.test(line)) return <h4 key={i} className="text-sm font-bold mt-2 mb-1">{line.slice(3)}</h4>;
-    if (/^-\s+/.test(line)) return <div key={i} className="flex gap-1.5 ml-1"><span className="text-gray-400 dark:text-gray-500">•</span><span>{line.slice(2)}</span></div>;
-    if (/^\d+\.\s+/.test(line)) {
-      const m = /^(\d+)\.\s+(.*)/.exec(line)!;
-      return <div key={i} className="flex gap-1.5 ml-1"><span className="text-gray-400 dark:text-gray-500 font-mono">{m[1]}.</span><span>{m[2]}</span></div>;
-    }
-    if (line.trim() === '') return <div key={i} className="h-2" />;
-    return <div key={i}>{formatCodeBlocks(line)}</div>;
-  });
-}
 
 function extractMessagesFromTask(task: any, taskResult: any): Array<{
   role: 'user' | 'assistant';
@@ -642,7 +599,7 @@ export default function AICopilotConversationDetailPage({ params }: { params: { 
                             }`}
                           >
                             {m.role === 'assistant' ? (
-                              <div className="prose-sm">{renderMarkdown(m.content)}</div>
+                              <Markdown>{m.content}</Markdown>
                             ) : (
                               m.content
                             )}

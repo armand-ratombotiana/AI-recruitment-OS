@@ -401,6 +401,7 @@
     "types": {
       "all": "All types",
       "phone": "Phone screen",
+      "video": "Video call",
       "technical": "Technical",
       "panel": "Panel",
       "onsite": "Onsite"
@@ -414,17 +415,41 @@
     },
     "started": "Interview started",
     "completed": "Interview marked complete",
+    "updated": "Interview updated",
     "scheduledWith": "Interview scheduled with {name}",
     "formErrorRequired": "Candidate name, date and time are required",
     "fields": {
+      "candidate": "Candidate",
       "candidateName": "Candidate name *",
+      "job": "Job",
       "jobPosition": "Job position *",
       "date": "Date *",
       "time": "Time *",
+      "scheduledAt": "Date and time",
+      "scheduledAtHelp": "Local timezone. Format: YYYY-MM-DDTHH:mm",
       "duration": "Duration (min)",
       "type": "Type",
       "location": "Location",
+      "interviewers": "Interviewers",
+      "interviewersHelp": "Press Enter or comma to add. Click × to remove.",
+      "notes": "Notes",
       "panel": "Panel (initials, comma separated)"
+    },
+    "formErrors": {
+      "candidateRequired": "Please select a candidate",
+      "jobRequired": "Please select a job",
+      "scheduledAtRequired": "Date and time are required",
+      "scheduledAtInvalid": "Please enter a valid date and time",
+      "durationInvalid": "Duration must be a positive number of minutes",
+      "durationTooLong": "Duration cannot exceed 24 hours",
+      "typeRequired": "Please select an interview type"
+    },
+    "placeholders": {
+      "candidate": "Select candidate…",
+      "job": "Select job…",
+      "interviewers": "Add or pick interviewers…",
+      "location": "e.g. Zoom link, office address, or \"Remote\"",
+      "notes": "Agenda, topics to cover, or prep notes…"
     },
     "table": {
       "candidate": "Candidate",
@@ -440,33 +465,52 @@
     "tryAdjusting": "Try adjusting your filters.",
     "viewList": "List view",
     "viewCalendar": "Calendar view",
+    "view": {
+      "listHint": "Showing all interviews in a sortable list.",
+      "calendarHint": "See interviews at a glance by month."
+    },
     "filterByStatus": "Filter by status",
     "filterByType": "Filter by type",
     "actions": {
       "start": "Start",
       "complete": "Complete",
+      "edit": "Edit",
       "startAria": "Start interview with {name}",
-      "completeAria": "Mark interview with {name} complete"
+      "completeAria": "Mark interview with {name} complete",
+      "editAria": "Edit interview with {name}"
     },
     "calendar": {
       "today": "Today",
       "prev": "Previous week",
       "next": "Next week",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
       "weekOf": "Week of {date}",
-      "noEvents": "No interviews"
+      "monthOf": "{month} {year}",
+      "monthCount": "{count} this month",
+      "noEvents": "No interviews",
+      "moreCount": "+{n} more",
+      "interviewsOn": "Interviews on {date}",
+      "clearDay": "Clear day selection",
+      "pickDay": "Click a day to see scheduled interviews.",
+      "unnamed": "Untitled"
     },
     "durations": {
       "30": "30 minutes",
       "45": "45 minutes",
       "60": "1 hour",
       "90": "1.5 hours",
-      "120": "2 hours"
+      "120": "2 hours",
+      "short": "{n} min"
     },
     "modal": {
       "title": "Schedule interview",
-      "description": "Set up a new interview with a candidate."
+      "description": "Set up a new interview with a candidate.",
+      "editTitle": "Edit interview",
+      "editDescription": "Update the interview details."
     },
     "createFailed": "Failed to schedule interview",
+    "updateFailed": "Failed to update interview",
     "startFailed": "Failed to start interview",
     "completeFailed": "Failed to complete interview"
   },
@@ -547,13 +591,46 @@
   "aiCopilot": {
     "title": "AI Recruiting Copilot",
     "subtitle": "Powered by GPT-4o · routed through the orchestrator",
-    "welcome": "Hello! I'm your AI recruiting copilot. I can help you summarize candidates, explain AI evaluation scores, compare applicants, recommend hiring decisions, and generate interview questions. What would you like help with?",
+    "subtitleLong": "Ask questions about your pipeline, candidates, and evaluations.",
+    "welcome": "Hello! I'm your AI recruiting copilot. I can help you summarize candidates, explain AI evaluation scores, compare applicants, recommend hiring decisions, and generate interview questions. Pick a suggestion below or type your own question to get started.",
     "placeholder": "Ask about candidates, evaluations, pipeline…",
     "send": "Send",
     "sending": "Sending…",
     "thinking": "AI is thinking…",
     "reasoning": "Show reasoning",
     "confidence": "confidence",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyAria": "Copy message",
+    "copiedAria": "Copied",
+    "copyFailed": "Could not copy",
+    "regenerate": "Regenerate",
+    "regenerateAria": "Regenerate response",
+    "regenNotFound": "Could not find the original message to regenerate.",
+    "stop": "Stop",
+    "stopAria": "Stop generating",
+    "error": "AI service error",
+    "feedbackAria": "Rate response",
+    "thumbUpAria": "Thumbs up",
+    "thumbDownAria": "Thumbs down",
+    "feedbackThanks": "Thanks for the feedback!",
+    "feedbackRecorded": "Feedback recorded — we will learn from this.",
+    "newConversation": "New conversation",
+    "newConversationAria": "Start new conversation",
+    "startedNew": "Started a new conversation",
+    "searchConversations": "Search conversations…",
+    "searchConversationsAria": "Search conversations",
+    "noConversations": "No conversations yet",
+    "noMatches": "No conversations match your search",
+    "messageSingular": "message",
+    "messagePlural": "messages",
+    "deleteAria": "Delete conversation",
+    "conversationDeleted": "Conversation deleted",
+    "clearAll": "Clear all conversations",
+    "confirmClearAll": "Delete all conversations? This cannot be undone.",
+    "clearedAll": "All conversations cleared",
+    "sidebarAria": "Conversations sidebar",
+    "toggleSidebarAria": "Toggle conversations sidebar",
     "suggested": [
       "Summarize my top candidates",
       "Who should I move to interview next?",
@@ -566,6 +643,28 @@
       "Compare applicants",
       "Identify risks"
     ],
+    "cards": {
+      "topCandidates": {
+        "title": "Find me top candidates for X",
+        "subtitle": "Surface the best matches from your pipeline",
+        "prompt": "Find me my top 5 candidates across all open roles, ranked by AI evaluation score, and explain why each one stands out."
+      },
+      "jobDescription": {
+        "title": "Write a job description for Y",
+        "subtitle": "Generate an inclusive, compelling JD",
+        "prompt": "Write a structured, inclusive job description for a Senior Full-Stack Engineer role (React, Node.js, 5+ years experience, remote-friendly). Include responsibilities, must-have and nice-to-have skills, and a short equal-opportunity statement."
+      },
+      "analyzeResume": {
+        "title": "Analyze this resume",
+        "subtitle": "Score, strengths, gaps, and risks",
+        "prompt": "Analyze the most recently uploaded resume. Provide an overall match score, top 3 strengths, top 3 risks/gaps, and a recommended next action (interview, hold, reject)."
+      },
+      "interviewQuestions": {
+        "title": "Generate interview questions",
+        "subtitle": "Behavioral + technical + role-specific",
+        "prompt": "Generate 8 interview questions for a Senior Frontend Engineer interview: 3 behavioral, 3 technical (React, TypeScript, performance), and 2 system-design. For each, include what a strong answer looks like."
+      }
+    },
     "pipelineSummary": "Pipeline summary",
     "suggestedActions": "Suggested actions",
     "emailDrafts": "Email drafts",

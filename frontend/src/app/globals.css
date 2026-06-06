@@ -541,3 +541,33 @@ html {
 .dark .gradient-border {
   background: #0f172a;
 }
+
+/* ============================
+   MARKDOWN BODY (light overrides for hljs)
+   ============================ */
+.markdown-body .hljs {
+  background: transparent;
+  color: #24292f;
+  padding: 0;
+}
+.markdown-body pre {
+  background: transparent;
+}
+.markdown-body :not(pre) > code.hljs {
+  background: #f1f5f9;
+  color: #d6336c;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.dark .markdown-body .hljs {
+  color: #c9d1d9;
+}
+.dark .markdown-body :not(pre) > code.hljs {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f0abfc;
+}
+.dark .markdown-body pre code.hljs {
+  background: transparent;
+}
