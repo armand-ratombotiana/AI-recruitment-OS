@@ -16,6 +16,7 @@ from sqlmodel import SQLModel
 from shared.core.config import Settings, get_settings
 from shared.core.models.identity import User, UserRole, UserStatus
 from shared.core.models.candidate import Candidate, CandidateStatus
+from shared.core.models.webhook import Webhook, WebhookDelivery  # noqa: F401  (registers tables)
 
 
 TEST_TENANT_ID = str(uuid4())

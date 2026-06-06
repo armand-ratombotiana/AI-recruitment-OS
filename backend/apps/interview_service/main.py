@@ -2,10 +2,14 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.core.database import get_db_dependency
 from shared.core.rate_limit_deps import interview_write_rate
+from shared.core.security import require_tenant
+from shared.webhooks import safe_dispatch_event
 
 router = APIRouter()
 

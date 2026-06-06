@@ -142,8 +142,14 @@ async def _check_ai_orchestrator() -> dict[str, Any]:
 @_register("webhooks", critical=False)
 async def _check_webhooks() -> dict[str, Any]:
     try:
-        from apps.webhooks_service.main import _webhooks
-        return {"registered": len(_webhooks)}
+        from sqlmodel import select
+
+        from shared.core.database import get_db_session
+        from shared.core.models.webhook import Webhook
+
+        async with get_db_session() as session:
+            result = await session.execute(select(Webhook))
+            return {"registered": len(result.scalars().all())}
     except Exception:
         return {"registered": 0}
 

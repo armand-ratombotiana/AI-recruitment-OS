@@ -276,7 +276,7 @@ include_router_safe(app, "apps.export_service.main", "router", "/api/v1/exports"
 # Mount the same export router under /analytics/export/* to satisfy the
 # spec request for `GET /api/v1/analytics/export/candidates` etc.
 include_router_safe(app, "apps.export_service.main", "router", "/api/v1/analytics/export", ["Exports"])
-include_router_safe(app, "apps.webhooks_service.main", "router", "/api/v1/webhooks", ["Webhooks"])
+include_router_safe(app, "apps.webhook_service.main", "router", "/api/v1/webhooks", ["Webhooks"])
 include_router_safe(app, "apps.search_service.main", "router", "/api/v1/global-search", ["Search"])
 # Also expose the global search router under /api/v1/search so the request
 # GET /api/v1/search?q=... matches the spec. POST endpoints on the

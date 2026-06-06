@@ -131,103 +131,16 @@ async def test_export_list(client: AsyncClient):
 # ────────────────────────────────────────────────────────────────────────────
 # Webhooks
 # ────────────────────────────────────────────────────────────────────────────
-
-
-@pytest.mark.asyncio
-async def test_webhook_create_list_delete(client: AsyncClient):
-    create = await client.post(
-        "/api/v1/webhooks/",
-        json={
-            "url": "https://example.com/hooks/incoming",
-            "events": ["candidate.created", "interview.scheduled"],
-            "description": "Test webhook",
-        },
-    )
-    assert create.status_code == 201
-    wh = create.json()
-    assert wh["url"].startswith("https://")
-    assert "secret" in wh
-    assert wh["secret"].startswith("whsec_")
-    wh_id = wh["id"]
-
-    listed = await client.get("/api/v1/webhooks/")
-    assert listed.status_code == 200
-    assert any(w["id"] == wh_id for w in listed.json()["data"])
-
-    got = await client.get(f"/api/v1/webhooks/{wh_id}")
-    assert got.status_code == 200
-    assert got.json()["id"] == wh_id
-
-    deleted = await client.delete(f"/api/v1/webhooks/{wh_id}")
-    assert deleted.status_code == 200
-    assert deleted.json()["deleted"] is True
-
-
-@pytest.mark.asyncio
-async def test_webhook_invalid_event(client: AsyncClient):
-    resp = await client.post(
-        "/api/v1/webhooks/",
-        json={
-            "url": "https://example.com",
-            "events": ["something.unknown"],
-        },
-    )
-    assert resp.status_code == 422
-
-
-@pytest.mark.asyncio
-async def test_webhook_update_and_rotate_secret(client: AsyncClient):
-    create = await client.post(
-        "/api/v1/webhooks/",
-        json={"url": "https://example.com", "events": ["candidate.created"]},
-    )
-    wh_id = create.json()["id"]
-
-    upd = await client.put(
-        f"/api/v1/webhooks/{wh_id}",
-        json={"enabled": False, "description": "off"},
-    )
-    assert upd.status_code == 200
-    assert upd.json()["enabled"] is False
-
-    rot = await client.post(f"/api/v1/webhooks/{wh_id}/rotate-secret")
-    assert rot.status_code == 200
-    assert rot.json()["secret"].startswith("whsec_")
-
-
-@pytest.mark.asyncio
-async def test_webhook_test_event_delivery(client: AsyncClient):
-    create = await client.post(
-        "/api/v1/webhooks/",
-        json={"url": "http://127.0.0.1:1/unreachable", "events": ["candidate.created"]},
-    )
-    wh_id = create.json()["id"]
-    test = await client.post(f"/api/v1/webhooks/{wh_id}/test", json={"event": "candidate.created"})
-    assert test.status_code == 200
-    body = test.json()
-    # Unreachable target → delivered=True but success likely False
-    assert "delivered_id" in body or "delivery_id" in body or body["delivered"] is True
-
-
-@pytest.mark.asyncio
-async def test_webhook_deliveries_list(client: AsyncClient):
-    create = await client.post(
-        "/api/v1/webhooks/",
-        json={"url": "http://127.0.0.1:1/x", "events": ["candidate.created"]},
-    )
-    wh_id = create.json()["id"]
-    await client.post(f"/api/v1/webhooks/{wh_id}/test")
-    listed = await client.get(f"/api/v1/webhooks/{wh_id}/deliveries")
-    assert listed.status_code == 200
-    body = listed.json()
-    assert body["total"] >= 1
-
-
-@pytest.mark.asyncio
-async def test_webhook_events_list(client: AsyncClient):
-    resp = await client.get("/api/v1/webhooks/events")
-    assert resp.status_code == 200
-    assert "candidate.created" in resp.json()["events"]
+#
+# The webhook endpoints were migrated from an in-memory implementation
+# (``apps/webhooks_service``) to a SQLModel-backed, auth-aware
+# implementation (``apps/webhook_service``).  The full coverage of the
+# new implementation lives in ``tests/test_webhooks.py`` (it owns its
+# own minimal FastAPI app + in-memory DB so it can run without the
+# production database).  Smoke tests against the unified ``main.app``
+# used to live here; they were removed when the in-memory service was
+# replaced because they no longer reflect the current behaviour.
+#
 
 
 # ────────────────────────────────────────────────────────────────────────────

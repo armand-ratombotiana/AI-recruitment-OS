@@ -18,6 +18,7 @@ from shared.core.models.recruitment import (
     ApplicationStatus,
 )
 from shared.core.rate_limit_deps import job_write_rate
+from shared.webhooks import safe_dispatch_event
 
 
 # ── Request Models ──────────────────────────────────────────────────────────────
@@ -255,6 +256,19 @@ async def create_job(data: JobCreateRequest, db: AsyncSession = Depends(get_db_d
     await db.flush()
     await db.refresh(job)
 
+    # Fire the job.created webhook (best-effort).
+    await safe_dispatch_event(
+        "job.created",
+        {
+            "id": job.id,
+            "title": job.title,
+            "status": job.status.value if hasattr(job.status, 'value') else job.status,
+            "department": job.department,
+        },
+        "default",
+        db=db,
+    )
+
     return JobCreateResponse(
         id=job.id,
         title=job.title,
@@ -293,6 +307,19 @@ async def update_job(
     job.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.add(job)
     await db.flush()
+
+    # Fire the job.updated webhook (best-effort).
+    await safe_dispatch_event(
+        "job.updated",
+        {
+            "id": job.id,
+            "title": job.title,
+            "status": job.status.value if hasattr(job.status, 'value') else job.status,
+        },
+        "default",
+        db=db,
+    )
+
     return JobUpdateResponse(id=job_id, updated=True)
 
 

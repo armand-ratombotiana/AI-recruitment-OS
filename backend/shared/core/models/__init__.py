@@ -57,6 +57,7 @@ from shared.core.models.search import (
     RecentSearchesResponse,
     SearchAnalyticsResponse,
 )
+from shared.core.models.webhook import Webhook, WebhookDelivery
 
 __all__ = [
     "User", "Session", "APIKey", "Credential",
@@ -88,4 +89,5 @@ __all__ = [
     "SearchHistoryRead", "PopularQueryItem", "PopularQueriesResponse",
     "NoResultsQueryItem", "NoResultsResponse", "RecentSearchesResponse",
     "SearchAnalyticsResponse",
+    "Webhook", "WebhookDelivery",
 ]

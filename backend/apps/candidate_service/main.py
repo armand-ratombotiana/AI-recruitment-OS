@@ -21,6 +21,7 @@ from shared.core.models.candidate import (
 from shared.core.security import require_tenant, require_user, decode_token
 from shared.core.rate_limit_deps import candidate_write_rate
 from shared.audit import audit
+from shared.webhooks import safe_dispatch_event
 
 
 # ── Auth Dependency ────────────────────────────────────────────────────────────
@@ -370,6 +371,19 @@ async def create_candidate(
         actor_email=user.get("email"),
     )
 
+    # Fire the candidate.created webhook (best-effort, never fails the API call).
+    await safe_dispatch_event(
+        "candidate.created",
+        {
+            "id": candidate.id,
+            "email": candidate.email,
+            "full_name": candidate.full_name,
+            "status": candidate.status.value if hasattr(candidate.status, 'value') else candidate.status,
+        },
+        tenant_id,
+        db=db,
+    )
+
     return CandidateCreateResponse(
         id=candidate.id,
         email=candidate.email,
@@ -438,6 +452,20 @@ async def update_candidate(
         actor_email=user.get("email"),
         details={"fields": list(data.model_dump(exclude_unset=True).keys())},
     )
+
+    # Fire the candidate.updated webhook (best-effort).
+    await safe_dispatch_event(
+        "candidate.updated",
+        {
+            "id": candidate.id,
+            "email": candidate.email,
+            "full_name": candidate.full_name,
+            "status": candidate.status.value if hasattr(candidate.status, 'value') else candidate.status,
+        },
+        tenant_id,
+        db=db,
+    )
+
     return CandidateUpdateResponse(id=candidate_id, updated=True)
 
 
