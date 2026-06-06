@@ -318,7 +318,29 @@
       "cancel": "Cancelar"
     },
     "createFailed": "No se pudo crear el candidato",
-    "bulkDeleteFailed": "Algunos candidatos no se pudieron eliminar"
+    "bulkDeleteFailed": "Algunos candidatos no se pudieron eliminar",
+    "compare": {
+      "add": "Añadir a comparar",
+      "remove": "Quitar de comparar",
+      "compareButton": "Comparar ({count})",
+      "title": "Comparar candidatos",
+      "subtitle": "Comparando {count} candidatos",
+      "selectHint": "Selecciona de 2 a 4 candidatos para compararlos lado a lado.",
+      "backToList": "Volver a candidatos",
+      "attribute": "Atributo",
+      "maxReached": "Puedes comparar hasta 4 candidatos a la vez.",
+      "name": "Nombre",
+      "email": "Correo",
+      "phone": "Teléfono",
+      "location": "Ubicación",
+      "titleLabel": "Puesto",
+      "experience": "Experiencia",
+      "education": "Educación",
+      "score": "Puntuación IA",
+      "status": "Estado",
+      "skills": "Habilidades",
+      "addMore": "Puedes añadir hasta {max} candidatos."
+    }
   },
   "jobs": {
     "title": "Empleos",

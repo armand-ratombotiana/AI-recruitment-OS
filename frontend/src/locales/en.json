@@ -318,7 +318,29 @@
       "cancel": "Cancel"
     },
     "createFailed": "Failed to create candidate",
-    "bulkDeleteFailed": "Some candidates could not be deleted"
+    "bulkDeleteFailed": "Some candidates could not be deleted",
+    "compare": {
+      "add": "Add to compare",
+      "remove": "Remove from compare",
+      "compareButton": "Compare ({count})",
+      "title": "Compare Candidates",
+      "subtitle": "Comparing {count} candidates",
+      "selectHint": "Select 2-4 candidates to compare side-by-side.",
+      "backToList": "Back to candidates",
+      "attribute": "Attribute",
+      "maxReached": "You can compare up to 4 candidates at a time.",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "location": "Location",
+      "titleLabel": "Title",
+      "experience": "Experience",
+      "education": "Education",
+      "score": "AI Score",
+      "status": "Status",
+      "skills": "Skills",
+      "addMore": "You can add up to {max} candidates."
+    }
   },
   "jobs": {
     "title": "Jobs",

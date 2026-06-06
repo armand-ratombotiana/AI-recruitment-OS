@@ -318,7 +318,29 @@
       "cancel": "Annuler"
     },
     "createFailed": "Impossible de créer le candidat",
-    "bulkDeleteFailed": "Certains candidats n'ont pas pu être supprimés"
+    "bulkDeleteFailed": "Certains candidats n'ont pas pu être supprimés",
+    "compare": {
+      "add": "Ajouter à la comparaison",
+      "remove": "Retirer de la comparaison",
+      "compareButton": "Comparer ({count})",
+      "title": "Comparer les candidats",
+      "subtitle": "Comparaison de {count} candidats",
+      "selectHint": "Sélectionnez 2 à 4 candidats pour les comparer côte à côte.",
+      "backToList": "Retour aux candidats",
+      "attribute": "Attribut",
+      "maxReached": "Vous pouvez comparer jusqu'à 4 candidats à la fois.",
+      "name": "Nom",
+      "email": "Email",
+      "phone": "Téléphone",
+      "location": "Localisation",
+      "titleLabel": "Poste",
+      "experience": "Expérience",
+      "education": "Formation",
+      "score": "Score IA",
+      "status": "Statut",
+      "skills": "Compétences",
+      "addMore": "Vous pouvez ajouter jusqu'à {max} candidats."
+    }
   },
   "jobs": {
     "title": "Offres",
