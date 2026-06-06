@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useId } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Plus,
   Briefcase,
@@ -10,9 +10,12 @@ import {
   Clock,
   TrendingUp,
   Search,
+  Pencil,
 } from 'lucide-react';
-import { api } from '@/services/api/client';
+import { api, APIError } from '@/services/api/client';
 import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton } from '@/components';
+import { JobForm } from '@/components/forms';
+import type { JobFormValues } from '@/components/forms';
 import type { Column } from '@/components/ui/data-table';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
 import { jobsTour } from '@/components/onboarding/tours';
@@ -51,7 +54,7 @@ export default function JobsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
-  const [step, setStep] = useState(0);
+  const [editing, setEditing] = useState<any | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [avgTime, setAvgTime] = useState<string | null>(null);
   const { push, ToastContainer } = useToast();
@@ -80,27 +83,65 @@ export default function JobsPage() {
       .catch(() => setAvgTime(null));
   }, []);
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (values: JobFormValues) => {
     setSubmitting(true);
     try {
       await api.createJob({
-        title: data.title,
-        department: data.department,
-        location: data.location || undefined,
-        type: data.type,
-        salary_min: data.salary_min,
-        salary_max: data.salary_max,
-        description: data.description,
-        requirements: data.requirements,
-        skills: data.skills,
-        status: 'open',
+        title: values.title,
+        company: values.department,
+        location: values.location,
+        description: values.description,
+        requirements: values.requirements
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        skills: values.skills,
+        employment_type: values.employment_type,
+        experience_years_min: values.experience_years_min,
+        experience_years_max: values.experience_years_max,
+        salary_min: values.salary_min,
+        salary_max: values.salary_max,
+        currency: values.currency,
       });
       setCreateOpen(false);
-      setStep(0);
-      push('success', t('jobs.created', `Job "${data.title}" created successfully`).replace('{title}', data.title));
+      push(
+        'success',
+        t('jobs.created', 'Job "{title}" created successfully').replace('{title}', values.title)
+      );
       await load();
     } catch (err: any) {
-      push('error', err?.message || t('jobs.couldntLoad', 'Failed to create job'));
+      const e = err as APIError;
+      push('error', e?.message || t('jobs.createFailed', 'Failed to create job'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdate = async (id: string, values: JobFormValues) => {
+    setSubmitting(true);
+    try {
+      await api.jobs.update(id, {
+        title: values.title,
+        location: values.location,
+        description: values.description,
+        requirements: values.requirements
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        skills: values.skills,
+        salary_min: values.salary_min,
+        salary_max: values.salary_max,
+        status: values.status,
+      });
+      setEditing(null);
+      push(
+        'success',
+        t('jobs.updatedSuccess', 'Job "{title}" updated').replace('{title}', values.title)
+      );
+      await load();
+    } catch (err: any) {
+      const e = err as APIError;
+      push('error', e?.message || t('jobs.updateFailed', 'Failed to update job'));
     } finally {
       setSubmitting(false);
     }
@@ -151,6 +192,25 @@ export default function JobsPage() {
       label: t('jobs.table.posted', 'Posted'),
       render: (j) => <span className="text-xs text-gray-500 dark:text-gray-400">{j.created_at || '—'}</span>,
     },
+    {
+      key: 'row_actions',
+      label: '',
+      sortable: false,
+      render: (j) => (
+        <div onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={() => setEditing(j)}
+            className="px-2 py-1 text-[10px] font-semibold rounded bg-gray-50 text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-surface-800 dark:text-gray-200 dark:hover:bg-surface-700 inline-flex items-center gap-1"
+            aria-label={t('jobs.actions.edit', 'Edit job')}
+            title={t('common.edit', 'Edit')}
+          >
+            <Pencil className="h-3 w-3" aria-hidden="true" />
+            {t('common.edit', 'Edit')}
+          </button>
+        </div>
+      ),
+    },
   ];
 
   const STATUSES = [
@@ -175,7 +235,7 @@ export default function JobsPage() {
             })}
           </p>
         </div>
-        <Button data-tour="jobs-create" variant="primary" leftIcon={<Plus className="h-4 w-4" />} onClick={() => { setCreateOpen(true); setStep(0); }}>
+        <Button data-tour="jobs-create" variant="primary" leftIcon={<Plus className="h-4 w-4" />} onClick={() => { setCreateOpen(true); }}>
           {t('jobs.createJob', 'Create job')}
         </Button>
       </div>
@@ -255,161 +315,51 @@ export default function JobsPage() {
         </div>
       )}
 
-      <Modal isOpen={createOpen} onClose={() => !submitting && setCreateOpen(false)} title={t('jobs.wizard.title', 'Create new job')} description={t('jobs.wizard.desc', 'A 3-step wizard to get your job posted in under a minute.')} size="lg">
-        <CreateJobWizard
-          step={step}
-          setStep={setStep}
-          onCancel={() => { if (!submitting) { setCreateOpen(false); setStep(0); } }}
-          onComplete={handleCreate}
+      <Modal isOpen={createOpen} onClose={() => !submitting && setCreateOpen(false)} title={t('jobs.createTitle', 'Create new job')} description={t('jobs.createDesc', 'Publish a new position. It will start receiving applications immediately.')} size="lg">
+        <JobForm
+          onCancel={() => setCreateOpen(false)}
+          onSubmit={handleCreate}
           submitting={submitting}
           locale={locale}
         />
       </Modal>
-    </div>
-  );
-}
 
-function CreateJobWizard({ step, setStep, onCancel, onComplete, submitting, locale }: { step: number; setStep: (n: number) => void; onCancel: () => void; onComplete: (data: any) => void; submitting?: boolean; locale: any }) {
-  const t = (key: string, fb?: string) => translate(locale, key, fb);
-  const titleId = useId();
-  const deptId = useId();
-  const typeId = useId();
-  const locId = useId();
-  const salMinId = useId();
-  const salMaxId = useId();
-  const descId = useId();
-  const reqId = useId();
-  const skillsId = useId();
-  const [form, setForm] = useState({
-    title: '',
-    department: 'Engineering',
-    location: '',
-    type: 'Full-time',
-    salary_min: '',
-    salary_max: '',
-    description: '',
-    requirements: '',
-    skills: '',
-  });
-
-  const update = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
-
-  const next = () => {
-    if (step === 0 && !form.title.trim()) return;
-    setStep(step + 1);
-  };
-
-  const submit = () => {
-    if (!form.title.trim()) return;
-    onComplete({
-      ...form,
-      status: 'open',
-      salary_min: Number(form.salary_min) || 0,
-      salary_max: Number(form.salary_max) || 0,
-      skills: form.skills.split(',').map((s) => s.trim()).filter(Boolean),
-    });
-  };
-
-  const STEP_LABELS = [
-    t('jobs.wizard.stepBasics', 'Basics'),
-    t('jobs.wizard.stepRequirements', 'Requirements'),
-    t('jobs.wizard.stepReview', 'Review'),
-  ];
-
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        {STEP_LABELS.map((label, i) => (
-          <div key={i} className="flex items-center gap-2 flex-1" aria-current={i === step ? 'step' : undefined}>
-            <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${i < step ? 'bg-green-500 text-white' : i === step ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500 dark:bg-surface-700 dark:text-gray-400'}`}>
-              {i < step ? '✓' : i + 1}
-            </div>
-            <span className={`text-sm font-medium ${i === step ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}>{label}</span>
-            {i < STEP_LABELS.length - 1 && <div className="flex-1 h-0.5 bg-gray-200 dark:bg-surface-700" />}
-          </div>
-        ))}
-      </div>
-
-      {step === 0 && (
-        <div className="space-y-4">
-          <div>
-            <label htmlFor={titleId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.title', 'Job title *')}</label>
-            <input id={titleId} value={form.title} onChange={(e) => update('title', e.target.value)} placeholder="e.g. Senior Full-Stack Engineer" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor={deptId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.department', 'Department')}</label>
-              <select id={deptId} value={form.department} onChange={(e) => update('department', e.target.value)} className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100">
-                {['Engineering', 'Design', 'Product', 'Data', 'Marketing', 'Sales', 'Operations', 'HR'].map((d) => <option key={d}>{d}</option>)}
-              </select>
-            </div>
-            <div>
-              <label htmlFor={typeId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.type', 'Employment type')}</label>
-              <select id={typeId} value={form.type} onChange={(e) => update('type', e.target.value)} className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100">
-                {['Full-time', 'Part-time', 'Contract', 'Internship'].map((tt) => <option key={tt}>{tt}</option>)}
-              </select>
-            </div>
-          </div>
-          <div>
-            <label htmlFor={locId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.location', 'Location')}</label>
-            <input id={locId} value={form.location} onChange={(e) => update('location', e.target.value)} placeholder="e.g. San Francisco, CA or Remote" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor={salMinId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.salaryMin', 'Salary min ($)')}</label>
-              <input id={salMinId} type="number" value={form.salary_min} onChange={(e) => update('salary_min', e.target.value)} placeholder="100000" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100" />
-            </div>
-            <div>
-              <label htmlFor={salMaxId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.salaryMax', 'Salary max ($)')}</label>
-              <input id={salMaxId} type="number" value={form.salary_max} onChange={(e) => update('salary_max', e.target.value)} placeholder="150000" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100" />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {step === 1 && (
-        <div className="space-y-4">
-          <div>
-            <label htmlFor={descId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.description', 'Job description')}</label>
-            <textarea id={descId} value={form.description} onChange={(e) => update('description', e.target.value)} rows={4} placeholder="What will this person do? What's the mission?" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white dark:bg-surface-800 dark:text-gray-100" />
-          </div>
-          <div>
-            <label htmlFor={reqId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.requirements', 'Requirements')}</label>
-            <textarea id={reqId} value={form.requirements} onChange={(e) => update('requirements', e.target.value)} rows={4} placeholder="What skills and experience are required?" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white dark:bg-surface-800 dark:text-gray-100" />
-          </div>
-          <div>
-            <label htmlFor={skillsId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('jobs.fields.skills', 'Required skills (comma separated)')}</label>
-            <input id={skillsId} value={form.skills} onChange={(e) => update('skills', e.target.value)} placeholder="React, TypeScript, Node.js" className="w-full px-3 py-2 border border-gray-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:text-gray-100" />
-          </div>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="space-y-4">
-          <div className="bg-blue-50 dark:bg-brand-500/10 border border-blue-200 dark:border-brand-500/30 rounded-lg p-4 text-sm text-blue-900 dark:text-brand-200">
-            <p className="font-semibold mb-1">{t('jobs.wizard.ready', 'Ready to post')}</p>
-            <p>{t('jobs.wizard.readyDesc', 'Your job will be published and start receiving applications immediately. The AI screening will rank candidates automatically.')}</p>
-          </div>
-          <div className="bg-gray-50 dark:bg-surface-800 rounded-lg p-4 space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">{t('jobs.fields.title', 'Title')}</span><span className="font-medium text-gray-900 dark:text-gray-100">{form.title || '—'}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">{t('jobs.fields.department', 'Department')}</span><span className="font-medium text-gray-900 dark:text-gray-100">{form.department}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">{t('jobs.fields.location', 'Location')}</span><span className="font-medium text-gray-900 dark:text-gray-100">{form.location || '—'}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">{t('jobs.fields.type', 'Type')}</span><span className="font-medium text-gray-900 dark:text-gray-100">{form.type}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">{t('jobs.table.salary', 'Salary')}</span><span className="font-medium text-gray-900 dark:text-gray-100">{form.salary_min || form.salary_max ? formatSalary(Number(form.salary_min) || 0, Number(form.salary_max) || 0, locale) : '—'}</span></div>
-          </div>
-        </div>
-      )}
-
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-surface-700">
-        <Button variant="secondary" onClick={step === 0 ? onCancel : () => setStep(step - 1)} disabled={submitting}>
-          {step === 0 ? t('common.cancel', 'Cancel') : t('common.back', 'Back')}
-        </Button>
-        {step < STEP_LABELS.length - 1 ? (
-          <Button variant="primary" onClick={next} disabled={step === 0 && !form.title.trim()}>{t('jobs.wizard.continue', 'Continue')}</Button>
-        ) : (
-          <Button variant="primary" onClick={submit} loading={submitting} leftIcon={<Plus className="h-4 w-4" />}>{t('jobs.wizard.create', 'Create job')}</Button>
+      <Modal
+        isOpen={!!editing}
+        onClose={() => !submitting && setEditing(null)}
+        title={t('jobs.editTitle', 'Edit job')}
+        description={editing ? t('jobs.editDesc', 'Update "{title}".').replace('{title}', editing.title) : undefined}
+        size="lg"
+      >
+        {editing && (
+          <JobForm
+            initial={{
+              id: editing.id,
+              title: editing.title,
+              department: editing.company || editing.department,
+              location: editing.location,
+              employment_type: editing.employment_type || editing.type,
+              experience_years_min: editing.experience_years_min,
+              experience_years_max: editing.experience_years_max,
+              salary_min: editing.salary_min,
+              salary_max: editing.salary_max,
+              currency: editing.currency,
+              description: editing.description,
+              requirements: Array.isArray(editing.requirements)
+                ? editing.requirements
+                : typeof editing.requirements === 'string'
+                  ? editing.requirements
+                  : '',
+              skills: editing.skills,
+              status: editing.status,
+            }}
+            onCancel={() => setEditing(null)}
+            onSubmit={(values) => handleUpdate(editing.id, values)}
+            submitting={submitting}
+            locale={locale}
+          />
         )}
-      </div>
+      </Modal>
     </div>
   );
 }

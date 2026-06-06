@@ -1,0 +1,72 @@
+{# Weekly Hiring Digest — sent to leadership summarizing the past 7 days. #}
+<p>Hi <strong>{{ leader_name }}</strong>,</p>
+<p>Here is your <strong>weekly hiring digest</strong> for {{ tenant_name }} covering <strong>{{ week_start }}</strong> &rarr; <strong>{{ week_end }}</strong>.</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:16px 0;">
+  <tr>
+    <td align="center" style="padding:8px;">
+      <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;">
+        <div style="color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">New applications</div>
+        <div style="color:#f1f5f9;font-size:28px;font-weight:700;margin-top:4px;">{{ metrics.new_applications }}</div>
+      </div>
+    </td>
+    <td align="center" style="padding:8px;">
+      <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;">
+        <div style="color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Interviews</div>
+        <div style="color:#f1f5f9;font-size:28px;font-weight:700;margin-top:4px;">{{ metrics.interviews_conducted }}</div>
+      </div>
+    </td>
+    <td align="center" style="padding:8px;">
+      <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;">
+        <div style="color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Offers</div>
+        <div style="color:#f1f5f9;font-size:28px;font-weight:700;margin-top:4px;">{{ metrics.offers_extended }}</div>
+      </div>
+    </td>
+    <td align="center" style="padding:8px;">
+      <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;">
+        <div style="color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Hires</div>
+        <div style="color:#10b981;font-size:28px;font-weight:700;margin-top:4px;">{{ metrics.hires }}</div>
+      </div>
+    </td>
+  </tr>
+</table>
+
+{% if highlights %}
+<h3 style="color:#f1f5f9;font-size:16px;margin:24px 0 8px 0;">Highlights</h3>
+<ul style="color:#cbd5e1;font-size:14px;line-height:1.6;padding-left:20px;">
+  {% for item in highlights %}
+  <li>{{ item }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if open_roles %}
+<h3 style="color:#f1f5f9;font-size:16px;margin:24px 0 8px 0;">Top open roles</h3>
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
+  <tr style="background:#334155;">
+    <th style="text-align:left;padding:8px 12px;color:#e0e7ff;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Role</th>
+    <th style="text-align:left;padding:8px 12px;color:#e0e7ff;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Department</th>
+    <th style="text-align:right;padding:8px 12px;color:#e0e7ff;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Pipeline</th>
+    <th style="text-align:right;padding:8px 12px;color:#e0e7ff;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Days open</th>
+  </tr>
+  {% for role in open_roles %}
+  <tr style="border-bottom:1px solid #334155;">
+    <td style="padding:8px 12px;color:#f1f5f9;font-size:14px;">{{ role.title }}</td>
+    <td style="padding:8px 12px;color:#cbd5e1;font-size:14px;">{{ role.department }}</td>
+    <td style="padding:8px 12px;color:#cbd5e1;font-size:14px;text-align:right;">{{ role.pipeline_count }}</td>
+    <td style="padding:8px 12px;color:#cbd5e1;font-size:14px;text-align:right;">{{ role.days_open }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if risks %}
+<h3 style="color:#f1f5f9;font-size:16px;margin:24px 0 8px 0;">Risks &amp; watchlist</h3>
+<ul style="color:#fca5a5;font-size:14px;line-height:1.6;padding-left:20px;">
+  {% for risk in risks %}
+  <li>{{ risk }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+<p style="margin-top:24px;">A full report is attached to this email in {{ report_format | upper }} format.</p>

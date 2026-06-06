@@ -1,0 +1,25 @@
+{# Candidate Status Change — sent to the recruiter (or hiring manager) when a candidate moves stages. #}
+<p>Hi <strong>{{ recruiter_name }}</strong>,</p>
+<p>The status of candidate <strong>{{ candidate_name }}</strong> has been updated.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:16px;margin:16px 0;width:100%;">
+  <tr><td style="color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:4px;">Candidate</td></tr>
+  <tr><td style="color:#f1f5f9;font-size:15px;padding-bottom:12px;">{{ candidate_name }} &lt;{{ candidate_email }}&gt;</td></tr>
+  <tr><td style="color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:4px;">Role</td></tr>
+  <tr><td style="color:#f1f5f9;font-size:15px;padding-bottom:12px;">{{ job_title }}</td></tr>
+  <tr><td style="color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:4px;">Status</td></tr>
+  <tr><td style="padding-bottom:12px;">
+    <span style="background:#334155;color:#e0e7ff;padding:4px 10px;border-radius:999px;font-size:12px;text-decoration:line-through;margin-right:8px;">{{ previous_status }}</span>
+    <span style="background:#6366f1;color:#ffffff;padding:4px 10px;border-radius:999px;font-size:12px;">{{ new_status }}</span>
+  </td></tr>
+  {% if changed_by %}
+  <tr><td style="color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:4px;">Changed by</td></tr>
+  <tr><td style="color:#f1f5f9;font-size:15px;">{{ changed_by }} &middot; {{ changed_at }}</td></tr>
+  {% endif %}
+</table>
+{% if notes_html %}
+<div style="background:#1e293b;border-left:4px solid #f59e0b;padding:12px 16px;margin:16px 0;border-radius:4px;">
+  <p style="margin:0;color:#fde68a;font-size:14px;"><strong>Notes</strong></p>
+  <div style="color:#cbd5e1;font-size:14px;margin-top:8px;">{{ notes_html | safe }}</div>
+</div>
+{% endif %}
+<p>You can review the full candidate history and take next steps from the link below.</p>

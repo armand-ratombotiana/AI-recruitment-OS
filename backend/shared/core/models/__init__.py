@@ -46,6 +46,16 @@ from shared.core.models.compliance import (
     DataExportRequest,
     DataDeletionRequest,
 )
+from shared.core.models.search import (
+    SearchHistory,
+    SearchHistoryRead,
+    PopularQueryItem,
+    PopularQueriesResponse,
+    NoResultsQueryItem,
+    NoResultsResponse,
+    RecentSearchesResponse,
+    SearchAnalyticsResponse,
+)
 
 __all__ = [
     "User", "Session", "APIKey", "Credential",
@@ -72,4 +82,8 @@ __all__ = [
     "Workflow", "WorkflowRun", "Notification",
     "Metric", "Dashboard", "Report",
     "AuditEntry", "ConsentRecord", "DataExportRequest", "DataDeletionRequest",
+    "SearchHistory",
+    "SearchHistoryRead", "PopularQueryItem", "PopularQueriesResponse",
+    "NoResultsQueryItem", "NoResultsResponse", "RecentSearchesResponse",
+    "SearchAnalyticsResponse",
 ]

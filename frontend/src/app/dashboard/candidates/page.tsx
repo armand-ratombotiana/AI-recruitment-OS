@@ -9,7 +9,6 @@ import {
   Download,
   Trash2,
   Filter,
-  X,
   UserPlus,
   Mail,
   Phone,
@@ -17,9 +16,12 @@ import {
   Briefcase,
   Star,
   Upload,
+  Pencil,
 } from 'lucide-react';
-import { api } from '@/services/api/client';
+import { api, APIError } from '@/services/api/client';
 import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
+import { CandidateForm } from '@/components/forms';
+import type { CandidateFormValues } from '@/components/forms';
 import type { Column } from '@/components/ui/data-table';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
 import { candidatesTour } from '@/components/onboarding/tours';
@@ -49,6 +51,7 @@ interface Candidate {
   score?: number;
   avatar?: string;
   created_at?: string;
+  notes?: string | null;
 }
 
 export default function CandidatesPage() {
@@ -64,6 +67,7 @@ export default function CandidatesPage() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addOpen, setAddOpen] = useState(false);
+  const [editing, setEditing] = useState<Candidate | null>(null);
   const [detail, setDetail] = useState<Candidate | null>(null);
   const [enriching, setEnriching] = useState<Set<string>>(new Set());
   const [matching, setMatching] = useState<Set<string>>(new Set());
@@ -129,23 +133,53 @@ export default function CandidatesPage() {
     }
   };
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (values: CandidateFormValues) => {
     setSubmitting(true);
     try {
       await api.createCandidate({
-        full_name: data.full_name,
-        email: data.email,
-        phone: data.phone || undefined,
-        location: data.location || undefined,
-        skills: data.skills,
-        experience_years: data.experience_years ? Number(data.experience_years) : 0,
-        status: 'active',
+        full_name: values.full_name,
+        email: values.email,
+        location: values.location || undefined,
+        skills: values.skills,
+        source: 'manual',
       });
       setAddOpen(false);
-      push('success', t('candidates.addedToCandidates', '{name} added to candidates').replace('{name}', data.full_name));
+      push(
+        'success',
+        t('candidates.addedToCandidates', '{name} added to candidates').replace(
+          '{name}',
+          values.full_name
+        )
+      );
       await load();
     } catch (err: any) {
-      push('error', err?.message || 'Failed to create candidate');
+      const e = err as APIError;
+      push('error', e?.message || t('candidates.createFailed', 'Failed to create candidate'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdate = async (id: string, values: CandidateFormValues) => {
+    setSubmitting(true);
+    try {
+      await api.updateCandidate(id, {
+        full_name: values.full_name,
+        location: values.location || undefined,
+        phone: values.phone || undefined,
+        skills: values.skills,
+        status: values.status,
+        notes: values.notes || undefined,
+      });
+      setEditing(null);
+      push(
+        'success',
+        t('candidates.updatedSuccess', '{name} updated').replace('{name}', values.full_name)
+      );
+      await load();
+    } catch (err: any) {
+      const e = err as APIError;
+      push('error', e?.message || t('candidates.updateFailed', 'Failed to update candidate'));
     } finally {
       setSubmitting(false);
     }
@@ -280,6 +314,16 @@ export default function CandidatesPage() {
       sortable: false,
       render: (c) => (
         <div data-tour="candidates-ai" className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={() => setEditing(c)}
+            className="px-2 py-1 text-[10px] font-semibold rounded bg-gray-50 text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-surface-800 dark:text-gray-200 dark:hover:bg-surface-700 inline-flex items-center gap-1"
+            aria-label={t('candidates.actions.edit', 'Edit candidate')}
+            title={t('common.edit', 'Edit')}
+          >
+            <Pencil className="h-3 w-3" aria-hidden="true" />
+            {t('common.edit', 'Edit')}
+          </button>
           <button
             type="button"
             onClick={() => handleEnrich(c.id)}
@@ -497,13 +541,40 @@ export default function CandidatesPage() {
         </div>
       )}
 
-      <Modal isOpen={addOpen} onClose={() => setAddOpen(false)} title={t('candidates.newCandidate', 'Add new candidate')} description={t('candidates.newCandidateDesc', 'Create a candidate profile. They will appear in the screening queue.')}>
-        <AddCandidateForm
+      <Modal isOpen={addOpen} onClose={() => !submitting && setAddOpen(false)} title={t('candidates.newCandidate', 'Add new candidate')} description={t('candidates.newCandidateDesc', 'Create a candidate profile. They will appear in the screening queue.')} size="lg">
+        <CandidateForm
           onCancel={() => setAddOpen(false)}
           onSubmit={handleCreate}
           submitting={submitting}
           locale={locale}
         />
+      </Modal>
+
+      <Modal
+        isOpen={!!editing}
+        onClose={() => !submitting && setEditing(null)}
+        title={t('candidates.editTitle', 'Edit candidate')}
+        description={editing ? t('candidates.editDesc', "Update {name}'s profile.").replace('{name}', editing.full_name) : undefined}
+        size="lg"
+      >
+        {editing && (
+          <CandidateForm
+            initial={{
+              full_name: editing.full_name,
+              email: editing.email,
+              phone: editing.phone ?? '',
+              location: editing.location ?? '',
+              skills: editing.skills,
+              experience_years: editing.experience_years ?? 0,
+              status: editing.status,
+              notes: editing.notes ?? '',
+            }}
+            onCancel={() => setEditing(null)}
+            onSubmit={(values) => handleUpdate(editing.id, values)}
+            submitting={submitting}
+            locale={locale}
+          />
+        )}
       </Modal>
 
       <Modal isOpen={!!detail} onClose={() => setDetail(null)} title={detail?.full_name || t('candidates.title', 'Candidate')} description={detail?.email} size="lg">
@@ -523,56 +594,6 @@ export default function CandidatesPage() {
         destructive
       />
     </div>
-  );
-}
-
-function AddCandidateForm({ onCancel, onSubmit, submitting, locale }: { onCancel: () => void; onSubmit: (data: any) => void; submitting?: boolean; locale: any }) {
-  const t = (key: string, fb?: string) => translate(locale, key, fb);
-  const [form, setForm] = useState({ full_name: '', email: '', phone: '', location: '', skills: '', experience_years: '' });
-  const [error, setError] = useState('');
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.full_name.trim() || !form.email.trim()) { setError(t('auth.errors.nameAndEmailRequired', 'Name and email are required')); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setError(t('auth.errors.emailInvalid', 'Please enter a valid email')); return; }
-    setError('');
-    onSubmit({ ...form, skills: form.skills.split(',').map((s) => s.trim()).filter(Boolean) });
-  };
-
-  return (
-    <form onSubmit={submit} className="space-y-4">
-      {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 dark:bg-red-500/10 dark:border-red-500/30 dark:text-red-300">{error}</div>}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('candidates.fields.fullName', 'Full name *')}</label>
-          <input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('candidates.fields.email', 'Email *')}</label>
-          <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('candidates.fields.phone', 'Phone')}</label>
-          <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('candidates.fields.location', 'Location')}</label>
-          <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="City, Country" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('candidates.fields.experience', 'Years of experience')}</label>
-          <input type="number" min="0" value={form.experience_years} onChange={(e) => setForm({ ...form, experience_years: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('candidates.fields.skills', 'Skills (comma separated)')}</label>
-          <input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="React, TypeScript, Node.js" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-gray-100" />
-        </div>
-      </div>
-      <div className="flex justify-end gap-2 pt-4 border-t border-gray-100 dark:border-surface-700">
-        <Button variant="secondary" onClick={onCancel} disabled={submitting}>{t('common.cancel', 'Cancel')}</Button>
-        <Button variant="primary" type="submit" loading={submitting}>{t('candidates.addCandidate', 'Add candidate')}</Button>
-      </div>
-    </form>
   );
 }
 
