@@ -19,6 +19,19 @@ from shared.core.models.recruitment import (
     Application,
     ApplicationStatus,
 )
+from shared.core.models.application import (
+    Application as PipelineApplication,
+    ApplicationStage,
+    ApplicationRead as PipelineApplicationRead,
+    ApplicationListResponse,
+    ApplicationsByStageResponse,
+    PipelineSummaryResponse,
+    BulkStageMoveRequest,
+    BulkStageMoveResponse,
+    PIPELINE_STAGES,
+    application_to_read,
+    validate_stage,
+)
 from shared.core.models.tag import (
     AddEntityTagRequest,
     AddEntityTagResponse,
@@ -391,80 +404,12 @@ class JobPipelineResponse(BaseModel):
     generated_at: str
 
 
-@router.get(
-    "/{job_id}/pipeline",
-    response_model=JobPipelineResponse,
-    tags=["Jobs"],
-    summary="Job pipeline view",
-    description="Return the full hiring pipeline (applied → screening → interview → offer → hired) for a single job.",
-)
-async def get_job_pipeline(
-    job_id: str,
-    db: AsyncSession = Depends(get_db_dependency),
-) -> JobPipelineResponse:
-    """Return a deterministic per-job pipeline for the dashboard widget."""
-    result = await db.execute(select(Job).where(Job.id == job_id))
-    job = result.scalar_one_or_none()
-    if not job:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
-
-    seed = hash(job_id) & 0xFFFFFFFF
-    total = 50 + (seed % 200)
-    screening = int(total * 0.65)
-    interview = int(screening * 0.55)
-    evaluation = int(interview * 0.7)
-    offer = int(evaluation * 0.4)
-    hired = int(offer * 0.75)
-    stages = [
-        PipelineStage(
-            stage="applied", label="Applied", count=total, conversion_from_previous=1.0
-        ),
-        PipelineStage(
-            stage="screening",
-            label="Screening",
-            count=screening,
-            conversion_from_previous=round(screening / total, 3) if total else 0.0,
-        ),
-        PipelineStage(
-            stage="interview",
-            label="Interview",
-            count=interview,
-            conversion_from_previous=round(interview / screening, 3) if screening else 0.0,
-        ),
-        PipelineStage(
-            stage="evaluation",
-            label="Evaluation",
-            count=evaluation,
-            conversion_from_previous=round(evaluation / interview, 3) if interview else 0.0,
-        ),
-        PipelineStage(
-            stage="offer",
-            label="Offer",
-            count=offer,
-            conversion_from_previous=round(offer / evaluation, 3) if evaluation else 0.0,
-        ),
-        PipelineStage(
-            stage="hired",
-            label="Hired",
-            count=hired,
-            conversion_from_previous=round(hired / offer, 3) if offer else 0.0,
-        ),
-    ]
-    bottleneck = min(stages[1:], key=lambda s: s.conversion_from_previous).stage
-    return JobPipelineResponse(
-        job_id=job_id,
-        job_title=job.title,
-        total_applicants=total,
-        stages=stages,
-        bottleneck_stage=bottleneck,
-        average_days_in_stage={
-            "screening": 1.2,
-            "interview": 3.4,
-            "evaluation": 2.1,
-            "offer": 1.5,
-        },
-        generated_at=datetime.now(timezone.utc).isoformat(),
-    )
+# ── Real Kanban-shaped pipeline ────────────────────────────────────────────
+# The new ``/pipeline`` endpoint (below, declared after the routers for
+# applications) supersedes the deterministic stub above.  The new endpoint
+# hits the ``candidate_applications`` table and returns the real data the
+# dashboard needs, with a stable Kanban shape and tenant isolation.
+# See ``get_job_pipeline`` further down for the implementation.
 
 
 class JobAnalyticsResponse(BaseModel):
@@ -904,4 +849,276 @@ async def clone_job_endpoint(
         copy_pipeline=options.copy_pipeline,
         copy_questions=options.copy_questions,
         copy_settings=options.copy_settings,
+    )
+
+
+# ── Job ↔ Candidate applications (pipeline / Kanban) ───────────────────────
+#
+# These endpoints expose the ``candidate_applications`` table from the job
+# side.  The candidate-facing equivalents (apply, withdraw, move stage)
+# live in ``apps.candidate_service.main``.
+
+
+async def _load_job_or_404(
+    db: AsyncSession, job_id: str, tenant_id: str
+) -> Job:
+    """Return the tenant-scoped job or raise 404."""
+    result = await db.execute(
+        select(Job).where(Job.id == job_id, Job.tenant_id == tenant_id)
+    )
+    job = result.scalar_one_or_none()
+    if job is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
+        )
+    return job
+
+
+@router.get(
+    "/{job_id}/applications",
+    response_model=ApplicationListResponse,
+    tags=["Jobs"],
+    summary="List every application for a job",
+    description=(
+        "Return every application targeting the job, ordered by most-recently "
+        "changed first.  Supports optional stage filtering."
+    ),
+)
+async def list_job_applications(
+    job_id: str,
+    stage: str | None = Query(
+        default=None,
+        description="Optional stage filter: applied | screening | interview | offer | hired | rejected",
+    ),
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+) -> ApplicationListResponse:
+    """List every application the job has received."""
+    await _load_job_or_404(db, job_id, tenant_id)
+
+    stmt = select(PipelineApplication).where(
+        PipelineApplication.tenant_id == tenant_id,
+        PipelineApplication.job_id == job_id,
+    )
+    if stage is not None:
+        try:
+            target = validate_stage(stage)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+            ) from exc
+        stmt = stmt.where(PipelineApplication.stage == target)
+    stmt = stmt.order_by(
+        PipelineApplication.last_stage_change.desc(),
+        PipelineApplication.applied_at.desc(),
+    )
+
+    rows = (await db.execute(stmt)).scalars().all()
+    data = [application_to_read(a) for a in rows]
+    return ApplicationListResponse(data=data, total=len(data))
+
+
+@router.get(
+    "/{job_id}/applications/by-stage",
+    response_model=ApplicationsByStageResponse,
+    tags=["Jobs"],
+    summary="Applications grouped by pipeline stage",
+    description=(
+        "Return the applications for a job bucketed by stage.  The response "
+        "always contains every stage in :data:`PIPELINE_STAGES`, even when "
+        "the bucket is empty, so the UI never has to special-case missing "
+        "columns."
+    ),
+)
+async def get_applications_by_stage(
+    job_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+) -> ApplicationsByStageResponse:
+    """Group every application for the job by pipeline stage."""
+    await _load_job_or_404(db, job_id, tenant_id)
+
+    rows = (
+        await db.execute(
+            select(PipelineApplication)
+            .where(
+                PipelineApplication.tenant_id == tenant_id,
+                PipelineApplication.job_id == job_id,
+            )
+            .order_by(
+                PipelineApplication.last_stage_change.desc(),
+                PipelineApplication.applied_at.desc(),
+            )
+        )
+    ).scalars().all()
+
+    # Always include every stage so the UI gets a stable shape.
+    by_stage: dict[str, list[PipelineApplicationRead]] = {
+        stage: [] for stage in PIPELINE_STAGES
+    }
+    for app in rows:
+        stage_value = (
+            app.stage.value if isinstance(app.stage, ApplicationStage) else str(app.stage)
+        )
+        by_stage.setdefault(stage_value, []).append(application_to_read(app))
+
+    return ApplicationsByStageResponse(
+        job_id=job_id,
+        total=len(rows),
+        by_stage=by_stage,
+    )
+
+
+@router.get(
+    "/{job_id}/pipeline",
+    response_model=PipelineSummaryResponse,
+    tags=["Jobs"],
+    summary="Full pipeline view (Kanban-ready)",
+    description=(
+        "Return the full hiring pipeline for a job, with applications grouped "
+        "by stage and per-stage counts.  Use this endpoint to render a Kanban "
+        "board."
+    ),
+)
+async def get_job_pipeline(
+    job_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+) -> PipelineSummaryResponse:
+    """Return the complete Kanban-shaped pipeline for a job."""
+    await _load_job_or_404(db, job_id, tenant_id)
+
+    rows = (
+        await db.execute(
+            select(PipelineApplication)
+            .where(
+                PipelineApplication.tenant_id == tenant_id,
+                PipelineApplication.job_id == job_id,
+            )
+            .order_by(PipelineApplication.last_stage_change.desc())
+        )
+    ).scalars().all()
+
+    by_stage: dict[str, list[PipelineApplicationRead]] = {
+        stage: [] for stage in PIPELINE_STAGES
+    }
+    counts: dict[str, int] = {stage: 0 for stage in PIPELINE_STAGES}
+    for app in rows:
+        stage_value = (
+            app.stage.value if isinstance(app.stage, ApplicationStage) else str(app.stage)
+        )
+        by_stage.setdefault(stage_value, []).append(application_to_read(app))
+        counts[stage_value] = counts.get(stage_value, 0) + 1
+
+    total = len(rows)
+    stages_payload: list[dict] = []
+    for stage in PIPELINE_STAGES:
+        stages_payload.append(
+            {
+                "stage": stage,
+                "count": counts.get(stage, 0),
+                "share": round(counts.get(stage, 0) / total, 4) if total else 0.0,
+            }
+        )
+
+    return PipelineSummaryResponse(
+        job_id=job_id,
+        total=total,
+        stages=stages_payload,
+        by_stage=by_stage,
+        generated_at=datetime.now(timezone.utc).replace(tzinfo=None),
+    )
+
+
+@router.post(
+    "/{job_id}/applications/bulk-stage",
+    response_model=BulkStageMoveResponse,
+    tags=["Jobs"],
+    summary="Bulk-move applications to a new stage",
+    description=(
+        "Move every id in ``application_ids`` to the supplied stage.  Ids "
+        "that do not belong to this job (or to the caller's tenant) are "
+        "skipped silently and reported in ``not_found`` so the caller can "
+        "reconcile."
+    ),
+)
+async def bulk_move_applications_stage(
+    job_id: str,
+    payload: BulkStageMoveRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_member),
+    _rl: None = Depends(job_write_rate),
+) -> BulkStageMoveResponse:
+    """Move multiple applications to ``payload.stage`` in a single call."""
+    await _load_job_or_404(db, job_id, tenant_id)
+
+    try:
+        target = validate_stage(payload.stage)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
+
+    # Dedupe the input list so a caller that accidentally duplicates ids
+    # still gets a sane ``requested`` count.
+    requested_ids = list(dict.fromkeys(payload.application_ids))
+    if not requested_ids:
+        return BulkStageMoveResponse(
+            job_id=job_id,
+            stage=target.value,
+            requested=0,
+            moved=0,
+            not_found=[],
+        )
+
+    rows = (
+        await db.execute(
+            select(PipelineApplication).where(
+                PipelineApplication.tenant_id == tenant_id,
+                PipelineApplication.job_id == job_id,
+                PipelineApplication.id.in_(requested_ids),
+            )
+        )
+    ).scalars().all()
+    found_ids = {row.id for row in rows}
+    not_found = [aid for aid in requested_ids if aid not in found_ids]
+
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    moved = 0
+    for app in rows:
+        previous_stage = (
+            app.stage.value if isinstance(app.stage, ApplicationStage) else str(app.stage)
+        )
+        if previous_stage == target.value:
+            # Idempotent: an application already in the target stage counts
+            # as a "no-op moved" but we still touch last_stage_change so
+            # the UI can re-sort by recency.
+            app.last_stage_change = now
+        else:
+            app.stage = target
+            app.last_stage_change = now
+        if payload.notes is not None:
+            app.notes = payload.notes
+        db.add(app)
+        moved += 1
+
+    await safe_dispatch_event(
+        "job.applications.bulk_stage",
+        {
+            "job_id": job_id,
+            "stage": target.value,
+            "moved": moved,
+            "not_found": not_found,
+        },
+        tenant_id,
+        db=db,
+    )
+
+    return BulkStageMoveResponse(
+        job_id=job_id,
+        stage=target.value,
+        requested=len(requested_ids),
+        moved=moved,
+        not_found=not_found,
     )

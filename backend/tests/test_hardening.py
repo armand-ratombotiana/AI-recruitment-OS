@@ -303,14 +303,29 @@ async def test_job_pipeline(client: AsyncClient):
     # The job pipeline endpoint returns 404 when the job is missing from the DB
     # in production.  For this offline test we accept either 200 (synthetic
     # row exists) or 404 (no row).
-    resp = await client.get("/api/v1/jobs/j_123/pipeline")
+    # The new /pipeline endpoint is auth-gated; mint a tenant token for it.
+    from shared.core.security import create_access_token
+
+    token = create_access_token(
+        {
+            "sub": "hardening-test",
+            "email": "hardening@test.local",
+            "role": "recruiter",
+            "tenant_id": "default",
+        }
+    )
+    headers = {"Authorization": f"Bearer {token}"}
+    resp = await client.get("/api/v1/jobs/j_123/pipeline", headers=headers)
     assert resp.status_code in (200, 404)
     if resp.status_code == 200:
         body = resp.json()
         assert body["job_id"] == "j_123"
+        # The new Kanban-shaped response includes a stage entry for every
+        # pipeline column (applied → screening → interview → offer → hired,
+        # plus rejected), so there are always 6 stages.
         assert len(body["stages"]) == 6
-        assert "bottleneck_stage" in body
-        assert "average_days_in_stage" in body
+        assert "total" in body
+        assert "by_stage" in body
 
 
 @pytest.mark.asyncio

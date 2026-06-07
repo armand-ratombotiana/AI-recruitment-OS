@@ -26,6 +26,18 @@ from shared.core.models.candidate_activity import (
     CandidateActivityType,
 )
 from shared.core.models.recruitment import Job, JobStatus
+from shared.core.models.application import (
+    Application as PipelineApplication,
+    ApplicationStage,
+    ApplicationCreate as PipelineApplicationCreate,
+    ApplicationStageUpdate,
+    ApplicationRead as PipelineApplicationRead,
+    ApplicationListResponse,
+    PIPELINE_STAGES,
+    application_to_read,
+    serialise_meta,
+    validate_stage,
+)
 from shared.core.models.tag import (
     AddEntityTagRequest,
     AddEntityTagResponse,
@@ -36,7 +48,7 @@ from shared.core.models.tag import (
     TagEntityType,
 )
 from shared.core.security import require_tenant, require_user, decode_token
-from shared.auth.dependencies import require_tenant_id
+from shared.auth.dependencies import require_tenant_id, require_member
 from shared.core.rate_limit_deps import candidate_write_rate
 from shared.audit import audit
 from shared.webhooks import safe_dispatch_event
@@ -2772,3 +2784,379 @@ async def delete_candidate_resume(
     return ResumeDeleteResponse(
         candidate_id=candidate_id, file_id=old_file_id, deleted=removed
     )
+
+
+# ── Candidate ↔ Job applications (pipeline / Kanban) ───────────────────────
+#
+# A candidate can apply to many jobs.  Each application moves through a
+# fixed set of stages (applied → screening → interview → offer → hired, or
+# rejected from anywhere).  The persistence model is
+# ``shared.core.models.application.PipelineApplication`` (table
+# ``candidate_applications``) which is intentionally separate from the
+# pre-existing recruitment-level ``Application`` row.
+
+
+async def _load_candidate_or_404(
+    db: AsyncSession, candidate_id: str, tenant_id: str
+) -> Candidate:
+    """Return the tenant-scoped candidate or raise 404."""
+    result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == candidate_id, Candidate.tenant_id == tenant_id
+        )
+    )
+    candidate = result.scalar_one_or_none()
+    if candidate is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
+    return candidate
+
+
+async def _load_job_or_404(
+    db: AsyncSession, job_id: str, tenant_id: str
+) -> Job:
+    """Return the tenant-scoped job or raise 404."""
+    result = await db.execute(
+        select(Job).where(Job.id == job_id, Job.tenant_id == tenant_id)
+    )
+    job = result.scalar_one_or_none()
+    if job is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
+        )
+    return job
+
+
+@router.post(
+    "/{candidate_id}/apply",
+    response_model=PipelineApplicationRead,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Candidates"],
+    summary="Apply a candidate to a job",
+    description=(
+        "Create a new application row for the candidate.  Returns 409 if the "
+        "candidate is already on this job's pipeline."
+    ),
+)
+async def apply_candidate_to_job(
+    candidate_id: str,
+    payload: PipelineApplicationCreate,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_member),
+    _rl: None = Depends(candidate_write_rate),
+) -> PipelineApplicationRead:
+    """Apply ``candidate_id`` to ``payload.job_id``."""
+    await _load_candidate_or_404(db, candidate_id, tenant_id)
+    await _load_job_or_404(db, payload.job_id, tenant_id)
+
+    # Reject duplicate applications on the same (candidate, job) pair so the
+    # pipeline view never has to dedupe on the read path.
+    dup_result = await db.execute(
+        select(PipelineApplication).where(
+            PipelineApplication.tenant_id == tenant_id,
+            PipelineApplication.candidate_id == candidate_id,
+            PipelineApplication.job_id == payload.job_id,
+        )
+    )
+    if dup_result.scalar_one_or_none() is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Candidate is already applied to this job",
+        )
+
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    application = PipelineApplication(
+        tenant_id=tenant_id,
+        candidate_id=candidate_id,
+        job_id=payload.job_id,
+        stage=ApplicationStage.APPLIED,
+        source=payload.source,
+        applied_at=now,
+        last_stage_change=now,
+        notes=payload.notes,
+        score=payload.score,
+        meta=serialise_meta(payload.meta),
+    )
+    db.add(application)
+    await db.flush()
+    await db.refresh(application)
+
+    # Bump the denormalised applicant count on the job so the listing stays
+    # cheap.
+    job_result = await db.execute(
+        select(Job).where(Job.id == payload.job_id, Job.tenant_id == tenant_id)
+    )
+    job = job_result.scalar_one()
+    job.applicants_count = (job.applicants_count or 0) + 1
+    db.add(job)
+
+    # Auto-log the apply event on the candidate timeline so the recruiter
+    # sees a chronological record of the application.
+    await _safe_log_activity(
+        db,
+        tenant_id=tenant_id,
+        candidate_id=candidate_id,
+        activity_type=CandidateActivityType.NOTE,
+        title="Applied to job",
+        content=payload.notes,
+        user_id=user.get("id"),
+        meta={
+            "event": "application_created",
+            "application_id": application.id,
+            "job_id": payload.job_id,
+            "source": payload.source,
+        },
+    )
+
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.application.create",
+        resource_type="candidate_application",
+        resource_id=application.id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+        details={"candidate_id": candidate_id, "job_id": payload.job_id},
+    )
+
+    await safe_dispatch_event(
+        "candidate.application.created",
+        {
+            "application_id": application.id,
+            "candidate_id": candidate_id,
+            "job_id": payload.job_id,
+            "stage": application.stage.value,
+        },
+        tenant_id,
+        db=db,
+    )
+
+    return application_to_read(application)
+
+
+@router.get(
+    "/{candidate_id}/applications",
+    response_model=ApplicationListResponse,
+    tags=["Candidates"],
+    summary="List a candidate's applications",
+    description=(
+        "Return every application the candidate has on the platform, ordered "
+        "by most recently changed first."
+    ),
+)
+async def list_candidate_applications(
+    candidate_id: str,
+    stage: str | None = Query(
+        default=None,
+        description="Optional stage filter: applied | screening | interview | offer | hired | rejected",
+    ),
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+) -> ApplicationListResponse:
+    """List every application that belongs to ``candidate_id``."""
+    await _load_candidate_or_404(db, candidate_id, tenant_id)
+
+    stmt = select(PipelineApplication).where(
+        PipelineApplication.tenant_id == tenant_id,
+        PipelineApplication.candidate_id == candidate_id,
+    )
+    if stage is not None:
+        try:
+            target = validate_stage(stage)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+            ) from exc
+        stmt = stmt.where(PipelineApplication.stage == target)
+    stmt = stmt.order_by(
+        PipelineApplication.last_stage_change.desc(), PipelineApplication.applied_at.desc()
+    )
+
+    rows = (await db.execute(stmt)).scalars().all()
+    data = [application_to_read(a) for a in rows]
+    return ApplicationListResponse(data=data, total=len(data))
+
+
+@router.put(
+    "/{candidate_id}/applications/{application_id}/stage",
+    response_model=PipelineApplicationRead,
+    tags=["Candidates"],
+    summary="Move an application to a new pipeline stage",
+    description=(
+        "Move the application to a new stage.  Valid stages: "
+        "``applied | screening | interview | offer | hired | rejected``."
+    ),
+)
+async def update_application_stage(
+    candidate_id: str,
+    application_id: str,
+    payload: ApplicationStageUpdate,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_member),
+    _rl: None = Depends(candidate_write_rate),
+) -> PipelineApplicationRead:
+    """Move ``application_id`` to ``payload.stage``."""
+    await _load_candidate_or_404(db, candidate_id, tenant_id)
+
+    try:
+        target = validate_stage(payload.stage)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
+
+    result = await db.execute(
+        select(PipelineApplication).where(
+            PipelineApplication.id == application_id,
+            PipelineApplication.tenant_id == tenant_id,
+            PipelineApplication.candidate_id == candidate_id,
+        )
+    )
+    application = result.scalar_one_or_none()
+    if application is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Application not found"
+        )
+
+    previous_stage = (
+        application.stage.value
+        if isinstance(application.stage, ApplicationStage)
+        else str(application.stage)
+    )
+    application.stage = target
+    application.last_stage_change = datetime.now(timezone.utc).replace(tzinfo=None)
+    if payload.notes is not None:
+        application.notes = payload.notes
+    if payload.score is not None:
+        application.score = payload.score
+    db.add(application)
+
+    await _safe_log_activity(
+        db,
+        tenant_id=tenant_id,
+        candidate_id=candidate_id,
+        activity_type=CandidateActivityType.STATUS_CHANGE,
+        title=f"Application stage: {previous_stage} → {target.value}",
+        content=payload.notes,
+        user_id=user.get("id"),
+        meta={
+            "event": "application_stage_change",
+            "application_id": application.id,
+            "job_id": application.job_id,
+            "from_stage": previous_stage,
+            "to_stage": target.value,
+        },
+    )
+
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.application.stage_change",
+        resource_type="candidate_application",
+        resource_id=application.id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+        details={
+            "candidate_id": candidate_id,
+            "job_id": application.job_id,
+            "from": previous_stage,
+            "to": target.value,
+        },
+    )
+
+    await safe_dispatch_event(
+        "candidate.application.stage_changed",
+        {
+            "application_id": application.id,
+            "candidate_id": candidate_id,
+            "job_id": application.job_id,
+            "from_stage": previous_stage,
+            "to_stage": target.value,
+        },
+        tenant_id,
+        db=db,
+    )
+
+    await db.flush()
+    await db.refresh(application)
+    return application_to_read(application)
+
+
+@router.delete(
+    "/{candidate_id}/applications/{application_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    tags=["Candidates"],
+    summary="Withdraw an application",
+    description=(
+        "Hard-delete the application (the candidate withdrew, or a recruiter "
+        "is cleaning up a mistake).  Decrements the job's ``applicants_count``."
+    ),
+)
+async def withdraw_application(
+    candidate_id: str,
+    application_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_member),
+    _rl: None = Depends(candidate_write_rate),
+) -> Response:
+    """Withdraw ``application_id`` from the candidate's pipeline."""
+    await _load_candidate_or_404(db, candidate_id, tenant_id)
+
+    result = await db.execute(
+        select(PipelineApplication).where(
+            PipelineApplication.id == application_id,
+            PipelineApplication.tenant_id == tenant_id,
+            PipelineApplication.candidate_id == candidate_id,
+        )
+    )
+    application = result.scalar_one_or_none()
+    if application is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Application not found"
+        )
+
+    job_id = application.job_id
+    await db.delete(application)
+
+    # Decrement the job's denormalised applicant count, clamped to 0 so a
+    # counter that drifted out of sync with reality can recover.
+    job_result = await db.execute(
+        select(Job).where(Job.id == job_id, Job.tenant_id == tenant_id)
+    )
+    job = job_result.scalar_one_or_none()
+    if job is not None and job.applicants_count and job.applicants_count > 0:
+        job.applicants_count = job.applicants_count - 1
+        db.add(job)
+
+    await _safe_log_activity(
+        db,
+        tenant_id=tenant_id,
+        candidate_id=candidate_id,
+        activity_type=CandidateActivityType.NOTE,
+        title="Application withdrawn",
+        user_id=user.get("id"),
+        meta={
+            "event": "application_withdrawn",
+            "application_id": application_id,
+            "job_id": job_id,
+        },
+    )
+
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.application.withdraw",
+        resource_type="candidate_application",
+        resource_id=application_id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+        details={"candidate_id": candidate_id, "job_id": job_id},
+    )
+
+    await db.flush()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
