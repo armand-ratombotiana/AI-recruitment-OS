@@ -2227,5 +2227,447 @@
     },
     "accessDenied": "Accès refusé",
     "accessDeniedDesc": "Vous avez besoin des droits administrateur pour gérer les tags."
+  },
+  "landing": {
+    "hero": {
+      "eyebrow": "Avec AI Copilot v3",
+      "title": "L'avenir du recrutement",
+      "titleHighlight": "est autonome",
+      "subtitle": "AI-ROS déploie des agents intelligents qui présélectionnent les candidats, mènent les entretiens et identifient les meilleurs talents — pour que votre équipe puisse se concentrer sur l'essentiel.",
+      "getStarted": "Commencer gratuitement",
+      "viewJobs": "Voir les postes",
+      "noCard": "Sans carte bancaire",
+      "trial": "Essai gratuit de 14 jours",
+      "cancel": "Annulation à tout moment"
+    },
+    "trusted": "La confiance d'équipes innovantes dans le monde entier",
+    "features": {
+      "eyebrow": "Fonctionnalités",
+      "title": "Tout ce qu'il faut pour recruter mieux",
+      "subtitle": "Une plateforme complète, propulsée par l'IA et pensée pour les humains.",
+      "items": {
+        "screening": {
+          "title": "Présélection autonome",
+          "description": "Analyse LLM avec score explicable et raisons clés pour chaque candidat."
+        },
+        "matching": {
+          "title": "Matching intelligent",
+          "description": "Graphes de compétences et embeddings : plus de 95 % de précision."
+        },
+        "interviews": {
+          "title": "Entretiens code en direct",
+          "description": "Pair-programming dans le navigateur avec retours d'IA en temps réel."
+        },
+        "pipeline": {
+          "title": "Pipeline automatisé",
+          "description": "Kanban glisser-déposer avec workflows, rappels et SLAs."
+        },
+        "compliance": {
+          "title": "Conformité d'abord",
+          "description": "RGPD & SOC2, journaux d'audit, consentement et DSAR."
+        },
+        "enterprise": {
+          "title": "Prêt pour l'entreprise",
+          "description": "SSO/SAML, multi-tenant, RBAC granulaire, SLA 99,9 %."
+        }
+      }
+    },
+    "how": {
+      "eyebrow": "Comment ça marche",
+      "title": "Trois étapes vers le recrutement autonome",
+      "subtitle": "De la fiche de poste au meilleur candidat en quelques minutes.",
+      "steps": {
+        "one": {
+          "title": "Importer & configurer",
+          "description": "Ajoutez vos descriptions de poste et critères d'évaluation en quelques minutes."
+        },
+        "two": {
+          "title": "L'IA prend le relais",
+          "description": "Nos agents évaluent et interviewent les candidats 24/7."
+        },
+        "three": {
+          "title": "Valider & recruter",
+          "description": "Comparez les candidats classés, faites l'entretien final, envoyez l'offre."
+        }
+      }
+    },
+    "stats": {
+      "eyebrow": "En chiffres",
+      "title": "Des résultats qui parlent",
+      "candidates": "Candidats traités",
+      "companies": "Entreprises clientes",
+      "time": "Heures gagnées par recrutement",
+      "accuracy": "Précision du matching"
+    },
+    "testimonials": {
+      "eyebrow": "Témoignages",
+      "title": "La confiance des équipes leaders",
+      "subtitle": "De vraies histoires de vrais clients.",
+      "items": {
+        "sarah": {
+          "name": "Sarah Chen",
+          "role": "VP People, TechScale",
+          "quote": "AI-ROS a réduit notre time-to-hire de 42 à 12 jours. La présélection IA est bluffante.",
+          "metric": "71 % plus rapide"
+        },
+        "marcus": {
+          "name": "Marcus Rodriguez",
+          "role": "Head of Talent, DataFlow",
+          "quote": "Nous traitons 10× plus de candidats avec la même équipe. Le ROI a été immédiat.",
+          "metric": "10× de capacité"
+        },
+        "emily": {
+          "name": "Emily Watson",
+          "role": "CTO, CloudNine",
+          "quote": "Le meilleur ROI de tous nos outils RH. Installation en moins de 30 minutes.",
+          "metric": "4,9× de ROI"
+        },
+        "noah": {
+          "name": "Noah Bennett",
+          "role": "Head of Engineering, NexusAI",
+          "quote": "Les entretiens code avec IA ont éliminé tout biais de notre processus technique.",
+          "metric": "0 biais détecté"
+        }
+      }
+    },
+    "pricingPreview": {
+      "eyebrow": "Tarifs",
+      "title": "Un plan pour chaque étape",
+      "subtitle": "Commencez gratuitement, évoluez à votre rythme. Annulez à tout moment.",
+      "seeAll": "Voir tous les tarifs",
+      "perMonth": "/mois",
+      "perYear": "/an",
+      "mostPopular": "Plus populaire",
+      "fromPrefix": "à partir de"
+    },
+    "cta": {
+      "title": "Prêt à transformer votre recrutement ?",
+      "subtitle": "Rejoignez les centaines d'équipes qui recrutent déjà mieux avec AI-ROS.",
+      "primary": "Commencer l'essai gratuit",
+      "secondary": "Parler aux ventes"
+    }
+  },
+  "pricing": {
+    "metaTitle": "Tarifs · AI-ROS",
+    "hero": {
+      "eyebrow": "Tarifs",
+      "title": "Tarifs simples et transparents",
+      "subtitle": "Choisissez le plan adapté à votre équipe. Évoluez ou annulez à tout moment."
+    },
+    "toggle": {
+      "monthly": "Mensuel",
+      "yearly": "Annuel",
+      "save": "Économisez 20 %"
+    },
+    "billing": {
+      "monthly": "par mois",
+      "yearly": "par an",
+      "billedYearly": "Facturé annuellement",
+      "free": "Gratuit pour toujours"
+    },
+    "popular": "Plus populaire",
+    "ctaStart": "Commencer",
+    "ctaTrial": "Essai 14 jours",
+    "ctaContact": "Contacter les ventes",
+    "custom": "Sur mesure",
+    "plans": {
+      "free": {
+        "name": "Gratuit",
+        "tagline": "Pour les petites équipes qui débutent",
+        "features": [
+          "Jusqu'à 25 candidats / mois",
+          "1 offre active",
+          "Présélection IA basique",
+          "Support communautaire",
+          "Un seul espace de travail"
+        ]
+      },
+      "starter": {
+        "name": "Starter",
+        "tagline": "Pour les équipes qui recrutent régulièrement",
+        "features": [
+          "Jusqu'à 200 candidats / mois",
+          "5 offres actives",
+          "Matching et présélection IA",
+          "Support par e-mail",
+          "Page carrière personnalisée",
+          "3 membres d'équipe"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "tagline": "Pour les équipes qui recrutent en continu",
+        "features": [
+          "Jusqu'à 1 000 candidats / mois",
+          "Offres illimitées",
+          "Matching IA avancé",
+          "Entretiens code en direct",
+          "Workflows personnalisés",
+          "Support prioritaire",
+          "10 membres d'équipe",
+          "Analytique avancée"
+        ]
+      },
+      "enterprise": {
+        "name": "Entreprise",
+        "tagline": "Pour les grandes organisations aux besoins spécifiques",
+        "features": [
+          "Candidats illimités",
+          "Offres et sièges illimités",
+          "Modèles IA personnalisés",
+          "Customer Success Manager dédié",
+          "SSO / SAML, SCIM, audit log",
+          "Déploiement on-prem ou VPC",
+          "SLA 99,9 %",
+          "Intégrations sur mesure"
+        ]
+      }
+    },
+    "compare": {
+      "title": "Comparez toutes les fonctionnalités",
+      "subtitle": "Tous les plans incluent entretiens illimités, stockage sécurisé et résidence UE/US.",
+      "feature": "Fonctionnalité",
+      "yes": "Inclus",
+      "no": "Non inclus",
+      "rows": {
+        "candidates": "Candidats par mois",
+        "jobs": "Offres actives",
+        "users": "Membres d'équipe",
+        "aiScreening": "Présélection IA",
+        "aiMatching": "Matching IA",
+        "liveInterviews": "Entretiens code en direct",
+        "workflows": "Workflows personnalisés",
+        "branding": "Page carrière brandée",
+        "analytics": "Analytique avancée",
+        "api": "API et webhooks",
+        "sso": "SSO / SAML / SCIM",
+        "audit": "Journal d'audit",
+        "support": "Support",
+        "sla": "SLA de disponibilité"
+      },
+      "values": {
+        "supportCommunity": "Communauté",
+        "supportEmail": "E-mail",
+        "supportPriority": "Prioritaire",
+        "supportDedicated": "CSM dédié",
+        "apiReadonly": "Lecture seule",
+        "apiFull": "Complet",
+        "aiBasic": "Basique",
+        "aiAdvanced": "Avancé",
+        "aiCustom": "Modèles sur mesure",
+        "unlimited": "Illimité",
+        "none": "Aucun",
+        "standard": "Standard"
+      }
+    },
+    "faq": {
+      "title": "Questions fréquentes",
+      "subtitle": "Vous ne trouvez pas votre réponse ? Contactez notre équipe.",
+      "items": {
+        "trial": {
+          "q": "Proposez-vous un essai gratuit ?",
+          "a": "Oui — chaque plan payant inclut 14 jours d'essai avec toutes les fonctionnalités. Sans carte bancaire."
+        },
+        "switch": {
+          "q": "Puis-je changer de plan plus tard ?",
+          "a": "Bien sûr. Vous pouvez monter, descendre ou annuler depuis le portail de facturation. Tout est calculé au prorata."
+        },
+        "payment": {
+          "q": "Quels moyens de paiement acceptez-vous ?",
+          "a": "Cartes bancaires, ACH, SEPA et virement pour les plans Entreprise."
+        },
+        "data": {
+          "q": "Où sont stockées mes données ?",
+          "a": "Résidence UE (Francfort) et US (Virginie). Les clients Entreprise peuvent choisir des régions dédiées."
+        },
+        "security": {
+          "q": "AI-ROS est-il sécurisé ?",
+          "a": "Oui. SOC2 Type II, RGPD, chiffrement en transit et au repos. Vos données n'entraînent jamais nos modèles partagés."
+        },
+        "integrations": {
+          "q": "Compatible avec mon ATS ?",
+          "a": "Intégrations natives Greenhouse, Lever, Workday, BambooHR, plus API REST et webhooks."
+        },
+        "discount": {
+          "q": "Y a-t-il des remises associations / startups ?",
+          "a": "Oui — 50 % pour les associations et startups en amorçage éligibles."
+        },
+        "cancel": {
+          "q": "Que se passe-t-il si j'annule ?",
+          "a": "Vous gardez l'accès jusqu'à la fin de la période. Exports CSV/JSON disponibles pendant 30 jours."
+        },
+        "support": {
+          "q": "Quel support proposez-vous ?",
+          "a": "Communautaire en Gratuit, e-mail en Starter, prioritaire en Pro, CSM dédié avec SLA 1h en Entreprise."
+        },
+        "onboarding": {
+          "q": "Aidez-vous à la mise en route ?",
+          "a": "Tous les plans incluent un onboarding guidé. Pro et Entreprise incluent une migration assistée depuis votre ATS."
+        }
+      }
+    }
+  },
+  "about": {
+    "metaTitle": "À propos · AI-ROS",
+    "hero": {
+      "eyebrow": "Notre histoire",
+      "title": "Le recrutement doit rester humain.",
+      "subtitle": "Nous avons créé AI-ROS pour donner à chaque recruteur la puissance d'une équipe talent Fortune-500."
+    },
+    "mission": {
+      "title": "Notre mission",
+      "body": "Rendre chaque décision de recrutement plus juste, plus rapide et plus intelligente grâce à une IA en qui recruteurs et candidats ont confiance."
+    },
+    "vision": {
+      "title": "Notre vision",
+      "body": "Un monde où la meilleure personne pour le poste est toujours trouvée — quel que soit son réseau ou sa géographie."
+    },
+    "values": {
+      "title": "Nos valeurs",
+      "items": {
+        "transparency": {
+          "title": "Transparence radicale",
+          "description": "Chaque score IA est explicable. Chaque candidat reçoit un retour."
+        },
+        "fairness": {
+          "title": "Équité dès la conception",
+          "description": "Nous auditons nos modèles en continu et publions des rapports trimestriels."
+        },
+        "craft": {
+          "title": "L'obsession du détail",
+          "description": "Un produit beau, rapide, accessible — parce que les recruteurs le méritent."
+        },
+        "candidates": {
+          "title": "Candidats d'abord",
+          "description": "Chaque fonctionnalité est pensée pour une expérience candidat délicieuse."
+        }
+      }
+    },
+    "team": {
+      "title": "Rencontrez l'équipe",
+      "subtitle": "Une équipe expérimentée basée à Paris, NYC et en remote.",
+      "members": {
+        "alex": {
+          "name": "Alex Dupont",
+          "role": "Co-fondateur & CEO",
+          "bio": "Ex-LinkedIn, ex-Greenhouse. 10 ans d'outils RH."
+        },
+        "priya": {
+          "name": "Priya Sharma",
+          "role": "Co-fondatrice & CTO",
+          "bio": "Ancienne staff ML chez Meta. Doctorat en NLP."
+        },
+        "diego": {
+          "name": "Diego Martín",
+          "role": "Head of Product",
+          "bio": "A construit l'onboarding de Notion et le pipeline de Linear."
+        },
+        "lina": {
+          "name": "Lina Park",
+          "role": "Head of Design",
+          "bio": "Design systems chez Stripe et Figma."
+        },
+        "yusuf": {
+          "name": "Yusuf Okonkwo",
+          "role": "Head of AI Research",
+          "bio": "Plus de 30 publications sur l'IA responsable."
+        },
+        "claire": {
+          "name": "Claire Laurent",
+          "role": "Head of People",
+          "bio": "A bâti les équipes RH de Datadog et Algolia."
+        }
+      }
+    },
+    "investors": {
+      "title": "Soutenus par les meilleurs",
+      "subtitle": "Nous sommes fiers d'être accompagnés par des investisseurs qui croient en un recrutement plus juste.",
+      "backers": [
+        "Sequoia",
+        "Accel",
+        "Index Ventures",
+        "Y Combinator",
+        "First Round",
+        "Headline"
+      ]
+    },
+    "cta": {
+      "title": "Envie de nous rejoindre ?",
+      "subtitle": "Nous recrutons en produit, ingénierie et design.",
+      "primary": "Voir les postes ouverts",
+      "secondary": "Nous contacter"
+    }
+  },
+  "contact": {
+    "metaTitle": "Contact · AI-ROS",
+    "hero": {
+      "eyebrow": "Contact",
+      "title": "Parlons recrutement",
+      "subtitle": "Questions sur les tarifs, la sécurité, les intégrations ou besoin d'une démo ? Nous serions ravis d'échanger."
+    },
+    "form": {
+      "title": "Envoyez-nous un message",
+      "subtitle": "Nous répondons généralement sous un jour ouvré.",
+      "name": "Nom complet",
+      "namePlaceholder": "Jane Dupont",
+      "email": "E-mail professionnel",
+      "emailPlaceholder": "jane@entreprise.com",
+      "company": "Entreprise",
+      "companyPlaceholder": "Acme Inc.",
+      "topic": "Comment pouvons-nous aider ?",
+      "topics": {
+        "sales": "Parler aux ventes",
+        "support": "Support produit",
+        "partnership": "Partenariats",
+        "press": "Presse / Média",
+        "other": "Autre"
+      },
+      "message": "Votre message",
+      "messagePlaceholder": "Parlez-nous de votre équipe et de votre besoin…",
+      "submit": "Envoyer le message",
+      "submitting": "Envoi en cours…",
+      "successTitle": "Message envoyé !",
+      "successBody": "Merci ! Nous vous répondons sous un jour ouvré.",
+      "errorTitle": "Échec de l'envoi",
+      "errorBody": "Une erreur s'est produite. Écrivez-nous à hello@ai-ros.com.",
+      "errors": {
+        "name": "Veuillez saisir votre nom",
+        "email": "Adresse e-mail invalide",
+        "message": "Veuillez écrire un message (au moins 10 caractères)"
+      },
+      "consent": "En soumettant ce formulaire, vous acceptez notre Politique de confidentialité."
+    },
+    "offices": {
+      "title": "Nos bureaux",
+      "items": {
+        "paris": {
+          "city": "Paris",
+          "address": "12 rue de la Paix, 75002 Paris, France",
+          "tz": "CET — Lun–Ven 9h00–18h00"
+        },
+        "newyork": {
+          "city": "New York",
+          "address": "401 Broadway, NY 10013, États-Unis",
+          "tz": "EST — Lun–Ven 9h00–18h00"
+        },
+        "remote": {
+          "city": "Remote-first",
+          "address": "Équipe répartie dans 14 pays",
+          "tz": "Async par défaut"
+        }
+      }
+    },
+    "channels": {
+      "title": "Autres moyens de nous contacter",
+      "salesTitle": "Ventes",
+      "salesBody": "sales@ai-ros.com",
+      "supportTitle": "Support",
+      "supportBody": "support@ai-ros.com",
+      "pressTitle": "Presse",
+      "pressBody": "press@ai-ros.com"
+    },
+    "social": {
+      "title": "Suivez-nous"
+    }
   }
 }
