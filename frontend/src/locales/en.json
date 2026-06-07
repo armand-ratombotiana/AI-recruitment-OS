@@ -45,6 +45,7 @@
     "dashboard": "Dashboard",
     "candidates": "Candidates",
     "jobs": "Jobs",
+    "assessments": "Assessments",
     "interviews": "Interviews",
     "ppe": "PPE",
     "analytics": "Analytics",
@@ -1179,6 +1180,202 @@
     "updateFailed": "Failed to update interview",
     "startFailed": "Failed to start interview",
     "completeFailed": "Failed to complete interview"
+  },
+  "assessments": {
+    "title": "Assessments",
+    "subtitle": "{total} total assessments",
+    "create": "New assessment",
+    "newTitle": "Create new assessment",
+    "newSubtitle": "Send a tailored assessment to evaluate a candidate for a job.",
+    "createDraft": "Save as draft",
+    "createAndSend": "Create & send",
+    "created": "Assessment created",
+    "createdAndSent": "Assessment created and sent",
+    "createdNotSent": "Assessment created but failed to send",
+    "createFailed": "Failed to create assessment",
+    "assessment": "Assessment",
+    "couldntLoad": "Couldn't load assessment",
+    "backToList": "Back to assessments",
+    "backToDetails": "Back to details",
+    "notFoundTitle": "Assessment not found",
+    "notFoundDesc": "This assessment may have been deleted or never existed.",
+    "search": "Search by title, candidate, or job…",
+    "searchAria": "Search assessments",
+    "emptyTitle": "No assessments yet",
+    "emptyDesc": "Create your first assessment to evaluate candidates for a job.",
+    "emptyFiltered": "No assessments match your filters",
+    "tryAdjusting": "Try adjusting your filters.",
+    "clearFilters": "Clear filters",
+    "filterByStatus": "Filter by status",
+    "filterByCandidate": "Filter by candidate",
+    "filterByJob": "Filter by job",
+    "allCandidates": "All candidates",
+    "allJobs": "All jobs",
+    "allStatuses": "All statuses",
+    "tabs": {
+      "all": "All ({n})"
+    },
+    "statuses": {
+      "all": "All statuses",
+      "draft": "Draft",
+      "pending": "Pending",
+      "sent": "Sent",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "expired": "Expired",
+      "cancelled": "Cancelled"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "types": {
+      "mcq": "Multiple choice",
+      "short_answer": "Short answer",
+      "text": "Long form",
+      "coding": "Coding"
+    },
+    "recommendation": {
+      "strong_hire": "Strong hire",
+      "hire": "Hire",
+      "neutral": "Neutral",
+      "no_hire": "No hire",
+      "strong_no_hire": "Strong no hire"
+    },
+    "validation": {
+      "candidateRequired": "Please choose a candidate",
+      "jobRequired": "Please choose a job",
+      "titleRequired": "A title is required",
+      "questionCountMin": "At least 1 question is required",
+      "questionTypesRequired": "Choose at least one question type",
+      "timeLimitMin": "Time limit must be at least 1 minute",
+      "passingScoreRange": "Passing score must be 0–100",
+      "chooseOption": "Please choose an option",
+      "provideAnswer": "Please provide an answer",
+      "writeCode": "Please write your code",
+      "pickLanguage": "Please select a language",
+      "tooLong": "Answer must be at most {max} characters"
+    },
+    "fields": {
+      "title": "Assessment title",
+      "titleHelp": "Auto-filled from candidate and job — feel free to customize.",
+      "candidate": "Candidate",
+      "job": "Job",
+      "description": "Description (optional)",
+      "descriptionHelp": "This appears on the assessment welcome screen.",
+      "questionCount": "Number of questions",
+      "questionCountHelp": "AI will pick the best questions for this candidate.",
+      "difficulty": "Difficulty",
+      "questionTypes": "Question types",
+      "timeLimit": "Time limit (min)",
+      "timeLimitHelp": "Candidates can submit before the timer expires.",
+      "passingScore": "Passing score (%)",
+      "passingScoreHelp": "Used to label results as Pass/Fail once the test is submitted."
+    },
+    "placeholders": {
+      "candidate": "Select candidate…",
+      "job": "Select job…",
+      "title": "e.g. Senior Frontend Engineer – Skills check",
+      "description": "Add context, instructions, or a brief message…",
+      "short": "Type your answer…",
+      "text": "Write a detailed response…",
+      "code": "// Write your solution here…"
+    },
+    "placeholdersAria": {
+      "candidate": "Select candidate",
+      "job": "Select job"
+    },
+    "noOptions": "No options configured for this question.",
+    "answered": "Answered",
+    "notAnswered": "Not yet answered",
+    "points": "{n} pts",
+    "minutesShort": "{n} min",
+    "unlimited": "Untimed",
+    "questionsCount": "{n} questions",
+    "score": "Score",
+    "due": "Due {when}",
+    "dueNotice": "This assessment is due {when}.",
+    "language": "Language",
+    "languageAria": "Programming language",
+    "codeAria": "Code editor",
+    "feedbackLabel": "Feedback",
+    "feedback": {
+      "earned": "{earned}/{possible}"
+    },
+    "stats": {
+      "questions": "Questions",
+      "difficulty": "Difficulty",
+      "timeLimit": "Time limit"
+    },
+    "descriptionLabel": "Instructions",
+    "questionsLabel": "Questions",
+    "results": {
+      "finalScore": "Final score",
+      "scoreRaw": "{earned} of {total} points",
+      "aiFeedback": "AI feedback"
+    },
+    "progress": "Question {current} of {total}",
+    "progressPercent": "{n}% complete",
+    "progressSummary": "{answered} of {total} answered",
+    "previous": "Previous",
+    "submit": "Submit assessment",
+    "submitFinal": "Submit",
+    "submitFailed": "Could not submit your assessment",
+    "submitted": "Assessment submitted!",
+    "saveFailed": "Could not save your answer",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "notSaved": "Not yet saved",
+    "goToQuestion": "Go to question {n}",
+    "timer": {
+      "underMinute": "< 1 min left",
+      "minutesLeft": "{n} min left"
+    },
+    "unansweredNotice": "Please answer all questions before submitting. {n} remain.",
+    "confirmSubmitTitle": "Submit your assessment?",
+    "confirmSubmitUnfinished": "{answered} of {total} answered. Unanswered questions will be marked as 0. Continue?",
+    "confirmSubmitDone": "You answered all questions. Ready to submit your final answers?",
+    "viewResults": "View results",
+    "alreadyCompletedTitle": "Already completed",
+    "alreadyCompletedDesc": "You have already submitted this assessment.",
+    "review": {
+      "questionsSummary": "{n} questions · {difficulty}",
+      "notice": "You can save as a draft to edit later, or create and send it to the candidate right away."
+    },
+    "steps": {
+      "candidateJob": "Candidate & Job",
+      "configure": "Configure",
+      "review": "Review"
+    },
+    "step1": {
+      "title": "Who is taking the assessment?",
+      "description": "Pick a candidate and the job you want to evaluate them for."
+    },
+    "step2": {
+      "title": "Configure the assessment",
+      "description": "Choose how many questions, the difficulty, and the formats."
+    },
+    "step3": {
+      "title": "Review and create",
+      "description": "Double-check the details. You can still go back to edit."
+    },
+    "actions": {
+      "take": "Take",
+      "continue": "Continue",
+      "send": "Send",
+      "cancel": "Cancel"
+    },
+    "sent": "Assessment sent to candidate",
+    "sendFailed": "Failed to send assessment",
+    "cancelled": "Assessment cancelled",
+    "cancelFailed": "Failed to cancel assessment",
+    "deleted": "Assessment deleted",
+    "deleteFailed": "Failed to delete assessment",
+    "deleteTitle": "Delete assessment?",
+    "deleteDesc": "This will permanently remove the assessment and its questions. This action cannot be undone.",
+    "unknownCandidate": "Unknown candidate",
+    "unknownJob": "Unknown job"
   },
   "days": {
     "mon": "Mon",

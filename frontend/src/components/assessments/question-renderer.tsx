@@ -3,7 +3,7 @@
 import { useId, useState, useEffect, useRef } from 'react';
 import { CheckCircle2, Code2, FileText, ListChecks, Type, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { InputField, TextareaField } from '@/components';
+import { InputField } from '@/components';
 import { translate, type Locale } from '@/stores/locale-store';
 import type { AssessmentTypes } from '@/services/api/types';
 
@@ -337,18 +337,25 @@ export function QuestionRenderer({
 
       {/* Text / long form */}
       {question.type === 'text' && (
-        <TextareaField
-          ref={textAreaRef}
-          id={questionId}
-          value={value?.kind === 'text' ? value.value : ''}
-          onChange={(e) => handleTextChange(e.target.value)}
-          placeholder={question.placeholder ?? t('assessments.placeholders.text', 'Write a detailed response…')}
-          rows={6}
-          disabled={disabled}
-          maxLength={question.max_length ?? undefined}
-          aria-describedby={showError ? errorId : undefined}
-          className="w-full"
-        />
+        <div className="space-y-1.5">
+          <textarea
+            ref={textAreaRef}
+            id={questionId}
+            value={value?.kind === 'text' ? value.value : ''}
+            onChange={(e) => handleTextChange(e.target.value)}
+            placeholder={question.placeholder ?? t('assessments.placeholders.text', 'Write a detailed response…')}
+            rows={6}
+            disabled={disabled}
+            maxLength={question.max_length ?? undefined}
+            aria-describedby={showError ? errorId : undefined}
+            className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500 dark:bg-surface-800 dark:text-gray-100 dark:border-surface-700"
+          />
+          {question.max_length && (
+            <p className="text-xs text-gray-400 text-right tabular-nums" aria-live="polite">
+              {(value?.kind === 'text' ? value.value.length : 0)}/{question.max_length}
+            </p>
+          )}
+        </div>
       )}
 
       {/* Coding */}

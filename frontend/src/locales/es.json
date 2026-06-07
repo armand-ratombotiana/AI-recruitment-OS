@@ -45,6 +45,7 @@
     "dashboard": "Panel",
     "candidates": "Candidatos",
     "jobs": "Empleos",
+    "assessments": "Evaluaciones",
     "interviews": "Entrevistas",
     "ppe": "PPE",
     "analytics": "Analíticas",
@@ -1225,6 +1226,202 @@
     "updateFailed": "No se pudo actualizar la entrevista",
     "startFailed": "No se pudo iniciar la entrevista",
     "completeFailed": "No se pudo completar la entrevista"
+  },
+  "assessments": {
+    "title": "Evaluaciones",
+    "subtitle": "{total} evaluaciones en total",
+    "create": "Nueva evaluación",
+    "newTitle": "Crear nueva evaluación",
+    "newSubtitle": "Envía una evaluación a medida para evaluar a un candidato para un puesto.",
+    "createDraft": "Guardar como borrador",
+    "createAndSend": "Crear y enviar",
+    "created": "Evaluación creada",
+    "createdAndSent": "Evaluación creada y enviada",
+    "createdNotSent": "Evaluación creada pero el envío falló",
+    "createFailed": "No se pudo crear la evaluación",
+    "assessment": "Evaluación",
+    "couldntLoad": "No se pudo cargar la evaluación",
+    "backToList": "Volver a evaluaciones",
+    "backToDetails": "Volver a los detalles",
+    "notFoundTitle": "Evaluación no encontrada",
+    "notFoundDesc": "Esta evaluación puede haber sido eliminada o nunca existió.",
+    "search": "Buscar por título, candidato o puesto…",
+    "searchAria": "Buscar evaluaciones",
+    "emptyTitle": "Aún no hay evaluaciones",
+    "emptyDesc": "Crea tu primera evaluación para evaluar candidatos a un puesto.",
+    "emptyFiltered": "Ninguna evaluación coincide con tus filtros",
+    "tryAdjusting": "Intenta ajustar tus filtros.",
+    "clearFilters": "Limpiar filtros",
+    "filterByStatus": "Filtrar por estado",
+    "filterByCandidate": "Filtrar por candidato",
+    "filterByJob": "Filtrar por puesto",
+    "allCandidates": "Todos los candidatos",
+    "allJobs": "Todos los puestos",
+    "allStatuses": "Todos los estados",
+    "tabs": {
+      "all": "Todos ({n})"
+    },
+    "statuses": {
+      "all": "Todos los estados",
+      "draft": "Borrador",
+      "pending": "Pendiente",
+      "sent": "Enviada",
+      "in_progress": "En curso",
+      "completed": "Completada",
+      "expired": "Expirada",
+      "cancelled": "Cancelada"
+    },
+    "difficulty": {
+      "easy": "Fácil",
+      "medium": "Medio",
+      "hard": "Difícil"
+    },
+    "types": {
+      "mcq": "Opción múltiple",
+      "short_answer": "Respuesta corta",
+      "text": "Respuesta larga",
+      "coding": "Código"
+    },
+    "recommendation": {
+      "strong_hire": "Contratar con seguridad",
+      "hire": "Contratar",
+      "neutral": "Neutral",
+      "no_hire": "No contratar",
+      "strong_no_hire": "No contratar en absoluto"
+    },
+    "validation": {
+      "candidateRequired": "Elige un candidato",
+      "jobRequired": "Elige un puesto",
+      "titleRequired": "Se requiere un título",
+      "questionCountMin": "Se requiere al menos 1 pregunta",
+      "questionTypesRequired": "Elige al menos un tipo de pregunta",
+      "timeLimitMin": "El tiempo debe ser de al menos 1 minuto",
+      "passingScoreRange": "La nota de aprobado debe estar entre 0 y 100",
+      "chooseOption": "Elige una opción",
+      "provideAnswer": "Proporciona una respuesta",
+      "writeCode": "Escribe tu código",
+      "pickLanguage": "Selecciona un lenguaje",
+      "tooLong": "La respuesta no puede superar {max} caracteres"
+    },
+    "fields": {
+      "title": "Título de la evaluación",
+      "titleHelp": "Se rellena automáticamente desde el candidato y el puesto — personalízalo si quieres.",
+      "candidate": "Candidato",
+      "job": "Puesto",
+      "description": "Descripción (opcional)",
+      "descriptionHelp": "Aparece en la pantalla de bienvenida de la evaluación.",
+      "questionCount": "Número de preguntas",
+      "questionCountHelp": "La IA elegirá las mejores preguntas para este candidato.",
+      "difficulty": "Dificultad",
+      "questionTypes": "Tipos de pregunta",
+      "timeLimit": "Tiempo límite (min)",
+      "timeLimitHelp": "Los candidatos pueden enviar antes de que se agote el tiempo.",
+      "passingScore": "Nota de aprobado (%)",
+      "passingScoreHelp": "Se usa para etiquetar los resultados como Aprobado/Suspenso cuando se envía."
+    },
+    "placeholders": {
+      "candidate": "Seleccionar candidato…",
+      "job": "Seleccionar puesto…",
+      "title": "ej. Ingeniero Frontend Senior – Prueba de habilidades",
+      "description": "Añade contexto, instrucciones o un breve mensaje…",
+      "short": "Escribe tu respuesta…",
+      "text": "Escribe una respuesta detallada…",
+      "code": "// Escribe tu solución aquí…"
+    },
+    "placeholdersAria": {
+      "candidate": "Seleccionar candidato",
+      "job": "Seleccionar puesto"
+    },
+    "noOptions": "No hay opciones configuradas para esta pregunta.",
+    "answered": "Respondida",
+    "notAnswered": "Aún sin responder",
+    "points": "{n} pts",
+    "minutesShort": "{n} min",
+    "unlimited": "Sin límite",
+    "questionsCount": "{n} preguntas",
+    "score": "Puntuación",
+    "due": "Vence {when}",
+    "dueNotice": "Esta evaluación vence {when}.",
+    "language": "Lenguaje",
+    "languageAria": "Lenguaje de programación",
+    "codeAria": "Editor de código",
+    "feedbackLabel": "Comentario",
+    "feedback": {
+      "earned": "{earned}/{possible}"
+    },
+    "stats": {
+      "questions": "Preguntas",
+      "difficulty": "Dificultad",
+      "timeLimit": "Tiempo"
+    },
+    "descriptionLabel": "Instrucciones",
+    "questionsLabel": "Preguntas",
+    "results": {
+      "finalScore": "Puntuación final",
+      "scoreRaw": "{earned} de {total} puntos",
+      "aiFeedback": "Comentarios de la IA"
+    },
+    "progress": "Pregunta {current} de {total}",
+    "progressPercent": "{n}% completado",
+    "progressSummary": "{answered} de {total} respondidas",
+    "previous": "Anterior",
+    "submit": "Enviar evaluación",
+    "submitFinal": "Enviar",
+    "submitFailed": "No se pudo enviar tu evaluación",
+    "submitted": "¡Evaluación enviada!",
+    "saveFailed": "No se pudo guardar tu respuesta",
+    "saving": "Guardando…",
+    "saved": "Guardada",
+    "notSaved": "Aún sin guardar",
+    "goToQuestion": "Ir a la pregunta {n}",
+    "timer": {
+      "underMinute": "< 1 min restante",
+      "minutesLeft": "{n} min restantes"
+    },
+    "unansweredNotice": "Responde a todas las preguntas antes de enviar. Quedan {n}.",
+    "confirmSubmitTitle": "¿Enviar tu evaluación?",
+    "confirmSubmitUnfinished": "{answered} de {total} respondidas. Las preguntas sin responder contarán 0. ¿Continuar?",
+    "confirmSubmitDone": "Has respondido a todas las preguntas. ¿Listo para enviar tus respuestas finales?",
+    "viewResults": "Ver resultados",
+    "alreadyCompletedTitle": "Ya completada",
+    "alreadyCompletedDesc": "Ya has enviado esta evaluación.",
+    "review": {
+      "questionsSummary": "{n} preguntas · {difficulty}",
+      "notice": "Puedes guardar como borrador para editarla más tarde, o crearla y enviarla al candidato de inmediato."
+    },
+    "steps": {
+      "candidateJob": "Candidato y puesto",
+      "configure": "Configurar",
+      "review": "Revisar"
+    },
+    "step1": {
+      "title": "¿Quién hace la evaluación?",
+      "description": "Elige un candidato y el puesto para el que quieres evaluarlo."
+    },
+    "step2": {
+      "title": "Configura la evaluación",
+      "description": "Elige cuántas preguntas, la dificultad y los formatos."
+    },
+    "step3": {
+      "title": "Revisa y crea",
+      "description": "Verifica los detalles. Puedes volver atrás para editarlos."
+    },
+    "actions": {
+      "take": "Hacer",
+      "continue": "Continuar",
+      "send": "Enviar",
+      "cancel": "Cancelar"
+    },
+    "sent": "Evaluación enviada al candidato",
+    "sendFailed": "No se pudo enviar la evaluación",
+    "cancelled": "Evaluación cancelada",
+    "cancelFailed": "No se pudo cancelar la evaluación",
+    "deleted": "Evaluación eliminada",
+    "deleteFailed": "No se pudo eliminar la evaluación",
+    "deleteTitle": "¿Eliminar evaluación?",
+    "deleteDesc": "Esto eliminará permanentemente la evaluación y sus preguntas. Esta acción no se puede deshacer.",
+    "unknownCandidate": "Candidato desconocido",
+    "unknownJob": "Puesto desconocido"
   },
   "days": {
     "mon": "Lun",

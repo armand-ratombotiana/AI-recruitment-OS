@@ -18,6 +18,7 @@ import {
   X,
   Sparkles,
   Zap,
+  ClipboardList,
 } from 'lucide-react';
 import {
   UserMenu,
@@ -38,6 +39,7 @@ const NAV_ITEMS = [
   { href: '/dashboard', key: 'nav.dashboard', icon: LayoutDashboard },
   { href: '/dashboard/candidates', key: 'nav.candidates', icon: Users, badge: '24' },
   { href: '/dashboard/jobs', key: 'nav.jobs', icon: Briefcase, badge: '5' },
+  { href: '/dashboard/assessments', key: 'nav.assessments', icon: ClipboardList },
   { href: '/dashboard/interviews', key: 'nav.interviews', icon: CalendarIcon },
   { href: '/dashboard/ppe', key: 'nav.ppe', icon: Code2 },
   { href: '/dashboard/analytics', key: 'nav.analytics', icon: BarChart3 },
