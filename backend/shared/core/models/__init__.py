@@ -6,6 +6,7 @@ from shared.core.models.identity import (
     UserCreate, UserRead, UserUpdate,
     TokenPair, LoginRequest, RegisterRequest,
 )
+from shared.core.models.api_key import ApiKey
 from shared.core.models.candidate import (
     Candidate, CandidateProfile, Skill, CandidateSkill, ExperienceEntry,
     SeniorityLevel, CandidateStatus,
@@ -103,6 +104,7 @@ from shared.core.models.tag import (
 )
 
 __all__ = [
+    "ApiKey",
     "User", "Session", "APIKey", "Credential",
     "UserRole", "UserStatus",
     "UserCreate", "UserRead", "UserUpdate",

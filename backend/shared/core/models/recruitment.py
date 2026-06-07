@@ -61,6 +61,10 @@ class Job(SQLModel, table=True):
     pipeline_id: str | None = None
     embedding_id: str | None = None
     applicants_count: int = 0
+    is_template: bool = False
+    template_name: str | None = None
+    template_description: str | None = None
+    cloned_from_id: str | None = None
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None).replace(tzinfo=None))
     updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None).replace(tzinfo=None))
 

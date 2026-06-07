@@ -298,6 +298,7 @@ include_router_safe(app, "apps.jobs_status_service.main", "router", "/api/v1/bac
 include_router_safe(app, "apps.dashboard_service.main", "router", "/api/v1/dashboard", ["Dashboard"])
 include_router_safe(app, "apps.reports_service.main", "router", "/api/v1/reports", ["Reports"])
 include_router_safe(app, "apps.import_service.main", "router", "/api/v1/imports", ["Imports"])
+include_router_safe(app, "apps.api_keys.main", "router", "/api/v1/api-keys", ["API Keys"])
 
 # ── Rate-limit introspection ──────────────────────────────────────────────────
 app.include_router(rate_limit_router, prefix="/api/v1", tags=["Rate Limit"])

@@ -10,6 +10,7 @@ from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.auth import require_tenant_id
+from shared.auth.dependencies import require_member
 from shared.core.database import get_db_dependency
 from shared.core.models.recruitment import (
     Job,
@@ -28,6 +29,17 @@ from shared.core.models.tag import (
     TagEntityType,
 )
 from shared.core.rate_limit_deps import job_write_rate
+from shared.jobs.templates import (
+    CloneOptions,
+    FromTemplateRequest,
+    JobTemplate,
+    SaveAsTemplateRequest,
+    clone_job,
+    create_from_template,
+    list_templates,
+    save_as_template,
+    template_to_read,
+)
 from shared.webhooks import safe_dispatch_event
 
 
@@ -707,3 +719,189 @@ async def remove_job_tag(
     await db.delete(app)
     await db.flush()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# ── Job templates & cloning ───────────────────────────────────────────────────
+#
+# A "template" is a job with ``is_template=True``.  We expose:
+#
+# * ``POST /jobs/{id}/save-as-template`` — mark an existing job as a template
+# * ``GET  /jobs/templates``            — list all templates for the tenant
+# * ``POST /jobs/from-template/{tid}``  — create a new job from a template
+# * ``POST /jobs/{id}/clone``           — duplicate a job (always DRAFT)
+
+
+class SaveAsTemplateResponse(BaseModel):
+    id: str
+    is_template: bool = True
+    template_name: str | None = None
+    template_description: str | None = None
+
+
+class JobTemplateListResponse(BaseModel):
+    data: list[JobTemplate]
+    total: int
+
+
+class JobCloneResponse(BaseModel):
+    id: str
+    cloned_from_id: str
+    title: str
+    status: str
+    copy_pipeline: bool
+    copy_questions: bool
+    copy_settings: bool
+
+
+class FromTemplateResponse(BaseModel):
+    id: str
+    title: str
+    department: str | None = None
+    location: str | None = None
+    status: str
+    cloned_from_id: str | None = None
+
+
+@router.get(
+    "/templates",
+    response_model=JobTemplateListResponse,
+    tags=["Jobs"],
+    summary="List job templates",
+    description="Return every job flagged as a template (``is_template=True``) "
+                "for the caller's tenant, newest first.",
+)
+async def list_job_templates(
+    limit: int = Query(50, ge=1, le=200, description="Maximum templates to return"),
+    offset: int = Query(0, ge=0, description="Number of templates to skip"),
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+) -> JobTemplateListResponse:
+    rows = await list_templates(db, tenant_id=tenant_id, limit=limit, offset=offset)
+    data = [template_to_read(row) for row in rows]
+    return JobTemplateListResponse(data=data, total=len(data))
+
+
+@router.post(
+    "/{job_id}/save-as-template",
+    response_model=SaveAsTemplateResponse,
+    tags=["Jobs"],
+    summary="Save a job as a template",
+    description="Mark an existing job as reusable: ``is_template=True`` is set "
+                "and the template metadata is stamped.  The job is still a "
+                "real row — only the listing endpoint filters by the flag.",
+)
+async def save_job_as_template(
+    job_id: str,
+    payload: SaveAsTemplateRequest | None = None,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    _user: dict = Depends(require_member),
+) -> SaveAsTemplateResponse:
+    request = payload or SaveAsTemplateRequest()
+    job = await save_as_template(db, job_id=job_id, tenant_id=tenant_id, request=request)
+    await safe_dispatch_event(
+        "job.template.created",
+        {
+            "id": job.id,
+            "title": job.title,
+            "template_name": job.template_name,
+        },
+        tenant_id,
+        db=db,
+    )
+    return SaveAsTemplateResponse(
+        id=job.id,
+        is_template=job.is_template,
+        template_name=job.template_name,
+        template_description=job.template_description,
+    )
+
+
+@router.post(
+    "/from-template/{template_id}",
+    response_model=FromTemplateResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Jobs"],
+    summary="Create a job from a template",
+    description="Instantiate a new draft job from an existing template.  The "
+                "``title``, ``department``, and ``location`` in the body "
+                "override the template values; everything else is copied.",
+)
+async def create_job_from_template(
+    template_id: str,
+    payload: FromTemplateRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    _user: dict = Depends(require_member),
+    _rl: None = Depends(job_write_rate),
+) -> FromTemplateResponse:
+    new_job = await create_from_template(
+        db,
+        template_id=template_id,
+        tenant_id=tenant_id,
+        request=payload,
+    )
+    await safe_dispatch_event(
+        "job.created",
+        {
+            "id": new_job.id,
+            "title": new_job.title,
+            "department": new_job.department,
+            "status": new_job.status.value if hasattr(new_job.status, "value") else new_job.status,
+            "from_template": True,
+        },
+        tenant_id,
+        db=db,
+    )
+    return FromTemplateResponse(
+        id=new_job.id,
+        title=new_job.title,
+        department=new_job.department,
+        location=new_job.location,
+        status=new_job.status.value if hasattr(new_job.status, "value") else new_job.status,
+        cloned_from_id=new_job.cloned_from_id,
+    )
+
+
+@router.post(
+    "/{job_id}/clone",
+    response_model=JobCloneResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Jobs"],
+    summary="Clone a job posting",
+    description="Duplicate an existing job into a new draft.  Body fields "
+                "control which slices are carried over: ``copy_pipeline``, "
+                "``copy_questions``, ``copy_settings`` (all default to true).",
+)
+async def clone_job_endpoint(
+    job_id: str,
+    payload: CloneOptions | None = None,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    _user: dict = Depends(require_member),
+    _rl: None = Depends(job_write_rate),
+) -> JobCloneResponse:
+    options = payload or CloneOptions()
+    clone = await clone_job(db, job_id=job_id, tenant_id=tenant_id, options=options)
+    await safe_dispatch_event(
+        "job.cloned",
+        {
+            "id": clone.id,
+            "title": clone.title,
+            "cloned_from_id": clone.cloned_from_id,
+            "copy_pipeline": options.copy_pipeline,
+            "copy_questions": options.copy_questions,
+            "copy_settings": options.copy_settings,
+        },
+        tenant_id,
+        db=db,
+    )
+    return JobCloneResponse(
+        id=clone.id,
+        cloned_from_id=clone.cloned_from_id or job_id,
+        title=clone.title,
+        status=clone.status.value if hasattr(clone.status, "value") else clone.status,
+        copy_pipeline=options.copy_pipeline,
+        copy_questions=options.copy_questions,
+        copy_settings=options.copy_settings,
+    )

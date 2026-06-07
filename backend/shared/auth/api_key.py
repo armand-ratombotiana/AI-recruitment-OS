@@ -75,8 +75,15 @@ async def require_api_key_or_user(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
     db: AsyncSession = get_db_dependency,
 ) -> dict[str, Any]:
-    """FastAPI dependency that accepts either Bearer JWT or X-API-Key."""
-    # API key first (cheaper DB hit, no signature verification).
+    """FastAPI dependency that accepts either Bearer JWT or X-API-Key.
+
+    API keys may be supplied in two ways:
+
+    * ``X-API-Key: <key>`` header (explicit API key header)
+    * ``Authorization: Bearer airos_<key>`` (the ``airos_`` prefix marks
+      the bearer token as an API key rather than a JWT)
+    """
+    # 1. Explicit X-API-Key header.
     if x_api_key:
         user = await authenticate_with_api_key(db, x_api_key)
         if user:
@@ -87,7 +94,20 @@ async def require_api_key_or_user(
             headers={"WWW-Authenticate": "ApiKey"},
         )
 
-    # Fall back to JWT via existing helper.
+    # 2. Authorization: Bearer airos_<key> — service marker distinguishes
+    #    an API key from a JWT (which also uses Bearer).
+    if authorization and authorization.startswith("Bearer airos_"):
+        api_key = authorization[len("Bearer "):]
+        user = await authenticate_with_api_key(db, api_key)
+        if user:
+            return user
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or revoked API key",
+            headers={"WWW-Authenticate": "ApiKey"},
+        )
+
+    # 3. Fall back to JWT via existing helper.
     from shared.core.security import require_user
 
     return require_user(authorization=authorization)
