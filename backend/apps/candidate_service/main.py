@@ -26,6 +26,15 @@ from shared.core.models.candidate_activity import (
     CandidateActivityType,
 )
 from shared.core.models.recruitment import Job, JobStatus
+from shared.core.models.tag import (
+    AddEntityTagRequest,
+    AddEntityTagResponse,
+    EntityTagListResponse,
+    EntityTagRead,
+    Tag,
+    TagApplication,
+    TagEntityType,
+)
 from shared.core.security import require_tenant, require_user, decode_token
 from shared.core.rate_limit_deps import candidate_write_rate
 from shared.audit import audit
@@ -1623,3 +1632,203 @@ async def score_candidates_for_job(
     return JobCandidatesScoreResponse(
         job_id=job_id, candidates=items, total_scored=len(items)
     )
+
+
+# ── Candidate ↔ Tag endpoints ────────────────────────────────────────────────
+#
+# Tags are managed by the tag service, but the per-entity add / list / remove
+# endpoints live next to the resources they tag so the URLs match the
+# /candidates/{id}/tags and /jobs/{id}/tags pattern the spec calls for.
+
+
+async def _candidate_exists_or_404(
+    db: AsyncSession, candidate_id: str, tenant_id: str
+) -> None:
+    found = (
+        await db.execute(
+            select(Candidate.id).where(
+                Candidate.id == candidate_id, Candidate.tenant_id == tenant_id
+            )
+        )
+    ).scalar_one_or_none()
+    if found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
+
+
+def _entity_tag_to_read(app: TagApplication, tag: Tag) -> EntityTagRead:
+    return EntityTagRead(
+        id=tag.id,
+        name=tag.name,
+        display_name=tag.display_name,
+        color=tag.color,
+        entity_type=tag.entity_type,
+        applied_at=app.applied_at,
+    )
+
+
+@router.get(
+    "/{candidate_id}/tags",
+    response_model=EntityTagListResponse,
+    tags=["Candidates"],
+    summary="List a candidate's tags",
+)
+async def list_candidate_tags(
+    candidate_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+) -> EntityTagListResponse:
+    await _candidate_exists_or_404(db, candidate_id, tenant_id)
+    rows = (
+        await db.execute(
+            select(TagApplication, Tag)
+            .join(Tag, TagApplication.tag_id == Tag.id)
+            .where(
+                TagApplication.tenant_id == tenant_id,
+                TagApplication.entity_type == "candidate",
+                TagApplication.entity_id == candidate_id,
+            )
+            .order_by(TagApplication.applied_at.desc())
+        )
+    ).all()
+    data = [_entity_tag_to_read(app, tag) for app, tag in rows]
+    return EntityTagListResponse(
+        entity_type="candidate", entity_id=candidate_id, data=data, total=len(data)
+    )
+
+
+@router.post(
+    "/{candidate_id}/tags",
+    response_model=AddEntityTagResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Candidates"],
+    summary="Attach a tag to a candidate",
+    description="Provide either ``tag_id`` (attach an existing tag) or ``name`` "
+                "(create a new tag inline) — exactly one is required.",
+)
+async def add_candidate_tag(
+    candidate_id: str,
+    payload: AddEntityTagRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+) -> AddEntityTagResponse:
+    await _candidate_exists_or_404(db, candidate_id, tenant_id)
+
+    has_id = bool(payload.tag_id)
+    has_name = bool(payload.name)
+    if has_id == has_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Provide exactly one of 'tag_id' or 'name'",
+        )
+
+    if has_id:
+        tag = (
+            await db.execute(
+                select(Tag).where(
+                    Tag.id == payload.tag_id, Tag.tenant_id == tenant_id
+                )
+            )
+        ).scalar_one_or_none()
+        if tag is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found"
+            )
+        created = False
+    else:
+        normalized = payload.name.strip().lower()
+        if not normalized:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="name is required"
+            )
+        tag = (
+            await db.execute(
+                select(Tag).where(Tag.tenant_id == tenant_id, Tag.name == normalized)
+            )
+        ).scalar_one_or_none()
+        if tag is None:
+            tag = Tag(
+                tenant_id=tenant_id,
+                name=normalized,
+                display_name=payload.name.strip(),
+                color=payload.color,
+                entity_type=TagEntityType.ALL,
+            )
+            db.add(tag)
+            await db.flush()
+            await db.refresh(tag)
+            created = True
+        else:
+            created = False
+
+    if tag.entity_type not in (TagEntityType.ALL, TagEntityType.CANDIDATE):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Tag '{tag.display_name}' cannot be applied to candidates "
+                f"(declared entity_type='{tag.entity_type.value}')"
+            ),
+        )
+
+    existing = (
+        await db.execute(
+            select(TagApplication).where(
+                TagApplication.tenant_id == tenant_id,
+                TagApplication.tag_id == tag.id,
+                TagApplication.entity_type == "candidate",
+                TagApplication.entity_id == candidate_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if existing is None:
+        app = TagApplication(
+            tenant_id=tenant_id,
+            tag_id=tag.id,
+            entity_type="candidate",
+            entity_id=candidate_id,
+        )
+        db.add(app)
+        await db.flush()
+        await db.refresh(app)
+    else:
+        app = existing
+
+    return AddEntityTagResponse(
+        tag=_entity_tag_to_read(app, tag),
+        created=created,
+        applied=True,
+    )
+
+
+@router.delete(
+    "/{candidate_id}/tags/{tag_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    tags=["Candidates"],
+    summary="Remove a tag from a candidate",
+)
+async def remove_candidate_tag(
+    candidate_id: str,
+    tag_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant),
+) -> Response:
+    await _candidate_exists_or_404(db, candidate_id, tenant_id)
+    app = (
+        await db.execute(
+            select(TagApplication).where(
+                TagApplication.tenant_id == tenant_id,
+                TagApplication.tag_id == tag_id,
+                TagApplication.entity_type == "candidate",
+                TagApplication.entity_id == candidate_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if app is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Tag not attached to candidate"
+        )
+    await db.delete(app)
+    await db.flush()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

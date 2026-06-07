@@ -254,6 +254,7 @@ include_router_safe(app, "apps.candidate_service.main", "router", "/api/v1/candi
 include_router_safe(app, "apps.candidate_service.main", "jobs_scoring_router", "/api/v1/jobs", ["Jobs", "Candidates"])
 include_router_safe(app, "apps.resume_service.main", "router", "/api/v1/resumes", ["Resumes"])
 include_router_safe(app, "apps.job_service.main", "router", "/api/v1/jobs", ["Jobs"])
+include_router_safe(app, "apps.tag_service.main", "router", "/api/v1/tags", ["Tags"])
 include_router_safe(app, "apps.interview_service.main", "router", "/api/v1/interviews", ["Interviews"])
 include_router_safe(app, "apps.ppe_service.main", "router", "/api/v1/ppe", ["PPE"])
 include_router_safe(app, "apps.ai_orchestrator.main", "router", "/api/v1/ai", ["AI"])
