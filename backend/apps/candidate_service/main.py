@@ -1844,6 +1844,491 @@ async def remove_candidate_tag(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+# ── Duplicate detection & merge ──────────────────────────────────────────────
+#
+# The detection rules live in :mod:`shared.dedup.detector` so they are unit
+# testable in isolation.  These endpoints just load the candidates from the
+# tenant and feed them to the detector.
+
+
+from shared.dedup.detector import (
+    DuplicateGroup,
+    DuplicateMatch,
+    find_duplicates,
+    find_duplicates_for_new,
+)
+from shared.auth.dependencies import require_member, require_tenant_id as _require_tenant_id_dedup  # noqa: F401  (re-exported below)
+
+
+# Default confidence threshold used when the caller does not specify one.
+# Picked so the default report includes exact-email and name+phone matches
+# (≥0.75) but suppresses the noisier name+location tier (0.55).
+DEFAULT_DEDUP_THRESHOLD = 0.7
+
+
+class DetectDuplicatesRequest(BaseModel):
+    threshold: float = Field(
+        default=DEFAULT_DEDUP_THRESHOLD,
+        ge=0.0,
+        le=1.0,
+        description="Minimum confidence (0.0–1.0) for a pair to be reported.",
+    )
+
+
+class DuplicateGroupResponse(BaseModel):
+    member_ids: list[str]
+    confidence: float
+    reason: str
+    pair_count: int
+
+
+class DetectDuplicatesResponse(BaseModel):
+    groups: list[DuplicateGroupResponse]
+    total: int
+    threshold: float
+    candidates_scanned: int
+
+
+class DuplicateMatchResponse(BaseModel):
+    candidate_id: str
+    confidence: float
+    reason: str
+
+
+class PossibleDuplicatesResponse(BaseModel):
+    candidate_id: str
+    matches: list[DuplicateMatchResponse]
+    total: int
+    threshold: float
+
+
+class MergeCandidatesRequest(BaseModel):
+    primary_id: str = Field(..., description="Candidate to keep (the survivor of the merge).")
+    secondary_id: str = Field(..., description="Candidate to fold into the primary and delete.")
+    field_preferences: dict[str, str] | None = Field(
+        default=None,
+        description=(
+            "Optional map of field name → ``'primary'`` or ``'secondary'`` "
+            "indicating which side to take the value from.  Fields not "
+            "listed fall back to primary, then secondary."
+        ),
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "primary_id": "cand-1",
+                    "secondary_id": "cand-2",
+                    "field_preferences": {"phone": "secondary", "location": "primary"},
+                }
+            ]
+        }
+    }
+
+
+class MergeCandidatesResponse(BaseModel):
+    primary: CandidateDetailResponse
+    secondary_id: str
+    deleted: bool = True
+    activities_moved: int
+    notes_moved: int
+
+
+def _candidate_to_dedup_dict(candidate: Candidate) -> dict[str, Any]:
+    """Return the minimal dict the dedup detector needs.
+
+    The detector accepts both objects and dicts, but we project down to the
+    fields it actually inspects so the contract is explicit and we don't
+    accidentally leak sensitive columns (e.g. resume_file_id) into a
+    scoring function.
+    """
+    return {
+        "id": candidate.id,
+        "email": candidate.email,
+        "full_name": candidate.full_name,
+        "phone": candidate.phone,
+        "location": candidate.location,
+    }
+
+
+def _group_to_response(group: DuplicateGroup) -> DuplicateGroupResponse:
+    return DuplicateGroupResponse(
+        member_ids=[str(c["id"]) for c in group.members],
+        confidence=round(group.confidence, 4),
+        reason=group.reason,
+        pair_count=len(group.matches),
+    )
+
+
+@router.post(
+    "/detect-duplicates",
+    response_model=DetectDuplicatesResponse,
+    tags=["Candidates"],
+    summary="Detect duplicate candidates in the caller's tenant",
+    description=(
+        "Scan every candidate that belongs to the caller's tenant and "
+        "return the groups of records that look like the same person.  "
+        "Matching is rule-based and runs in-memory: exact email (high "
+        "confidence), name + phone (medium), name + location (low).  Use "
+        "the optional ``threshold`` to widen or tighten the report."
+    ),
+)
+async def detect_duplicates_endpoint(
+    payload: DetectDuplicatesRequest | None = None,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    _member: dict = Depends(require_member),
+) -> DetectDuplicatesResponse:
+    """Find duplicate groups across the entire tenant."""
+    threshold = (payload or DetectDuplicatesRequest()).threshold
+
+    result = await db.execute(
+        select(Candidate).where(Candidate.tenant_id == tenant_id)
+    )
+    candidates = result.scalars().all()
+    candidates_dicts = [_candidate_to_dedup_dict(c) for c in candidates]
+
+    groups = find_duplicates(candidates_dicts, threshold=threshold)
+    return DetectDuplicatesResponse(
+        groups=[_group_to_response(g) for g in groups],
+        total=len(groups),
+        threshold=threshold,
+        candidates_scanned=len(candidates_dicts),
+    )
+
+
+@router.get(
+    "/{candidate_id}/possible-duplicates",
+    response_model=PossibleDuplicatesResponse,
+    tags=["Candidates"],
+    summary="Find possible duplicates of a single candidate",
+    description=(
+        "Compare one candidate against every other candidate in the same "
+        "tenant and return the ranked list of matches.  The threshold "
+        "query parameter lets the caller widen or tighten the report."
+    ),
+)
+async def possible_duplicates_for_candidate(
+    candidate_id: str,
+    threshold: float = Query(
+        default=DEFAULT_DEDUP_THRESHOLD,
+        ge=0.0,
+        le=1.0,
+        description="Minimum confidence for a match to be returned.",
+    ),
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    _member: dict = Depends(require_member),
+) -> PossibleDuplicatesResponse:
+    """Return potential duplicates of the given candidate within the tenant."""
+    cand_result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == candidate_id, Candidate.tenant_id == tenant_id
+        )
+    )
+    primary = cand_result.scalar_one_or_none()
+    if primary is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
+
+    others_result = await db.execute(
+        select(Candidate).where(
+            Candidate.tenant_id == tenant_id,
+            Candidate.id != candidate_id,
+        )
+    )
+    others = others_result.scalars().all()
+
+    primary_dict = _candidate_to_dedup_dict(primary)
+    others_dicts = [_candidate_to_dedup_dict(c) for c in others]
+    matches = find_duplicates_for_new(
+        primary_dict, others_dicts, threshold=threshold
+    )
+
+    return PossibleDuplicatesResponse(
+        candidate_id=candidate_id,
+        matches=[
+            DuplicateMatchResponse(
+                candidate_id=str(m.candidate_b["id"]),
+                confidence=round(m.confidence, 4),
+                reason=m.reason,
+            )
+            for m in matches
+        ],
+        total=len(matches),
+        threshold=threshold,
+    )
+
+
+# Fields the merge is allowed to copy from one side to the other.  Kept as
+# a closed set so a caller cannot drive a write into an unrelated column
+# via the ``field_preferences`` map.
+_MERGEABLE_FIELDS: tuple[str, ...] = (
+    "full_name",
+    "phone",
+    "location",
+    "linkedin_url",
+    "source",
+    "notes",
+)
+
+
+def _pick_field(
+    field: str,
+    primary: Candidate,
+    secondary: Candidate,
+    preferences: dict[str, str] | None,
+) -> Any:
+    """Return the value to assign to ``field`` after the merge.
+
+    Resolution order:
+
+    1. ``field_preferences[field]`` if it points to a side that has a value.
+    2. Primary's value, if non-empty.
+    3. Secondary's value, if non-empty.
+    4. ``None`` (leave the column cleared).
+    """
+    primary_val = getattr(primary, field, None)
+    secondary_val = getattr(secondary, field, None)
+
+    if preferences:
+        side = preferences.get(field, "").lower()
+        if side == "primary" and primary_val:
+            return primary_val
+        if side == "secondary" and secondary_val:
+            return secondary_val
+
+    if primary_val:
+        return primary_val
+    if secondary_val:
+        return secondary_val
+    return None
+
+
+@router.post(
+    "/merge",
+    response_model=MergeCandidatesResponse,
+    tags=["Candidates"],
+    summary="Merge two duplicate candidates into one",
+    description=(
+        "Fold ``secondary_id`` into ``primary_id``: activities, notes, and "
+        "tag applications are re-pointed at the primary, missing fields on "
+        "the primary are filled from the secondary (per "
+        "``field_preferences``), and the secondary row is hard-deleted.  "
+        "Both candidates must belong to the caller's tenant."
+    ),
+)
+async def merge_candidates_endpoint(
+    payload: MergeCandidatesRequest,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_member),
+    _rl: None = Depends(candidate_write_rate),
+) -> MergeCandidatesResponse:
+    """Merge ``secondary_id`` into ``primary_id``."""
+    if payload.primary_id == payload.secondary_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="primary_id and secondary_id must be different",
+        )
+
+    primary_result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == payload.primary_id, Candidate.tenant_id == tenant_id
+        )
+    )
+    primary = primary_result.scalar_one_or_none()
+    if primary is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Primary candidate not found",
+        )
+
+    secondary_result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == payload.secondary_id, Candidate.tenant_id == tenant_id
+        )
+    )
+    secondary = secondary_result.scalar_one_or_none()
+    if secondary is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Secondary candidate not found",
+        )
+
+    # ── Move activities (notes, interviews, status changes, …) ─────────
+    activities_result = await db.execute(
+        select(CandidateActivity).where(
+            CandidateActivity.candidate_id == secondary.id,
+            CandidateActivity.tenant_id == tenant_id,
+        )
+    )
+    activities = activities_result.scalars().all()
+    notes_moved = 0
+    for activity in activities:
+        activity.candidate_id = primary.id
+        if activity.activity_type == CandidateActivityType.NOTE.value:
+            notes_moved += 1
+        # Prefix the title with a marker so the timeline makes the provenance
+        # obvious in the UI without losing the original wording.
+        if activity.title and not activity.title.startswith("[merged] "):
+            activity.title = f"[merged] {activity.title}"
+        db.add(activity)
+
+    # ── Re-point tag applications ──────────────────────────────────────
+    tag_apps_result = await db.execute(
+        select(TagApplication).where(
+            TagApplication.tenant_id == tenant_id,
+            TagApplication.entity_type == "candidate",
+            TagApplication.entity_id == secondary.id,
+        )
+    )
+    for app in tag_apps_result.scalars().all():
+        # If the primary already has the same tag, drop the duplicate row.
+        existing = (
+            await db.execute(
+                select(TagApplication).where(
+                    TagApplication.tenant_id == tenant_id,
+                    TagApplication.tag_id == app.tag_id,
+                    TagApplication.entity_type == "candidate",
+                    TagApplication.entity_id == primary.id,
+                )
+            )
+        ).scalar_one_or_none()
+        if existing is None:
+            app.entity_id = primary.id
+            db.add(app)
+        else:
+            await db.delete(app)
+
+    # ── Merge scalar fields (per preferences) ─────────────────────────
+    for field_name in _MERGEABLE_FIELDS:
+        new_value = _pick_field(
+            field_name, primary, secondary, payload.field_preferences
+        )
+        if new_value is not None and getattr(primary, field_name, None) != new_value:
+            setattr(primary, field_name, new_value)
+
+    # Always prefer the primary's status — never let the merge revert a
+    # candidate from ``hired`` back to ``new`` because the secondary was
+    # earlier in the funnel.
+    primary.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.add(primary)
+
+    # ── Delete the secondary ───────────────────────────────────────────
+    secondary_id = secondary.id
+    await db.delete(secondary)
+    await db.flush()
+
+    # ── Audit + activity log ───────────────────────────────────────────
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.merge",
+        resource_type="candidate",
+        resource_id=primary.id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+        details={
+            "primary_id": primary.id,
+            "secondary_id": secondary_id,
+            "activities_moved": len(activities),
+            "notes_moved": notes_moved,
+            "field_preferences": payload.field_preferences or {},
+        },
+    )
+    await _safe_log_activity(
+        db,
+        tenant_id=tenant_id,
+        candidate_id=primary.id,
+        activity_type=CandidateActivityType.NOTE,
+        title=f"[merged] {secondary.full_name} merged into this candidate",
+        content=(
+            f"Folded candidate {secondary_id} into this record. "
+            f"{len(activities)} activities re-pointed, {notes_moved} notes moved."
+        ),
+        user_id=user.get("id"),
+        meta={
+            "merge": True,
+            "primary_id": primary.id,
+            "secondary_id": secondary_id,
+        },
+    )
+
+    # ── Re-fetch primary with the latest merged state for the response ──
+    detail_resp = await _build_candidate_detail(db, primary.id, tenant_id)
+
+    return MergeCandidatesResponse(
+        primary=detail_resp,
+        secondary_id=secondary_id,
+        deleted=True,
+        activities_moved=len(activities),
+        notes_moved=notes_moved,
+    )
+
+
+async def _build_candidate_detail(
+    db: AsyncSession, candidate_id: str, tenant_id: str
+) -> CandidateDetailResponse:
+    """Re-load a candidate and shape it as a :class:`CandidateDetailResponse`.
+
+    Extracted from the existing GET handler so the merge endpoint can reuse
+    it after the secondary has been deleted.
+    """
+    result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == candidate_id, Candidate.tenant_id == tenant_id
+        )
+    )
+    candidate = result.scalar_one_or_none()
+    if candidate is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
+
+    profile_result = await db.execute(
+        select(CandidateProfile).where(
+            CandidateProfile.candidate_id == candidate_id
+        )
+    )
+    profile = profile_result.scalar_one_or_none()
+
+    skills_result = await db.execute(
+        select(CandidateSkill, Skill)
+        .join(Skill, CandidateSkill.skill_id == Skill.id)
+        .where(CandidateSkill.candidate_id == candidate_id)
+    )
+    skills_rows = skills_result.all()
+
+    return CandidateDetailResponse(
+        id=candidate.id,
+        email=candidate.email,
+        full_name=candidate.full_name,
+        phone=candidate.phone,
+        location=candidate.location,
+        linkedin_url=candidate.linkedin_url,
+        status=candidate.status.value if hasattr(candidate.status, "value") else candidate.status,
+        source=candidate.source,
+        notes=candidate.notes,
+        skills=[
+            SkillInfo(name=skill.name, proficiency=cs.proficiency, years_used=cs.years_used)
+            for cs, skill in skills_rows
+        ],
+        profile=CandidateProfileData(
+            summary=profile.summary if profile else None,
+            seniority_level=profile.seniority_level if profile else None,
+            years_experience=profile.years_experience if profile else None,
+            domains=json.loads(profile.domains) if profile and profile.domains else [],
+            education=profile.education if profile else None,
+            languages=profile.languages if profile else None,
+        ) if profile else None,
+        created_at=candidate.created_at,
+        updated_at=candidate.updated_at,
+    )
+
+
 # ── Resume upload, download, delete, and parse ────────────────────────────────
 #
 # The file *bytes* live in the in-memory ``shared.files.storage`` store keyed
