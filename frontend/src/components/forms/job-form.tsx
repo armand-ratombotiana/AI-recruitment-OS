@@ -2,7 +2,7 @@
 
 import { useState, useId, useRef, useEffect, useCallback, KeyboardEvent } from 'react';
 import { X, Plus } from 'lucide-react';
-import { Button, InputField, TextareaField, SelectField } from '@/components';
+import { Button, InputField, TextareaField, SelectField, TagInput, type TagInputTag } from '@/components';
 import type { Locale } from '@/stores/locale-store';
 import { translate } from '@/stores/locale-store';
 
@@ -56,6 +56,7 @@ export interface JobFormValues {
   description: string;
   requirements: string;
   skills: string[];
+  tags: TagInputTag[];
   status: string;
 }
 
@@ -73,6 +74,7 @@ export interface JobFormInitial {
   description?: string | null;
   requirements?: string[] | string | null;
   skills?: string[] | null;
+  tags?: TagInputTag[] | string[] | null;
   status?: string | null;
 }
 
@@ -90,6 +92,24 @@ function toStr(v: string | null | undefined): string {
 
 function toArr(v: string[] | null | undefined): string[] {
   return Array.isArray(v) ? v.filter((s) => typeof s === 'string') : [];
+}
+
+function toInitialTags(v: TagInputTag[] | string[] | null | undefined): TagInputTag[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((t) => {
+      if (typeof t === 'string') return { name: t };
+      if (t && typeof t === 'object' && typeof t.name === 'string') {
+        return {
+          name: t.name,
+          id: t.id,
+          color: t.color,
+          slug: t.slug,
+        };
+      }
+      return null;
+    })
+    .filter((t): t is TagInputTag => t !== null);
 }
 
 function toNumString(v: number | null | undefined): string {
@@ -113,7 +133,7 @@ function deriveExperienceLevel(min: number | null | undefined, max: number | nul
   return '';
 }
 
-interface TagInputProps {
+interface SkillInputProps {
   id: string;
   value: string[];
   onChange: (next: string[]) => void;
@@ -122,7 +142,7 @@ interface TagInputProps {
   ariaLabel: string;
 }
 
-function TagInput({ id, value, onChange, placeholder, disabled, ariaLabel }: TagInputProps) {
+function SkillInput({ id, value, onChange, placeholder, disabled, ariaLabel }: SkillInputProps) {
   const [draft, setDraft] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -228,6 +248,7 @@ export function JobForm({ initial, submitting, onSubmit, onCancel, locale }: Job
   const descriptionId = useId();
   const requirementsId = useId();
   const skillsId = useId();
+  const tagsId = useId();
   const statusId = useId();
 
   const [title, setTitle] = useState<string>(toStr(initial?.title));
@@ -249,6 +270,7 @@ export function JobForm({ initial, submitting, onSubmit, onCancel, locale }: Job
     requirementsToText(initial?.requirements)
   );
   const [skills, setSkills] = useState<string[]>(toArr(initial?.skills));
+  const [tags, setTags] = useState<TagInputTag[]>(toInitialTags(initial?.tags));
   const [status, setStatus] = useState<string>(toStr(initial?.status) || 'open');
 
   const [errors, setErrors] = useState<Partial<Record<keyof JobFormValues, string>>>({});
@@ -270,6 +292,7 @@ export function JobForm({ initial, submitting, onSubmit, onCancel, locale }: Job
     setDescription(toStr(initial?.description));
     setRequirements(requirementsToText(initial?.requirements));
     setSkills(toArr(initial?.skills));
+    setTags(toInitialTags(initial?.tags));
     setStatus(toStr(initial?.status) || 'open');
     setErrors({});
     setFormError(null);
@@ -329,6 +352,9 @@ export function JobForm({ initial, submitting, onSubmit, onCancel, locale }: Job
       description: description.trim(),
       requirements: requirements.trim(),
       skills,
+      tags: tags
+        .map((t) => ({ ...t, name: t.name.trim() }))
+        .filter((t) => t.name.length > 0),
       status: status || 'open',
     };
     onSubmit(payload);
@@ -489,7 +515,7 @@ export function JobForm({ initial, submitting, onSubmit, onCancel, locale }: Job
           >
             {t('jobs.fields.skills', 'Required skills')}
           </label>
-          <TagInput
+          <SkillInput
             id={skillsId}
             value={skills}
             onChange={setSkills}
@@ -500,6 +526,29 @@ export function JobForm({ initial, submitting, onSubmit, onCancel, locale }: Job
           <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
             {t('jobs.skillsHelp', 'Press Enter or comma to add a skill. Click × to remove.')}
           </p>
+        </div>
+        <div className="sm:col-span-2">
+          <label
+            htmlFor={tagsId}
+            className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            {t('jobs.fields.tags', 'Tags')}
+          </label>
+          <TagInput
+            id={tagsId}
+            value={tags}
+            onChange={setTags}
+            entityType="job"
+            placeholder={t('jobs.tagsPlaceholder', 'e.g. Urgent, Remote, Senior')}
+            disabled={submitting}
+            ariaLabel={t('jobs.fields.tags', 'Tags')}
+            helpText={t(
+              'jobs.tagsHelp',
+              'Press Enter or comma to add. Pick a color for new tags. Click × to remove.'
+            )}
+            locale={locale}
+            onError={(msg: string) => setFormError(msg)}
+          />
         </div>
       </div>
 

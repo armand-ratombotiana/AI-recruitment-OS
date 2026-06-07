@@ -165,7 +165,8 @@ export default function CandidatesPage() {
         location: values.location || undefined,
         skills: values.skills,
         source: 'manual',
-      });
+        profile: { tags: values.tags.map((tg) => tg.name) },
+      } as any);
       setAddOpen(false);
       push(
         'success',
@@ -193,7 +194,8 @@ export default function CandidatesPage() {
         skills: values.skills,
         status: values.status,
         notes: values.notes || undefined,
-      });
+        profile: { tags: values.tags.map((tg) => tg.name) },
+      } as any);
       setEditing(null);
       push(
         'success',
@@ -211,6 +213,20 @@ export default function CandidatesPage() {
   const allSkills = useMemo(() => {
     const s = new Set<string>();
     candidates.forEach((c) => c.skills?.forEach((sk) => s.add(sk)));
+    return Array.from(s).sort();
+  }, [candidates]);
+
+  const allTagNames = useMemo(() => {
+    const s = new Set<string>();
+    candidates.forEach((c) => {
+      const tags = (c as any).tags;
+      if (Array.isArray(tags)) {
+        tags.forEach((tg: any) => {
+          if (typeof tg === 'string' && tg.trim()) s.add(tg);
+          else if (tg && typeof tg === 'object' && typeof tg.name === 'string') s.add(tg.name);
+        });
+      }
+    });
     return Array.from(s).sort();
   }, [candidates]);
 
@@ -238,6 +254,12 @@ export default function CandidatesPage() {
         options: allSkills.map((s) => ({ value: s, label: s })),
       },
       {
+        key: 'tags',
+        label: t('candidates.filter.tags', 'Tags'),
+        type: 'multiselect',
+        options: allTagNames.map((s) => ({ value: s, label: s })),
+      },
+      {
         key: 'experience',
         label: t('candidates.filter.experience', 'Experience (years)'),
         type: 'numberrange',
@@ -251,11 +273,12 @@ export default function CandidatesPage() {
         unit: t('candidates.filter.years', 'y'),
       },
     ];
-  }, [allSkills, t]);
+  }, [allSkills, allTagNames, t]);
 
   const filtered = useMemo(() => {
     const statusFilter = filterValues.status;
     const skillFilter = filterValues.skills;
+    const tagFilter = filterValues.tags;
     const locationFilter = filterValues.location;
     const experienceFilter = filterValues.experience;
     return candidates.filter((c) => {
@@ -272,6 +295,15 @@ export default function CandidatesPage() {
         !skillFilter.every((s) => c.skills?.includes(s))
       ) {
         return false;
+      }
+      if (Array.isArray(tagFilter) && tagFilter.length > 0) {
+        const cTags = Array.isArray((c as any).tags)
+          ? ((c as any).tags as any[]).map((tg: any) =>
+              typeof tg === 'string' ? tg : tg?.name
+            )
+          : [];
+        const has = tagFilter.some((f) => cTags.includes(f));
+        if (!has) return false;
       }
       if (typeof locationFilter === 'string' && locationFilter.trim()) {
         const q = locationFilter.trim().toLowerCase();
@@ -672,6 +704,7 @@ export default function CandidatesPage() {
               phone: editing.phone ?? '',
               location: editing.location ?? '',
               skills: editing.skills,
+              tags: (editing as any).tags,
               experience_years: editing.experience_years ?? 0,
               status: editing.status,
               notes: editing.notes ?? '',

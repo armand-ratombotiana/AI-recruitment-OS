@@ -530,6 +530,46 @@ export namespace CandidateTypes {
 }
 
 // ---------------------------------------------------------------------------
+// Tags
+// ---------------------------------------------------------------------------
+
+export namespace TagTypes {
+  export type EntityType = 'candidate' | 'job' | 'interview' | 'resume' | 'global';
+
+  export interface Tag {
+    id: UUID;
+    name: string;
+    slug: string;
+    color: string;
+    entity_type: EntityType;
+    description?: string | null;
+    usage_count?: number;
+    tenant_id?: UUID | null;
+    created_at?: ISODateString;
+    updated_at?: ISODateString | null;
+  }
+
+  export interface TagListResponse {
+    data: Tag[];
+    total: number;
+  }
+
+  export interface TagCreateRequest {
+    name: string;
+    color?: string;
+    entity_type?: EntityType;
+    description?: string | null;
+  }
+
+  export interface TagUpdateRequest {
+    name?: string;
+    color?: string;
+    entity_type?: EntityType;
+    description?: string | null;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Resumes
 // ---------------------------------------------------------------------------
 

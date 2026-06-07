@@ -2,7 +2,7 @@
 
 import { useState, useId, useRef, useEffect, useCallback, KeyboardEvent } from 'react';
 import { X, Plus } from 'lucide-react';
-import { Button, InputField, TextareaField, SelectField } from '@/components';
+import { Button, InputField, TextareaField, SelectField, TagInput, type TagInputTag } from '@/components';
 import type { Locale } from '@/stores/locale-store';
 import { translate } from '@/stores/locale-store';
 
@@ -23,6 +23,7 @@ export interface CandidateFormValues {
   phone: string;
   location: string;
   skills: string[];
+  tags: TagInputTag[];
   experience_years: number;
   status: string;
   notes: string;
@@ -34,6 +35,7 @@ export interface CandidateFormInitial {
   phone?: string | null;
   location?: string | null;
   skills?: string[] | null;
+  tags?: TagInputTag[] | string[] | null;
   experience_years?: number | null;
   status?: string | null;
   notes?: string | null;
@@ -61,7 +63,25 @@ function toInitialNumber(v: number | null | undefined): number {
   return typeof v === 'number' && !Number.isNaN(v) ? v : 0;
 }
 
-interface TagInputProps {
+function toInitialTags(v: TagInputTag[] | string[] | null | undefined): TagInputTag[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((t) => {
+      if (typeof t === 'string') return { name: t };
+      if (t && typeof t === 'object' && typeof t.name === 'string') {
+        return {
+          name: t.name,
+          id: t.id,
+          color: t.color,
+          slug: t.slug,
+        };
+      }
+      return null;
+    })
+    .filter((t): t is TagInputTag => t !== null);
+}
+
+interface SkillInputProps {
   id: string;
   value: string[];
   onChange: (next: string[]) => void;
@@ -70,7 +90,7 @@ interface TagInputProps {
   ariaLabel: string;
 }
 
-function TagInput({ id, value, onChange, placeholder, disabled, ariaLabel }: TagInputProps) {
+function SkillInput({ id, value, onChange, placeholder, disabled, ariaLabel }: SkillInputProps) {
   const [draft, setDraft] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -171,6 +191,7 @@ export function CandidateForm({ initial, submitting, onSubmit, onCancel, locale 
   const locationId = useId();
   const experienceId = useId();
   const skillsId = useId();
+  const tagsId = useId();
   const statusId = useId();
   const notesId = useId();
 
@@ -179,6 +200,7 @@ export function CandidateForm({ initial, submitting, onSubmit, onCancel, locale 
   const [phone, setPhone] = useState<string>(toInitialString(initial?.phone));
   const [location, setLocation] = useState<string>(toInitialString(initial?.location));
   const [skills, setSkills] = useState<string[]>(toInitialSkills(initial?.skills));
+  const [tags, setTags] = useState<TagInputTag[]>(toInitialTags(initial?.tags));
   const [experienceYears, setExperienceYears] = useState<string>(
     initial && initial.experience_years != null ? String(initial.experience_years) : ''
   );
@@ -194,6 +216,7 @@ export function CandidateForm({ initial, submitting, onSubmit, onCancel, locale 
     setPhone(toInitialString(initial?.phone));
     setLocation(toInitialString(initial?.location));
     setSkills(toInitialSkills(initial?.skills));
+    setTags(toInitialTags(initial?.tags));
     setExperienceYears(
       initial && initial.experience_years != null ? String(initial.experience_years) : ''
     );
@@ -236,6 +259,9 @@ export function CandidateForm({ initial, submitting, onSubmit, onCancel, locale 
       phone: phone.trim(),
       location: location.trim(),
       skills,
+      tags: tags
+        .map((t) => ({ ...t, name: t.name.trim() }))
+        .filter((t) => t.name.length > 0),
       experience_years:
         experienceYears.trim() === '' ? 0 : Math.max(0, Math.floor(Number(experienceYears))),
       status: status || 'active',
@@ -330,7 +356,7 @@ export function CandidateForm({ initial, submitting, onSubmit, onCancel, locale 
           >
             {t('candidates.fields.skills', 'Skills')}
           </label>
-          <TagInput
+          <SkillInput
             id={skillsId}
             value={skills}
             onChange={setSkills}
@@ -341,6 +367,29 @@ export function CandidateForm({ initial, submitting, onSubmit, onCancel, locale 
           <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
             {t('candidates.skillsHelp', 'Press Enter or comma to add a skill. Click × to remove.')}
           </p>
+        </div>
+        <div className="sm:col-span-2">
+          <label
+            htmlFor={tagsId}
+            className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            {t('candidates.fields.tags', 'Tags')}
+          </label>
+          <TagInput
+            id={tagsId}
+            value={tags}
+            onChange={setTags}
+            entityType="candidate"
+            placeholder={t('candidates.tagsPlaceholder', 'e.g. Senior, Remote, Top-priority')}
+            disabled={submitting}
+            ariaLabel={t('candidates.fields.tags', 'Tags')}
+            helpText={t(
+              'candidates.tagsHelp',
+              'Press Enter or comma to add. Pick a color for new tags. Click × to remove.'
+            )}
+            locale={locale}
+            onError={(msg: string) => setFormError(msg)}
+          />
         </div>
         <div className="sm:col-span-2">
           <TextareaField

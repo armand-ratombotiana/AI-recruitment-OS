@@ -112,7 +112,8 @@ export default function JobsPage() {
         salary_min: values.salary_min,
         salary_max: values.salary_max,
         currency: values.currency,
-      });
+        tags: values.tags.map((tg) => tg.name),
+      } as any);
       setCreateOpen(false);
       push(
         'success',
@@ -142,7 +143,8 @@ export default function JobsPage() {
         salary_min: values.salary_min,
         salary_max: values.salary_max,
         status: values.status,
-      });
+        tags: values.tags.map((tg) => tg.name),
+      } as any);
       setEditing(null);
       push(
         'success',
@@ -173,6 +175,20 @@ export default function JobsPage() {
       if (v) s.add(v);
     });
     return s;
+  }, [jobs]);
+
+  const allTagNames = useMemo(() => {
+    const s = new Set<string>();
+    jobs.forEach((j) => {
+      const tags = j.tags;
+      if (Array.isArray(tags)) {
+        tags.forEach((tg: any) => {
+          if (typeof tg === 'string' && tg.trim()) s.add(tg);
+          else if (tg && typeof tg === 'object' && typeof tg.name === 'string') s.add(tg.name);
+        });
+      }
+    });
+    return Array.from(s).sort();
   }, [jobs]);
 
   const filterDefs = useMemo<FilterDefinition[]>(() => {
@@ -210,6 +226,12 @@ export default function JobsPage() {
         placeholder: t('jobs.filter.locationPh', 'City, country, or remote'),
       },
       {
+        key: 'tags',
+        label: t('jobs.filter.tags', 'Tags'),
+        type: 'multiselect',
+        options: allTagNames.map((tg) => ({ value: tg, label: tg })),
+      },
+      {
         key: 'salary',
         label: t('jobs.filter.salary', 'Salary range'),
         type: 'numberrange',
@@ -222,7 +244,7 @@ export default function JobsPage() {
         maxPlaceholder: '500k',
       },
     ];
-  }, [departments, employmentTypesInUse, t]);
+  }, [departments, employmentTypesInUse, allTagNames, t]);
 
   const filtered = useMemo(() => {
     const statusFilter = filterValues.status;
@@ -230,6 +252,7 @@ export default function JobsPage() {
     const employmentTypeFilter = filterValues.employment_type;
     const locationFilter = filterValues.location;
     const salaryFilter = filterValues.salary;
+    const tagFilter = filterValues.tags;
     return jobs.filter((j) => {
       if (
         Array.isArray(statusFilter) &&
@@ -251,6 +274,13 @@ export default function JobsPage() {
       ) {
         const et = (j.employment_type || j.type || '').toString().trim();
         if (!employmentTypeFilter.includes(et)) return false;
+      }
+      if (Array.isArray(tagFilter) && tagFilter.length > 0) {
+        const jTags = Array.isArray(j.tags)
+          ? (j.tags as any[]).map((tg: any) => (typeof tg === 'string' ? tg : tg?.name))
+          : [];
+        const has = tagFilter.some((f) => jTags.includes(f));
+        if (!has) return false;
       }
       if (typeof locationFilter === 'string' && locationFilter.trim()) {
         const q = locationFilter.trim().toLowerCase();
@@ -605,6 +635,7 @@ export default function JobsPage() {
                   ? editing.requirements
                   : '',
               skills: editing.skills,
+              tags: editing.tags,
               status: editing.status,
             }}
             onCancel={() => setEditing(null)}

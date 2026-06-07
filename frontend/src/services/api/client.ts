@@ -44,6 +44,7 @@ import type {
   ListResponse,
   PaginatedResponse,
   MessageResponse,
+  TagTypes,
 } from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -630,6 +631,37 @@ class APIClient {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
+  };
+
+  // ========================================================================
+  // TAGS SERVICE
+  // ========================================================================
+
+  tags = {
+    health: () => this.request<HealthResponse>('/tags/health'),
+    list: (params?: Record<string, string>) => {
+      const p: Record<string, string> = { ...(params || {}) };
+      return this.request<TagTypes.TagListResponse>('/tags/', { params: p });
+    },
+    get: (tagId: string) => this.request<TagTypes.Tag>('/tags/' + tagId),
+    create: (data: TagTypes.TagCreateRequest) =>
+      this.request<TagTypes.Tag>('/tags/', { method: 'POST', body: JSON.stringify(data) }),
+    update: (tagId: string, data: TagTypes.TagUpdateRequest) =>
+      this.request<TagTypes.Tag>('/tags/' + tagId, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (tagId: string) =>
+      this.request<MessageResponse>('/tags/' + tagId, { method: 'DELETE' }),
+    attachToCandidate: (tagId: string, candidateId: string) =>
+      this.request<MessageResponse>('/tags/' + tagId + '/candidates/' + candidateId, {
+        method: 'POST',
+      }),
+    detachFromCandidate: (tagId: string, candidateId: string) =>
+      this.request<MessageResponse>('/tags/' + tagId + '/candidates/' + candidateId, {
+        method: 'DELETE',
+      }),
+    attachToJob: (tagId: string, jobId: string) =>
+      this.request<MessageResponse>('/tags/' + tagId + '/jobs/' + jobId, { method: 'POST' }),
+    detachFromJob: (tagId: string, jobId: string) =>
+      this.request<MessageResponse>('/tags/' + tagId + '/jobs/' + jobId, { method: 'DELETE' }),
   };
 
   // ========================================================================

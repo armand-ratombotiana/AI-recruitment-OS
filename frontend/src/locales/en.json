@@ -270,6 +270,7 @@
       "location": "Location",
       "locationPh": "City, country, or remote",
       "skills": "Skills",
+      "tags": "Tags",
       "experience": "Experience (years)",
       "min": "Min",
       "max": "Max",
@@ -300,8 +301,11 @@
       "phone": "Phone",
       "location": "Location",
       "experience": "Years of experience",
-      "skills": "Skills (comma separated)"
+      "skills": "Skills (comma separated)",
+      "tags": "Tags"
     },
+    "tagsPlaceholder": "e.g. Senior, Remote, Top-priority",
+    "tagsHelp": "Press Enter or comma to add. Pick a color for new tags. Click × to remove.",
     "actions": {
       "enrich": "Enrich",
       "match": "Match"
@@ -597,7 +601,21 @@
       "salaryMax": "Salary max ($)",
       "description": "Job description",
       "requirements": "Requirements",
-      "skills": "Required skills (comma separated)"
+      "skills": "Required skills (comma separated)",
+      "tags": "Tags"
+    },
+    "tagsPlaceholder": "e.g. Urgent, Remote, Senior",
+    "tagsHelp": "Press Enter or comma to add. Pick a color for new tags. Click × to remove.",
+    "filter": {
+      "status": "Status",
+      "department": "Department",
+      "employmentType": "Employment type",
+      "location": "Location",
+      "locationPh": "City, country, or remote",
+      "tags": "Tags",
+      "salary": "Salary range",
+      "min": "Min",
+      "max": "Max"
     },
     "statuses": {
       "open": "Open",
@@ -2046,5 +2064,78 @@
     "profile": "Your profile",
     "settings": "Settings",
     "signOut": "Sign out"
+  },
+  "tags": {
+    "title": "Tag manager",
+    "subtitle": "Create and manage tags used across candidates, jobs, and more.",
+    "create": "Create tag",
+    "createTitle": "Create new tag",
+    "createDesc": "Tags help you organize candidates, jobs, and more.",
+    "createNew": "Create new tag \"{name}\"",
+    "editTitle": "Edit tag",
+    "editDesc": "Update the tag definition and color.",
+    "updated": "Tag updated",
+    "created": "Tag created",
+    "deleted": "Tag deleted",
+    "deleteTitle": "Delete tag?",
+    "deleteDesc": "\u201c{name}\u201d will be removed from all entities that use it.",
+    "search": "Search tags…",
+    "refresh": "Refresh tags",
+    "loadError": "Could not load tags",
+    "loading": "Loading tags…",
+    "noMatches": "No matching tags",
+    "add": "Add",
+    "addAria": "Add tag",
+    "inputPlaceholder": "Add a tag…",
+    "inputAria": "Tags",
+    "removeAria": "Remove tag {name}",
+    "maxReached": "Maximum number of tags reached",
+    "color": "New tag color",
+    "customColor": "Custom color",
+    "preview": "Preview",
+    "previewHelp": "This is how the tag will appear.",
+    "usage": "{count} use(s)",
+    "totalCount": "{count} total",
+    "allEntityTypes": "All entity types",
+    "entityTypes": {
+      "global": "Global",
+      "candidate": "Candidate",
+      "job": "Job",
+      "interview": "Interview",
+      "resume": "Resume"
+    },
+    "entityDescriptions": {
+      "global": "Global tags available on every entity",
+      "candidate": "Tags that belong to candidates",
+      "job": "Tags that belong to jobs",
+      "interview": "Tags that belong to interviews",
+      "resume": "Tags that belong to resumes"
+    },
+    "fields": {
+      "name": "Name",
+      "namePh": "e.g. Senior, Remote, Top-priority",
+      "entityType": "Entity type",
+      "color": "Color",
+      "customColor": "Custom color",
+      "description": "Description",
+      "descriptionPh": "Optional context for teammates…"
+    },
+    "filter": {
+      "entityType": "Filter by entity type"
+    },
+    "errors": {
+      "nameInvalid": "Name must be between 1 and 50 characters",
+      "descriptionTooLong": "Description must be 200 characters or less",
+      "saveFailed": "Failed to save tag",
+      "deleteFailed": "Failed to delete tag"
+    },
+    "empty": {
+      "title": "No tags yet",
+      "desc": "Create your first tag to start labeling candidates, jobs, and other entities.",
+      "filteredTitle": "No tags match your filters",
+      "filteredDesc": "Try clearing the search or filter."
+    },
+    "accessDenied": "Access denied",
+    "accessDeniedDesc": "You need administrator privileges to manage tags."
   }
 }

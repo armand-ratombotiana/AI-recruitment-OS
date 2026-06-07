@@ -270,6 +270,7 @@
       "location": "Ubicación",
       "locationPh": "Ciudad, país o remoto",
       "skills": "Habilidades",
+      "tags": "Etiquetas",
       "experience": "Experiencia (años)",
       "min": "Mín",
       "max": "Máx",
@@ -300,8 +301,11 @@
       "phone": "Teléfono",
       "location": "Ubicación",
       "experience": "Años de experiencia",
-      "skills": "Habilidades (separadas por comas)"
+      "skills": "Habilidades (separadas por comas)",
+      "tags": "Etiquetas"
     },
+    "tagsPlaceholder": "ej. Senior, Remoto, Prioritario",
+    "tagsHelp": "Pulsa Intro o coma para añadir. Elige un color para las nuevas etiquetas. Haz clic en × para quitar.",
     "actions": {
       "enrich": "Enriquecer",
       "match": "Matchear"
@@ -595,7 +599,21 @@
       "salaryMax": "Salario máx. (€)",
       "description": "Descripción del puesto",
       "requirements": "Requisitos",
-      "skills": "Habilidades requeridas (separadas por comas)"
+      "skills": "Habilidades requeridas (separadas por comas)",
+      "tags": "Etiquetas"
+    },
+    "tagsPlaceholder": "ej. Urgente, Remoto, Senior",
+    "tagsHelp": "Pulsa Intro o coma para añadir. Elige un color para las nuevas etiquetas. Haz clic en × para quitar.",
+    "filter": {
+      "status": "Estado",
+      "department": "Departamento",
+      "employmentType": "Tipo de empleo",
+      "location": "Ubicación",
+      "locationPh": "Ciudad, país o remoto",
+      "tags": "Etiquetas",
+      "salary": "Rango salarial",
+      "min": "Mín",
+      "max": "Máx"
     },
     "statuses": {
       "open": "Abierto",
@@ -2092,5 +2110,78 @@
     "profile": "Tu perfil",
     "settings": "Ajustes",
     "signOut": "Cerrar sesión"
+  },
+  "tags": {
+    "title": "Gestor de etiquetas",
+    "subtitle": "Crea y administra etiquetas usadas en candidatos, ofertas y más.",
+    "create": "Crear etiqueta",
+    "createTitle": "Crear nueva etiqueta",
+    "createDesc": "Las etiquetas ayudan a organizar candidatos, ofertas y más.",
+    "createNew": "Crear nueva etiqueta «{name}»",
+    "editTitle": "Editar etiqueta",
+    "editDesc": "Actualiza la definición y el color de la etiqueta.",
+    "updated": "Etiqueta actualizada",
+    "created": "Etiqueta creada",
+    "deleted": "Etiqueta eliminada",
+    "deleteTitle": "¿Eliminar etiqueta?",
+    "deleteDesc": "«{name}» se quitará de todas las entidades que la usen.",
+    "search": "Buscar etiquetas…",
+    "refresh": "Actualizar etiquetas",
+    "loadError": "No se pudieron cargar las etiquetas",
+    "loading": "Cargando etiquetas…",
+    "noMatches": "No hay etiquetas que coincidan",
+    "add": "Añadir",
+    "addAria": "Añadir etiqueta",
+    "inputPlaceholder": "Añadir una etiqueta…",
+    "inputAria": "Etiquetas",
+    "removeAria": "Quitar etiqueta {name}",
+    "maxReached": "Se alcanzó el número máximo de etiquetas",
+    "color": "Color de las nuevas etiquetas",
+    "customColor": "Color personalizado",
+    "preview": "Vista previa",
+    "previewHelp": "Así se verá la etiqueta.",
+    "usage": "{count} uso(s)",
+    "totalCount": "{count} en total",
+    "allEntityTypes": "Todos los tipos de entidad",
+    "entityTypes": {
+      "global": "Global",
+      "candidate": "Candidato",
+      "job": "Oferta",
+      "interview": "Entrevista",
+      "resume": "CV"
+    },
+    "entityDescriptions": {
+      "global": "Etiquetas globales disponibles en cualquier entidad",
+      "candidate": "Etiquetas propias de los candidatos",
+      "job": "Etiquetas propias de las ofertas",
+      "interview": "Etiquetas propias de las entrevistas",
+      "resume": "Etiquetas propias de los CV"
+    },
+    "fields": {
+      "name": "Nombre",
+      "namePh": "ej. Senior, Remoto, Prioritario",
+      "entityType": "Tipo de entidad",
+      "color": "Color",
+      "customColor": "Color personalizado",
+      "description": "Descripción",
+      "descriptionPh": "Contexto opcional para el equipo…"
+    },
+    "filter": {
+      "entityType": "Filtrar por tipo de entidad"
+    },
+    "errors": {
+      "nameInvalid": "El nombre debe tener entre 1 y 50 caracteres",
+      "descriptionTooLong": "La descripción debe tener 200 caracteres o menos",
+      "saveFailed": "No se pudo guardar la etiqueta",
+      "deleteFailed": "No se pudo eliminar la etiqueta"
+    },
+    "empty": {
+      "title": "Aún no hay etiquetas",
+      "desc": "Crea tu primera etiqueta para empezar a etiquetar candidatos, ofertas y otras entidades.",
+      "filteredTitle": "Ninguna etiqueta coincide con tus filtros",
+      "filteredDesc": "Prueba a limpiar la búsqueda o el filtro."
+    },
+    "accessDenied": "Acceso denegado",
+    "accessDeniedDesc": "Necesitas permisos de administrador para gestionar etiquetas."
   }
 }

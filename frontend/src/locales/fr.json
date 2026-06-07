@@ -270,6 +270,7 @@
       "location": "Localisation",
       "locationPh": "Ville, pays ou télétravail",
       "skills": "Compétences",
+      "tags": "Tags",
       "experience": "Expérience (années)",
       "min": "Min",
       "max": "Max",
@@ -300,8 +301,11 @@
       "phone": "Téléphone",
       "location": "Localisation",
       "experience": "Années d'expérience",
-      "skills": "Compétences (séparées par des virgules)"
+      "skills": "Compétences (séparées par des virgules)",
+      "tags": "Tags"
     },
+    "tagsPlaceholder": "ex. Senior, Distant, Prioritaire",
+    "tagsHelp": "Appuyez sur Entrée ou virgule pour ajouter. Choisissez une couleur pour les nouveaux tags. Cliquez sur × pour retirer.",
     "actions": {
       "enrich": "Enrichir",
       "match": "Matcher"
@@ -595,7 +599,21 @@
       "salaryMax": "Salaire max. (€)",
       "description": "Description du poste",
       "requirements": "Exigences",
-      "skills": "Compétences requises (séparées par des virgules)"
+      "skills": "Compétences requises (séparées par des virgules)",
+      "tags": "Tags"
+    },
+    "tagsPlaceholder": "ex. Urgent, Distant, Senior",
+    "tagsHelp": "Appuyez sur Entrée ou virgule pour ajouter. Choisissez une couleur pour les nouveaux tags. Cliquez sur × pour retirer.",
+    "filter": {
+      "status": "Statut",
+      "department": "Département",
+      "employmentType": "Type d'emploi",
+      "location": "Localisation",
+      "locationPh": "Ville, pays ou télétravail",
+      "tags": "Tags",
+      "salary": "Fourchette salariale",
+      "min": "Min",
+      "max": "Max"
     },
     "statuses": {
       "open": "Ouverte",
@@ -2087,5 +2105,78 @@
     "profile": "Votre profil",
     "settings": "Paramètres",
     "signOut": "Se déconnecter"
+  },
+  "tags": {
+    "title": "Gestionnaire de tags",
+    "subtitle": "Créez et gérez les tags utilisés sur les candidats, les offres, et plus encore.",
+    "create": "Créer un tag",
+    "createTitle": "Créer un nouveau tag",
+    "createDesc": "Les tags aident à organiser les candidats, les offres, et plus encore.",
+    "createNew": "Créer le tag « {name} »",
+    "editTitle": "Modifier le tag",
+    "editDesc": "Mettez à jour la définition et la couleur du tag.",
+    "updated": "Tag mis à jour",
+    "created": "Tag créé",
+    "deleted": "Tag supprimé",
+    "deleteTitle": "Supprimer le tag ?",
+    "deleteDesc": "« {name} » sera retiré de toutes les entités qui l'utilisent.",
+    "search": "Rechercher des tags…",
+    "refresh": "Rafraîchir les tags",
+    "loadError": "Impossible de charger les tags",
+    "loading": "Chargement des tags…",
+    "noMatches": "Aucun tag correspondant",
+    "add": "Ajouter",
+    "addAria": "Ajouter un tag",
+    "inputPlaceholder": "Ajouter un tag…",
+    "inputAria": "Tags",
+    "removeAria": "Retirer le tag {name}",
+    "maxReached": "Nombre maximum de tags atteint",
+    "color": "Couleur des nouveaux tags",
+    "customColor": "Couleur personnalisée",
+    "preview": "Aperçu",
+    "previewHelp": "Voici à quoi ressemblera le tag.",
+    "usage": "{count} utilisation(s)",
+    "totalCount": "{count} au total",
+    "allEntityTypes": "Tous les types d'entité",
+    "entityTypes": {
+      "global": "Global",
+      "candidate": "Candidat",
+      "job": "Offre",
+      "interview": "Entretien",
+      "resume": "CV"
+    },
+    "entityDescriptions": {
+      "global": "Tags globaux disponibles sur toutes les entités",
+      "candidate": "Tags propres aux candidats",
+      "job": "Tags propres aux offres",
+      "interview": "Tags propres aux entretiens",
+      "resume": "Tags propres aux CV"
+    },
+    "fields": {
+      "name": "Nom",
+      "namePh": "ex. Senior, Distant, Prioritaire",
+      "entityType": "Type d'entité",
+      "color": "Couleur",
+      "customColor": "Couleur personnalisée",
+      "description": "Description",
+      "descriptionPh": "Contexte facultatif pour l'équipe…"
+    },
+    "filter": {
+      "entityType": "Filtrer par type d'entité"
+    },
+    "errors": {
+      "nameInvalid": "Le nom doit contenir entre 1 et 50 caractères",
+      "descriptionTooLong": "La description doit comporter 200 caractères ou moins",
+      "saveFailed": "Échec de l'enregistrement du tag",
+      "deleteFailed": "Échec de la suppression du tag"
+    },
+    "empty": {
+      "title": "Aucun tag pour l'instant",
+      "desc": "Créez votre premier tag pour commencer à étiqueter les candidats, les offres et autres entités.",
+      "filteredTitle": "Aucun tag ne correspond à vos filtres",
+      "filteredDesc": "Essayez de réinitialiser la recherche ou le filtre."
+    },
+    "accessDenied": "Accès refusé",
+    "accessDeniedDesc": "Vous avez besoin des droits administrateur pour gérer les tags."
   }
 }
