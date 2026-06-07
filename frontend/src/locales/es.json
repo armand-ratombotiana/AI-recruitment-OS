@@ -342,6 +342,215 @@
       "addMore": "Puedes añadir hasta {max} candidatos."
     }
   },
+  "candidateDetail": {
+    "backToCandidates": "Volver a candidatos",
+    "notFound": "Candidato no encontrado",
+    "notFoundDesc": "El candidato que buscas no existe o ha sido eliminado.",
+    "couldntLoad": "No se pudo cargar el candidato",
+    "tabs": {
+      "overview": "Resumen",
+      "resume": "CV",
+      "timeline": "Cronología",
+      "notes": "Notas",
+      "applications": "Candidaturas",
+      "score": "Puntuación",
+      "activity": "Actividad",
+      "aria": "Secciones del candidato"
+    },
+    "matchScore": "Coincidencia",
+    "years": "años",
+    "scheduleInterview": "Programar entrevista",
+    "sendMessage": "Enviar mensaje",
+    "addToPipeline": "Añadir al pipeline",
+    "sendEmail": "Enviar email",
+    "addToJob": "Añadir a un empleo",
+    "starShortlist": "Preseleccionar",
+    "unstarShortlist": "Quitar de preselección",
+    "starred": "Preseleccionado",
+    "scheduleStarted": "Programación de entrevista abierta",
+    "scheduleSoon": "La programación estará disponible pronto",
+    "messageSoon": "Los mensajes estarán disponibles pronto",
+    "addedToPipeline": "Añadido al pipeline",
+    "pipelineFailed": "No se pudo añadir al pipeline",
+    "statusChanged": "Estado cambiado a {status}",
+    "statusChangeFailed": "No se pudo cambiar el estado",
+    "shortlistAdded": "Añadido a preselección",
+    "shortlistRemoved": "Quitado de preselección",
+    "emailSent": "Email en cola",
+    "emailFailed": "No se pudo enviar el email",
+    "addedToJob": "Añadido al pipeline del empleo",
+    "addToJobFailed": "No se pudo añadir al empleo",
+    "quickActions": "Acciones rápidas",
+    "stats": {
+      "experience": "Experiencia",
+      "skills": "Habilidades",
+      "applications": "Candidaturas",
+      "interviews": "Entrevistas",
+      "match": "Mejor match",
+      "shortlisted": "Preseleccionado"
+    },
+    "contact": {
+      "title": "Información de contacto",
+      "email": "Email",
+      "phone": "Teléfono",
+      "location": "Ubicación"
+    },
+    "skills": {
+      "title": "Habilidades",
+      "total": "en total",
+      "empty": "Aún no hay habilidades."
+    },
+    "experience": {
+      "title": "Experiencia",
+      "present": "Actual",
+      "empty": "Sin experiencia registrada."
+    },
+    "education": {
+      "title": "Educación",
+      "empty": "Sin formación registrada.",
+      "degree": "Título",
+      "school": "Escuela",
+      "year": "Año"
+    },
+    "summary": "Resumen",
+    "resume": {
+      "title": "CV",
+      "download": "Descargar original",
+      "noResume": "Sin CV",
+      "noResumeDesc": "Sube un CV para ver experiencia, formación y habilidades analizadas.",
+      "uploadResume": "Subir CV",
+      "uploading": "Subiendo…",
+      "uploaded": "CV subido",
+      "uploadFailed": "Error al subir",
+      "files": "Archivos",
+      "parsed": "Analizado",
+      "notParsed": "Sin analizar",
+      "size": "Tamaño",
+      "uploadedAt": "Subido el",
+      "reparse": "Re-analizar",
+      "reparsing": "Analizando…",
+      "reparseStarted": "Re-análisis iniciado",
+      "reparseFailed": "Error al re-analizar"
+    },
+    "timeline": {
+      "added": "Añadido al pool",
+      "updated": "Perfil actualizado",
+      "interview": "entrevista",
+      "scheduled": "programada",
+      "empty": "Sin eventos.",
+      "groupByDay": "Agrupar por día"
+    },
+    "notes": {
+      "title": "Notas",
+      "add": "Añadir nota",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "empty": "Sin notas. Añade la primera para recordar el contexto.",
+      "placeholder": "Escribe una nota para el equipo…",
+      "titlePlaceholder": "Título (opcional)",
+      "deleted": "Nota eliminada",
+      "saved": "Nota guardada",
+      "saveFailed": "No se pudo guardar",
+      "by": "por",
+      "pinned": "Fijada",
+      "pin": "Fijar",
+      "unpin": "Quitar",
+      "primary": "Nota principal",
+      "primaryEdit": "Editar nota principal",
+      "primaryPlaceholder": "Nota titular visible en el resumen…"
+    },
+    "applications": {
+      "title": "Candidaturas",
+      "empty": "Este candidato aún no ha aplicado a ningún empleo.",
+      "appliedOn": "Aplicó",
+      "stage": "Etapa",
+      "viewJob": "Ver empleo",
+      "noJobs": "Sin candidaturas",
+      "loadFailed": "No se pudieron cargar las candidaturas"
+    },
+    "scoreTab": {
+      "title": "Puntuaciones de match IA",
+      "subtitle": "Encaje del candidato con cada empleo abierto.",
+      "empty": "Sin puntuaciones. Ejecuta un match para llenar esta lista.",
+      "runMatch": "Ejecutar match",
+      "running": "Matching…",
+      "matched": "Match completo",
+      "matchFailed": "Match fallido",
+      "rationale": "Por qué esta puntuación",
+      "matchedSkills": "Habilidades coincidentes",
+      "missingSkills": "Habilidades faltantes",
+      "noJobs": "Sin empleos para puntuar"
+    },
+    "activity": {
+      "title": "Registro de actividad",
+      "empty": "Sin actividad registrada.",
+      "loadFailed": "No se pudo cargar la actividad",
+      "actor": "Actor",
+      "system": "Sistema"
+    },
+    "modals": {
+      "email": {
+        "title": "Enviar email a {name}",
+        "subject": "Asunto",
+        "subjectPlaceholder": "Pequeña intro o seguimiento…",
+        "body": "Mensaje",
+        "bodyPlaceholder": "Hola {name}, …",
+        "send": "Enviar",
+        "sending": "Enviando…",
+        "includeResume": "Adjuntar enlace al CV",
+        "template": "Plantilla",
+        "templates": {
+          "intro": "Introducción",
+          "interview": "Invitación a entrevista",
+          "rejection": "Rechazo amable",
+          "offer": "Oferta"
+        }
+      },
+      "interview": {
+        "title": "Programar entrevista con {name}",
+        "type": "Tipo de entrevista",
+        "types": {
+          "phone": "Llamada",
+          "video": "Videollamada",
+          "onsite": "Presencial",
+          "technical": "Técnica",
+          "panel": "Panel"
+        },
+        "duration": "Duración (minutos)",
+        "scheduledAt": "Fecha y hora",
+        "interviewer": "Email del entrevistador",
+        "interviewerPlaceholder": "reclutador@empresa.com",
+        "notes": "Notas",
+        "notesPlaceholder": "Temas, agenda, contexto del candidato…",
+        "schedule": "Programar",
+        "scheduling": "Programando…",
+        "scheduled": "Entrevista programada",
+        "scheduleFailed": "No se pudo programar"
+      },
+      "addToJob": {
+        "title": "Añadir {name} a un empleo",
+        "selectJob": "Seleccionar empleo",
+        "searchPlaceholder": "Buscar empleo…",
+        "stage": "Etapa del pipeline",
+        "stages": {
+          "active": "Activo",
+          "screening": "Filtrado",
+          "interview": "Entrevista",
+          "offer": "Oferta",
+          "hired": "Contratado",
+          "rejected": "Rechazado"
+        },
+        "add": "Añadir al empleo",
+        "adding": "Añadiendo…",
+        "added": "Añadido al empleo",
+        "addFailed": "No se pudo añadir al empleo"
+      }
+    },
+    "addedOn": "Añadido el",
+    "lastUpdated": "Última actualización"
+  },
   "jobs": {
     "title": "Empleos",
     "openTotal": "{open} abiertos · {total} candidatos totales",

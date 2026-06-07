@@ -342,6 +342,215 @@
       "addMore": "You can add up to {max} candidates."
     }
   },
+  "candidateDetail": {
+    "backToCandidates": "Back to candidates",
+    "notFound": "Candidate not found",
+    "notFoundDesc": "The candidate you're looking for doesn't exist or has been removed.",
+    "couldntLoad": "Couldn't load candidate",
+    "tabs": {
+      "overview": "Overview",
+      "resume": "Resume",
+      "timeline": "Timeline",
+      "notes": "Notes",
+      "applications": "Applications",
+      "score": "Score",
+      "activity": "Activity",
+      "aria": "Candidate sections"
+    },
+    "matchScore": "Match",
+    "years": "years",
+    "scheduleInterview": "Schedule interview",
+    "sendMessage": "Send message",
+    "addToPipeline": "Add to pipeline",
+    "sendEmail": "Send email",
+    "addToJob": "Add to job",
+    "starShortlist": "Shortlist",
+    "unstarShortlist": "Remove from shortlist",
+    "starred": "Shortlisted",
+    "scheduleStarted": "Interview scheduling opened",
+    "scheduleSoon": "Interview scheduling will be available soon",
+    "messageSoon": "Messaging will be available soon",
+    "addedToPipeline": "Added to pipeline",
+    "pipelineFailed": "Failed to add to pipeline",
+    "statusChanged": "Status changed to {status}",
+    "statusChangeFailed": "Failed to change status",
+    "shortlistAdded": "Added to shortlist",
+    "shortlistRemoved": "Removed from shortlist",
+    "emailSent": "Email queued",
+    "emailFailed": "Failed to send email",
+    "addedToJob": "Added to job pipeline",
+    "addToJobFailed": "Failed to add to job",
+    "quickActions": "Quick actions",
+    "stats": {
+      "experience": "Experience",
+      "skills": "Skills",
+      "applications": "Applications",
+      "interviews": "Interviews",
+      "match": "Best match",
+      "shortlisted": "Shortlisted"
+    },
+    "contact": {
+      "title": "Contact information",
+      "email": "Email",
+      "phone": "Phone",
+      "location": "Location"
+    },
+    "skills": {
+      "title": "Skills",
+      "total": "total",
+      "empty": "No skills listed yet."
+    },
+    "experience": {
+      "title": "Experience",
+      "present": "Present",
+      "empty": "No experience listed yet."
+    },
+    "education": {
+      "title": "Education",
+      "empty": "No education listed yet.",
+      "degree": "Degree",
+      "school": "School",
+      "year": "Year"
+    },
+    "summary": "Summary",
+    "resume": {
+      "title": "Resume",
+      "download": "Download original",
+      "noResume": "No resume on file",
+      "noResumeDesc": "Upload a resume to see parsed experience, education, and skills here.",
+      "uploadResume": "Upload resume",
+      "uploading": "Uploading…",
+      "uploaded": "Resume uploaded",
+      "uploadFailed": "Upload failed",
+      "files": "Files",
+      "parsed": "Parsed",
+      "notParsed": "Not parsed yet",
+      "size": "Size",
+      "uploadedAt": "Uploaded",
+      "reparse": "Re-parse",
+      "reparsing": "Re-parsing…",
+      "reparseStarted": "Re-parsing started",
+      "reparseFailed": "Re-parse failed"
+    },
+    "timeline": {
+      "added": "Added to talent pool",
+      "updated": "Profile updated",
+      "interview": "interview",
+      "scheduled": "scheduled",
+      "empty": "No timeline events yet.",
+      "groupByDay": "Group by day"
+    },
+    "notes": {
+      "title": "Notes",
+      "add": "Add note",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "empty": "No notes yet. Add the first one to remember context for next time.",
+      "placeholder": "Write a note for the team…",
+      "titlePlaceholder": "Note title (optional)",
+      "deleted": "Note deleted",
+      "saved": "Note saved",
+      "saveFailed": "Failed to save note",
+      "by": "by",
+      "pinned": "Pinned",
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "primary": "Primary note",
+      "primaryEdit": "Edit primary note",
+      "primaryPlaceholder": "Headline note shown in the candidate summary…"
+    },
+    "applications": {
+      "title": "Job applications",
+      "empty": "This candidate hasn't applied to any jobs yet.",
+      "appliedOn": "Applied",
+      "stage": "Stage",
+      "viewJob": "View job",
+      "noJobs": "No applications",
+      "loadFailed": "Couldn't load applications"
+    },
+    "scoreTab": {
+      "title": "AI match scores",
+      "subtitle": "How this candidate matches against every open job.",
+      "empty": "No match scores yet. Run a match to populate this list.",
+      "runMatch": "Run match",
+      "running": "Matching…",
+      "matched": "Match complete",
+      "matchFailed": "Match failed",
+      "rationale": "Why this score",
+      "matchedSkills": "Matched skills",
+      "missingSkills": "Missing skills",
+      "noJobs": "No jobs to score against"
+    },
+    "activity": {
+      "title": "Activity log",
+      "empty": "No activity recorded yet.",
+      "loadFailed": "Couldn't load activity",
+      "actor": "Actor",
+      "system": "System"
+    },
+    "modals": {
+      "email": {
+        "title": "Send email to {name}",
+        "subject": "Subject",
+        "subjectPlaceholder": "Quick intro or follow-up…",
+        "body": "Message",
+        "bodyPlaceholder": "Hi {name}, …",
+        "send": "Send email",
+        "sending": "Sending…",
+        "includeResume": "Attach resume link",
+        "template": "Template",
+        "templates": {
+          "intro": "Introduction",
+          "interview": "Interview invite",
+          "rejection": "Polite rejection",
+          "offer": "Offer"
+        }
+      },
+      "interview": {
+        "title": "Schedule interview with {name}",
+        "type": "Interview type",
+        "types": {
+          "phone": "Phone screen",
+          "video": "Video interview",
+          "onsite": "On-site",
+          "technical": "Technical",
+          "panel": "Panel"
+        },
+        "duration": "Duration (minutes)",
+        "scheduledAt": "Date & time",
+        "interviewer": "Interviewer email",
+        "interviewerPlaceholder": "recruiter@company.com",
+        "notes": "Notes",
+        "notesPlaceholder": "Topics to cover, agenda, candidate context…",
+        "schedule": "Schedule",
+        "scheduling": "Scheduling…",
+        "scheduled": "Interview scheduled",
+        "scheduleFailed": "Failed to schedule interview"
+      },
+      "addToJob": {
+        "title": "Add {name} to a job",
+        "selectJob": "Select job",
+        "searchPlaceholder": "Search jobs…",
+        "stage": "Pipeline stage",
+        "stages": {
+          "active": "Active",
+          "screening": "Screening",
+          "interview": "Interview",
+          "offer": "Offer",
+          "hired": "Hired",
+          "rejected": "Rejected"
+        },
+        "add": "Add to job",
+        "adding": "Adding…",
+        "added": "Added to job",
+        "addFailed": "Failed to add to job"
+      }
+    },
+    "addedOn": "Added on",
+    "lastUpdated": "Last updated"
+  },
   "jobs": {
     "title": "Jobs",
     "openTotal": "{open} open · {total} total applicants",
