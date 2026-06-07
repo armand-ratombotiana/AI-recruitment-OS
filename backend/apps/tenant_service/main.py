@@ -5,10 +5,14 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from apps.billing_service.plans import get_plan
 from shared.auth import require_admin, require_tenant_id
+from shared.core.database import get_db_dependency
+from shared.tenants import QuotaExceededError, TenantManager
 
 
 # ── In-Memory Store ─────────────────────────────────────────────────────────────
@@ -29,6 +33,12 @@ class TenantCreateRequest(BaseModel):
 class TenantUpdateRequest(BaseModel):
     name: str | None = Field(None, description="Organization name")
     plan: str | None = Field(None, description="Subscription plan")
+    status: str | None = Field(None, description="active | suspended | deleted")
+
+
+class CurrentTenantUpdateRequest(BaseModel):
+    name: str | None = Field(None, min_length=1, max_length=255, description="Organization name")
+    plan: str | None = Field(None, description="Subscription plan (free | starter | pro | enterprise)")
     status: str | None = Field(None, description="active | suspended | deleted")
 
 
@@ -251,3 +261,149 @@ async def get_tenant_usage_history(
             {"period": "2024-11", "users_active": 19, "candidates": 128, "jobs": 8, "ai_tokens_used": 980000, "storage_gb": 10.2},
         ],
     }
+
+
+# ── /api/v1/tenants/current — convenience router scoped to the caller ────────
+#
+# These endpoints do not require a tenant id path parameter: they implicitly
+# use the tenant id extracted from the caller's bearer token via
+# ``require_tenant_id``.  This matches the spec in the task brief and gives
+# the frontend a stable contract for "my tenant" operations.
+#
+
+
+v1_current = APIRouter(prefix="/api/v1/tenants/current", tags=["Tenants — Current"])
+
+
+def _build_manager(db: AsyncSession | None = None) -> TenantManager:
+    """Helper that constructs a TenantManager bound to the caller's DB session."""
+    return TenantManager(db=db)
+
+
+@v1_current.get("", summary="Get current tenant")
+async def get_current_tenant(
+    tenant_id: str = Depends(require_tenant_id),
+):
+    """Return the caller's tenant record.  Auto-creates a default record on
+    first access so newly onboarded tenants always have something to look
+    at without a separate provisioning call.
+    """
+    manager = _build_manager()
+    record = manager.get_or_create_tenant(tenant_id)
+    return record
+
+
+@v1_current.put("", summary="Update current tenant (admin only)")
+async def update_current_tenant(
+    payload: CurrentTenantUpdateRequest,
+    tenant_id: str = Depends(require_tenant_id),
+    _admin: dict = Depends(require_admin),
+):
+    """Update mutable fields on the caller's tenant.  Requires admin role."""
+    manager = _build_manager()
+    if payload.plan is not None:
+        if not get_plan(plan_id := payload.plan):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unknown plan '{plan_id}'",
+            )
+    if payload.status is not None and payload.status not in {"active", "suspended", "deleted"}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="status must be one of: active, suspended, deleted",
+        )
+    update_fields = payload.model_dump(exclude_unset=True)
+    record = manager.update_tenant(tenant_id, **update_fields)
+    return {"id": record["id"], "updated": True, "tenant": record}
+
+
+@v1_current.get("/usage", summary="Get current tenant usage")
+async def get_current_usage(
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+):
+    """Return live resource usage for the caller's tenant.
+
+    Counts rows in the ``users``, ``candidates``, and ``jobs`` tables
+    scoped to the caller's tenant.  Storage is approximated from the
+    candidate count (configurable per ``TenantManager``).
+    """
+    manager = _build_manager(db=db)
+    usage = await manager.get_usage(tenant_id)
+    return usage
+
+
+@v1_current.get("/limits", summary="Get current tenant plan limits vs usage")
+async def get_current_limits(
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+):
+    """Return plan limits combined with current usage so the UI can render
+    a single progress-bar panel without making two calls.
+    """
+    manager = _build_manager(db=db)
+    limits = manager.get_limits(tenant_id)
+    usage = await manager.get_usage(tenant_id)
+    return {
+        "tenant_id": tenant_id,
+        "plan_id": limits["plan_id"],
+        "plan_name": limits["plan_name"],
+        "limits": {
+            "max_users": _to_wire(limits["max_users"]),
+            "max_candidates": _to_wire(limits["max_candidates"]),
+            "max_jobs": _to_wire(limits["max_jobs"]),
+            "max_storage_mb": _to_wire(limits["max_storage_mb"]),
+        },
+        "unlimited": limits["unlimited"],
+        "usage": {
+            "users": usage["users"],
+            "candidates": usage["candidates"],
+            "jobs": usage["jobs"],
+            "storage_mb": usage["storage_mb"],
+        },
+        "remaining": {
+            "users": _remaining(limits["max_users"], usage["users"]),
+            "candidates": _remaining(limits["max_candidates"], usage["candidates"]),
+            "jobs": _remaining(limits["max_jobs"], usage["jobs"]),
+            "storage_mb": _remaining(limits["max_storage_mb"], usage["storage_mb"]),
+        },
+    }
+
+
+@v1_current.get("/billing", summary="Get current tenant billing summary")
+async def get_current_billing(
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+):
+    """Return the billing summary for the caller's tenant.
+
+    Combines the plan, current usage, and a deterministic overage
+    calculation.  The endpoint is read-only and never creates invoices.
+    """
+    manager = _build_manager(db=db)
+    summary = await manager.get_billing_summary(tenant_id)
+    return summary
+
+
+# Make the new convenience router addressable both as
+# ``/api/v1/tenants/current`` and ``/tenants/current`` (mounted via the
+# module-level ``router`` below).
+router.include_router(v1_current)
+
+
+def _to_wire(value: float) -> int:
+    """Translate :data:`math.inf` to ``-1`` for JSON-serialisable output."""
+    import math as _math
+
+    if _math.isinf(value):
+        return -1
+    return int(value)
+
+
+def _remaining(limit: float, used: int) -> int:
+    """Return the headroom remaining (``-1`` for unlimited plans)."""
+    import math as _math
+
+    if _math.isinf(limit):
+        return -1
+    return max(0, int(limit) - int(used))

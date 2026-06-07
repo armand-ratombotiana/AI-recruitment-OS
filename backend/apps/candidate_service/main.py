@@ -31,6 +31,7 @@ from shared.core.rate_limit_deps import candidate_write_rate
 from shared.audit import audit
 from shared.webhooks import safe_dispatch_event
 from shared.scoring.engine import score_candidate as _engine_score_candidate
+from shared.tenants import QuotaExceededError, TenantManager
 
 
 # ── Auth Dependency ────────────────────────────────────────────────────────────
@@ -362,7 +363,7 @@ async def _safe_log_activity(
 
     Returns the activity on success, or ``None`` if the write failed.
     Use this for auto-logged events so a transient DB error never blocks
-    the user-facing action.
+    the user-facing action that triggered it.
     """
     try:
         return await log_activity(
@@ -377,6 +378,32 @@ async def _safe_log_activity(
         )
     except Exception:
         return None
+
+
+async def _enforce_candidate_quota(db: AsyncSession, tenant_id: str) -> None:
+    """Raise HTTP 402 if the tenant is at or above its plan's candidate limit.
+
+    Unlimited plans (e.g. enterprise) always pass.  The check consults the
+    live candidate count in the caller's tenant so a deletion immediately
+    frees a slot for a new candidate.
+    """
+    manager = TenantManager(db=db)
+    try:
+        await manager.check_quota(tenant_id, "candidates")
+    except QuotaExceededError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail={
+                "code": "quota_exceeded",
+                "resource": exc.resource,
+                "used": exc.used,
+                "limit": exc.limit,
+                "message": (
+                    f"Plan limit reached for '{exc.resource}': "
+                    f"{exc.used}/{exc.limit}. Upgrade your plan to add more."
+                ),
+            },
+        )
 
 
 def _activity_to_timeline_item(activity: CandidateActivity) -> TimelineActivityItem:
@@ -524,6 +551,11 @@ async def create_candidate(
     user: dict = Depends(require_user),
     _rl: None = Depends(candidate_write_rate),
 ):
+    # Quota enforcement: refuse the insert if the tenant is at its plan
+    # candidate limit.  Sits before the duplicate-email check so a tenant
+    # that is at quota gets the same 402 regardless of the email.
+    await _enforce_candidate_quota(db, tenant_id)
+
     # Check for duplicate email within the caller's tenant
     existing = await db.execute(
         select(Candidate).where(Candidate.email == data.email, Candidate.tenant_id == tenant_id)
