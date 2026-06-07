@@ -17,7 +17,7 @@ from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.audit import audit
-from shared.auth import require_tenant_id
+from shared.auth import require_admin, require_tenant_id
 from shared.core.database import get_db_dependency
 from shared.core.models.candidate import Candidate, CandidateProfile, CandidateStatus
 from shared.core.models.compliance import (
@@ -27,6 +27,13 @@ from shared.core.models.compliance import (
     DataExportRequest,
 )
 from shared.core.security import require_tenant, require_user
+from shared.gdpr import (
+    anonymize_user,
+    consent_log,
+    delete_user_data,
+    export_user_data,
+    get_consent_log,
+)
 
 
 logger = logging.getLogger("compliance_service")
@@ -55,7 +62,8 @@ _RETENTION: list[dict[str, Any]] = [
 
 
 class ConsentRecordRequest(BaseModel):
-    candidate_id: str
+    candidate_id: str | None = None
+    user_id: str | None = None
     type: str = Field(..., description="data_processing | marketing | analytics | third_party")
     granted: bool
     purpose: str | None = None
@@ -201,9 +209,15 @@ async def record_consent(
     db: AsyncSession = Depends(get_db_dependency),
     _tenant_id: str = Depends(require_tenant_id),
 ):
+    subject_id = data.user_id or data.candidate_id
+    if not subject_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Either user_id or candidate_id is required",
+        )
     rec = ConsentRecord(
         tenant_id=user["tenant_id"],
-        candidate_id=data.candidate_id,
+        candidate_id=subject_id,
         purpose=data.type,
         granted=data.granted,
         ip_address=data.ip_address,
@@ -213,8 +227,8 @@ async def record_consent(
         db,
         tenant_id=user["tenant_id"],
         action="consent.recorded",
-        resource_type="candidate",
-        resource_id=data.candidate_id,
+        resource_type="user" if data.user_id else "candidate",
+        resource_id=subject_id,
         actor_id=user["id"],
         actor_email=user.get("email"),
         details={"purpose": data.type, "granted": data.granted},
@@ -488,4 +502,165 @@ async def get_compliance_report(
             "iso27001": {"status": "in_progress", "score": 78},
         },
         "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+# ── GDPR engine endpoints (user-scoped) ────────────────────────────────────────
+
+
+class GDPRConsentRequest(BaseModel):
+    user_id: str
+    purpose: str = Field(..., description="data_processing | marketing | analytics | third_party")
+    granted: bool
+    ip_address: str | None = None
+
+
+@router.get(
+    "/gdpr/export/{user_id}",
+    tags=["Compliance"],
+    summary="Export all data for a user (GDPR Art. 15 / 20)",
+)
+async def gdpr_export_user(
+    user_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    admin: dict = Depends(require_admin),
+):
+    payload = await export_user_data(db, user_id, tenant_id)
+    if payload.get("user") is None:
+        raise HTTPException(status_code=404, detail=f"User {user_id} not found in tenant")
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="gdpr.user.export",
+        resource_type="user",
+        resource_id=user_id,
+        actor_id=admin.get("id"),
+        actor_email=admin.get("email"),
+        details={"size_estimate": sum(len(v) for v in payload.values() if isinstance(v, list))},
+    )
+    await db.commit()
+    return payload
+
+
+@router.post(
+    "/gdpr/anonymize/{user_id}",
+    tags=["Compliance"],
+    summary="Anonymise a user's PII (GDPR Art. 17 pseudonymisation)",
+)
+async def gdpr_anonymize_user(
+    user_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    admin: dict = Depends(require_admin),
+):
+    ok = await anonymize_user(db, user_id, tenant_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail=f"User {user_id} not found in tenant")
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="gdpr.user.anonymize",
+        resource_type="user",
+        resource_id=user_id,
+        actor_id=admin.get("id"),
+        actor_email=admin.get("email"),
+    )
+    await db.commit()
+    return {"user_id": user_id, "anonymized": True}
+
+
+@router.delete(
+    "/gdpr/user/{user_id}",
+    tags=["Compliance"],
+    summary="Delete all data for a user (GDPR Art. 17 right to erasure)",
+)
+async def gdpr_delete_user(
+    user_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    admin: dict = Depends(require_admin),
+):
+    ok = await delete_user_data(db, user_id, tenant_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail=f"User {user_id} not found in tenant")
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="gdpr.user.delete",
+        resource_type="user",
+        resource_id=user_id,
+        actor_id=admin.get("id"),
+        actor_email=admin.get("email"),
+    )
+    await db.commit()
+    return {"user_id": user_id, "deleted": True}
+
+
+@router.get(
+    "/consent/{user_id}",
+    tags=["Compliance"],
+    summary="Get consent log for a user",
+)
+async def get_user_consent_log(
+    user_id: str,
+    purpose: str | None = None,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    _user: dict = Depends(require_user),
+):
+    records = await get_consent_log(db, user_id, tenant_id, purpose=purpose)
+    return {"data": records, "total": len(records), "user_id": user_id}
+
+
+@router.get(
+    "/audit",
+    tags=["Compliance"],
+    summary="Compliance audit log (admin only)",
+)
+async def get_compliance_audit_log(
+    limit: int = 50,
+    offset: int = 0,
+    action: str | None = None,
+    resource_type: str | None = None,
+    resource_id: str | None = None,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    _admin: dict = Depends(require_admin),
+):
+    stmt = (
+        select(AuditEntry)
+        .where(AuditEntry.tenant_id == tenant_id)
+        .order_by(desc(AuditEntry.created_at))
+        .offset(offset)
+        .limit(limit)
+    )
+    if action:
+        stmt = stmt.where(AuditEntry.action == action)
+    if resource_type:
+        stmt = stmt.where(AuditEntry.resource_type == resource_type)
+    if resource_id:
+        stmt = stmt.where(AuditEntry.resource_id == resource_id)
+
+    rows = (await db.execute(stmt)).scalars().all()
+    return {
+        "data": [
+            {
+                "id": r.id,
+                "tenant_id": r.tenant_id,
+                "actor_id": r.actor_id,
+                "actor_email": r.actor_email,
+                "action": r.action,
+                "resource_type": r.resource_type,
+                "resource_id": r.resource_id,
+                "outcome": r.outcome,
+                "details": json.loads(r.details) if r.details else {},
+                "ip_address": r.ip_address,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+            }
+            for r in rows
+        ],
+        "total": len(rows),
+        "limit": limit,
+        "offset": offset,
     }
