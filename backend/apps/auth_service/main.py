@@ -28,6 +28,9 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+
+from jose import JWTError, jwt
 
 from shared.core.config import get_settings
 from shared.core.database import get_db_dependency
@@ -47,6 +50,14 @@ from shared.auth.mfa import (
     generate_secret,
     otpauth_url,
     verify_totp,
+)
+from shared.auth.two_factor import (
+    generate_backup_codes as tf_generate_backup_codes,
+    generate_secret as tf_generate_secret,
+    hash_backup_code,
+    provisioning_uri,
+    qr_data_url,
+    verify_totp as tf_verify_totp,
 )
 
 from apps.auth_service.helpers import (
@@ -448,11 +459,12 @@ async def register(
 
 @router.post(
     "/login",
-    response_model=LoginResponse,
     tags=["Auth"],
     summary="Authenticate user",
     description="Verify credentials and return JWT access + refresh tokens. "
-                "Account is locked after 5 consecutive failed attempts (exponential backoff).",
+                "Account is locked after 5 consecutive failed attempts (exponential backoff). "
+                "If the account has 2FA enabled, returns a ``mfa_required`` payload with a "
+                "``pending_token`` that must be exchanged at ``/login/2fa``.",
 )
 async def login(
     data: LoginRequest,
@@ -533,6 +545,21 @@ async def login(
 
     # Reset failed attempts on success
     record_successful_login(user)
+
+    # If 2FA is enabled, do NOT issue tokens — require a TOTP step instead.
+    if user.totp_enabled:
+        await audit(
+            db,
+            tenant_id=user.tenant_id,
+            action="user.login.2fa_required",
+            resource_type="user",
+            resource_id=user.id,
+            actor_id=user.id,
+            actor_email=user.email,
+            ip_address=request.client.host if request.client else None,
+        )
+        await db.commit()
+        return _pending_2fa_login_response(user)
 
     # Generate tokens
     token_data = {"sub": user.id, "email": user.email, "role": user.role.value, "tenant_id": user.tenant_id}
@@ -1564,3 +1591,401 @@ async def seed_demo_on_startup() -> None:
         await seed_demo_account()
     except Exception as exc:
         logger.warning("Demo seed on startup failed (non-fatal): %s", exc)
+
+
+# ── 2FA (TOTP) — user-facing flow ────────────────────────────────────────────
+#
+# Endpoints
+#   POST /2fa/setup        — authenticated; returns secret + QR data URL
+#   POST /2fa/enable       — authenticated; verifies TOTP, activates 2FA, returns backup codes
+#   POST /2fa/disable      — authenticated; verifies current password, deactivates
+#   GET  /2fa/status       — authenticated; reports enablement + remaining backup codes
+#   POST /login/2fa        — exchanges a short-lived pending-2FA token + TOTP for real tokens
+#
+
+
+class TwoFactorSetupResponse(BaseModel):
+    secret: str = Field(..., description="Base32 TOTP secret.  Treat as sensitive.")
+    otpauth_url: str = Field(..., description="otpauth:// provisioning URL")
+    qr_code_data_url: str = Field(..., description="Base64 PNG data URL for inline rendering")
+    issuer: str = Field(default="AI-ROS")
+
+
+class TwoFactorEnableRequest(BaseModel):
+    code: str = Field(..., min_length=6, max_length=6, description="6-digit TOTP code from the user's authenticator app")
+
+
+class TwoFactorEnableResponse(BaseModel):
+    enabled: bool = True
+    backup_codes: list[str] = Field(..., description="One-time recovery codes — shown to the user ONCE")
+    message: str = Field(default="Two-factor authentication has been enabled.")
+
+
+class TwoFactorDisableRequest(BaseModel):
+    password: str = Field(..., min_length=1, description="Current account password")
+
+
+class TwoFactorStatusResponse(BaseModel):
+    enabled: bool
+    backup_codes_remaining: int = Field(default=0, description="How many unused backup codes remain")
+
+
+class PendingTwoFactorLoginRequest(BaseModel):
+    pending_token: str = Field(..., min_length=8, description="Short-lived token returned by /login when 2FA is required")
+    code: str = Field(
+        ...,
+        min_length=6,
+        max_length=32,
+        description="6-digit TOTP code OR an 11-character backup code (e.g. ``ABCD-1234``)",
+    )
+    use_backup_code: bool = Field(default=False, description="Set to true if submitting a backup code instead of a TOTP code")
+
+
+def _issue_pending_2fa_token(user: User) -> str:
+    """Mint a 5-minute JWT that authorises completing a 2FA-protected login."""
+    payload = {
+        "sub": user.id,
+        "email": user.email,
+        "tenant_id": user.tenant_id,
+        "type": "pending_2fa",
+        "iat": datetime.now(timezone.utc),
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+
+
+def _decode_pending_2fa_token(token: str) -> dict[str, Any] | None:
+    """Validate and decode a pending-2FA token.  Returns the payload or None."""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+    except JWTError:
+        return None
+    if not payload or payload.get("type") != "pending_2fa":
+        return None
+    return payload
+
+
+def _consume_backup_code(user: User, code: str, db: AsyncSession) -> bool:
+    """Pop ``code`` from the user's backup code set.  Returns True if it matched."""
+    if not user.backup_codes:
+        return False
+    try:
+        stored: list[str] = json.loads(user.backup_codes)
+    except (ValueError, TypeError):
+        return False
+    target = hash_backup_code(code)
+    if target in stored:
+        stored.remove(target)
+        user.backup_codes = json.dumps(stored)
+        db.add(user)
+        return True
+    return False
+
+
+@router.post(
+    "/2fa/setup",
+    response_model=TwoFactorSetupResponse,
+    tags=["Auth", "2FA"],
+    summary="Begin 2FA enrolment (returns a TOTP secret and QR code)",
+    description=(
+        "Generates a fresh base32 TOTP secret, persists it to the authenticated "
+        "user (without flipping ``totp_enabled``), and returns the secret, the "
+        "otpauth:// provisioning URL, and a PNG data URL of the QR code. The "
+        "user must then call ``/2fa/enable`` with a valid code to activate 2FA."
+    ),
+)
+async def two_factor_setup(
+    authorization: str | None = Header(None),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> TwoFactorSetupResponse:
+    user = await _current_user(authorization, db)
+
+    secret = tf_generate_secret()
+    user.totp_secret = secret
+    user.totp_enabled = False
+    user.backup_codes = None
+    db.add(user)
+    await audit(
+        db,
+        tenant_id=user.tenant_id,
+        action="2fa.setup",
+        resource_type="user",
+        resource_id=user.id,
+        actor_id=user.id,
+        actor_email=user.email,
+    )
+    await db.commit()
+
+    uri = provisioning_uri(secret=secret, account=user.email, issuer="AI-ROS")
+    return TwoFactorSetupResponse(
+        secret=secret,
+        otpauth_url=uri,
+        qr_code_data_url=qr_data_url(uri),
+    )
+
+
+@router.post(
+    "/2fa/enable",
+    response_model=TwoFactorEnableResponse,
+    tags=["Auth", "2FA"],
+    summary="Activate 2FA after verifying a TOTP code",
+    description=(
+        "Verifies the supplied 6-digit code against the pending ``totp_secret`` "
+        "set by ``/2fa/setup``. On success, flips ``totp_enabled`` to true and "
+        "returns a fresh set of one-time backup codes."
+    ),
+)
+async def two_factor_enable(
+    data: TwoFactorEnableRequest,
+    authorization: str | None = Header(None),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> TwoFactorEnableResponse:
+    user = await _current_user(authorization, db)
+
+    if not user.totp_secret:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="2FA setup has not been started. Call /2fa/setup first.",
+        )
+    if not tf_verify_totp(user.totp_secret, data.code):
+        await audit(
+            db,
+            tenant_id=user.tenant_id,
+            action="2fa.enable",
+            resource_type="user",
+            resource_id=user.id,
+            actor_id=user.id,
+            actor_email=user.email,
+            outcome="failure",
+        )
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid TOTP code. Please try again with a fresh code from your authenticator app.",
+        )
+
+    backup_codes_plain = tf_generate_backup_codes()
+    backup_codes_hashed = [hash_backup_code(c) for c in backup_codes_plain]
+
+    user.totp_enabled = True
+    user.backup_codes = json.dumps(backup_codes_hashed)
+    db.add(user)
+    await audit(
+        db,
+        tenant_id=user.tenant_id,
+        action="2fa.enable",
+        resource_type="user",
+        resource_id=user.id,
+        actor_id=user.id,
+        actor_email=user.email,
+    )
+    await db.commit()
+
+    return TwoFactorEnableResponse(
+        enabled=True,
+        backup_codes=backup_codes_plain,
+    )
+
+
+@router.post(
+    "/2fa/disable",
+    response_model=TwoFactorStatusResponse,
+    tags=["Auth", "2FA"],
+    summary="Disable 2FA (requires current password)",
+    description=(
+        "Verifies the user's current password, then clears the TOTP secret, "
+        "the enabled flag, and all remaining backup codes."
+    ),
+)
+async def two_factor_disable(
+    data: TwoFactorDisableRequest,
+    authorization: str | None = Header(None),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> TwoFactorStatusResponse:
+    user = await _current_user(authorization, db)
+
+    if not verify_password(data.password, user.hashed_password):
+        await audit(
+            db,
+            tenant_id=user.tenant_id,
+            action="2fa.disable",
+            resource_type="user",
+            resource_id=user.id,
+            actor_id=user.id,
+            actor_email=user.email,
+            outcome="failure",
+        )
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is incorrect",
+        )
+
+    user.totp_secret = None
+    user.totp_enabled = False
+    user.backup_codes = None
+    db.add(user)
+    await audit(
+        db,
+        tenant_id=user.tenant_id,
+        action="2fa.disable",
+        resource_type="user",
+        resource_id=user.id,
+        actor_id=user.id,
+        actor_email=user.email,
+    )
+    await db.commit()
+    return TwoFactorStatusResponse(enabled=False, backup_codes_remaining=0)
+
+
+@router.get(
+    "/2fa/status",
+    response_model=TwoFactorStatusResponse,
+    tags=["Auth", "2FA"],
+    summary="Get the authenticated user's 2FA status",
+)
+async def two_factor_status(
+    authorization: str | None = Header(None),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> TwoFactorStatusResponse:
+    user = await _current_user(authorization, db)
+    remaining = 0
+    if user.backup_codes:
+        try:
+            remaining = len(json.loads(user.backup_codes))
+        except (ValueError, TypeError):
+            remaining = 0
+    return TwoFactorStatusResponse(enabled=bool(user.totp_enabled), backup_codes_remaining=remaining)
+
+
+@router.post(
+    "/login/2fa",
+    tags=["Auth", "2FA"],
+    summary="Complete a 2FA-protected login",
+    description=(
+        "Exchanges a short-lived pending-2FA token (returned by ``/login`` when "
+        "the account has 2FA enabled) plus a 6-digit TOTP code (or a backup "
+        "code) for a full token pair.  Backup codes are single-use and are "
+        "removed from the user's account on successful consumption."
+    ),
+)
+async def login_2fa(
+    data: PendingTwoFactorLoginRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    payload = _decode_pending_2fa_token(data.pending_token)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Pending 2FA token is invalid or has expired. Please log in again.",
+        )
+
+    user_id = payload.get("sub")
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user or user.status != UserStatus.ACTIVE or user.deactivated_at is not None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive",
+        )
+    if not user.totp_enabled or not user.totp_secret:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="2FA is not enabled for this account",
+        )
+
+    accepted = False
+    used_backup = False
+    if data.use_backup_code:
+        if _consume_backup_code(user, data.code, db):
+            accepted = True
+            used_backup = True
+    else:
+        if tf_verify_totp(user.totp_secret, data.code):
+            accepted = True
+
+    if not accepted:
+        record_failed_attempt(user)
+        db.add(user)
+        await audit(
+            db,
+            tenant_id=user.tenant_id,
+            action="2fa.login",
+            resource_type="user",
+            resource_id=user.id,
+            actor_id=user.id,
+            actor_email=user.email,
+            outcome="failure",
+        )
+        await db.commit()
+        if is_account_locked(user):
+            remaining = lockout_remaining_seconds(user)
+            raise HTTPException(
+                status_code=status.HTTP_423_LOCKED,
+                detail=f"Account is temporarily locked. Try again in {remaining} seconds.",
+            )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid 2FA code",
+        )
+
+    record_successful_login(user)
+
+    token_data = {
+        "sub": user.id,
+        "email": user.email,
+        "role": user.role.value,
+        "tenant_id": user.tenant_id,
+    }
+    access_token = create_access_token(token_data)
+    refresh_token = create_refresh_token(token_data)
+    refresh_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+    session = Session(
+        user_id=user.id,
+        tenant_id=user.tenant_id,
+        refresh_token_hash=refresh_hash,
+        expires_at=(
+            datetime.now(timezone.utc) + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
+        ).replace(tzinfo=None),
+    )
+    db.add(session)
+    user.last_login_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.add(user)
+    await audit(
+        db,
+        tenant_id=user.tenant_id,
+        action="2fa.login",
+        resource_type="user",
+        resource_id=user.id,
+        actor_id=user.id,
+        actor_email=user.email,
+        details={"used_backup_code": used_backup},
+    )
+    await db.commit()
+
+    return LoginResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        user={
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "role": user.role.value,
+            "email_verified": bool(user.email_verified),
+            "is_demo": bool(user.is_demo),
+            "two_factor_enabled": True,
+        },
+    )
+
+
+def _pending_2fa_login_response(user: User) -> dict[str, Any]:
+    """Build the response returned by /login when a 2FA challenge is required."""
+    return {
+        "mfa_required": True,
+        "two_factor_required": True,
+        "pending_token": _issue_pending_2fa_token(user),
+        "message": "Two-factor authentication required. Submit a TOTP code to /login/2fa.",
+    }

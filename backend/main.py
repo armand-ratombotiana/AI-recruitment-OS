@@ -20,6 +20,7 @@ from shared.core.exceptions import AIROSException
 from shared.core.caching import get_cache_manager
 from shared.core.health import health_checker
 from shared.core.validation import ValidationMiddleware
+from shared.metrics import MetricsMiddleware
 from shared.middleware.cache_headers import CacheHeadersMiddleware
 from shared.middleware.compression import CompressionMiddleware
 from shared.middleware.rate_limit import RateLimitMiddleware, rate_limit_router
@@ -125,6 +126,7 @@ app = FastAPI(
 # Middleware
 app.add_middleware(ValidationMiddleware)
 app.add_middleware(ObservabilityMiddleware)
+app.add_middleware(MetricsMiddleware)
 app.add_middleware(TenantContextMiddleware)
 app.add_middleware(RequestIDMiddleware)
 app.add_middleware(APIVersioningMiddleware)
@@ -302,9 +304,9 @@ include_router_safe(app, "apps.audit_service.main", "router", "/api/v1/audit", [
 
 # ── Production monitoring & observability ────────────────────────────────────
 try:
-    from shared.monitoring import monitoring_router
-    app.include_router(monitoring_router)
-    print("  Loaded: /api/v1/monitoring (curated JSON + Prometheus metrics)")
+    from apps.monitoring_service.main import router as monitoring_service_router
+    app.include_router(monitoring_service_router, prefix="/api/v1/monitoring", tags=["Monitoring"])
+    print("  Loaded: /api/v1/monitoring (health + business metrics JSON)")
 except Exception as e:
     print(f"  Skipped: /api/v1/monitoring ({e})")
 
