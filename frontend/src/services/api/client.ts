@@ -531,6 +531,40 @@ class APIClient {
     getTask: (taskId: string) => this.request<AiTypes.AiTask>(`/ai/tasks/${taskId}`),
     getTaskResult: (taskId: string) =>
       this.request<Record<string, unknown>>(`/ai/tasks/${taskId}/result`),
+    conversations: {
+      list: (params?: Record<string, string>) => {
+        const p: Record<string, string> = { ...(params || {}) };
+        return this.request<AiTypes.AiConversationListResponse>('/ai/conversations', { params: p });
+      },
+      get: (conversationId: string) =>
+        this.request<AiTypes.AiConversationDetail>(`/ai/conversations/${conversationId}`),
+      create: (data: AiTypes.AiConversationCreateRequest) =>
+        this.request<AiTypes.AiConversationDetail>('/ai/conversations', {
+          method: 'POST',
+          body: JSON.stringify(data),
+        }),
+      update: (conversationId: string, data: AiTypes.AiConversationUpdateRequest) =>
+        this.request<AiTypes.AiConversationDetail>(`/ai/conversations/${conversationId}`, {
+          method: 'PUT',
+          body: JSON.stringify(data),
+        }),
+      delete: (conversationId: string) =>
+        this.request<MessageResponse>(`/ai/conversations/${conversationId}`, {
+          method: 'DELETE',
+        }),
+      listMessages: (conversationId: string) =>
+        this.request<{ messages: AiTypes.AiConversationMessage[] }>(
+          `/ai/conversations/${conversationId}/messages`
+        ),
+      addMessage: (
+        conversationId: string,
+        data: AiTypes.AiConversationMessageCreateRequest
+      ) =>
+        this.request<AiTypes.AiConversationMessage>(
+          `/ai/conversations/${conversationId}/messages`,
+          { method: 'POST', body: JSON.stringify(data) }
+        ),
+    },
   };
 
   // ========================================================================
@@ -557,6 +591,44 @@ class APIClient {
       }),
     getReport: (reportId: string) =>
       this.request<AnalyticsTypes.Report>(`/analytics/reports/${reportId}`),
+  };
+
+  // ========================================================================
+  // EXPORTS / SCHEDULED REPORTS
+  // ========================================================================
+
+  exports = {
+    list: (params?: Record<string, string>) =>
+      this.request<unknown>('/exports', { params }),
+    listScheduled: () =>
+      this.request<unknown>('/exports/schedule', {}),
+    schedule: (data: {
+      type: string;
+      format: string;
+      frequency: string;
+      recipients: string[];
+      start_date?: string;
+      end_date?: string;
+    }) =>
+      this.request<unknown>('/exports/schedule', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    deleteScheduled: (id: string) =>
+      this.request<MessageResponse>(`/exports/schedule/${id}`, { method: 'DELETE' }),
+    generate: (data: {
+      type: string;
+      format: 'csv' | 'xlsx' | 'pdf';
+      start_date?: string;
+      end_date?: string;
+      department?: string;
+      location?: string;
+      job_id?: string;
+    }) =>
+      this.request<{ id?: string; url?: string; download_url?: string; name?: string; size?: number }>(
+        '/exports',
+        { method: 'POST', body: JSON.stringify(data) },
+      ),
   };
 
   // ========================================================================

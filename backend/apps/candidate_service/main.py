@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,11 +36,21 @@ from shared.core.models.tag import (
     TagEntityType,
 )
 from shared.core.security import require_tenant, require_user, decode_token
+from shared.auth.dependencies import require_tenant_id
 from shared.core.rate_limit_deps import candidate_write_rate
 from shared.audit import audit
 from shared.webhooks import safe_dispatch_event
 from shared.scoring.engine import score_candidate as _engine_score_candidate
 from shared.tenants import QuotaExceededError, TenantManager
+from shared.files import storage as file_storage
+from shared.files.parser import (
+    detect_content_type,
+    parse_resume,
+    extract_email,
+    extract_phone,
+    extract_skills,
+    extract_experience_years,
+)
 
 
 # ── Auth Dependency ────────────────────────────────────────────────────────────

@@ -6,28 +6,26 @@ import {
   Bot,
   User as UserIcon,
   Plus,
-  MessageSquare,
-  Trash2,
   ChevronDown,
   History,
-  Copy as CopyIcon,
-  Check as CheckIcon,
-  ThumbsUp,
-  ThumbsDown,
-  RefreshCw,
   Send,
-  Search,
   Users,
   FileText,
   HelpCircle,
   Briefcase,
   StopCircle,
   AlertCircle,
+  Cloud,
+  CloudOff,
+  RefreshCw as RefreshIcon,
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
-import { useToast, useLocalStorage, useClickOutside } from '@/hooks';
-import { Button, Badge, HelpButton, aiCopilotTour, Markdown } from '@/components';
+import type { AiTypes } from '@/services/api/types';
+import { useToast, useClickOutside } from '@/hooks';
+import { Button, HelpButton, aiCopilotTour, ConversationSidebar, MessageBubble } from '@/components';
+import type { ConversationItem, MessageBubbleProps } from '@/components';
 import { useLocaleStore, translate, formatRelativeTime } from '@/stores/locale-store';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 interface ChatMessage {
   id: string;
@@ -36,21 +34,23 @@ interface ChatMessage {
   agentName?: string;
   agentType?: string;
   confidence?: number;
-  reasoning?: any[];
-  timestamp: string;
+  reasoning?: Array<string | Record<string, unknown>>;
   feedback?: 'up' | 'down';
   pending?: boolean;
   streaming?: boolean;
   error?: boolean;
+  timestamp: string;
 }
 
-interface Conversation {
+interface LocalConversation {
   id: string;
   title: string;
   createdAt: string;
   updatedAt: string;
   messages: ChatMessage[];
   agentType?: string;
+  syncedAt?: string;
+  lastError?: string;
 }
 
 interface Agent {
@@ -59,10 +59,6 @@ interface Agent {
   description?: string;
   capabilities?: string[];
 }
-
-const CONVERSATIONS_KEY = 'airos_copilot_conversations_v2';
-const CURRENT_CONV_KEY = 'airos_copilot_current_conv_v2';
-const AGENT_KEY = 'airos_copilot_agent';
 
 const SUGGESTED_PROMPTS: Array<{
   key: string;
@@ -122,9 +118,9 @@ function makeId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function deriveTitle(text: string): string {
+function deriveTitle(text: string, fallback: string): string {
   const trimmed = text.trim();
-  if (!trimmed) return 'New conversation';
+  if (!trimmed) return fallback;
   return trimmed.length > 60 ? `${trimmed.slice(0, 60)}…` : trimmed;
 }
 
@@ -303,6 +299,21 @@ async function streamOrchestrate(
   return { content: finalContent, final: json, streamed: false };
 }
 
+function apiMessageToLocal(m: AiTypes.AiConversationMessage): ChatMessage {
+  return {
+    id: m.id,
+    role: m.role === 'system' ? 'assistant' : m.role,
+    content: m.content,
+    agentName: m.agent_name || undefined,
+    agentType: m.agent_type || undefined,
+    confidence: typeof m.confidence === 'number' ? m.confidence : undefined,
+    reasoning: Array.isArray(m.reasoning) ? m.reasoning : undefined,
+    feedback: m.feedback || undefined,
+    error: !!m.error,
+    timestamp: m.created_at,
+  };
+}
+
 export default function AICopilotPage() {
   const locale = useLocaleStore((s) => s.locale);
   const t = useCallback(
@@ -310,9 +321,11 @@ export default function AICopilotPage() {
     [locale]
   );
 
-  const [conversations, setConversations] = useLocalStorage<Conversation[]>(CONVERSATIONS_KEY, []);
-  const [currentId, setCurrentId] = useLocalStorage<string>(CURRENT_CONV_KEY, '');
-  const [agentType, setAgentType] = useLocalStorage<string>(AGENT_KEY, 'recruiting_copilot');
+  const [conversations, setConversations] = useState<LocalConversation[]>([]);
+  const [currentId, setCurrentId] = useState<string>('');
+  const [agentType, setAgentType] = useState<string>('recruiting_copilot');
+  const [apiAvailable, setApiAvailable] = useState<boolean>(true);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
 
   const [agents, setAgents] = useState<Agent[]>([]);
   const [agentsLoading, setAgentsLoading] = useState(true);
@@ -323,7 +336,7 @@ export default function AICopilotPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [streamingId, setStreamingId] = useState<string | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
   const { push, ToastContainer } = useToast();
 
   const endRef = useRef<HTMLDivElement>(null);
@@ -333,35 +346,52 @@ export default function AICopilotPage() {
 
   useClickOutside(agentsRef, () => setShowAgents(false));
 
-  const ensureConversation = useCallback(
-    (id?: string): Conversation => {
-      const now = new Date().toISOString();
-      if (id) {
-        const existing = conversations.find((c) => c.id === id);
-        if (existing) return existing;
-      }
-      const fresh: Conversation = {
-        id: makeId('conv'),
-        title: t('aiCopilot.newConversation', 'New conversation'),
-        createdAt: now,
-        updatedAt: now,
-        messages: [],
-        agentType,
-      };
-      setConversations((prev) => [fresh, ...prev].slice(0, 50));
-      setCurrentId(fresh.id);
-      return fresh;
-    },
-    [conversations, agentType, setConversations, setCurrentId, t]
+  const newConversationTitle = useMemo(
+    () => t('aiConversation.untitled', t('aiCopilot.newConversation', 'New conversation')),
+    [t]
   );
 
-  useEffect(() => {
-    if (!currentId && conversations.length === 0) {
-      ensureConversation();
-    } else if (currentId && !conversations.find((c) => c.id === currentId)) {
-      setCurrentId(conversations[0]?.id || '');
+  const upsertConversation = useCallback((conv: LocalConversation) => {
+    setConversations((prev) => {
+      const idx = prev.findIndex((c) => c.id === conv.id);
+      if (idx === -1) return [conv, ...prev].slice(0, 100);
+      const next = prev.slice();
+      next[idx] = conv;
+      return next;
+    });
+  }, []);
+
+  const removeConversationLocal = useCallback((id: string) => {
+    setConversations((prev) => prev.filter((c) => c.id !== id));
+  }, []);
+
+  const loadConversations = useCallback(async () => {
+    setConversationsLoading(true);
+    try {
+      const res = await api.ai.conversations.list();
+      const list = Array.isArray(res?.conversations) ? res.conversations : [];
+      const mapped: LocalConversation[] = list.map((c) => ({
+        id: c.id,
+        title: c.title || newConversationTitle,
+        createdAt: c.created_at,
+        updatedAt: c.updated_at,
+        agentType: c.agent_type,
+        messages: [],
+        syncedAt: new Date().toISOString(),
+      }));
+      setConversations(mapped);
+      setApiAvailable(true);
+    } catch {
+      setApiAvailable(false);
+      setConversations([]);
+    } finally {
+      setConversationsLoading(false);
     }
-  }, [currentId, conversations, ensureConversation, setCurrentId]);
+  }, [newConversationTitle]);
+
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
 
   useEffect(() => {
     let cancelled = false;
@@ -383,6 +413,99 @@ export default function AICopilotPage() {
       cancelled = true;
     };
   }, []);
+
+  const loadConversationMessages = useCallback(
+    async (id: string) => {
+      if (!id) return;
+      try {
+        const detail = await api.ai.conversations.get(id);
+        const msgs = Array.isArray(detail?.messages) ? detail.messages : [];
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === id
+              ? {
+                  ...c,
+                  title: detail.title || c.title,
+                  agentType: detail.agent_type || c.agentType,
+                  messages: msgs.map(apiMessageToLocal),
+                  updatedAt: detail.updated_at,
+                  syncedAt: new Date().toISOString(),
+                }
+              : c
+          )
+        );
+        setApiAvailable(true);
+      } catch {
+        setApiAvailable(false);
+      }
+    },
+    []
+  );
+
+  const ensureConversation = useCallback(
+    (id?: string): LocalConversation => {
+      const now = new Date().toISOString();
+      if (id) {
+        const existing = conversations.find((c) => c.id === id);
+        if (existing) return existing;
+      }
+      const fresh: LocalConversation = {
+        id: makeId('conv'),
+        title: newConversationTitle,
+        createdAt: now,
+        updatedAt: now,
+        messages: [],
+        agentType,
+      };
+      upsertConversation(fresh);
+      setCurrentId(fresh.id);
+
+      if (apiAvailable) {
+        api.ai.conversations
+          .create({ title: newConversationTitle, agent_type: agentType })
+          .then((detail) => {
+            setConversations((prev) =>
+              prev.map((c) =>
+                c.id === fresh.id
+                  ? {
+                      ...c,
+                      id: detail.id,
+                      title: detail.title || c.title,
+                      agentType: detail.agent_type || c.agentType,
+                      syncedAt: new Date().toISOString(),
+                    }
+                  : c
+              )
+            );
+            setCurrentId(detail.id);
+          })
+          .catch((err) => {
+            setApiAvailable(false);
+            push('error', t('aiConversation.saveError', 'Could not save changes to the server'));
+            console.warn('Conversation create failed', err);
+          });
+      }
+      return fresh;
+    },
+    [conversations, agentType, apiAvailable, newConversationTitle, push, t, upsertConversation]
+  );
+
+  useEffect(() => {
+    if (!currentId && conversations.length > 0) {
+      setCurrentId(conversations[0].id);
+    } else if (currentId && !conversations.find((c) => c.id === currentId) && conversations.length > 0) {
+      setCurrentId(conversations[0].id);
+    }
+  }, [currentId, conversations]);
+
+  useEffect(() => {
+    if (currentId) {
+      const conv = conversations.find((c) => c.id === currentId);
+      if (conv && conv.messages.length === 0) {
+        loadConversationMessages(currentId);
+      }
+    }
+  }, [currentId, conversations, loadConversationMessages]);
 
   const currentConversation = useMemo(
     () => conversations.find((c) => c.id === currentId) || null,
@@ -430,7 +553,7 @@ export default function AICopilotPage() {
   }, [messages, loading]);
 
   const updateConversation = useCallback(
-    (id: string, updater: (conv: Conversation) => Conversation) => {
+    (id: string, updater: (conv: LocalConversation) => LocalConversation) => {
       setConversations((prev) => {
         const idx = prev.findIndex((c) => c.id === id);
         if (idx === -1) return prev;
@@ -439,7 +562,7 @@ export default function AICopilotPage() {
         return next;
       });
     },
-    [setConversations]
+    []
   );
 
   const persistMessages = useCallback(
@@ -448,15 +571,49 @@ export default function AICopilotPage() {
         ...conv,
         messages: msgs.slice(-200),
         updatedAt: new Date().toISOString(),
-        title: title && conv.title === t('aiCopilot.newConversation', 'New conversation') ? title : conv.title,
+        title: title && (conv.title === newConversationTitle || !conv.title) ? title : conv.title,
       }));
     },
-    [updateConversation, t]
+    [updateConversation, newConversationTitle]
+  );
+
+  const persistUserMessageToApi = useCallback(
+    (convId: string, content: string) => {
+      if (!apiAvailable) return;
+      api.ai.conversations
+        .addMessage(convId, { role: 'user', content })
+        .catch((err) => {
+          console.warn('Failed to persist user message', err);
+          setApiAvailable(false);
+        });
+    },
+    [apiAvailable]
+  );
+
+  const persistAssistantMessageToApi = useCallback(
+    (convId: string, msg: ChatMessage) => {
+      if (!apiAvailable) return;
+      api.ai.conversations
+        .addMessage(convId, {
+          role: 'assistant',
+          content: msg.content,
+          agent_type: msg.agentType,
+          agent_name: msg.agentName,
+          confidence: msg.confidence,
+          reasoning: msg.reasoning,
+          error: msg.error,
+        })
+        .catch((err) => {
+          console.warn('Failed to persist assistant message', err);
+          setApiAvailable(false);
+        });
+    },
+    [apiAvailable]
   );
 
   const send = useCallback(
-    async (text?: string, opts?: { regenerateOfMessageId?: string }) => {
-      const message = (text ?? input).trim();
+    async (text?: string, opts?: { regenerateOfMessageId?: string; userMessageOverride?: string }) => {
+      const message = (opts?.userMessageOverride ?? text ?? input).trim();
       const targetConvId = currentId || ensureConversation().id;
       const conv = conversations.find((c) => c.id === targetConvId) || ensureConversation(targetConvId);
       if (!message || loading) return;
@@ -495,8 +652,12 @@ export default function AICopilotPage() {
         streaming: true,
       };
       const nextMessages = [...baseMessages, userMsg, pendingMsg];
-      const titleForNew = baseMessages.length === 0 ? deriveTitle(userMsg.content) : undefined;
+      const titleForNew = baseMessages.length === 0 ? deriveTitle(userMsg.content, newConversationTitle) : undefined;
       persistMessages(targetConvId, nextMessages, titleForNew);
+
+      if (!opts?.regenerateOfMessageId && apiAvailable) {
+        persistUserMessageToApi(targetConvId, userMsg.content);
+      }
 
       setLoading(true);
       setStreamingId(pendingMsg.id);
@@ -546,6 +707,7 @@ export default function AICopilotPage() {
           messages: c.messages.map((m) => (m.id === pendingMsg.id ? finalMsg : m)),
           updatedAt: new Date().toISOString(),
         }));
+        persistAssistantMessageToApi(targetConvId, finalMsg);
       } catch (err: any) {
         if (signal.cancelled) return;
         push('error', err?.message || t('aiCopilot.requestFailed', 'Copilot request failed. Please try again.'));
@@ -565,6 +727,7 @@ export default function AICopilotPage() {
           ...c,
           messages: c.messages.map((m) => (m.id === pendingMsg.id ? errMsg : m)),
         }));
+        persistAssistantMessageToApi(targetConvId, errMsg);
       } finally {
         streamControllerRef.current = null;
         setLoading(false);
@@ -580,9 +743,13 @@ export default function AICopilotPage() {
       conversations,
       ensureConversation,
       persistMessages,
+      persistUserMessageToApi,
+      persistAssistantMessageToApi,
       push,
       t,
       updateConversation,
+      apiAvailable,
+      newConversationTitle,
     ]
   );
 
@@ -610,40 +777,70 @@ export default function AICopilotPage() {
     setCurrentId(fresh.id);
     setInput('');
     push('info', t('aiCopilot.startedNew', 'Started a new conversation'));
-  }, [ensureConversation, setCurrentId, push, t]);
+  }, [ensureConversation, push, t]);
 
-  const deleteConversation = useCallback(
-    (id: string, e?: React.MouseEvent) => {
-      e?.stopPropagation();
-      setConversations((prev) => prev.filter((c) => c.id !== id));
-      if (currentId === id) {
-        const remaining = conversations.filter((c) => c.id !== id);
-        setCurrentId(remaining[0]?.id || '');
-      }
-      push('info', t('aiCopilot.conversationDeleted', 'Conversation deleted'));
+  const handleSelectConversation = useCallback(
+    (id: string) => {
+      if (id === currentId) return;
+      setCurrentId(id);
+      setInput('');
     },
-    [currentId, conversations, setConversations, setCurrentId, push, t]
+    [currentId]
   );
 
-  const clearAll = useCallback(() => {
-    if (conversations.length === 0) return;
-    if (!window.confirm(t('aiCopilot.confirmClearAll', 'Delete all conversations? This cannot be undone.'))) {
-      return;
-    }
-    setConversations([]);
-    setCurrentId('');
-    push('info', t('aiCopilot.clearedAll', 'All conversations cleared'));
-  }, [conversations.length, setConversations, setCurrentId, push, t]);
+  const handleDeleteConversation = useCallback((id: string) => {
+    const conv = conversations.find((c) => c.id === id);
+    if (!conv) return;
+    setPendingDelete({ id, title: conv.title });
+  }, [conversations]);
 
-  const copyMessage = useCallback(
-    async (msg: ChatMessage) => {
-      if (typeof window === 'undefined' || !msg.content) return;
+  const confirmDelete = useCallback(async () => {
+    if (!pendingDelete) return;
+    const id = pendingDelete.id;
+    removeConversationLocal(id);
+    if (currentId === id) {
+      const remaining = conversations.filter((c) => c.id !== id);
+      setCurrentId(remaining[0]?.id || '');
+    }
+    if (apiAvailable) {
+      try {
+        await api.ai.conversations.delete(id);
+      } catch (err) {
+        console.warn('Failed to delete conversation on server', err);
+        push('error', t('aiConversation.saveError', 'Could not save changes to the server'));
+        setApiAvailable(false);
+      }
+    }
+    push('info', t('aiConversation.deleted', 'Conversation deleted'));
+    setPendingDelete(null);
+  }, [pendingDelete, removeConversationLocal, currentId, conversations, apiAvailable, push, t]);
+
+  const handleRenameConversation = useCallback(
+    (id: string, newTitle: string) => {
+      updateConversation(id, (c) => ({ ...c, title: newTitle }));
+      if (apiAvailable) {
+        api.ai.conversations
+          .update(id, { title: newTitle })
+          .catch((err) => {
+            console.warn('Failed to rename on server', err);
+            setApiAvailable(false);
+            push('error', t('aiConversation.saveError', 'Could not save changes to the server'));
+          });
+      } else {
+        push('info', t('aiConversation.renamed', 'Conversation renamed'));
+      }
+    },
+    [apiAvailable, push, t, updateConversation]
+  );
+
+  const handleMessageCopy = useCallback(
+    async (id: string, content: string) => {
       try {
         if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(msg.content);
+          await navigator.clipboard.writeText(content);
         } else {
           const ta = document.createElement('textarea');
-          ta.value = msg.content;
+          ta.value = content;
           ta.style.position = 'absolute';
           ta.style.left = '-9999px';
           document.body.appendChild(ta);
@@ -651,32 +848,67 @@ export default function AICopilotPage() {
           document.execCommand('copy');
           document.body.removeChild(ta);
         }
-        setCopiedId(msg.id);
-        setTimeout(() => setCopiedId(null), 1500);
-        push('success', t('aiCopilot.copied', 'Copied to clipboard'));
+        push('success', t('aiConversation.copiedMessage', 'Copied to clipboard'));
+        return true;
       } catch {
-        push('error', t('aiCopilot.copyFailed', 'Could not copy'));
+        push('error', t('aiConversation.failedCopy', 'Could not copy message'));
+        return false;
       }
     },
     [push, t]
   );
 
-  const setFeedback = useCallback(
-    (msg: ChatMessage, feedback: 'up' | 'down') => {
+  const handleMessageFeedback = useCallback(
+    (messageId: string, value: 'up' | 'down' | null) => {
       if (!currentConversation) return;
-      const next = feedback === msg.feedback ? undefined : feedback;
       updateConversation(currentConversation.id, (c) => ({
         ...c,
-        messages: c.messages.map((m) => (m.id === msg.id ? { ...m, feedback: next } : m)),
+        messages: c.messages.map((m) => (m.id === messageId ? { ...m, feedback: value || undefined } : m)),
       }));
-      if (next) {
-        push('success', feedback === 'up'
-          ? t('aiCopilot.feedbackThanks', 'Thanks for the feedback!')
-          : t('aiCopilot.feedbackRecorded', 'Feedback recorded — we will learn from this.')
-        );
+      if (value === 'up') {
+        push('success', t('aiCopilot.feedbackThanks', 'Thanks for the feedback!'));
+      } else if (value === 'down') {
+        push('success', t('aiCopilot.feedbackRecorded', 'Feedback recorded — we will learn from this.'));
       }
     },
     [currentConversation, updateConversation, push, t]
+  );
+
+  const handleMessageRegenerate = useCallback(
+    (messageId: string) => {
+      if (!currentConversation) return;
+      const idx = currentConversation.messages.findIndex((m) => m.id === messageId);
+      if (idx <= 0) return;
+      const userMsg = currentConversation.messages[idx - 1];
+      if (userMsg.role !== 'user') return;
+      send(userMsg.content, { regenerateOfMessageId: messageId });
+    },
+    [currentConversation, send]
+  );
+
+  const handleMessageEdit = useCallback(
+    (messageId: string, newContent: string) => {
+      if (!currentConversation) return;
+      updateConversation(currentConversation.id, (c) => ({
+        ...c,
+        messages: c.messages.map((m) => (m.id === messageId ? { ...m, content: newContent } : m)),
+      }));
+      const idx = currentConversation.messages.findIndex((m) => m.id === messageId);
+      if (idx <= 0) return;
+      const next = currentConversation.messages
+        .slice(0, idx)
+        .map((m) => (m.id === messageId ? { ...m, content: newContent } : m));
+      updateConversation(currentConversation.id, (c) => ({
+        ...c,
+        messages: next,
+        updatedAt: new Date().toISOString(),
+      }));
+      const userMsg = next[idx - 1];
+      if (userMsg?.role === 'user') {
+        send(userMsg.content, { userMessageOverride: userMsg.content });
+      }
+    },
+    [currentConversation, send, updateConversation]
   );
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -686,13 +918,24 @@ export default function AICopilotPage() {
     }
   };
 
-  const filteredConversations = useMemo(() => {
-    if (!search.trim()) return conversations;
-    const q = search.toLowerCase();
-    return conversations.filter(
-      (c) => c.title.toLowerCase().includes(q) || c.messages.some((m) => m.content.toLowerCase().includes(q))
-    );
-  }, [conversations, search]);
+  const sidebarConversations: ConversationItem[] = useMemo(
+    () =>
+      conversations.map((c) => ({
+        id: c.id,
+        title: c.title || newConversationTitle,
+        agentType: c.agentType,
+        messageCount: c.messages.length,
+        lastActivityAt: c.updatedAt,
+        createdAt: c.createdAt,
+        lastMessagePreview: c.messages[c.messages.length - 1]?.content.slice(0, 80) || null,
+      })),
+    [conversations, newConversationTitle]
+  );
+
+  const agentTypes = useMemo(
+    () => allAgents.map((a) => ({ value: a.agent_type, label: a.name || a.agent_type })),
+    [allAgents]
+  );
 
   const lastAssistant = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -712,8 +955,27 @@ export default function AICopilotPage() {
             <Sparkles className="h-6 w-6 text-purple-500" aria-hidden="true" />
             {t('aiCopilot.title', 'AI Copilot')}
           </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {t('aiCopilot.subtitleLong', 'Ask questions about your pipeline, candidates, and evaluations.')}
+          <p className="mt-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <span>{t('aiCopilot.subtitleLong', 'Ask questions about your pipeline, candidates, and evaluations.')}</span>
+            {apiAvailable ? (
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-medium text-green-600 dark:text-success-500"
+                title={t('aiCopilot.subtitle', 'Powered by GPT-4o · routed through the orchestrator')}
+              >
+                <Cloud className="h-3 w-3" aria-hidden="true" />
+                {t('aiConversation.synced', 'Synced')}
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={loadConversations}
+                className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 dark:text-warning-500"
+                aria-label={t('aiConversation.loadError', 'Could not load conversations — showing local copy')}
+              >
+                <CloudOff className="h-3 w-3" aria-hidden="true" />
+                {t('aiConversation.localMode', 'Local only · retry')}
+              </button>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -722,9 +984,9 @@ export default function AICopilotPage() {
             size="sm"
             leftIcon={<Plus className="h-4 w-4" aria-hidden="true" />}
             onClick={newConversation}
-            aria-label={t('aiCopilot.newConversationAria', 'Start new conversation')}
+            aria-label={t('aiConversation.newConversationAria', 'Start new conversation')}
           >
-            {t('aiCopilot.newConversation', 'New conversation')}
+            {t('aiConversation.newConversation', 'New conversation')}
           </Button>
           <HelpButton tour={aiCopilotTour} />
         </div>
@@ -732,110 +994,17 @@ export default function AICopilotPage() {
 
       <div className="flex min-h-0 flex-1 gap-4">
         {showSidebar && (
-          <aside
-            className="hidden w-72 shrink-0 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-surface-700 dark:bg-surface-900 md:flex"
-            aria-label={t('aiCopilot.sidebarAria', 'Conversations sidebar')}
-          >
-            <div className="border-b border-gray-200 p-3 dark:border-surface-700">
-              <div className="relative">
-                <Search
-                  className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400"
-                  aria-hidden="true"
-                />
-                <input
-                  type="search"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={t('aiCopilot.searchConversations', 'Search conversations…')}
-                  aria-label={t('aiCopilot.searchConversationsAria', 'Search conversations')}
-                  className="w-full rounded-md border border-gray-200 bg-white py-1.5 pl-8 pr-3 text-xs text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-surface-600 dark:bg-surface-800 dark:text-gray-100"
-                />
-              </div>
-            </div>
-            <div className="flex-1 overflow-y-auto p-2">
-              {filteredConversations.length === 0 ? (
-                <div className="px-3 py-6 text-center text-xs text-gray-500 dark:text-gray-400">
-                  {conversations.length === 0
-                    ? t('aiCopilot.noConversations', 'No conversations yet')
-                    : t('aiCopilot.noMatches', 'No conversations match your search')}
-                </div>
-              ) : (
-                <ul className="space-y-1" role="list">
-                  {filteredConversations.map((c) => {
-                    const isActive = c.id === currentId;
-                    const userCount = c.messages.filter((m) => m.role === 'user').length;
-                    return (
-                      <li key={c.id}>
-                        <button
-                          type="button"
-                          onClick={() => setCurrentId(c.id)}
-                          aria-current={isActive ? 'true' : undefined}
-                          className={`group w-full rounded-lg border px-2.5 py-2 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                            isActive
-                              ? 'border-blue-200 bg-blue-50 dark:border-brand-500/30 dark:bg-brand-500/10'
-                              : 'border-transparent hover:bg-gray-50 dark:hover:bg-surface-800'
-                          }`}
-                        >
-                          <div className="flex items-start gap-2">
-                            <MessageSquare
-                              className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
-                                isActive ? 'text-blue-600 dark:text-brand-400' : 'text-gray-400'
-                              }`}
-                              aria-hidden="true"
-                            />
-                            <div className="min-w-0 flex-1">
-                              <p
-                                className={`truncate text-xs font-medium ${
-                                  isActive
-                                    ? 'text-blue-900 dark:text-brand-200'
-                                    : 'text-gray-900 dark:text-gray-100'
-                                }`}
-                              >
-                                {c.title}
-                              </p>
-                              <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
-                                <span>{formatRelativeTime(c.updatedAt, locale)}</span>
-                                {userCount > 0 && (
-                                  <>
-                                    <span aria-hidden="true">·</span>
-                                    <span>
-                                      {userCount}{' '}
-                                      {userCount === 1
-                                        ? t('aiCopilot.messageSingular', 'message')
-                                        : t('aiCopilot.messagePlural', 'messages')}
-                                    </span>
-                                  </>
-                                )}
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={(e) => deleteConversation(c.id, e)}
-                              className="rounded p-1 text-gray-400 opacity-0 transition group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:hover:bg-danger-500/20 dark:hover:text-danger-500"
-                              aria-label={t('aiCopilot.deleteAria', 'Delete conversation')}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                            </button>
-                          </div>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-            <div className="border-t border-gray-200 p-2 dark:border-surface-700">
-              <button
-                type="button"
-                onClick={clearAll}
-                disabled={conversations.length === 0}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-gray-500 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:text-gray-400 dark:hover:bg-danger-500/20 dark:hover:text-danger-500"
-              >
-                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                {t('aiCopilot.clearAll', 'Clear all conversations')}
-              </button>
-            </div>
-          </aside>
+          <ConversationSidebar
+            conversations={sidebarConversations}
+            activeId={currentId || null}
+            loading={conversationsLoading}
+            agentTypes={agentTypes}
+            onSelect={handleSelectConversation}
+            onNew={newConversation}
+            onDelete={handleDeleteConversation}
+            onRename={handleRenameConversation}
+            className="hidden md:flex"
+          />
         )}
 
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-surface-700 dark:bg-surface-900">
@@ -857,6 +1026,14 @@ export default function AICopilotPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={loadConversations}
+                aria-label={t('aiConversation.refreshAria', 'Refresh conversations')}
+                className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-surface-700 dark:bg-surface-800 dark:text-gray-200 dark:hover:bg-surface-700"
+              >
+                <RefreshIcon className="h-3 w-3" aria-hidden="true" />
+              </button>
               <div className="relative" ref={agentsRef}>
                 <button
                   type="button"
@@ -958,171 +1135,29 @@ export default function AICopilotPage() {
               })}
             </div>
 
-            {messages.map((m) => (
-              <article
-                key={m.id}
-                className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                {m.role === 'assistant' && (
-                  <div
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600"
-                    aria-hidden="true"
-                  >
-                    <Bot className="h-4 w-4 text-white" />
-                  </div>
-                )}
-                <div className={`max-w-[85%] sm:max-w-[80%] ${m.role === 'user' ? 'order-2' : ''}`}>
-                  {m.role === 'assistant' && m.agentName && !m.pending && (
-                    <p className="mb-1 flex flex-wrap items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                      <span>{m.agentName}</span>
-                      {m.agentType && (
-                        <Badge variant="default" size="sm">
-                          {m.agentType}
-                        </Badge>
-                      )}
-                      {typeof m.confidence === 'number' && (
-                        <span className="font-normal normal-case text-gray-300 dark:text-gray-500">
-                          {t('aiCopilot.confidence', 'confidence')} {Math.round(m.confidence * 100)}%
-                        </span>
-                      )}
-                    </p>
-                  )}
-                  <div
-                    className={`rounded-2xl px-4 py-3 text-sm ${
-                      m.role === 'user'
-                        ? 'whitespace-pre-wrap bg-blue-600 text-white'
-                        : m.error
-                          ? 'border border-red-200 bg-red-50 text-red-900 dark:border-danger-500/30 dark:bg-danger-500/10 dark:text-red-200'
-                          : 'border border-gray-200 bg-gray-50 text-gray-900 dark:border-surface-700 dark:bg-surface-800 dark:text-gray-100'
-                    }`}
-                  >
-                    {m.pending ? (
-                      <span
-                        className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400"
-                        aria-label={t('aiCopilot.thinking', 'AI is thinking…')}
-                      >
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-gray-400" />
-                        <span
-                          className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-                          style={{ animationDelay: '150ms' }}
-                        />
-                        <span
-                          className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-                          style={{ animationDelay: '300ms' }}
-                        />
-                      </span>
-                    ) : m.role === 'assistant' ? (
-                      <>
-                        <Markdown>{m.content}</Markdown>
-                        {m.streaming && m.content.length === 0 && null}
-                        {m.streaming && m.content.length > 0 && (
-                          <span
-                            className="ml-0.5 inline-block h-3 w-1.5 translate-y-0.5 animate-pulse rounded-sm bg-blue-500"
-                            aria-hidden="true"
-                          />
-                        )}
-                      </>
-                    ) : (
-                      m.content
-                    )}
-                  </div>
-                  {m.role === 'assistant' && !m.pending && !m.error && (
-                    <div className="mt-1.5 flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => copyMessage(m)}
-                        className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-400 dark:hover:bg-surface-700 dark:hover:text-white"
-                        aria-label={
-                          copiedId === m.id
-                            ? t('aiCopilot.copiedAria', 'Copied')
-                            : t('aiCopilot.copyAria', 'Copy message')
-                        }
-                      >
-                        {copiedId === m.id ? (
-                          <CheckIcon className="h-3 w-3" aria-hidden="true" />
-                        ) : (
-                          <CopyIcon className="h-3 w-3" aria-hidden="true" />
-                        )}
-                        {copiedId === m.id
-                          ? t('aiCopilot.copied', 'Copied')
-                          : t('aiCopilot.copy', 'Copy')}
-                      </button>
-                      {lastAssistant?.id === m.id && currentConversation && currentConversation.messages.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const userMsg = [...currentConversation.messages]
-                              .reverse()
-                              .find((mm) => mm.role === 'user' && mm.id !== m.id);
-                            if (userMsg) send(userMsg.content, { regenerateOfMessageId: m.id });
-                          }}
-                          disabled={loading}
-                          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-surface-700 dark:hover:text-white"
-                          aria-label={t('aiCopilot.regenerateAria', 'Regenerate response')}
-                        >
-                          <RefreshCw className="h-3 w-3" aria-hidden="true" />
-                          {t('aiCopilot.regenerate', 'Regenerate')}
-                        </button>
-                      )}
-                      <div className="ml-auto flex items-center gap-0.5" role="group" aria-label={t('aiCopilot.feedbackAria', 'Rate response')}>
-                        <button
-                          type="button"
-                          onClick={() => setFeedback(m, 'up')}
-                          aria-pressed={m.feedback === 'up'}
-                          aria-label={t('aiCopilot.thumbUpAria', 'Thumbs up')}
-                          className={`rounded p-1 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                            m.feedback === 'up'
-                              ? 'bg-green-100 text-green-700 dark:bg-success-500/20 dark:text-success-500'
-                              : 'text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-surface-700 dark:hover:text-gray-200'
-                          }`}
-                        >
-                          <ThumbsUp className="h-3 w-3" aria-hidden="true" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setFeedback(m, 'down')}
-                          aria-pressed={m.feedback === 'down'}
-                          aria-label={t('aiCopilot.thumbDownAria', 'Thumbs down')}
-                          className={`rounded p-1 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                            m.feedback === 'down'
-                              ? 'bg-red-100 text-red-700 dark:bg-danger-500/20 dark:text-danger-500'
-                              : 'text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-surface-700 dark:hover:text-gray-200'
-                          }`}
-                        >
-                          <ThumbsDown className="h-3 w-3" aria-hidden="true" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {m.role === 'assistant' && m.reasoning && m.reasoning.length > 0 && !m.pending && (
-                    <details className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      <summary className="cursor-pointer rounded font-medium hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:text-gray-200">
-                        {t('aiCopilot.reasoning', 'Show reasoning')}
-                      </summary>
-                      <ol className="mt-2 list-decimal space-y-1 pl-5">
-                        {m.reasoning.map((r, i) => (
-                          <li key={i}>{typeof r === 'string' ? r : JSON.stringify(r)}</li>
-                        ))}
-                      </ol>
-                    </details>
-                  )}
-                  {m.error && (
-                    <p className="mt-2 inline-flex items-center gap-1 text-xs text-red-700 dark:text-red-300">
-                      <AlertCircle className="h-3 w-3" aria-hidden="true" />
-                      {t('aiCopilot.error', 'AI service error')}
-                    </p>
-                  )}
-                </div>
-                {m.role === 'user' && (
-                  <div
-                    className="order-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-200 dark:bg-surface-800"
-                    aria-hidden="true"
-                  >
-                    <UserIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                  </div>
-                )}
-              </article>
-            ))}
+            {messages.map((m) => {
+              const bubbleProps: MessageBubbleProps = {
+                id: m.id,
+                role: m.role,
+                content: m.content,
+                agentName: m.agentName,
+                agentType: m.agentType,
+                confidence: m.confidence,
+                reasoning: m.reasoning,
+                feedback: m.feedback,
+                pending: m.pending,
+                streaming: m.streaming,
+                error: m.error,
+                timestamp: m.timestamp,
+                showRegenerate:
+                  m.role === 'assistant' && lastAssistant?.id === m.id && (currentConversation?.messages.length || 0) > 1,
+                onCopy: handleMessageCopy,
+                onRegenerate: handleMessageRegenerate,
+                onEdit: handleMessageEdit,
+                onFeedback: handleMessageFeedback,
+              };
+              return <MessageBubble key={m.id} {...bubbleProps} />;
+            })}
             <div ref={endRef} />
           </div>
 
@@ -1181,6 +1216,37 @@ export default function AICopilotPage() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
+        title={t('aiConversation.deleteConfirm.title', 'Delete this conversation?')}
+        description={t(
+          'aiConversation.deleteConfirm.description',
+          'All messages in this conversation will be removed. This action cannot be undone.'
+        )}
+        confirmLabel={t('aiConversation.deleteConfirm.confirm', 'Delete conversation')}
+        cancelLabel={t('common.cancel', 'Cancel')}
+        variant="danger"
+        destructive
+      />
+
+      {conversations.length > 0 && !apiAvailable && (
+        <p
+          className="mt-2 inline-flex items-center gap-1 text-[10px] text-amber-600 dark:text-warning-500"
+          role="status"
+        >
+          <AlertCircle className="h-3 w-3" aria-hidden="true" />
+          {t('aiConversation.loadError', 'Could not load conversations — showing local copy')}
+        </p>
+      )}
+
+      <span className="sr-only" aria-live="polite">
+        {currentConversation
+          ? `${currentConversation.title} · ${currentConversation.messages.length} ${formatRelativeTime(currentConversation.updatedAt, locale)}`
+          : ''}
+      </span>
     </div>
   );
 }

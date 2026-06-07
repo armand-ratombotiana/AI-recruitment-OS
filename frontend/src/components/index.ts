@@ -48,6 +48,8 @@ export { StatsCard } from './dashboard/stats-card';
 export { InterviewChat } from './interview/interview-chat';
 export { PPEEditor } from './coding-editor/ppe-editor';
 export { CopilotPanel } from './ai-copilot/copilot-panel';
+export { ConversationSidebar, MessageBubble } from './ai';
+export type { ConversationItem, ConversationSidebarProps, MessageBubbleProps } from './ai';
 export { UserMenu } from './dashboard/user-menu';
 export { NotificationsBell } from './dashboard/notifications-bell';
 export { QuickActionsFab } from './dashboard/quick-actions-fab';

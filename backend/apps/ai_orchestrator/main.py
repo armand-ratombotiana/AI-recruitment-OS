@@ -28,8 +28,10 @@ from shared.ai.task_queue import (
     task_to_dict,
     update_task_status,
 )
-from shared.auth import require_tenant_id
+from shared.ai.memory import AgentMemory
+from shared.auth import require_authenticated_user, require_tenant_id
 from shared.core.database import get_db_dependency
+from shared.core.models.conversation import Conversation, ConversationMessage
 from shared.middleware.rate_limit import rate_limit_ai as _rate_limit_ai_dep
 
 logger = logging.getLogger("ai.orchestrator")
@@ -903,3 +905,411 @@ async def llm_cache_stats(
     from shared.ai.cache import get_llm_cache
 
     return get_llm_cache().stats()
+
+
+# ── Conversation memory ──────────────────────────────────────────────────────
+
+
+_KNOWN_AGENT_TYPES: set[str] = (
+    set(AGENT_REGISTRY.keys()) | {a["type"] for a in AGENTS_DB.values()}
+)
+
+_VALID_ROLES = {"user", "assistant", "system"}
+
+
+class ConversationCreate(BaseModel):
+    agent_type: str = Field(..., description="Agent type the conversation talks to")
+    title: Optional[str] = Field(default=None, description="Optional human-friendly title")
+
+
+class ConversationRead(BaseModel):
+    id: str
+    tenant_id: str
+    user_id: Optional[str] = None
+    agent_type: str
+    title: str
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+    message_count: int = 0
+
+
+class ConversationListResponse(BaseModel):
+    data: list[ConversationRead]
+    total: int
+
+
+class ConversationMessageRead(BaseModel):
+    id: str
+    conversation_id: str
+    role: str
+    content: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    created_at: Optional[str] = None
+
+
+class ConversationDetail(ConversationRead):
+    messages: list[ConversationMessageRead] = Field(default_factory=list)
+
+
+class MessageCreate(BaseModel):
+    content: str = Field(..., min_length=1, description="The user message to send")
+    metadata: Optional[dict[str, Any]] = Field(
+        default=None, description="Optional context blob (e.g. job_id, candidate_id)"
+    )
+    context_window: int = Field(
+        default=10,
+        ge=1,
+        le=100,
+        description="Number of prior messages to feed to the agent for context",
+    )
+
+
+class MessageResponse(BaseModel):
+    conversation_id: str
+    user_message: ConversationMessageRead
+    assistant_message: ConversationMessageRead
+    context_used: int = Field(
+        default=0, description="Number of prior messages passed to the agent"
+    )
+
+
+def _conversation_to_read(conv: Conversation, *, message_count: int = 0) -> ConversationRead:
+    return ConversationRead(
+        id=conv.id,
+        tenant_id=conv.tenant_id,
+        user_id=conv.user_id,
+        agent_type=conv.agent_type,
+        title=conv.title,
+        created_at=conv.created_at.isoformat() if conv.created_at else None,
+        updated_at=conv.updated_at.isoformat() if conv.updated_at else None,
+        message_count=message_count,
+    )
+
+
+def _message_to_read(msg: ConversationMessage) -> ConversationMessageRead:
+    return ConversationMessageRead(
+        id=msg.id,
+        conversation_id=msg.conversation_id,
+        role=msg.role,
+        content=msg.content,
+        metadata=msg.meta or {},
+        created_at=msg.created_at.isoformat() if msg.created_at else None,
+    )
+
+
+async def _load_conversation(
+    db: AsyncSession, conversation_id: str, tenant_id: str
+) -> Conversation:
+    stmt = select(Conversation).where(
+        Conversation.id == conversation_id,
+        Conversation.tenant_id == tenant_id,
+    )
+    conv = (await db.execute(stmt)).scalar_one_or_none()
+    if conv is None:
+        raise HTTPException(
+            status_code=404, detail=f"Conversation {conversation_id} not found"
+        )
+    return conv
+
+
+async def _load_messages(
+    db: AsyncSession, conversation_id: str
+) -> list[ConversationMessage]:
+    stmt = (
+        select(ConversationMessage)
+        .where(ConversationMessage.conversation_id == conversation_id)
+        .order_by(ConversationMessage.created_at.asc(), ConversationMessage.id.asc())
+    )
+    rows = (await db.execute(stmt)).scalars().all()
+    return list(rows)
+
+
+async def _count_messages(db: AsyncSession, conversation_id: str) -> int:
+    from sqlalchemy import func
+
+    stmt = select(func.count(ConversationMessage.id)).where(
+        ConversationMessage.conversation_id == conversation_id
+    )
+    result = await db.execute(stmt)
+    return int(result.scalar_one() or 0)
+
+
+def _build_memory_from_messages(
+    messages: list[ConversationMessage], *, max_entries: int = 20
+) -> AgentMemory:
+    """Hydrate an :class:`AgentMemory` from persisted messages."""
+    memory = AgentMemory(max_entries=max_entries)
+    for msg in messages:
+        if msg.role not in _VALID_ROLES:
+            continue
+        try:
+            memory.add(msg.role, msg.content, metadata=msg.meta or {})  # type: ignore[arg-type]
+        except ValueError:
+            continue
+    return memory
+
+
+async def _generate_agent_response(
+    *,
+    agent_type: str,
+    tenant_id: str,
+    memory: AgentMemory,
+    user_content: str,
+) -> tuple[str, dict[str, Any]]:
+    """Generate the assistant reply.
+
+    Tries the real LLM-backed agent first when one is registered for
+    ``agent_type``.  Falls back to a deterministic acknowledgement that
+    embeds the size of the context window so tests can verify it was
+    actually used.
+    """
+    history_size = len(memory)
+    metadata: dict[str, Any] = {
+        "agent_type": agent_type,
+        "tenant_id": tenant_id,
+        "context_messages": history_size,
+    }
+
+    if agent_type in AGENT_REGISTRY:
+        try:
+            real_agent = build_agent(agent_type, tenant_id=tenant_id)
+            # Expose the memory to the agent for richer subclasses; the
+            # default BaseAgent ignores it but ``memory`` is part of the
+            # public contract used by ``process_task`` callers.
+            try:
+                setattr(real_agent, "memory", memory)
+            except Exception:
+                pass
+            task_payload = {
+                "candidate": {},
+                "job": {},
+                "message": user_content,
+                "history": memory.get_messages(history_size),
+            }
+            result = await real_agent.process_task(task_payload)
+            metadata.update(
+                {
+                    "model_used": result.get("model_used"),
+                    "provider": result.get("provider"),
+                    "confidence_score": result.get("confidence_score"),
+                    "result": result,
+                }
+            )
+            content = (
+                result.get("summary")
+                or result.get("recommendation")
+                or result.get("body")
+                or "Done."
+            )
+            return str(content), metadata
+        except Exception as exc:  # pragma: no cover - degrades to fallback
+            logger.warning(
+                "conversation.real_agent_failed agent=%s tenant=%s err=%s",
+                agent_type, tenant_id, exc,
+            )
+            metadata["agent_error"] = str(exc)
+
+    # Deterministic fallback so the endpoint works without an LLM key.
+    summary = memory.get_summary()
+    reply = (
+        f"[{agent_type}] Acknowledged: {user_content.strip()[:200]}"
+        f" (context: {summary['counts'].get('user', 0)} prior user / "
+        f"{summary['counts'].get('assistant', 0)} prior assistant)"
+    )
+    metadata["fallback"] = True
+    return reply, metadata
+
+
+@router.get(
+    "/conversations",
+    response_model=ConversationListResponse,
+    tags=["AI"],
+    summary="List conversations for the current user",
+)
+async def list_conversations(
+    user: dict = Depends(require_authenticated_user),
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+    limit: int = Query(default=50, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+) -> ConversationListResponse:
+    """Return the calling user's conversations, newest first."""
+    user_id = user.get("id") or user.get("sub")
+    stmt = (
+        select(Conversation)
+        .where(
+            Conversation.tenant_id == tenant_id,
+            Conversation.user_id == user_id,
+        )
+        .order_by(Conversation.updated_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    rows = (await db.execute(stmt)).scalars().all()
+    data: list[ConversationRead] = []
+    for conv in rows:
+        count = await _count_messages(db, conv.id)
+        data.append(_conversation_to_read(conv, message_count=count))
+    return ConversationListResponse(data=data, total=len(data))
+
+
+@router.post(
+    "/conversations",
+    response_model=ConversationRead,
+    status_code=201,
+    tags=["AI"],
+    summary="Create a new conversation thread",
+)
+async def create_conversation(
+    body: ConversationCreate,
+    user: dict = Depends(require_authenticated_user),
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> ConversationRead:
+    """Create a new conversation thread tied to a particular agent."""
+    if body.agent_type not in _KNOWN_AGENT_TYPES:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Agent type '{body.agent_type}' is not supported",
+        )
+    user_id = user.get("id") or user.get("sub")
+    conv = Conversation(
+        tenant_id=tenant_id,
+        user_id=user_id,
+        agent_type=body.agent_type,
+        title=(body.title or f"Chat with {body.agent_type}").strip()[:255] or "New conversation",
+    )
+    db.add(conv)
+    await db.commit()
+    await db.refresh(conv)
+    return _conversation_to_read(conv, message_count=0)
+
+
+@router.get(
+    "/conversations/{conversation_id}",
+    response_model=ConversationDetail,
+    tags=["AI"],
+    summary="Get a single conversation, including all messages",
+)
+async def get_conversation(
+    conversation_id: str,
+    user: dict = Depends(require_authenticated_user),  # noqa: ARG001 - auth gate
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> ConversationDetail:
+    """Fetch a conversation (tenant-scoped) and all of its messages in order."""
+    conv = await _load_conversation(db, conversation_id, tenant_id)
+    messages = await _load_messages(db, conv.id)
+    base = _conversation_to_read(conv, message_count=len(messages))
+    return ConversationDetail(
+        **base.model_dump(),
+        messages=[_message_to_read(m) for m in messages],
+    )
+
+
+@router.delete(
+    "/conversations/{conversation_id}",
+    tags=["AI"],
+    summary="Delete a conversation and all of its messages",
+)
+async def delete_conversation(
+    conversation_id: str,
+    user: dict = Depends(require_authenticated_user),  # noqa: ARG001 - auth gate
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> dict[str, Any]:
+    """Hard-delete a conversation and cascade-remove its messages."""
+    conv = await _load_conversation(db, conversation_id, tenant_id)
+    messages = await _load_messages(db, conv.id)
+    deleted_messages = len(messages)
+    for msg in messages:
+        await db.delete(msg)
+    await db.delete(conv)
+    await db.commit()
+    return {
+        "id": conversation_id,
+        "deleted": True,
+        "messages_deleted": deleted_messages,
+    }
+
+
+@router.post(
+    "/conversations/{conversation_id}/messages",
+    response_model=MessageResponse,
+    status_code=201,
+    tags=["AI"],
+    summary="Add a user message and get the AI agent's contextual reply",
+)
+async def add_conversation_message(
+    conversation_id: str,
+    body: MessageCreate,
+    user: dict = Depends(require_authenticated_user),  # noqa: ARG001 - auth gate
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+) -> MessageResponse:
+    """Append a user message, run the agent with full context, store the reply.
+
+    The agent is invoked with a hydrated :class:`AgentMemory` containing
+    the most recent ``context_window`` prior messages plus the brand-new
+    user turn — so it responds *in context*.
+    """
+    conv = await _load_conversation(db, conversation_id, tenant_id)
+    prior_messages = await _load_messages(db, conv.id)
+
+    # Persist the user message first.
+    user_meta = dict(body.metadata or {})
+    user_msg = ConversationMessage(
+        conversation_id=conv.id,
+        role="user",
+        content=body.content,
+        meta=user_meta,
+    )
+    db.add(user_msg)
+
+    # Build the context window the agent will see.
+    memory = _build_memory_from_messages(
+        prior_messages, max_entries=max(body.context_window, 4)
+    )
+    memory.add("user", body.content, metadata=user_meta)
+    context = memory.get_recent(body.context_window)
+
+    # Generate the assistant reply.
+    try:
+        reply_text, reply_meta = await _generate_agent_response(
+            agent_type=conv.agent_type,
+            tenant_id=tenant_id,
+            memory=memory,
+            user_content=body.content,
+        )
+    except Exception as exc:
+        logger.exception(
+            "conversation.generate_failed conv=%s tenant=%s", conv.id, tenant_id
+        )
+        await db.rollback()
+        raise HTTPException(
+            status_code=500, detail=f"Agent reply failed: {exc}"
+        ) from exc
+
+    assistant_msg = ConversationMessage(
+        conversation_id=conv.id,
+        role="assistant",
+        content=reply_text,
+        meta=reply_meta,
+    )
+    db.add(assistant_msg)
+
+    # Touch the conversation so list endpoints sort by recency.
+    conv.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.add(conv)
+
+    await db.commit()
+    await db.refresh(user_msg)
+    await db.refresh(assistant_msg)
+    await db.refresh(conv)
+
+    return MessageResponse(
+        conversation_id=conv.id,
+        user_message=_message_to_read(user_msg),
+        assistant_message=_message_to_read(assistant_msg),
+        context_used=len(context),
+    )

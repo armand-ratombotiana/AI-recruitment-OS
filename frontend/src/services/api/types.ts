@@ -923,6 +923,62 @@ export namespace AiTypes {
     [k: string]: unknown;
   }
 
+  export interface AiConversationSummary {
+    id: UUID;
+    title: string;
+    agent_type: string;
+    message_count: number;
+    last_message_preview: string | null;
+    last_activity_at: ISODateString;
+    created_at: ISODateString;
+    updated_at: ISODateString;
+  }
+
+  export interface AiConversationDetail extends AiConversationSummary {
+    messages: AiConversationMessage[];
+    metadata: Record<string, unknown> | null;
+  }
+
+  export interface AiConversationMessage {
+    id: UUID;
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+    agent_type: string | null;
+    agent_name: string | null;
+    confidence: number | null;
+    reasoning: Array<string | Record<string, unknown>> | null;
+    feedback: 'up' | 'down' | null;
+    error: boolean;
+    created_at: ISODateString;
+  }
+
+  export interface AiConversationCreateRequest {
+    title?: string;
+    agent_type?: string;
+    metadata?: Record<string, unknown>;
+  }
+
+  export interface AiConversationUpdateRequest {
+    title?: string;
+    agent_type?: string;
+    metadata?: Record<string, unknown>;
+  }
+
+  export interface AiConversationListResponse {
+    conversations: AiConversationSummary[];
+    total: number;
+  }
+
+  export interface AiConversationMessageCreateRequest {
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+    agent_type?: string;
+    agent_name?: string;
+    confidence?: number;
+    reasoning?: Array<string | Record<string, unknown>>;
+    error?: boolean;
+  }
+
   export interface CreateTaskRequest {
     type: string;
     payload: Record<string, unknown>;
