@@ -1000,6 +1000,150 @@ export namespace AiTypes {
 }
 
 // ---------------------------------------------------------------------------
+// Assessments
+// ---------------------------------------------------------------------------
+
+export namespace AssessmentTypes {
+  export type QuestionType = 'mcq' | 'short_answer' | 'coding' | 'text';
+  export type DifficultyLevel = 'easy' | 'medium' | 'hard';
+  export type AssessmentStatus =
+    | 'draft'
+    | 'pending'
+    | 'in_progress'
+    | 'completed'
+    | 'expired'
+    | 'cancelled';
+  export type Recommendation = 'strong_hire' | 'hire' | 'neutral' | 'no_hire' | 'strong_no_hire';
+
+  export interface AssessmentQuestionOption {
+    id: string;
+    label: string;
+    is_correct?: boolean | null;
+  }
+
+  export interface AssessmentQuestion {
+    id: UUID;
+    order: number;
+    type: QuestionType;
+    prompt: string;
+    description?: string | null;
+    points: number;
+    difficulty?: DifficultyLevel;
+    options?: AssessmentQuestionOption[] | null;
+    starter_code?: string | null;
+    language?: string | null;
+    expected_answer?: string | null;
+    placeholder?: string | null;
+    max_length?: number | null;
+    tags?: string[];
+  }
+
+  export interface AssessmentAnswer {
+    question_id: UUID;
+    selected_option_id?: string | null;
+    text?: string | null;
+    code?: string | null;
+    language?: string | null;
+  }
+
+  export interface AssessmentScore {
+    question_id: UUID;
+    points_earned: number;
+    points_possible: number;
+    is_correct?: boolean | null;
+    feedback?: string | null;
+  }
+
+  export interface AssessmentSummary {
+    id: UUID;
+    title: string;
+    candidate_id: UUID;
+    candidate_name?: string | null;
+    job_id: UUID;
+    job_title?: string | null;
+    status: AssessmentStatus;
+    question_count: number;
+    total_points: number;
+    score?: number | null;
+    score_percent?: number | null;
+    difficulty: DifficultyLevel;
+    question_types: QuestionType[];
+    time_limit_minutes?: number | null;
+    due_at?: ISODateString | null;
+    started_at?: ISODateString | null;
+    submitted_at?: ISODateString | null;
+    created_at: ISODateString;
+    updated_at?: ISODateString;
+  }
+
+  export interface AssessmentDetail extends AssessmentSummary {
+    description?: string | null;
+    questions: AssessmentQuestion[];
+    passing_score?: number | null;
+    recommendation?: Recommendation | null;
+    ai_feedback?: string | null;
+    answers?: AssessmentAnswer[];
+    scores?: AssessmentScore[];
+    created_by?: string | null;
+  }
+
+  export type AssessmentListResponse = PaginatedResponse<AssessmentSummary>;
+
+  export interface AssessmentCreateRequest {
+    title: string;
+    candidate_id: UUID;
+    job_id: UUID;
+    question_count: number;
+    difficulty: DifficultyLevel;
+    question_types: QuestionType[];
+    time_limit_minutes?: number | null;
+    due_at?: ISODateString | null;
+    description?: string | null;
+    passing_score?: number | null;
+  }
+
+  export interface AssessmentConfigStep {
+    question_count: number;
+    difficulty: DifficultyLevel;
+    question_types: QuestionType[];
+    time_limit_minutes?: number;
+    passing_score?: number;
+  }
+
+  export interface AssessmentStartResponse {
+    assessment_id: UUID;
+    started_at: ISODateString;
+    expires_at?: ISODateString | null;
+  }
+
+  export interface AssessmentAnswerBatch {
+    answers: AssessmentAnswer[];
+  }
+
+  export interface AssessmentSubmitResponse {
+    assessment_id: UUID;
+    submitted_at: ISODateString;
+    status: AssessmentStatus;
+    score: number;
+    score_percent: number;
+    total_points: number;
+    earned_points: number;
+    recommendation?: Recommendation;
+    ai_feedback?: string | null;
+    scores: AssessmentScore[];
+  }
+
+  export interface AssessmentFilters {
+    status?: AssessmentStatus | 'all';
+    candidate_id?: UUID;
+    job_id?: UUID;
+    difficulty?: DifficultyLevel;
+    page?: number;
+    page_size?: number;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // AI Evaluation
 // ---------------------------------------------------------------------------
 

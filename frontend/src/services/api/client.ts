@@ -25,6 +25,7 @@ import type {
   PpeTypes,
   AiTypes,
   AiEvaluationTypes,
+  AssessmentTypes,
   AnalyticsTypes,
   WorkflowTypes,
   NotificationTypes,
@@ -1195,6 +1196,62 @@ class APIClient {
       this.request<AiEvaluationTypes.EvaluationBenchmark[]>(
         '/ai-evaluation/benchmarks',
       ),
+  };
+
+  // ========================================================================
+  // ASSESSMENTS SERVICE
+  // ========================================================================
+
+  assessments = {
+    health: () => this.request<HealthResponse>('/assessments/health'),
+    list: (params?: Record<string, string>) =>
+      this.request<AssessmentTypes.AssessmentListResponse>('/assessments/', { params }),
+    get: (assessmentId: string) =>
+      this.request<AssessmentTypes.AssessmentDetail>(`/assessments/${assessmentId}`),
+    create: (data: AssessmentTypes.AssessmentCreateRequest) =>
+      this.request<AssessmentTypes.AssessmentDetail>('/assessments/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (
+      assessmentId: string,
+      data: Partial<AssessmentTypes.AssessmentCreateRequest>
+    ) =>
+      this.request<AssessmentTypes.AssessmentDetail>(`/assessments/${assessmentId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    delete: (assessmentId: string) =>
+      this.request<MessageResponse>(`/assessments/${assessmentId}`, { method: 'DELETE' }),
+    send: (assessmentId: string) =>
+      this.request<MessageResponse>(`/assessments/${assessmentId}/send`, {
+        method: 'POST',
+      }),
+    start: (assessmentId: string) =>
+      this.request<AssessmentTypes.AssessmentStartResponse>(
+        `/assessments/${assessmentId}/start`,
+        { method: 'POST' },
+      ),
+    saveAnswers: (
+      assessmentId: string,
+      data: AssessmentTypes.AssessmentAnswerBatch
+    ) =>
+      this.request<MessageResponse>(`/assessments/${assessmentId}/answers`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    submit: (
+      assessmentId: string,
+      data: AssessmentTypes.AssessmentAnswerBatch
+    ) =>
+      this.request<AssessmentTypes.AssessmentSubmitResponse>(
+        `/assessments/${assessmentId}/submit`,
+        { method: 'POST', body: JSON.stringify(data) },
+      ),
+    cancel: (assessmentId: string) =>
+      this.request<MessageResponse>(`/assessments/${assessmentId}/cancel`, {
+        method: 'POST',
+      }),
   };
 
   // ========================================================================

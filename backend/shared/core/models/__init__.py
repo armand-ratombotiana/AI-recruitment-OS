@@ -103,6 +103,24 @@ from shared.core.models.tag import (
     AddEntityTagRequest,
     AddEntityTagResponse,
 )
+from shared.core.models.assessment import (
+    Answer,
+    AnswerRead,
+    AnswerSubmit,
+    Assessment,
+    AssessmentCreate,
+    AssessmentCreateResponse,
+    AssessmentDetail,
+    AssessmentListResponse,
+    AssessmentRead,
+    AssessmentResultsResponse,
+    AssessmentStatus,
+    Question,
+    QuestionRead,
+    QuestionType,
+    SubmitAnswersRequest,
+    SubmitAnswersResponse,
+)
 
 __all__ = [
     "ApiKey",
@@ -150,4 +168,10 @@ __all__ = [
     "PopularTagItem", "PopularTagsResponse",
     "EntityTagRead", "EntityTagListResponse",
     "AddEntityTagRequest", "AddEntityTagResponse",
+    "Answer", "AnswerRead", "AnswerSubmit",
+    "Assessment", "AssessmentCreate", "AssessmentCreateResponse",
+    "AssessmentDetail", "AssessmentListResponse", "AssessmentRead",
+    "AssessmentResultsResponse", "AssessmentStatus",
+    "Question", "QuestionRead", "QuestionType",
+    "SubmitAnswersRequest", "SubmitAnswersResponse",
 ]
