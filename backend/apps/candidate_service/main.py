@@ -1842,3 +1842,448 @@ async def remove_candidate_tag(
     await db.delete(app)
     await db.flush()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# ── Resume upload, download, delete, and parse ────────────────────────────────
+#
+# The file *bytes* live in the in-memory ``shared.files.storage`` store keyed
+# by a UUID.  We persist only the ``file_id`` + filename + content_type on the
+# candidate row so the bytes can be downloaded back through the GET endpoint.
+# This keeps the DB small and makes the upload pipeline safe to swap for S3 /
+# MinIO later without changing the public API.
+#
+# The parse endpoint (``/parse-resume``) is intentionally separate: it does
+# NOT bind a resume to a specific candidate -- it's a stateless extractor the
+# UI calls as the user picks a file, before they hit "save".
+
+# Default skill catalogue used by ``POST /parse-resume`` and the upload flow
+# when the caller does not supply their own.  Kept in one place so the same
+# vocabulary is used by the upload, the re-parse, and any AI agent that
+# eventually consumes the extracted field.
+DEFAULT_KNOWN_SKILLS: list[str] = [
+    "python", "javascript", "typescript", "go", "rust", "java", "kotlin", "swift",
+    "ruby", "php", "c", "c++", "c#", "scala", "r", "matlab", "sql", "nosql",
+    "html", "css", "sass", "tailwind", "react", "vue", "angular", "svelte",
+    "next.js", "nuxt", "fastapi", "flask", "django", "express", "nestjs",
+    "spring", "rails", "laravel", ".net", "node.js", "deno", "bun",
+    "postgresql", "mysql", "mariadb", "mongodb", "redis", "elasticsearch",
+    "cassandra", "dynamodb", "bigquery", "snowflake", "kafka", "rabbitmq",
+    "docker", "kubernetes", "terraform", "ansible", "jenkins", "github actions",
+    "gitlab ci", "circleci", "prometheus", "grafana", "datadog", "splunk",
+    "aws", "azure", "gcp", "cloudflare", "vercel", "netlify", "heroku",
+    "tensorflow", "pytorch", "scikit-learn", "pandas", "numpy", "spark", "hadoop",
+    "airflow", "dbt", "mlflow", "huggingface", "openai", "langchain",
+    "rest", "graphql", "grpc", "websockets", "kafka", "rabbitmq",
+    "git", "linux", "bash", "powershell", "agile", "scrum", "kanban", "jira",
+]
+
+MAX_RESUME_BYTES = 10 * 1024 * 1024  # 10 MB
+
+
+class ResumeUploadResponse(BaseModel):
+    candidate_id: str
+    file_id: str
+    file_name: str
+    content_type: str
+    size: int
+    url: str
+    extracted_email: str | None = None
+    extracted_phone: str | None = None
+    extracted_skills: list[str] = []
+    experience_years: int | None = None
+    parsed: bool = True
+
+
+class ResumeDownloadResponse(BaseModel):
+    candidate_id: str
+    file_id: str
+    file_name: str
+    content_type: str
+    size: int
+    content_base64: str
+
+
+class ResumeDeleteResponse(BaseModel):
+    candidate_id: str
+    file_id: str
+    deleted: bool = True
+
+
+class ParsedResumeResponse(BaseModel):
+    file_name: str
+    content_type: str
+    size: int
+    text: str
+    text_preview: str
+    email: str | None = None
+    phone: str | None = None
+    skills: list[str] = []
+    experience_years: int | None = None
+    parsing_confidence: float = 0.0
+    page_count: int | None = None
+
+
+class _ParseResumeForm:
+    """Marker for the form parameter on /parse-resume."""
+
+
+async def _read_resume_upload(
+    upload: UploadFile, *, max_bytes: int = MAX_RESUME_BYTES
+) -> tuple[bytes, str, str]:
+    """Read an ``UploadFile`` and return ``(content, content_type, filename)``.
+
+    Guards against oversize uploads so a malicious client cannot exhaust
+    process memory by streaming 10 GB.
+    """
+    filename = upload.filename or "resume"
+    content_type = (upload.content_type or "").split(";", 1)[0].strip().lower()
+    chunks: list[bytes] = []
+    total = 0
+    while True:
+        chunk = await upload.read(1024 * 64)
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > max_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"Resume exceeds {max_bytes // (1024 * 1024)} MB limit",
+            )
+        chunks.append(chunk)
+    content = b"".join(chunks)
+    if not content:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Empty file",
+        )
+    # Trust the body more than the declared header when the two disagree.
+    detected = detect_content_type(
+        content, declared_mime=content_type or None, filename=filename
+    )
+    return content, detected or content_type or "application/octet-stream", filename
+
+
+def _resume_record_to_response(candidate: Candidate) -> dict[str, Any]:
+    """Build a dict for the candidate's current resume (or empty fields)."""
+    return {
+        "file_id": candidate.resume_file_id,
+        "file_name": candidate.resume_file_name,
+        "content_type": candidate.resume_content_type,
+        "size": candidate.resume_file_size,
+    }
+
+
+@router.post(
+    "/parse-resume",
+    response_model=ParsedResumeResponse,
+    tags=["Candidates"],
+    summary="Parse a resume without persisting it",
+    description=(
+        "Accept a PDF / DOCX / TXT resume upload and return the extracted "
+        "plain text plus structured fields (email, phone, skills, experience "
+        "years).  The file is NOT saved to storage nor bound to any "
+        "candidate -- use the candidate-scoped ``POST /candidates/{id}/resume`` "
+        "endpoint for that."
+    ),
+)
+async def parse_resume_endpoint(
+    file: UploadFile = File(..., description="Resume file (PDF, DOCX, TXT)"),
+    known_skills: str | None = Query(
+        default=None,
+        description=(
+            "Optional comma-separated skill vocabulary to match against.  "
+            "When omitted, a built-in catalogue of common tech skills is used."
+        ),
+    ),
+    _tenant_id: str = Depends(require_tenant_id),
+) -> ParsedResumeResponse:
+    """Stateless resume parser -- never persists the file."""
+    content, content_type, filename = await _read_resume_upload(file)
+
+    text = parse_resume(content, content_type=content_type, filename=filename)
+
+    if known_skills:
+        vocab = [s.strip() for s in known_skills.split(",") if s.strip()]
+    else:
+        vocab = DEFAULT_KNOWN_SKILLS
+
+    email = extract_email(text)
+    phone = extract_phone(text)
+    skills = extract_skills(text, vocab)
+    years = extract_experience_years(text)
+
+    # Confidence: extracted-email + extracted-phone + skills coverage + size
+    confidence = 0.4
+    if email:
+        confidence += 0.2
+    if phone:
+        confidence += 0.1
+    if skills:
+        confidence += min(0.2, 0.04 * len(skills))
+    if len(text) > 800:
+        confidence += 0.1
+
+    page_count: int | None = None
+    if content_type == "application/pdf" and content[:4].lstrip().startswith(b"%PDF"):
+        try:
+            import fitz  # type: ignore
+
+            doc = fitz.open(stream=content, filetype="pdf")
+            page_count = doc.page_count
+            doc.close()
+        except Exception:
+            page_count = None
+
+    return ParsedResumeResponse(
+        file_name=filename,
+        content_type=content_type,
+        size=len(content),
+        text=text,
+        text_preview=text[:600],
+        email=email,
+        phone=phone,
+        skills=skills,
+        experience_years=years,
+        parsing_confidence=round(min(confidence, 0.99), 2),
+        page_count=page_count,
+    )
+
+
+@router.post(
+    "/{candidate_id}/resume",
+    response_model=ResumeUploadResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Candidates"],
+    summary="Upload a resume for a candidate",
+    description=(
+        "Upload a PDF / DOCX resume, persist it to storage, and bind it to "
+        "the candidate.  Replaces any previously-uploaded resume for the "
+        "same candidate.  The structured fields (email, phone, skills, "
+        "experience years) are extracted on the fly and returned in the "
+        "response, but the body of the resume stays in the storage layer."
+    ),
+)
+async def upload_candidate_resume(
+    candidate_id: str,
+    file: UploadFile = File(..., description="Resume file (PDF, DOCX, TXT)"),
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_user),
+    _rl: None = Depends(candidate_write_rate),
+) -> ResumeUploadResponse:
+    """Upload (or replace) the resume for a candidate."""
+    result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == candidate_id, Candidate.tenant_id == tenant_id
+        )
+    )
+    candidate = result.scalar_one_or_none()
+    if candidate is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
+
+    content, content_type, filename = await _read_resume_upload(file)
+
+    # If this candidate already has a resume uploaded, drop the old bytes
+    # from the storage layer so we don't leak orphans.  Best effort: if the
+    # old file id is missing, the delete is a no-op.
+    if candidate.resume_file_id:
+        file_storage.delete_file(candidate.resume_file_id)
+
+    file_id, url = file_storage.save_file(
+        content=content, filename=filename, content_type=content_type
+    )
+
+    text = parse_resume(content, content_type=content_type, filename=filename)
+    email = extract_email(text)
+    phone = extract_phone(text)
+    skills = extract_skills(text, DEFAULT_KNOWN_SKILLS)
+    years = extract_experience_years(text)
+
+    candidate.resume_file_id = file_id
+    candidate.resume_file_name = filename
+    candidate.resume_content_type = content_type
+    candidate.resume_file_size = len(content)
+    candidate.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.add(candidate)
+
+    # If we discovered an email from the resume and the candidate record has
+    # none, fill it in so the candidate is reachable from the resume alone.
+    if email and not candidate.email:
+        candidate.email = email
+        db.add(candidate)
+
+    # Auto-log on the candidate timeline so the upload shows up next to the
+    # rest of the activity feed.
+    await _safe_log_activity(
+        db,
+        tenant_id=tenant_id,
+        candidate_id=candidate_id,
+        activity_type=CandidateActivityType.RESUME_UPLOADED
+        if hasattr(CandidateActivityType, "RESUME_UPLOADED")
+        else CandidateActivityType.NOTE,
+        title="Resume uploaded",
+        content=f"Uploaded {filename} ({len(content)} bytes, {content_type})",
+        user_id=user.get("id"),
+        meta={
+            "file_id": file_id,
+            "file_name": filename,
+            "content_type": content_type,
+            "size": len(content),
+            "extracted_email": email,
+            "extracted_phone": phone,
+            "skills": skills,
+            "experience_years": years,
+        },
+    )
+
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.resume.upload",
+        resource_type="candidate_resume",
+        resource_id=file_id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+        details={"candidate_id": candidate_id, "file_name": filename},
+    )
+
+    await safe_dispatch_event(
+        "candidate.resume.uploaded",
+        {
+            "candidate_id": candidate_id,
+            "file_id": file_id,
+            "file_name": filename,
+            "content_type": content_type,
+            "size": len(content),
+            "extracted_email": email,
+        },
+        tenant_id,
+        db=db,
+    )
+
+    await db.flush()
+
+    return ResumeUploadResponse(
+        candidate_id=candidate_id,
+        file_id=file_id,
+        file_name=filename,
+        content_type=content_type,
+        size=len(content),
+        url=url,
+        extracted_email=email,
+        extracted_phone=phone,
+        extracted_skills=skills,
+        experience_years=years,
+        parsed=True,
+    )
+
+
+@router.get(
+    "/{candidate_id}/resume",
+    tags=["Candidates"],
+    summary="Download the resume attached to a candidate",
+    description=(
+        "Return the raw bytes of the candidate's resume, base64-encoded in "
+        "JSON (so the response is always JSON, never an octet-stream).  "
+        "Returns 404 when the candidate has no resume yet."
+    ),
+)
+async def download_candidate_resume(
+    candidate_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+):
+    result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == candidate_id, Candidate.tenant_id == tenant_id
+        )
+    )
+    candidate = result.scalar_one_or_none()
+    if candidate is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
+    if not candidate.resume_file_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Candidate has no resume uploaded",
+        )
+    content = file_storage.get_file(candidate.resume_file_id)
+    if content is None:
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail="Resume bytes are no longer available in storage",
+        )
+
+    import base64
+
+    return ResumeDownloadResponse(
+        candidate_id=candidate_id,
+        file_id=candidate.resume_file_id,
+        file_name=candidate.resume_file_name or "resume",
+        content_type=candidate.resume_content_type or "application/octet-stream",
+        size=len(content),
+        content_base64=base64.b64encode(content).decode("ascii"),
+    )
+
+
+@router.delete(
+    "/{candidate_id}/resume",
+    response_model=ResumeDeleteResponse,
+    tags=["Candidates"],
+    summary="Delete the resume attached to a candidate",
+    description=(
+        "Removes the resume bytes from the storage layer and clears the "
+        "``file_id`` / filename on the candidate row.  Safe to call when the "
+        "candidate has no resume -- returns 204-style 200 with ``deleted=False``."
+    ),
+)
+async def delete_candidate_resume(
+    candidate_id: str,
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_user),
+    _rl: None = Depends(candidate_write_rate),
+) -> ResumeDeleteResponse:
+    result = await db.execute(
+        select(Candidate).where(
+            Candidate.id == candidate_id, Candidate.tenant_id == tenant_id
+        )
+    )
+    candidate = result.scalar_one_or_none()
+    if candidate is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found"
+        )
+
+    old_file_id = candidate.resume_file_id
+    if not old_file_id:
+        return ResumeDeleteResponse(
+            candidate_id=candidate_id, file_id="", deleted=False
+        )
+
+    removed = file_storage.delete_file(old_file_id)
+    candidate.resume_file_id = None
+    candidate.resume_file_name = None
+    candidate.resume_content_type = None
+    candidate.resume_file_size = None
+    candidate.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.add(candidate)
+
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="candidate.resume.delete",
+        resource_type="candidate_resume",
+        resource_id=old_file_id,
+        actor_id=user["id"],
+        actor_email=user.get("email"),
+        details={"candidate_id": candidate_id, "removed_from_storage": removed},
+    )
+
+    await db.flush()
+    return ResumeDeleteResponse(
+        candidate_id=candidate_id, file_id=old_file_id, deleted=removed
+    )

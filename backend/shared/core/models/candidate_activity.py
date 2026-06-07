@@ -40,6 +40,8 @@ class CandidateActivityType(str, Enum):
     SCORE_UPDATE = "score_update"
     CANDIDATE_CREATED = "candidate_created"
     INTERVIEW_SCHEDULED = "interview_scheduled"
+    RESUME_UPLOADED = "resume_uploaded"
+    RESUME_DELETED = "resume_deleted"
 
 
 class CandidateActivity(SQLModel, table=True):

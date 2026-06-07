@@ -47,6 +47,10 @@ class Candidate(SQLModel, table=True):
     source: str | None = None
     tags: str = "[]"
     notes: str | None = None
+    resume_file_id: str | None = SQLField(default=None, index=True)
+    resume_file_name: str | None = None
+    resume_content_type: str | None = None
+    resume_file_size: int | None = None
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None).replace(tzinfo=None))
     updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None).replace(tzinfo=None))
 
