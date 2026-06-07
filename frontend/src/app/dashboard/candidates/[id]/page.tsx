@@ -59,6 +59,10 @@ import {
 import type { Tab, TimelineItem } from '@/components';
 import { useLocaleStore, translate, interpolate, formatDate, formatRelativeTime } from '@/stores/locale-store';
 import { ScoreCard } from '@/components/candidates/score-card';
+import {
+  ApplicationCard,
+  normalizeApplicationStage,
+} from '@/components/pipeline/application-card';
 
 const STATUS_VARIANT: Record<string, 'info' | 'warning' | 'success' | 'purple' | 'default' | 'danger' | 'orange' | 'teal' | 'indigo' | 'pink'> = {
   active: 'info',
@@ -997,7 +1001,11 @@ export default function CandidateDetailPage({ params }: { params: { id: string }
       )}
 
       {activeTab === 'applications' && (
-        <ApplicationsTab applications={applications} t={t} />
+        <ApplicationsTab
+          applications={applications}
+          candidateId={candidate.id}
+          t={t}
+        />
       )}
 
       {activeTab === 'score' && (
@@ -1874,9 +1882,15 @@ function NotesTab({
   );
 }
 
-function ApplicationsTab({ applications, t }: { applications: ApplicationItem[]; t: (k: string, fb?: string) => string }) {
-  const locale = useLocaleStore((s) => s.locale);
-
+function ApplicationsTab({
+  applications,
+  candidateId,
+  t,
+}: {
+  applications: ApplicationItem[];
+  candidateId: string;
+  t: (k: string, fb?: string) => string;
+}) {
   if (applications.length === 0) {
     return (
       <Card>
@@ -1892,48 +1906,44 @@ function ApplicationsTab({ applications, t }: { applications: ApplicationItem[];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {applications.map((a) => (
-        <Card key={`${a.job_id}-${a.applied_at}`}>
-          <CardContent className="p-4 sm:p-5">
-            <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shrink-0">
-                {a.job_title?.[0]?.toUpperCase() || '?'}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{a.job_title}</p>
-                {a.company && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{a.company}</p>
-                )}
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {a.status && (
-                    <Badge variant={STATUS_VARIANT[a.status] || 'default'} size="sm">
-                      {a.status}
-                    </Badge>
-                  )}
-                  {a.match_score !== undefined && (
-                    <Badge variant="info" size="sm">
-                      <TrendingUp className="h-3 w-3 mr-0.5" aria-hidden="true" />
-                      {Math.round(a.match_score)}%
-                    </Badge>
-                  )}
-                </div>
-                {a.applied_at && (
-                  <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-2">
-                    {t('candidateDetail.applications.appliedOn', 'Applied')} {formatRelativeTime(a.applied_at, locale)}
-                  </p>
-                )}
-              </div>
-              <Link
-                href={`/dashboard/jobs/${a.job_id}`}
-                className="text-blue-600 dark:text-brand-400 hover:underline text-xs inline-flex items-center gap-1"
-              >
-                {t('candidateDetail.applications.viewJob', 'View job')}
-                <ExternalLink className="h-3 w-3" aria-hidden="true" />
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      {applications.map((a) => {
+        const stage = normalizeApplicationStage(a.stage || a.status);
+        const score = typeof a.match_score === 'number' ? a.match_score : null;
+        const ref = a.updated_at || a.applied_at;
+        const refDate = ref ? new Date(ref) : null;
+        const daysInStage =
+          refDate && !isNaN(refDate.getTime())
+            ? Math.max(0, Math.floor((Date.now() - refDate.getTime()) / 86_400_000))
+            : 0;
+        const application = {
+          id: `${a.job_id}-${a.applied_at || a.job_id}`,
+          candidate_id: candidateId,
+          candidate_name: a.job_title || t('candidateDetail.applications.viewJob', 'View job'),
+          job_id: a.job_id,
+          job_title: a.job_title,
+          job_company: a.company ?? null,
+          stage,
+          status_raw: a.status,
+          score,
+          days_in_stage: daysInStage,
+          applied_at: a.applied_at || null,
+          last_activity_at: a.updated_at || a.applied_at || null,
+        };
+        return (
+          <div key={`${a.job_id}-${a.applied_at || ''}`}>
+            <ApplicationCard
+              application={application as any}
+              variant="list"
+              showJob
+              onClick={(app) => {
+                if (typeof window !== 'undefined') {
+                  window.location.href = `/dashboard/jobs/${app.job_id}?tab=applicants`;
+                }
+              }}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }

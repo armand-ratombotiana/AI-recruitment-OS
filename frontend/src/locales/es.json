@@ -1747,20 +1747,80 @@
       "hired": "Contratado",
       "rejected": "Rechazado"
     },
-    "noCandidates": "Sin candidatos",
-    "noCandidatesInPipeline": "Sin candidatos en el pipeline",
-    "noCandidatesDesc": "Añade candidatos y aparecerán aquí, organizados por etapa.",
-    "moved": "Movido a {status}",
-    "couldntLoad": "No se pudo cargar el pipeline",
-    "moveFailed": "No se pudo mover al candidato",
-    "confirmMove": {
-      "title": "Confirmar movimiento",
-      "desc": "Mover este candidato de",
-      "warning": "Este es un cambio de estado importante.",
-      "confirm": "Mover candidato"
+    "v2": {
+      "title": "Pipeline de candidaturas",
+      "subtitle": "{count} candidaturas en {stages} etapas. Arrastra para mover entre etapas.",
+      "filterJob": "Filtrar por puesto",
+      "filterJobAll": "Todos los puestos",
+      "filterRecruiter": "Filtrar por reclutador",
+      "filterRecruiterAll": "Todos los reclutadores",
+      "filterSearch": "Buscar candidatos",
+      "clearFilters": "Limpiar filtros",
+      "daysInStage": "{n}d en la etapa",
+      "noApplications": "Ninguna candidatura coincide con los filtros actuales.",
+      "noApplicationsDesc": "Ajusta los filtros arriba o arrastra una tarjeta entre etapas para mantener el ritmo.",
+      "couldntLoad": "No se pudo cargar el pipeline global",
+      "moveFailed": "No se pudo mover la candidatura",
+      "summary": {
+        "title": "Resumen por etapa",
+        "candidates": "{count} candidatos",
+        "avgDays": "Prom. {days}d en la etapa",
+        "conversion": "{pct}% avanza a la siguiente",
+        "noData": "Aún no hay datos suficientes"
+      },
+      "actions": {
+        "open": "Abrir candidato",
+        "openJob": "Abrir pipeline del puesto",
+        "schedule": "Programar entrevista",
+        "reject": "Rechazar candidatura",
+        "message": "Enviar mensaje"
+      },
+      "confirmMove": {
+        "title": "Confirmar movimiento de candidatura",
+        "desc": "¿Mover a {name} de {from} a {to}? Esto actualizará el estado del candidato en la plataforma."
+      }
+    }
+  },
+  "applicationCard": {
+    "unnamed": "Candidato sin nombre",
+    "scoreAria": "Puntuación de coincidencia {score}",
+    "lastActivity": "Última actividad {when}",
+    "noActivity": "Sin actividad reciente",
+    "daysAria": "{n} días en la etapa actual",
+    "appliedOn": "Aplicó {when}",
+    "stage": "Etapa",
+    "job": "Puesto",
+    "actions": {
+      "schedule": "Programar entrevista",
+      "scheduleScheduled": "Programando…",
+      "scheduleTooltip": "Abrir el programador de entrevistas para {name}",
+      "reject": "Rechazar",
+      "rejectRejecting": "Rechazando…",
+      "rejectTooltip": "Mover a {name} a la etapa Rechazado",
+      "message": "Mensaje",
+      "messageSending": "Enviando…",
+      "messageTooltip": "Enviar un correo rápido a {name}",
+      "openCandidate": "Abrir perfil del candidato",
+      "openJob": "Ver candidatos del puesto"
     },
-    "dropZone": "Suelta al candidato para moverlo a {stage}",
-    "moreSkills": "{n} habilidades más: {skills}"
+    "toasts": {
+      "interviewCreated": "Entrevista creada para {name}",
+      "interviewFailed": "No se pudo crear la entrevista",
+      "movedToRejected": "{name} movido a Rechazado",
+      "moveFailed": "No se pudo mover a {name}",
+      "messageSent": "Correo en cola para {name}",
+      "messageFailed": "No se pudo enviar el correo"
+    }
+  },
+  "stageSummary": {
+    "title": "Resumen de etapa",
+    "count": "Candidatos",
+    "avgTime": "Tiempo promedio",
+    "conversion": "Conversión a la siguiente etapa",
+    "days": "{n}d",
+    "percent": "{pct}%",
+    "noData": "—",
+    "advanceTo": "Avanzar a {stage}"
   },
   "matching": {
     "title": "Matching IA",
@@ -2870,6 +2930,169 @@
     },
     "social": {
       "title": "Síguenos"
+    }
+  },
+  "compliance": {
+    "title": "Panel de cumplimiento",
+    "subtitle": "Monitorea los controles de SOC 2, RGPD y seguridad en tu espacio de trabajo.",
+    "refresh": "Actualizar datos de cumplimiento",
+    "runChecks": "Ejecutar comprobaciones",
+    "accessDenied": "Acceso denegado",
+    "accessDeniedDesc": "Necesitas privilegios de administrador para ver el panel de cumplimiento.",
+    "loadError": "No se pudieron cargar los datos de cumplimiento",
+    "loadErrorDesc": "Hubo un problema al obtener el estado de cumplimiento de tu espacio.",
+    "overallScore": "Puntuación global",
+    "compliant": "Conforme",
+    "scoreHelp": "Basado en las últimas comprobaciones automáticas en todos los marcos de cumplimiento.",
+    "lastRun": "Última ejecución: {date}",
+    "lastAudit": "Última auditoría: {date}",
+    "noAudit": "Aún no hay auditorías registradas",
+    "lastChecked": "Última comprobación: {date}",
+    "justNow": "ahora mismo",
+    "frameworks": {
+      "title": "Estado del marco",
+      "desc": "Postura de RGPD, CCPA y HIPAA según la última auditoría automatizada."
+    },
+    "gdpr": {
+      "title": "RGPD"
+    },
+    "ccpa": {
+      "title": "CCPA"
+    },
+    "hipaa": {
+      "title": "HIPAA"
+    },
+    "counts": {
+      "passed": "Aprobados",
+      "failed": "Fallidos",
+      "warnings": "Advertencias"
+    },
+    "status": {
+      "pass": "Aprobado",
+      "fail": "Fallido",
+      "warning": "Advertencia",
+      "compliant": "Conforme",
+      "violation": "No conforme",
+      "warningOverall": "Requiere atención",
+      "unknown": "Desconocido"
+    },
+    "recommendations": {
+      "title": "Recomendaciones",
+      "desc": "Acciones prioritarias para mejorar tu postura de cumplimiento."
+    },
+    "checks": {
+      "title": "Comprobaciones de cumplimiento",
+      "desc": "Controles de SOC 2, RGPD y seguridad evaluados en tu espacio.",
+      "soc2": {
+        "accessControl": {
+          "name": "Controles de acceso lógico",
+          "desc": "Restringe el acceso lógico a activos, sistemas y datos solo a usuarios autorizados.",
+          "evidence": "Control de acceso basado en roles (RBAC) aplicado en todos los endpoints.\nMFA habilitado para el 100 % de las cuentas admin.\nRevisiones trimestrales de acceso realizadas el {date}."
+        },
+        "encryption": {
+          "name": "Cifrado en reposo y en tránsito",
+          "desc": "Todos los datos sensibles se cifran con algoritmos estándar, en reposo y en tránsito.",
+          "evidence": "TLS 1.3 impuesto en todos los endpoints públicos.\nCifrado AES-256 para almacenamiento en base de datos y objetos.\nRotación de claves cada 90 días vía KMS."
+        },
+        "monitoring": {
+          "name": "Monitoreo de seguridad y detección de anomalías",
+          "desc": "Monitoreo continuo de eventos de seguridad, anomalías e intentos de intrusión.",
+          "evidence": "SIEM centralizado con alertas 24/7.\nRetención 90 días en caliente, 365 días en frío.\nÚltimos 30 días: 0 incidentes críticos, 4 medios, 18 bajos."
+        },
+        "changeMgmt": {
+          "name": "Gestión de cambios y despliegues",
+          "desc": "Los cambios en producción siguen un flujo documentado de revisión, pruebas y aprobaciones.",
+          "evidence": "Todos los cambios en producción requieren revisión de pares y validación CI.\nRegistros de despliegue conservados 365 días.\nÚltimo despliegue: {date}."
+        },
+        "vendorRisk": {
+          "name": "Gestión de riesgo de proveedores y terceros",
+          "desc": "Identifica, evalúa y mitiga los riesgos de proveedores terceros con acceso a datos.",
+          "evidence": "Inventario activo de proveedores: 47.\n14 proveedores pendientes de revisión SOC2.\nÚltimo ciclo de evaluación: T3 2025."
+        }
+      },
+      "gdpr": {
+        "records": {
+          "name": "Registro de actividades de tratamiento",
+          "desc": "Mantiene un registro completo de todas las actividades de tratamiento con datos personales.",
+          "evidence": "Registro del Artículo 30 actualizado con 23 actividades de tratamiento.\nDPO designado y registrado ante la autoridad de control.\nÚltima revisión: {date}."
+        },
+        "security": {
+          "name": "Seguridad del tratamiento (Art. 32)",
+          "desc": "Implementa medidas técnicas y organizativas apropiadas para garantizar la seguridad de los datos.",
+          "evidence": "Cifrado, controles de acceso y seudonimización implementados.\nPruebas de penetración periódicas (última: {date}).\nFormación de seguridad para empleados: 98 % de finalización."
+        },
+        "dsar": {
+          "name": "Solicitudes de acceso y supresión RGPD",
+          "desc": "Procesa solicitudes de acceso y supresión de los interesados en un plazo de 30 días.",
+          "evidence": "Tiempo medio de respuesta DSAR: 4,2 días (SLA: 30 días).\n12 DSAR procesadas este trimestre — 11 completadas, 1 en curso.\nNinguna solicitud fuera de plazo."
+        },
+        "privacyByDesign": {
+          "name": "Privacidad desde el diseño",
+          "desc": "Los principios de privacidad están integrados en las actividades y prácticas de negocio.",
+          "evidence": "DPIA realizada para toda nueva funcionalidad con datos personales.\nMinimización aplicada en los servicios de candidatos y CV.\n3 DPIA completadas este trimestre."
+        }
+      },
+      "security": {
+        "tls": {
+          "name": "Configuración TLS y salud de certificados",
+          "desc": "Todos los endpoints públicos usan certificados TLS válidos y siguen las mejores prácticas actuales.",
+          "evidence": "Todos los certificados gestionados vía ACME/Let's Encrypt automatizado.\nTLS 1.0/1.1 deshabilitados; solo TLS 1.2+ permitido.\nHSTS habilitado con max-age de un año."
+        },
+        "mfa": {
+          "name": "Autenticación multifactor",
+          "desc": "Los usuarios con privilegios deben autenticarse con múltiples factores para acceder a sistemas sensibles.",
+          "evidence": "MFA aplicada al 100 % de los usuarios admin.\n8,5 % de los usuarios estándar con MFA (objetivo: 60 %).\nProveedores SSO soportados: Okta, Azure AD, Google Workspace."
+        },
+        "backup": {
+          "name": "Copias de seguridad y recuperación ante desastres",
+          "desc": "Se realizan copias de seguridad periódicas verificadas mediante pruebas de restauración.",
+          "evidence": "Copias diarias automatizadas con retención de 30 días.\nÚltima prueba de restauración exitosa: {date} (RPO: 24h, RTO: 4h).\nReplicación de copias entre regiones habilitada."
+        },
+        "secrets": {
+          "name": "Gestión de secretos",
+          "desc": "Los secretos se almacenan en un vault gestionado con rotación, nunca en texto plano en el código.",
+          "evidence": "Todos los secretos almacenados en HashiCorp Vault con registro de auditoría.\nÚltima rotación: {date}.\n0 secretos detectados en repositorios (escaneo GitHub habilitado)."
+        },
+        "auditLog": {
+          "name": "Integridad y retención del registro de auditoría",
+          "desc": "Los registros capturan todas las acciones administrativas y son a prueba de manipulaciones.",
+          "evidence": "Registro append-only con encadenamiento criptográfico.\nRetención: 365 días en caliente, 7 años en frío.\nÚltima verificación de integridad: {date} — todas las verificaciones exitosas."
+        },
+        "vuln": {
+          "name": "Escaneo de vulnerabilidades",
+          "desc": "Se ejecutan escaneos de vulnerabilidades periódicos sobre infraestructura y dependencias.",
+          "evidence": "Escaneos automáticos semanales (Snyk + Trivy).\nÚltimo escaneo: {date} — 2 hallazgos medios, 0 altos/críticos.\nTiempo medio de remediación crítica: 2,3 días."
+        }
+      }
+    },
+    "filter": {
+      "label": "Filtrar comprobaciones",
+      "all": "Todas",
+      "pass": "Aprobadas",
+      "fail": "Fallidas",
+      "warning": "Advertencias"
+    },
+    "evidence": {
+      "title": "Evidencia",
+      "show": "Ver evidencia",
+      "hide": "Ocultar evidencia"
+    },
+    "summary": "Mostrando {shown} de {total} comprobaciones · {passed} aprobadas · {failed} fallidas · {warnings} advertencias",
+    "export": "Exportar informe",
+    "export.success": "Informe descargado",
+    "run": {
+      "success": "Comprobaciones finalizadas: {passed} aprobadas, {failed} fallidas, {warnings} advertencias"
+    },
+    "empty": {
+      "title": "Ninguna comprobación coincide con este filtro",
+      "desc": "Prueba con otro filtro de estado o ejecuta una comprobación nueva."
+    }
+  },
+  "adminCompliance": {
+    "link": "Ver panel de cumplimiento",
+    "card": {
+      "title": "Cumplimiento",
+      "desc": "Postura de SOC 2, RGPD y seguridad de un vistazo."
     }
   }
 }

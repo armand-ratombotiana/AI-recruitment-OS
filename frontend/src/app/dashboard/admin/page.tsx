@@ -639,6 +639,8 @@ export default function AdminDashboardPage() {
         />
       </div>
 
+      <ComplianceSection t={t} locale={locale} />
+
       <AuditLogSection entries={auditEntries} t={t} locale={locale} />
 
       <InviteModal
@@ -1325,6 +1327,82 @@ function WebhooksSection({
             ))}
           </ul>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ComplianceSection({
+  t,
+  locale: _locale,
+}: {
+  t: (key: string, fb?: string) => string;
+  locale: Locale;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle as="h2" className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-gray-500" aria-hidden="true" />
+              {t('adminCompliance.card.title', 'Compliance')}
+            </CardTitle>
+            <CardDescription>
+              {t(
+                'adminCompliance.card.desc',
+                'SOC 2, GDPR, and security posture at a glance.'
+              )}
+            </CardDescription>
+          </div>
+          <Link
+            href="/dashboard/admin/compliance"
+            className="text-xs font-medium text-blue-600 hover:underline dark:text-brand-400 inline-flex items-center gap-1"
+          >
+            {t('adminCompliance.link', 'View compliance dashboard')}{' '}
+            <ArrowRight className="h-3 w-3" aria-hidden="true" />
+          </Link>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Link
+            href="/dashboard/admin/compliance"
+            className="rounded-lg border border-gray-200 dark:border-surface-700 p-3 hover:border-blue-400 dark:hover:border-brand-400 transition-colors"
+          >
+            <p className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              {t('compliance.gdpr.title', 'GDPR')}
+            </p>
+            <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+              {t('compliance.status.compliant', 'Compliant')}
+            </p>
+          </Link>
+          <Link
+            href="/dashboard/admin/compliance"
+            className="rounded-lg border border-gray-200 dark:border-surface-700 p-3 hover:border-blue-400 dark:hover:border-brand-400 transition-colors"
+          >
+            <p className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400">SOC 2</p>
+            <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+              {t('compliance.status.compliant', 'Compliant')}
+            </p>
+          </Link>
+          <Link
+            href="/dashboard/admin/compliance"
+            className="rounded-lg border border-gray-200 dark:border-surface-700 p-3 hover:border-blue-400 dark:hover:border-brand-400 transition-colors"
+          >
+            <p className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              {t('compliance.frameworks.title', 'Frameworks')}
+            </p>
+            <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">3</p>
+          </Link>
+          <Link
+            href="/dashboard/admin/compliance"
+            className="rounded-lg border border-gray-200 dark:border-surface-700 p-3 hover:border-blue-400 dark:hover:border-brand-400 transition-colors inline-flex items-center justify-center text-sm font-medium text-blue-600 dark:text-brand-400"
+          >
+            {t('adminCompliance.link', 'View compliance dashboard')}
+            <ArrowRight className="h-3.5 w-3.5 ml-1" aria-hidden="true" />
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );

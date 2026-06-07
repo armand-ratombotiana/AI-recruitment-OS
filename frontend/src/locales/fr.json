@@ -1742,20 +1742,80 @@
       "hired": "Embauché",
       "rejected": "Refusé"
     },
-    "noCandidates": "Aucun candidat",
-    "noCandidatesInPipeline": "Aucun candidat dans le pipeline",
-    "noCandidatesDesc": "Ajoutez des candidats et ils apparaîtront ici, organisés par étape.",
-    "moved": "Déplacé vers {status}",
-    "couldntLoad": "Impossible de charger le pipeline",
-    "moveFailed": "Échec du déplacement du candidat",
-    "confirmMove": {
-      "title": "Confirmer le déplacement",
-      "desc": "Déplacer ce candidat de",
-      "warning": "Ceci est un changement de statut important.",
-      "confirm": "Déplacer le candidat"
+    "v2": {
+      "title": "Pipeline des candidatures",
+      "subtitle": "{count} candidatures sur {stages} étapes. Glissez pour déplacer entre les étapes.",
+      "filterJob": "Filtrer par poste",
+      "filterJobAll": "Tous les postes",
+      "filterRecruiter": "Filtrer par recruteur",
+      "filterRecruiterAll": "Tous les recruteurs",
+      "filterSearch": "Rechercher des candidats",
+      "clearFilters": "Effacer les filtres",
+      "daysInStage": "{n}j dans l'étape",
+      "noApplications": "Aucune candidature ne correspond aux filtres actuels.",
+      "noApplicationsDesc": "Ajustez les filtres ci-dessus ou faites glisser une carte entre les étapes pour garder le rythme.",
+      "couldntLoad": "Impossible de charger le pipeline global",
+      "moveFailed": "Échec du déplacement de la candidature",
+      "summary": {
+        "title": "Vue d'ensemble des étapes",
+        "candidates": "{count} candidats",
+        "avgDays": "Moy. {days}j dans l'étape",
+        "conversion": "{pct}% passent à l'étape suivante",
+        "noData": "Pas encore assez de données"
+      },
+      "actions": {
+        "open": "Ouvrir le candidat",
+        "openJob": "Ouvrir le pipeline du poste",
+        "schedule": "Planifier un entretien",
+        "reject": "Refuser la candidature",
+        "message": "Envoyer un message"
+      },
+      "confirmMove": {
+        "title": "Confirmer le déplacement de la candidature",
+        "desc": "Déplacer {name} de {from} vers {to} ? Cela mettra à jour le statut du candidat sur la plateforme."
+      }
+    }
+  },
+  "applicationCard": {
+    "unnamed": "Candidat sans nom",
+    "scoreAria": "Score de correspondance {score}",
+    "lastActivity": "Dernière activité {when}",
+    "noActivity": "Aucune activité récente",
+    "daysAria": "{n} jours dans l'étape actuelle",
+    "appliedOn": "Candidaté {when}",
+    "stage": "Étape",
+    "job": "Poste",
+    "actions": {
+      "schedule": "Planifier un entretien",
+      "scheduleScheduled": "Planification…",
+      "scheduleTooltip": "Ouvrir le planificateur d'entretien pour {name}",
+      "reject": "Refuser",
+      "rejectRejecting": "Refus…",
+      "rejectTooltip": "Déplacer {name} à l'étape Refusé",
+      "message": "Message",
+      "messageSending": "Envoi…",
+      "messageTooltip": "Envoyer un e-mail rapide à {name}",
+      "openCandidate": "Ouvrir le profil du candidat",
+      "openJob": "Voir les candidats du poste"
     },
-    "dropZone": "Déposer le candidat pour le déplacer vers {stage}",
-    "moreSkills": "{n} compétences supplémentaires : {skills}"
+    "toasts": {
+      "interviewCreated": "Entretien créé pour {name}",
+      "interviewFailed": "Impossible de créer l'entretien",
+      "movedToRejected": "{name} déplacé vers Refusé",
+      "moveFailed": "Impossible de déplacer {name}",
+      "messageSent": "E-mail mis en file d'attente pour {name}",
+      "messageFailed": "Impossible d'envoyer l'e-mail"
+    }
+  },
+  "stageSummary": {
+    "title": "Résumé de l'étape",
+    "count": "Candidats",
+    "avgTime": "Temps moyen",
+    "conversion": "Conversion vers l'étape suivante",
+    "days": "{n}j",
+    "percent": "{pct}%",
+    "noData": "—",
+    "advanceTo": "Passer à {stage}"
   },
   "matching": {
     "title": "Matching IA",
@@ -2865,6 +2925,169 @@
     },
     "social": {
       "title": "Suivez-nous"
+    }
+  },
+  "compliance": {
+    "title": "Tableau de bord de conformité",
+    "subtitle": "Surveillez les contrôles SOC 2, RGPD et sécurité dans votre espace client.",
+    "refresh": "Actualiser les données de conformité",
+    "runChecks": "Lancer les vérifications",
+    "accessDenied": "Accès refusé",
+    "accessDeniedDesc": "Vous avez besoin des droits administrateur pour consulter le tableau de bord de conformité.",
+    "loadError": "Impossible de charger les données de conformité",
+    "loadErrorDesc": "Un problème est survenu lors de la récupération du statut de conformité.",
+    "overallScore": "Score global",
+    "compliant": "Conforme",
+    "scoreHelp": "Basé sur les dernières vérifications automatisées pour tous les cadres de conformité.",
+    "lastRun": "Dernière exécution : {date}",
+    "lastAudit": "Dernier audit : {date}",
+    "noAudit": "Aucun audit enregistré pour le moment",
+    "lastChecked": "Dernière vérification : {date}",
+    "justNow": "à l'instant",
+    "frameworks": {
+      "title": "Statut des cadres",
+      "desc": "Posture RGPD, CCPA et HIPAA basée sur le dernier audit automatisé."
+    },
+    "gdpr": {
+      "title": "RGPD"
+    },
+    "ccpa": {
+      "title": "CCPA"
+    },
+    "hipaa": {
+      "title": "HIPAA"
+    },
+    "counts": {
+      "passed": "Réussis",
+      "failed": "Échoués",
+      "warnings": "Avertissements"
+    },
+    "status": {
+      "pass": "Réussi",
+      "fail": "Échoué",
+      "warning": "Avertissement",
+      "compliant": "Conforme",
+      "violation": "Non conforme",
+      "warningOverall": "À surveiller",
+      "unknown": "Inconnu"
+    },
+    "recommendations": {
+      "title": "Recommandations",
+      "desc": "Actions prioritaires pour améliorer votre posture de conformité."
+    },
+    "checks": {
+      "title": "Vérifications de conformité",
+      "desc": "Contrôles SOC 2, RGPD et sécurité évalués sur votre espace client.",
+      "soc2": {
+        "accessControl": {
+          "name": "Contrôles d'accès logiques",
+          "desc": "Restreint l'accès logique aux actifs, systèmes et données aux seuls utilisateurs autorisés.",
+          "evidence": "Contrôle d'accès basé sur les rôles (RBAC) appliqué sur tous les points d'accès.\nMFA activée pour 100 % des comptes administrateurs.\nRevues d'accès trimestrielles effectuées le {date}."
+        },
+        "encryption": {
+          "name": "Chiffrement au repos et en transit",
+          "desc": "Toutes les données sensibles sont chiffrées avec des algorithmes standard, au repos et en transit.",
+          "evidence": "TLS 1.3 imposé sur tous les points d'accès publics.\nChiffrement AES-256 pour le stockage en base et objet.\nRotation des clés tous les 90 jours via KMS."
+        },
+        "monitoring": {
+          "name": "Surveillance de la sécurité et détection d'anomalies",
+          "desc": "Surveillance continue des événements de sécurité, anomalies et tentatives d'intrusion.",
+          "evidence": "SIEM centralisé avec alertes 24/7.\nRétention 90 jours à chaud, 365 jours à froid.\n30 derniers jours : 0 incident critique, 4 moyens, 18 faibles."
+        },
+        "changeMgmt": {
+          "name": "Gestion des changements et déploiements",
+          "desc": "Les changements en production suivent un flux documenté de revue, tests et approbations.",
+          "evidence": "Tous les changements en production nécessitent une revue par les pairs et la validation CI.\nJournaux de déploiement conservés 365 jours.\nDernier déploiement : {date}."
+        },
+        "vendorRisk": {
+          "name": "Gestion des risques fournisseurs et tiers",
+          "desc": "Identifie, évalue et atténue les risques liés aux fournisseurs tiers ayant accès aux données.",
+          "evidence": "Inventaire actif des fournisseurs : 47.\n14 fournisseurs en attente de revue SOC2.\nDernier cycle d'évaluation : T3 2025."
+        }
+      },
+      "gdpr": {
+        "records": {
+          "name": "Registre des activités de traitement",
+          "desc": "Tient un registre complet de toutes les activités de traitement impliquant des données personnelles.",
+          "evidence": "Registre Article 30 à jour avec 23 activités de traitement.\nDPO désigné et enregistré auprès de l'autorité de contrôle.\nDernière revue : {date}."
+        },
+        "security": {
+          "name": "Sécurité du traitement (Art. 32)",
+          "desc": "Met en œuvre des mesures techniques et organisationnelles appropriées pour sécuriser les données.",
+          "evidence": "Chiffrement, contrôles d'accès et pseudonymisation en place.\nTests d'intrusion réguliers (dernier : {date}).\nFormation sécurité employés : taux de complétion 98 %."
+        },
+        "dsar": {
+          "name": "Demandes d'accès et d'effacement RGPD",
+          "desc": "Traite les demandes d'accès et d'effacement des personnes concernées sous 30 jours.",
+          "evidence": "Temps moyen de réponse DSAR : 4,2 jours (SLA : 30 jours).\n12 DSAR traitées ce trimestre — 11 terminées, 1 en cours.\nAucune demande en retard."
+        },
+        "privacyByDesign": {
+          "name": "Protection des données dès la conception",
+          "desc": "Les principes de protection des données sont intégrés aux activités et pratiques métiers.",
+          "evidence": "DPIA réalisée pour toute nouvelle fonctionnalité traitant des données personnelles.\nMinimisation appliquée aux services candidats et CV.\n3 DPIA réalisées ce trimestre."
+        }
+      },
+      "security": {
+        "tls": {
+          "name": "Configuration TLS et santé des certificats",
+          "desc": "Tous les points d'accès publics utilisent des certificats TLS valides et les bonnes pratiques actuelles.",
+          "evidence": "Tous les certificats gérés via ACME/Let's Encrypt automatisé.\nTLS 1.0/1.1 désactivés ; seul TLS 1.2+ autorisé.\nHSTS activé avec max-age d'un an."
+        },
+        "mfa": {
+          "name": "Authentification multifacteur",
+          "desc": "Les utilisateurs privilégiés doivent s'authentifier avec plusieurs facteurs pour accéder aux systèmes sensibles.",
+          "evidence": "MFA imposée pour 100 % des utilisateurs admin.\n8,5 % des utilisateurs standards ont activé la MFA (cible : 60 %).\nFournisseurs SSO pris en charge : Okta, Azure AD, Google Workspace."
+        },
+        "backup": {
+          "name": "Sauvegardes et reprise d'activité",
+          "desc": "Des sauvegardes régulières sont effectuées et vérifiées par des tests de restauration périodiques.",
+          "evidence": "Sauvegardes quotidiennes automatisées avec rétention 30 jours.\nDernier test de restauration réussi : {date} (RPO : 24h, RTO : 4h).\nRéplication des sauvegardes inter-régions activée."
+        },
+        "secrets": {
+          "name": "Hygiène de gestion des secrets",
+          "desc": "Les secrets sont stockés dans un coffre géré avec rotation, jamais en clair dans le code.",
+          "evidence": "Tous les secrets stockés dans HashiCorp Vault avec journalisation d'audit.\nDernière rotation : {date}.\n0 secret détecté dans les dépôts (scan GitHub activé)."
+        },
+        "auditLog": {
+          "name": "Intégrité et rétention du journal d'audit",
+          "desc": "Les journaux d'audit capturent toutes les actions administratives et sont inviolables.",
+          "evidence": "Journal d'audit append-only avec chaînage cryptographique.\nRétention : 365 jours à chaud, 7 ans à froid.\nDernière vérification d'intégrité : {date} — toutes les vérifications réussies."
+        },
+        "vuln": {
+          "name": "Analyse de vulnérabilités",
+          "desc": "Des analyses régulières de vulnérabilités sont exécutées sur l'infrastructure et les dépendances.",
+          "evidence": "Scans automatiques hebdomadaires (Snyk + Trivy).\nDernier scan : {date} — 2 findings moyens, 0 élevé/critique.\nTemps moyen de remédiation critique : 2,3 jours."
+        }
+      }
+    },
+    "filter": {
+      "label": "Filtrer les vérifications",
+      "all": "Toutes",
+      "pass": "Réussies",
+      "fail": "Échouées",
+      "warning": "Avertissements"
+    },
+    "evidence": {
+      "title": "Preuve",
+      "show": "Voir la preuve",
+      "hide": "Masquer la preuve"
+    },
+    "summary": "{shown} vérifications sur {total} affichées · {passed} réussies · {failed} échouées · {warnings} avertissements",
+    "export": "Exporter le rapport",
+    "export.success": "Rapport téléchargé",
+    "run": {
+      "success": "Vérifications terminées : {passed} réussies, {failed} échouées, {warnings} avertissements"
+    },
+    "empty": {
+      "title": "Aucune vérification ne correspond à ce filtre",
+      "desc": "Essayez un autre filtre de statut ou lancez une nouvelle vérification de conformité."
+    }
+  },
+  "adminCompliance": {
+    "link": "Voir le tableau de bord de conformité",
+    "card": {
+      "title": "Conformité",
+      "desc": "Posture SOC 2, RGPD et sécurité en un coup d'œil."
     }
   }
 }

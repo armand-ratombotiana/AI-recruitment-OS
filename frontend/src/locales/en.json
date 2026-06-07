@@ -1701,6 +1701,39 @@
       "hired": "Hired",
       "rejected": "Rejected"
     },
+    "v2": {
+      "title": "Application pipeline",
+      "subtitle": "{count} applications across {stages} stages. Drag to move between stages.",
+      "filterJob": "Filter by job",
+      "filterJobAll": "All jobs",
+      "filterRecruiter": "Filter by recruiter",
+      "filterRecruiterAll": "All recruiters",
+      "filterSearch": "Search candidates",
+      "clearFilters": "Clear filters",
+      "daysInStage": "{n}d in stage",
+      "noApplications": "No applications match the current filters.",
+      "noApplicationsDesc": "Adjust the filters above to see more candidates, or drag a card between stages to keep momentum.",
+      "couldntLoad": "Couldn't load the global pipeline",
+      "moveFailed": "Failed to move application",
+      "summary": {
+        "title": "Stage overview",
+        "candidates": "{count} candidates",
+        "avgDays": "Avg {days}d in stage",
+        "conversion": "{pct}% advance to next",
+        "noData": "Not enough data yet"
+      },
+      "actions": {
+        "open": "Open candidate",
+        "openJob": "Open job pipeline",
+        "schedule": "Schedule interview",
+        "reject": "Reject application",
+        "message": "Send message"
+      },
+      "confirmMove": {
+        "title": "Confirm application move",
+        "desc": "Move {name} from {from} to {to}? This will update the candidate's status across the platform."
+      }
+    },
     "noCandidates": "No candidates",
     "noCandidatesInPipeline": "No candidates in pipeline",
     "noCandidatesDesc": "Add candidates and they will appear here, organized by stage.",
@@ -1715,6 +1748,47 @@
     },
     "dropZone": "Drop candidate to move to {stage}",
     "moreSkills": "{n} more skills: {skills}"
+  },
+  "applicationCard": {
+    "unnamed": "Unnamed candidate",
+    "scoreAria": "Match score {score}",
+    "lastActivity": "Last activity {when}",
+    "noActivity": "No recent activity",
+    "daysAria": "{n} days in current stage",
+    "appliedOn": "Applied {when}",
+    "stage": "Stage",
+    "job": "Job",
+    "actions": {
+      "schedule": "Schedule interview",
+      "scheduleScheduled": "Scheduling…",
+      "scheduleTooltip": "Open the interview scheduler for {name}",
+      "reject": "Reject",
+      "rejectRejecting": "Rejecting…",
+      "rejectTooltip": "Move {name} to the Rejected stage",
+      "message": "Message",
+      "messageSending": "Sending…",
+      "messageTooltip": "Send {name} a quick email",
+      "openCandidate": "Open candidate profile",
+      "openJob": "View job applicants"
+    },
+    "toasts": {
+      "interviewCreated": "Interview created for {name}",
+      "interviewFailed": "Could not create interview",
+      "movedToRejected": "{name} moved to Rejected",
+      "moveFailed": "Could not move {name}",
+      "messageSent": "Email queued for {name}",
+      "messageFailed": "Could not send email"
+    }
+  },
+  "stageSummary": {
+    "title": "Stage summary",
+    "count": "Candidates",
+    "avgTime": "Avg time",
+    "conversion": "Next-stage conversion",
+    "days": "{n}d",
+    "percent": "{pct}%",
+    "noData": "—",
+    "advanceTo": "Advance to {stage}"
   },
   "matching": {
     "title": "AI Matching",
@@ -3010,6 +3084,169 @@
     },
     "social": {
       "title": "Follow us"
+    }
+  },
+  "compliance": {
+    "title": "Compliance Dashboard",
+    "subtitle": "Monitor SOC 2, GDPR, and security controls across your tenant.",
+    "refresh": "Refresh compliance data",
+    "runChecks": "Run checks",
+    "accessDenied": "Access Denied",
+    "accessDeniedDesc": "You need administrator privileges to view the compliance dashboard.",
+    "loadError": "Could not load compliance data",
+    "loadErrorDesc": "There was a problem fetching your tenant compliance status.",
+    "overallScore": "Overall score",
+    "compliant": "Compliant",
+    "scoreHelp": "Based on the latest automated checks across all compliance frameworks.",
+    "lastRun": "Last run: {date}",
+    "lastAudit": "Last audit: {date}",
+    "noAudit": "No audit recorded yet",
+    "lastChecked": "Last checked: {date}",
+    "justNow": "just now",
+    "frameworks": {
+      "title": "Framework status",
+      "desc": "GDPR, CCPA, and HIPAA posture based on the last automated audit."
+    },
+    "gdpr": {
+      "title": "GDPR"
+    },
+    "ccpa": {
+      "title": "CCPA"
+    },
+    "hipaa": {
+      "title": "HIPAA"
+    },
+    "counts": {
+      "passed": "Passed",
+      "failed": "Failed",
+      "warnings": "Warnings"
+    },
+    "status": {
+      "pass": "Pass",
+      "fail": "Fail",
+      "warning": "Warning",
+      "compliant": "Compliant",
+      "violation": "Non-compliant",
+      "warningOverall": "Needs attention",
+      "unknown": "Unknown"
+    },
+    "recommendations": {
+      "title": "Recommendations",
+      "desc": "Prioritized actions to improve your compliance posture."
+    },
+    "checks": {
+      "title": "Compliance checks",
+      "desc": "SOC 2, GDPR, and security controls evaluated against your tenant.",
+      "soc2": {
+        "accessControl": {
+          "name": "Logical access controls",
+          "desc": "Restricts logical access to information assets, systems, and data to authorized users only.",
+          "evidence": "Role-based access control (RBAC) enforced across all endpoints.\nMFA enabled for 100% of admin accounts.\nQuarterly access reviews performed on {date}."
+        },
+        "encryption": {
+          "name": "Encryption at rest and in transit",
+          "desc": "All sensitive data is encrypted using industry-standard algorithms in transit and at rest.",
+          "evidence": "TLS 1.3 enforced on all public endpoints.\nAES-256 encryption for database storage and object storage.\nKey rotation every 90 days via KMS."
+        },
+        "monitoring": {
+          "name": "Security monitoring and anomaly detection",
+          "desc": "Continuous monitoring of systems for security events, anomalies, and intrusion attempts.",
+          "evidence": "Centralized SIEM with 24/7 alerting.\n90-day hot retention, 365-day cold retention.\nLast 30 days: 0 critical incidents, 4 medium, 18 low."
+        },
+        "changeMgmt": {
+          "name": "Change management and deployment controls",
+          "desc": "Changes to production systems follow documented review, testing, and approval workflows.",
+          "evidence": "All production changes require peer review and CI pipeline validation.\nDeployment logs retained for 365 days.\nLast deployment: {date}."
+        },
+        "vendorRisk": {
+          "name": "Vendor and third-party risk management",
+          "desc": "Identifies, assesses, and mitigates risks from third-party vendors with access to data.",
+          "evidence": "Active vendor inventory: 47 vendors.\n14 vendors pending SOC2 review.\nLast assessment cycle: Q3 2025."
+        }
+      },
+      "gdpr": {
+        "records": {
+          "name": "Records of processing activities",
+          "desc": "Maintains a comprehensive record of all processing activities involving personal data.",
+          "evidence": "Article 30 register up to date with 23 processing activities.\nData Protection Officer appointed and registered with supervisory authority.\nLast review: {date}."
+        },
+        "security": {
+          "name": "Security of processing (Art. 32)",
+          "desc": "Implements appropriate technical and organizational measures to ensure data security.",
+          "evidence": "Encryption, access controls, and pseudonymization implemented.\nRegular penetration tests (last: {date}).\nEmployee security training: 98% completion rate."
+        },
+        "dsar": {
+          "name": "Data subject access & erasure requests",
+          "desc": "Process and respond to data subject access and erasure requests within 30 days.",
+          "evidence": "Average DSAR response time: 4.2 days (SLA: 30 days).\n12 DSARs processed this quarter — 11 completed, 1 in progress.\nNo overdue requests."
+        },
+        "privacyByDesign": {
+          "name": "Privacy by design and by default",
+          "desc": "Privacy principles are embedded into processing activities and business practices.",
+          "evidence": "DPIA performed for all new features handling personal data.\nData minimization applied across candidate and resume services.\n3 DPIAs completed in the last quarter."
+        }
+      },
+      "security": {
+        "tls": {
+          "name": "TLS configuration and certificate health",
+          "desc": "All public endpoints use valid TLS certificates and follow current best practices.",
+          "evidence": "All certificates managed via automated ACME/Let's Encrypt.\nTLS 1.0/1.1 disabled; only TLS 1.2+ allowed.\nHSTS enabled with 1-year max-age."
+        },
+        "mfa": {
+          "name": "Multi-factor authentication enforcement",
+          "desc": "Privileged users must authenticate using multiple factors to access sensitive systems.",
+          "evidence": "MFA enforced for 100% of admin users.\n8.5% of regular users have MFA enabled (target: 60%).\nSSO providers supported: Okta, Azure AD, Google Workspace."
+        },
+        "backup": {
+          "name": "Backup and disaster recovery",
+          "desc": "Regular backups are performed and verified through periodic restore drills.",
+          "evidence": "Automated daily backups with 30-day retention.\nLast successful restore drill: {date} (RPO: 24h, RTO: 4h).\nCross-region backup replication enabled."
+        },
+        "secrets": {
+          "name": "Secrets management hygiene",
+          "desc": "Secrets are stored in a managed vault with rotation and no plain-text exposure in code.",
+          "evidence": "All secrets stored in HashiCorp Vault with audit logging.\nLast secret rotation: {date}.\n0 secrets detected in code repositories (GitHub secret scanning enabled)."
+        },
+        "auditLog": {
+          "name": "Audit log integrity and retention",
+          "desc": "Audit logs capture all administrative actions and are tamper-resistant.",
+          "evidence": "Append-only audit log with cryptographic chaining.\nRetention: 365 days hot, 7 years cold.\nLast integrity verification: {date} — all checks passed."
+        },
+        "vuln": {
+          "name": "Vulnerability scanning",
+          "desc": "Regular vulnerability scans are run against infrastructure and dependencies.",
+          "evidence": "Weekly automated scans (Snyk + Trivy).\nLast scan: {date} — 2 medium findings, 0 high/critical.\nMean time to remediate critical: 2.3 days."
+        }
+      }
+    },
+    "filter": {
+      "label": "Filter checks",
+      "all": "All",
+      "pass": "Pass",
+      "fail": "Fail",
+      "warning": "Warning"
+    },
+    "evidence": {
+      "title": "Evidence",
+      "show": "View evidence",
+      "hide": "Hide evidence"
+    },
+    "summary": "{shown} of {total} checks shown · {passed} passed · {failed} failed · {warnings} warnings",
+    "export": "Export report",
+    "export.success": "Report downloaded",
+    "run": {
+      "success": "Checks complete: {passed} passed, {failed} failed, {warnings} warnings"
+    },
+    "empty": {
+      "title": "No checks match this filter",
+      "desc": "Try a different status filter or run a fresh compliance check."
+    }
+  },
+  "adminCompliance": {
+    "link": "View compliance dashboard",
+    "card": {
+      "title": "Compliance",
+      "desc": "SOC 2, GDPR, and security posture at a glance."
     }
   }
 }
