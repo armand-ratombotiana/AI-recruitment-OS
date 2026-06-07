@@ -16,11 +16,19 @@ from email.message import EmailMessage
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from jinja2 import Environment, FileSystemLoader, Template
 from pydantic import BaseModel, EmailStr, Field
 
+from shared.auth import require_admin, require_authenticated_user, require_tenant_id
 from shared.core.config import get_settings
+from shared.core.database import get_db_dependency
+from shared.core.models.email_sequence import (
+    EmailSequence,
+    EmailSequenceEnrollment,
+    EmailSequenceStep,
+)
+from shared.core.models.email_template import EmailTemplate
 
 try:
     from apps.mailing_service.templates import get_template_metadata
@@ -911,3 +919,762 @@ async def verify_token(data: VerifyEmailRequest):
         used=rec["used_at"] is not None,
         expired=expired,
     )
+
+
+# ── Email Templates & Sequences (DB-backed) ───────────────────────────────────
+# These endpoints live under /email-templates and /email-sequences so they can
+# be mounted at the API gateway with the /api/v1 prefix without colliding with
+# the legacy /send, /admin/*, /verify-token paths already exposed under the
+# /api/v1/mailing prefix in production.
+
+
+from typing import Optional  # noqa: E402  (kept near the schemas that use it)
+from sqlalchemy import delete, func, select  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession  # noqa: E402
+
+
+# ── Pydantic Schemas ───────────────────────────────────────────────────────────
+
+
+class EmailTemplateCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=200)
+    subject: str = Field(..., min_length=1, max_length=500)
+    body: str = Field(..., min_length=1)
+    variables: dict[str, Any] = Field(default_factory=dict)
+    category: str = Field(default="outreach", max_length=80)
+
+
+class EmailTemplateUpdate(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    subject: Optional[str] = Field(default=None, min_length=1, max_length=500)
+    body: Optional[str] = Field(default=None, min_length=1)
+    variables: Optional[dict[str, Any]] = None
+    category: Optional[str] = Field(default=None, max_length=80)
+
+
+class EmailTemplateRead(BaseModel):
+    id: str
+    tenant_id: str
+    name: str
+    subject: str
+    body: str
+    variables: dict[str, Any] = {}
+    category: str
+    created_at: str
+    updated_at: str
+
+
+class EmailTemplateListResponse(BaseModel):
+    total: int
+    templates: list[EmailTemplateRead]
+
+
+class EmailTemplatePreviewRequest(BaseModel):
+    sample_data: dict[str, Any] = Field(default_factory=dict)
+
+
+class EmailTemplatePreviewResponse(BaseModel):
+    id: str
+    name: str
+    subject: str
+    body: str
+    rendered_subject: str
+    rendered_body: str
+    sample_data: dict[str, Any]
+
+
+class EmailSequenceStepSpec(BaseModel):
+    order: int = Field(..., ge=1)
+    delay_hours: int = Field(default=0, ge=0)
+    template_id: str
+    condition: dict[str, Any] = Field(default_factory=dict)
+
+
+class EmailSequenceCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=200)
+    description: Optional[str] = None
+    steps: list[EmailSequenceStepSpec] = Field(default_factory=list)
+    active: bool = False
+
+
+class EmailSequenceUpdate(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    description: Optional[str] = None
+    steps: Optional[list[EmailSequenceStepSpec]] = None
+    active: Optional[bool] = None
+
+
+class EmailSequenceRead(BaseModel):
+    id: str
+    tenant_id: str
+    name: str
+    description: Optional[str] = None
+    steps: list[dict[str, Any]] = []
+    active: bool
+    created_at: str
+
+
+class EmailSequenceListResponse(BaseModel):
+    total: int
+    sequences: list[EmailSequenceRead]
+
+
+class EmailSequenceEnrollRequest(BaseModel):
+    candidate_id: str = Field(..., min_length=1)
+
+
+class EmailSequenceEnrollmentRead(BaseModel):
+    id: str
+    sequence_id: str
+    candidate_id: str
+    current_step: int
+    status: str
+    enrolled_at: str
+    completed_at: Optional[str] = None
+
+
+class EmailSequenceStatsResponse(BaseModel):
+    sequence_id: str
+    name: str
+    active: bool
+    total_enrollments: int
+    active_count: int
+    completed_count: int
+    unenrolled_count: int
+    failed_count: int
+    step_count: int
+
+
+# ── Helpers ────────────────────────────────────────────────────────────────────
+
+
+def _template_to_dict(t: EmailTemplate) -> dict[str, Any]:
+    return {
+        "id": t.id,
+        "tenant_id": t.tenant_id,
+        "name": t.name,
+        "subject": t.subject,
+        "body": t.body,
+        "variables": t.variables or {},
+        "category": t.category,
+        "created_at": t.created_at.isoformat() if t.created_at else None,
+        "updated_at": t.updated_at.isoformat() if t.updated_at else None,
+    }
+
+
+def _sequence_to_dict(s: EmailSequence) -> dict[str, Any]:
+    return {
+        "id": s.id,
+        "tenant_id": s.tenant_id,
+        "name": s.name,
+        "description": s.description,
+        "steps": s.steps or [],
+        "active": s.active,
+        "created_at": s.created_at.isoformat() if s.created_at else None,
+    }
+
+
+def _enrollment_to_dict(e: EmailSequenceEnrollment) -> dict[str, Any]:
+    return {
+        "id": e.id,
+        "sequence_id": e.sequence_id,
+        "candidate_id": e.candidate_id,
+        "current_step": e.current_step,
+        "status": e.status,
+        "enrolled_at": e.enrolled_at.isoformat() if e.enrolled_at else None,
+        "completed_at": e.completed_at.isoformat() if e.completed_at else None,
+    }
+
+
+def _render_preview(text: str, data: dict[str, Any]) -> str:
+    """Render ``text`` using ``jinja2`` with ``data`` as context.
+
+    Unknown placeholders are left as ``"{{ name }}"`` so the preview makes
+    it obvious which variables are missing.  This is friendlier than raising
+    or rendering empty strings.
+    """
+    from jinja2 import DebugUndefined, Template
+
+    # ``DebugUndefined`` keeps the original ``{{ name }}`` token in the
+    # output when ``name`` is missing from ``data``, so the editor can
+    # visually spot the gap.
+    return Template(text, undefined=DebugUndefined).render(**data)
+
+
+# ── Email Template Endpoints ───────────────────────────────────────────────────
+
+
+@router.get(
+    "/email-templates",
+    response_model=EmailTemplateListResponse,
+    tags=["Mailing"],
+    summary="List email templates for the current tenant",
+)
+async def list_email_templates(
+    category: Optional[str] = Query(default=None, description="Filter by category"),
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    stmt = select(EmailTemplate).where(EmailTemplate.tenant_id == tenant_id)
+    if category:
+        stmt = stmt.where(EmailTemplate.category == category)
+    stmt = stmt.order_by(EmailTemplate.created_at.desc())
+    rows = (await db.execute(stmt)).scalars().all()
+    return EmailTemplateListResponse(
+        total=len(rows),
+        templates=[EmailTemplateRead(**_template_to_dict(t)) for t in rows],
+    )
+
+
+@router.post(
+    "/email-templates",
+    response_model=EmailTemplateRead,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Mailing"],
+    summary="Create a new email template",
+)
+async def create_email_template(
+    data: EmailTemplateCreate,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+    _admin: dict = Depends(require_admin),
+):
+    row = EmailTemplate(
+        tenant_id=tenant_id,
+        name=data.name,
+        subject=data.subject,
+        body=data.body,
+        variables=data.variables,
+        category=data.category,
+    )
+    db.add(row)
+    await db.commit()
+    await db.refresh(row)
+    return EmailTemplateRead(**_template_to_dict(row))
+
+
+@router.get(
+    "/email-templates/{template_id}",
+    response_model=EmailTemplateRead,
+    tags=["Mailing"],
+    summary="Get a single email template",
+)
+async def get_email_template(
+    template_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    row = (
+        await db.execute(
+            select(EmailTemplate).where(
+                EmailTemplate.id == template_id,
+                EmailTemplate.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not row:
+        raise HTTPException(
+            status_code=404, detail=f"Email template {template_id} not found"
+        )
+    return EmailTemplateRead(**_template_to_dict(row))
+
+
+@router.put(
+    "/email-templates/{template_id}",
+    response_model=EmailTemplateRead,
+    tags=["Mailing"],
+    summary="Update an email template",
+)
+async def update_email_template(
+    template_id: str,
+    data: EmailTemplateUpdate,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+    _admin: dict = Depends(require_admin),
+):
+    row = (
+        await db.execute(
+            select(EmailTemplate).where(
+                EmailTemplate.id == template_id,
+                EmailTemplate.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not row:
+        raise HTTPException(
+            status_code=404, detail=f"Email template {template_id} not found"
+        )
+
+    if data.name is not None:
+        row.name = data.name
+    if data.subject is not None:
+        row.subject = data.subject
+    if data.body is not None:
+        row.body = data.body
+    if data.variables is not None:
+        row.variables = data.variables
+    if data.category is not None:
+        row.category = data.category
+
+    row.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    await db.commit()
+    await db.refresh(row)
+    return EmailTemplateRead(**_template_to_dict(row))
+
+
+@router.delete(
+    "/email-templates/{template_id}",
+    tags=["Mailing"],
+    summary="Delete an email template",
+)
+async def delete_email_template(
+    template_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+    _admin: dict = Depends(require_admin),
+):
+    row = (
+        await db.execute(
+            select(EmailTemplate).where(
+                EmailTemplate.id == template_id,
+                EmailTemplate.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not row:
+        raise HTTPException(
+            status_code=404, detail=f"Email template {template_id} not found"
+        )
+    await db.delete(row)
+    await db.commit()
+    return {"deleted": True, "template_id": template_id}
+
+
+@router.post(
+    "/email-templates/{template_id}/preview",
+    response_model=EmailTemplatePreviewResponse,
+    tags=["Mailing"],
+    summary="Render a template with sample data",
+)
+async def preview_email_template(
+    template_id: str,
+    data: EmailTemplatePreviewRequest,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+    _user: dict = Depends(require_authenticated_user),
+):
+    row = (
+        await db.execute(
+            select(EmailTemplate).where(
+                EmailTemplate.id == template_id,
+                EmailTemplate.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not row:
+        raise HTTPException(
+            status_code=404, detail=f"Email template {template_id} not found"
+        )
+    sample = data.sample_data or {}
+    return EmailTemplatePreviewResponse(
+        id=row.id,
+        name=row.name,
+        subject=row.subject,
+        body=row.body,
+        rendered_subject=_render_preview(row.subject, sample),
+        rendered_body=_render_preview(row.body, sample),
+        sample_data=sample,
+    )
+
+
+# ── Email Sequence Endpoints ───────────────────────────────────────────────────
+
+
+@router.get(
+    "/email-sequences",
+    response_model=EmailSequenceListResponse,
+    tags=["Mailing"],
+    summary="List email sequences for the current tenant",
+)
+async def list_email_sequences(
+    active: Optional[bool] = Query(default=None),
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    stmt = select(EmailSequence).where(EmailSequence.tenant_id == tenant_id)
+    if active is not None:
+        stmt = stmt.where(EmailSequence.active == active)
+    stmt = stmt.order_by(EmailSequence.created_at.desc())
+    rows = (await db.execute(stmt)).scalars().all()
+    return EmailSequenceListResponse(
+        total=len(rows),
+        sequences=[EmailSequenceRead(**_sequence_to_dict(s)) for s in rows],
+    )
+
+
+@router.post(
+    "/email-sequences",
+    response_model=EmailSequenceRead,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Mailing"],
+    summary="Create a new email sequence with steps",
+)
+async def create_email_sequence(
+    data: EmailSequenceCreate,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+    _admin: dict = Depends(require_admin),
+):
+    # Validate template_ids exist for this tenant (defence in depth: a bad
+    # template id would otherwise only fail at dispatch time).
+    template_ids = {step.template_id for step in data.steps}
+    if template_ids:
+        existing = (
+            await db.execute(
+                select(EmailTemplate.id).where(
+                    EmailTemplate.tenant_id == tenant_id,
+                    EmailTemplate.id.in_(template_ids),
+                )
+            )
+        ).scalars().all()
+        missing = template_ids - set(existing)
+        if missing:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unknown template_ids for this tenant: {sorted(missing)}",
+            )
+
+    steps_snapshot = [step.model_dump() for step in data.steps]
+    seq = EmailSequence(
+        tenant_id=tenant_id,
+        name=data.name,
+        description=data.description,
+        steps=steps_snapshot,
+        active=data.active,
+    )
+    db.add(seq)
+    await db.flush()  # populate seq.id
+
+    # Create the normalized step rows in the same transaction.
+    for step in data.steps:
+        db.add(EmailSequenceStep(
+            sequence_id=seq.id,
+            order=step.order,
+            delay_hours=step.delay_hours,
+            template_id=step.template_id,
+            condition=step.condition,
+        ))
+
+    await db.commit()
+    await db.refresh(seq)
+    return EmailSequenceRead(**_sequence_to_dict(seq))
+
+
+@router.get(
+    "/email-sequences/{sequence_id}",
+    response_model=EmailSequenceRead,
+    tags=["Mailing"],
+    summary="Get a single email sequence",
+)
+async def get_email_sequence(
+    sequence_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    row = (
+        await db.execute(
+            select(EmailSequence).where(
+                EmailSequence.id == sequence_id,
+                EmailSequence.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not row:
+        raise HTTPException(
+            status_code=404, detail=f"Email sequence {sequence_id} not found"
+        )
+    return EmailSequenceRead(**_sequence_to_dict(row))
+
+
+@router.put(
+    "/email-sequences/{sequence_id}",
+    response_model=EmailSequenceRead,
+    tags=["Mailing"],
+    summary="Update an email sequence (including steps)",
+)
+async def update_email_sequence(
+    sequence_id: str,
+    data: EmailSequenceUpdate,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+    _admin: dict = Depends(require_admin),
+):
+    row = (
+        await db.execute(
+            select(EmailSequence).where(
+                EmailSequence.id == sequence_id,
+                EmailSequence.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not row:
+        raise HTTPException(
+            status_code=404, detail=f"Email sequence {sequence_id} not found"
+        )
+
+    if data.name is not None:
+        row.name = data.name
+    if data.description is not None:
+        row.description = data.description
+    if data.active is not None:
+        row.active = data.active
+    if data.steps is not None:
+        template_ids = {step.template_id for step in data.steps}
+        if template_ids:
+            existing = (
+                await db.execute(
+                    select(EmailTemplate.id).where(
+                        EmailTemplate.tenant_id == tenant_id,
+                        EmailTemplate.id.in_(template_ids),
+                    )
+                )
+            ).scalars().all()
+            missing = template_ids - set(existing)
+            if missing:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Unknown template_ids for this tenant: {sorted(missing)}",
+                )
+        # Replace the normalized step rows.
+        await db.execute(
+            delete(EmailSequenceStep).where(
+                EmailSequenceStep.sequence_id == row.id
+            )
+        )
+        for step in data.steps:
+            db.add(EmailSequenceStep(
+                sequence_id=row.id,
+                order=step.order,
+                delay_hours=step.delay_hours,
+                template_id=step.template_id,
+                condition=step.condition,
+            ))
+        row.steps = [step.model_dump() for step in data.steps]
+
+    await db.commit()
+    await db.refresh(row)
+    return EmailSequenceRead(**_sequence_to_dict(row))
+
+
+@router.delete(
+    "/email-sequences/{sequence_id}",
+    tags=["Mailing"],
+    summary="Delete an email sequence (and its steps + enrollments)",
+)
+async def delete_email_sequence(
+    sequence_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+    _admin: dict = Depends(require_admin),
+):
+    row = (
+        await db.execute(
+            select(EmailSequence).where(
+                EmailSequence.id == sequence_id,
+                EmailSequence.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not row:
+        raise HTTPException(
+            status_code=404, detail=f"Email sequence {sequence_id} not found"
+        )
+    await db.execute(
+        delete(EmailSequenceStep).where(EmailSequenceStep.sequence_id == row.id)
+    )
+    await db.execute(
+        delete(EmailSequenceEnrollment).where(
+            EmailSequenceEnrollment.sequence_id == row.id
+        )
+    )
+    await db.delete(row)
+    await db.commit()
+    return {"deleted": True, "sequence_id": sequence_id}
+
+
+@router.post(
+    "/email-sequences/{sequence_id}/enroll",
+    response_model=EmailSequenceEnrollmentRead,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Mailing"],
+    summary="Enroll a candidate into a sequence",
+)
+async def enroll_candidate(
+    sequence_id: str,
+    data: EmailSequenceEnrollRequest,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+    _user: dict = Depends(require_authenticated_user),
+):
+    seq = (
+        await db.execute(
+            select(EmailSequence).where(
+                EmailSequence.id == sequence_id,
+                EmailSequence.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not seq:
+        raise HTTPException(
+            status_code=404, detail=f"Email sequence {sequence_id} not found"
+        )
+
+    enrollment = EmailSequenceEnrollment(
+        sequence_id=seq.id,
+        candidate_id=data.candidate_id,
+        current_step=0,
+        status="active",
+    )
+    db.add(enrollment)
+    await db.commit()
+    await db.refresh(enrollment)
+    return EmailSequenceEnrollmentRead(**_enrollment_to_dict(enrollment))
+
+
+@router.delete(
+    "/email-sequences/{sequence_id}/enrollments/{enrollment_id}",
+    tags=["Mailing"],
+    summary="Unenroll a candidate from a sequence",
+)
+async def unenroll_candidate(
+    sequence_id: str,
+    enrollment_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+    _user: dict = Depends(require_authenticated_user),
+):
+    # Verify sequence belongs to the tenant first.
+    seq = (
+        await db.execute(
+            select(EmailSequence).where(
+                EmailSequence.id == sequence_id,
+                EmailSequence.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not seq:
+        raise HTTPException(
+            status_code=404, detail=f"Email sequence {sequence_id} not found"
+        )
+
+    enrollment = (
+        await db.execute(
+            select(EmailSequenceEnrollment).where(
+                EmailSequenceEnrollment.id == enrollment_id,
+                EmailSequenceEnrollment.sequence_id == sequence_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not enrollment:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Enrollment {enrollment_id} not found in sequence {sequence_id}",
+        )
+
+    enrollment.status = "unenrolled"
+    enrollment.completed_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    await db.commit()
+    return {"unenrolled": True, "enrollment_id": enrollment_id}
+
+
+@router.get(
+    "/email-sequences/{sequence_id}/stats",
+    response_model=EmailSequenceStatsResponse,
+    tags=["Mailing"],
+    summary="Get aggregate stats for a sequence",
+)
+async def sequence_stats(
+    sequence_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    seq = (
+        await db.execute(
+            select(EmailSequence).where(
+                EmailSequence.id == sequence_id,
+                EmailSequence.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not seq:
+        raise HTTPException(
+            status_code=404, detail=f"Email sequence {sequence_id} not found"
+        )
+
+    # Count enrollments by status using a single grouped query.
+    status_col = EmailSequenceEnrollment.status
+    count_col = func.count(EmailSequenceEnrollment.id)
+    grouped = (
+        await db.execute(
+            select(status_col, count_col)
+            .where(EmailSequenceEnrollment.sequence_id == seq.id)
+            .group_by(status_col)
+        )
+    ).all()
+    counts = {row[0]: int(row[1]) for row in grouped}
+
+    step_count = (
+        await db.execute(
+            select(func.count(EmailSequenceStep.id)).where(
+                EmailSequenceStep.sequence_id == seq.id
+            )
+        )
+    ).scalar_one()
+
+    total = sum(counts.values())
+    return EmailSequenceStatsResponse(
+        sequence_id=seq.id,
+        name=seq.name,
+        active=seq.active,
+        total_enrollments=total,
+        active_count=counts.get("active", 0),
+        completed_count=counts.get("completed", 0),
+        unenrolled_count=counts.get("unenrolled", 0),
+        failed_count=counts.get("failed", 0),
+        step_count=int(step_count),
+    )
+
+
+@router.get(
+    "/email-sequences/{sequence_id}/enrollments",
+    tags=["Mailing"],
+    summary="List enrollments for a sequence",
+)
+async def list_sequence_enrollments(
+    sequence_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    db: AsyncSession = Depends(get_db_dependency),
+):
+    seq = (
+        await db.execute(
+            select(EmailSequence).where(
+                EmailSequence.id == sequence_id,
+                EmailSequence.tenant_id == tenant_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if not seq:
+        raise HTTPException(
+            status_code=404, detail=f"Email sequence {sequence_id} not found"
+        )
+    rows = (
+        await db.execute(
+            select(EmailSequenceEnrollment)
+            .where(EmailSequenceEnrollment.sequence_id == seq.id)
+            .order_by(EmailSequenceEnrollment.enrolled_at.desc())
+        )
+    ).scalars().all()
+    return {
+        "total": len(rows),
+        "enrollments": [_enrollment_to_dict(e) for e in rows],
+    }

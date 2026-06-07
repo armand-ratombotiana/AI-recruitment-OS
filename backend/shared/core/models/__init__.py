@@ -67,6 +67,40 @@ from shared.core.models.search import (
     SearchAnalyticsResponse,
 )
 from shared.core.models.webhook import Webhook, WebhookDelivery
+from shared.core.models.integration import (
+    IntegrationConfig,
+    SUPPORTED_PROVIDERS,
+    SLACK,
+    TEAMS,
+)
+from shared.core.models.email_template import EmailTemplate
+from shared.core.models.email_sequence import (
+    EmailSequence,
+    EmailSequenceStep,
+    EmailSequenceEnrollment,
+)
+from shared.core.models.tag import (
+    Tag,
+    TagApplication,
+    TagEntityType,
+    TagCreate,
+    TagRead,
+    TagUpdate,
+    TagListResponse,
+    TagCreateResponse,
+    TagUpdateResponse,
+    TagDeleteResponse,
+    TagApplyRequest,
+    TagApplyResponse,
+    TagRemoveRequest,
+    TagRemoveResponse,
+    PopularTagItem,
+    PopularTagsResponse,
+    EntityTagRead,
+    EntityTagListResponse,
+    AddEntityTagRequest,
+    AddEntityTagResponse,
+)
 
 __all__ = [
     "User", "Session", "APIKey", "Credential",
@@ -101,4 +135,15 @@ __all__ = [
     "NoResultsQueryItem", "NoResultsResponse", "RecentSearchesResponse",
     "SearchAnalyticsResponse",
     "Webhook", "WebhookDelivery",
+    "IntegrationConfig", "SUPPORTED_PROVIDERS", "SLACK", "TEAMS",
+    "EmailTemplate",
+    "EmailSequence", "EmailSequenceStep", "EmailSequenceEnrollment",
+    "Tag", "TagApplication", "TagEntityType",
+    "TagCreate", "TagRead", "TagUpdate",
+    "TagListResponse", "TagCreateResponse", "TagUpdateResponse", "TagDeleteResponse",
+    "TagApplyRequest", "TagApplyResponse",
+    "TagRemoveRequest", "TagRemoveResponse",
+    "PopularTagItem", "PopularTagsResponse",
+    "EntityTagRead", "EntityTagListResponse",
+    "AddEntityTagRequest", "AddEntityTagResponse",
 ]
