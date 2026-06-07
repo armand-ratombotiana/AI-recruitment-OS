@@ -18,6 +18,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.audit import audit
 from shared.auth import require_admin, require_tenant_id
+from shared.compliance import (
+    ALL_CHECKS,
+    build_soc2_report,
+    compute_compliance_score,
+    run_security_checks,
+)
 from shared.core.database import get_db_dependency
 from shared.core.models.candidate import Candidate, CandidateProfile, CandidateStatus
 from shared.core.models.compliance import (
@@ -503,6 +509,116 @@ async def get_compliance_report(
         },
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+# ── SOC2 controls ──────────────────────────────────────────────────────────────
+
+
+SOC2_CHECKS_TAG = "SOC2"
+
+
+@router.get(
+    "/soc2/checks",
+    tags=[SOC2_CHECKS_TAG, "Compliance"],
+    summary="Run all SOC2 compliance checks for the current tenant",
+)
+async def soc2_run_checks(
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    _admin: dict = Depends(require_admin),
+) -> dict[str, Any]:
+    """Execute the full SOC2 control suite and return one record per check.
+
+    Admin-only — these checks surface admin / security metadata that
+    non-admins should not see.
+    """
+    checks = await run_security_checks(db, tenant_id)
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="soc2.checks.run",
+        resource_type="soc2",
+        resource_id="suite",
+        details={
+            "checks_total": len(checks),
+            "failed": sum(1 for c in checks if c.status == "fail"),
+            "warnings": sum(1 for c in checks if c.status == "warning"),
+        },
+    )
+    await db.commit()
+    return {
+        "tenant_id": tenant_id,
+        "framework": "SOC2",
+        "checks": [c.to_dict() for c in checks],
+        "total": len(checks),
+    }
+
+
+@router.get(
+    "/soc2/score",
+    tags=[SOC2_CHECKS_TAG, "Compliance"],
+    summary="Get the SOC2 compliance score (0–100) for the current tenant",
+)
+async def soc2_score(
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    _admin: dict = Depends(require_admin),
+) -> dict[str, Any]:
+    """Compute a single 0–100 score for the SOC2 control suite.
+
+    ``warning`` statuses contribute half-credit so the score moves
+    gradually as a tenant evidences controls over time.
+    """
+    checks = await run_security_checks(db, tenant_id)
+    score = compute_compliance_score(checks)
+    return {
+        "tenant_id": tenant_id,
+        "framework": "SOC2",
+        "score": score,
+        "checks_total": len(checks),
+        "passed": sum(1 for c in checks if c.status == "pass"),
+        "warnings": sum(1 for c in checks if c.status == "warning"),
+        "failed": sum(1 for c in checks if c.status == "fail"),
+        "available_checks": [cid for cid, _ in ALL_CHECKS],
+    }
+
+
+@router.get(
+    "/soc2/report",
+    tags=[SOC2_CHECKS_TAG, "Compliance"],
+    summary="Generate a PDF-ready SOC2 compliance report (JSON)",
+)
+async def soc2_report(
+    db: AsyncSession = Depends(get_db_dependency),
+    tenant_id: str = Depends(require_tenant_id),
+    admin: dict = Depends(require_admin),
+) -> dict[str, Any]:
+    """Build a full SOC2 report grouped by control category.
+
+    The payload is shaped to be rendered 1:1 into a PDF: one section per
+    category, with the overall score, the per-check status, and a
+    structured ``evidence`` blob the auditor can drill into.
+    """
+    checks = await run_security_checks(db, tenant_id)
+    score = compute_compliance_score(checks)
+    report = build_soc2_report(
+        checks,
+        tenant_id=tenant_id,
+        score=score,
+        report_id=f"soc2_{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}",
+    )
+    await audit(
+        db,
+        tenant_id=tenant_id,
+        action="soc2.report.generate",
+        resource_type="soc2",
+        resource_id=report["report_id"],
+        actor_id=admin.get("id"),
+        actor_email=admin.get("email"),
+        details={"score": score, "overall_status": report["overall_status"]},
+    )
+    await db.commit()
+    return report
 
 
 # ── GDPR engine endpoints (user-scoped) ────────────────────────────────────────
