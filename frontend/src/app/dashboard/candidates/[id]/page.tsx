@@ -941,13 +941,14 @@ export default function CandidateDetailPage({ params }: { params: { id: string }
         </CardContent>
       </Card>
 
-      <Tabs
-        tabs={tabs}
-        activeTab={activeTab}
-        onChange={(id) => setActiveTab(id as TabId)}
-        variant="underline"
-        aria-label={t('candidateDetail.tabs.aria', 'Candidate sections')}
-      />
+      <div role="region" aria-label={t('candidateDetail.tabs.aria', 'Candidate sections')}>
+        <Tabs
+          tabs={tabs}
+          activeTab={activeTab}
+          onChange={(id) => setActiveTab(id as TabId)}
+          variant="underline"
+        />
+      </div>
 
       {activeTab === 'overview' && (
         <OverviewTab
