@@ -394,7 +394,76 @@
       "match": "Meilleur match",
       "shortlisted": "Présélectionné"
     },
-    "contact": {
+  "messaging": {
+    "title": "Messages",
+    "subtitle": "Chat en temps réel avec les candidats",
+    "conversations": "Conversations",
+    "newConversation": "Nouvelle conversation",
+    "search": "Rechercher des conversations…",
+    "noConversations": "Aucune conversation",
+    "noMatches": "Aucune conversation ne correspond",
+    "emptyState": "Démarrez une conversation avec un candidat",
+    "messageThread": "Fil de discussion",
+    "typeMessage": "Écrivez un message…",
+    "send": "Envoyer",
+    "sending": "Envoi…",
+    "sent": "Envoyé",
+    "delivered": "Distribué",
+    "read": "Lu",
+    "unread": "Non lu",
+    "unreadCount": "{count} non lus",
+    "attachFile": "Joindre un fichier",
+    "emoji": "Emoji",
+    "reply": "Répondre",
+    "forward": "Transférer",
+    "delete": "Supprimer le message",
+    "edit": "Modifier le message",
+    "copy": "Copier le message",
+    "timestamp": "Envoyé à {time}",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "groupByDay": "Grouper par jour",
+    "loadMore": "Charger plus de messages",
+    "noMessages": "Aucun message. Dites bonjour !",
+    "error": "Échec de l'envoi",
+    "retry": "Réessayer",
+    "connectionLost": "Connexion perdue. Reconnexion…",
+    "connected": "Connecté",
+    "typing": "{name} est en train d'écrire…",
+    "candidate": "Candidat",
+    "recruiter": "Vous",
+    "system": "Système",
+    "tabs": {
+      "all": "Tout",
+      "unread": "Non lus",
+      "starred": "Favoris"
+    },
+    "actions": {
+      "markRead": "Marquer comme lu",
+      "markUnread": "Marquer comme non lu",
+      "star": "Ajouter aux favoris",
+      "unstar": "Retirer des favoris",
+      "archive": "Archiver",
+      "delete": "Supprimer la conversation"
+    },
+    "confirmDelete": {
+      "title": "Supprimer la conversation ?",
+      "description": "Cela supprimera définitivement la conversation. Cette action est irréversible.",
+      "confirm": "Supprimer"
+    },
+    "fileUpload": {
+      "uploading": "Téléversement de {name}…",
+      "failed": "Échec du téléversement de {name}",
+      "tooLarge": "Fichier trop volumineux (max 10 Mo)",
+      "invalidType": "Type de fichier non autorisé"
+    },
+    "sidebar": {
+      "title": "Messages",
+      "badge": "Messages",
+      "tooltip": "Ouvrir les messages"
+    }
+  },
+  "contact": {
       "title": "Informations de contact",
       "email": "Email",
       "phone": "Téléphone",

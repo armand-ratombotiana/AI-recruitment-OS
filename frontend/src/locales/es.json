@@ -394,7 +394,76 @@
       "match": "Mejor match",
       "shortlisted": "Preseleccionado"
     },
-    "contact": {
+  "messaging": {
+    "title": "Mensajes",
+    "subtitle": "Chat en tiempo real con candidatos",
+    "conversations": "Conversaciones",
+    "newConversation": "Nueva conversación",
+    "search": "Buscar conversaciones…",
+    "noConversations": "Sin conversaciones",
+    "noMatches": "Ninguna conversación coincide",
+    "emptyState": "Inicia una conversación con un candidato",
+    "messageThread": "Hilo de mensajes",
+    "typeMessage": "Escribe un mensaje…",
+    "send": "Enviar",
+    "sending": "Enviando…",
+    "sent": "Enviado",
+    "delivered": "Entregado",
+    "read": "Leído",
+    "unread": "No leído",
+    "unreadCount": "{count} no leídos",
+    "attachFile": "Adjuntar archivo",
+    "emoji": "Emoji",
+    "reply": "Responder",
+    "forward": "Reenviar",
+    "delete": "Eliminar mensaje",
+    "edit": "Editar mensaje",
+    "copy": "Copiar mensaje",
+    "timestamp": "Enviado a las {time}",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "groupByDay": "Agrupar por día",
+    "loadMore": "Cargar más mensajes",
+    "noMessages": "Sin mensajes. ¡Saluda!",
+    "error": "Error al enviar",
+    "retry": "Reintentar",
+    "connectionLost": "Conexión perdida. Reconectando…",
+    "connected": "Conectado",
+    "typing": "{name} está escribiendo…",
+    "candidate": "Candidato",
+    "recruiter": "Tú",
+    "system": "Sistema",
+    "tabs": {
+      "all": "Todas",
+      "unread": "No leídas",
+      "starred": "Favoritas"
+    },
+    "actions": {
+      "markRead": "Marcar como leído",
+      "markUnread": "Marcar como no leído",
+      "star": "Añadir a favoritos",
+      "unstar": "Quitar de favoritos",
+      "archive": "Archivar",
+      "delete": "Eliminar conversación"
+    },
+    "confirmDelete": {
+      "title": "¿Eliminar conversación?",
+      "description": "Esto eliminará la conversación permanentemente. Esta acción no se puede deshacer.",
+      "confirm": "Eliminar"
+    },
+    "fileUpload": {
+      "uploading": "Subiendo {name}…",
+      "failed": "Error al subir {name}",
+      "tooLarge": "Archivo demasiado grande (máx. 10 MB)",
+      "invalidType": "Tipo de archivo no permitido"
+    },
+    "sidebar": {
+      "title": "Mensajes",
+      "badge": "Mensajes",
+      "tooltip": "Abrir mensajes"
+    }
+  },
+  "contact": {
       "title": "Información de contacto",
       "email": "Email",
       "phone": "Teléfono",

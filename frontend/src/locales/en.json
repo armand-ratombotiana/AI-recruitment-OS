@@ -394,7 +394,76 @@
       "match": "Best match",
       "shortlisted": "Shortlisted"
     },
-    "contact": {
+  "messaging": {
+    "title": "Messages",
+    "subtitle": "Real-time chat with candidates",
+    "conversations": "Conversations",
+    "newConversation": "New conversation",
+    "search": "Search conversations…",
+    "noConversations": "No conversations yet",
+    "noMatches": "No conversations match your search",
+    "emptyState": "Start a conversation with a candidate",
+    "messageThread": "Message thread",
+    "typeMessage": "Type a message…",
+    "send": "Send",
+    "sending": "Sending…",
+    "sent": "Sent",
+    "delivered": "Delivered",
+    "read": "Read",
+    "unread": "Unread",
+    "unreadCount": "{count} unread",
+    "attachFile": "Attach file",
+    "emoji": "Emoji",
+    "reply": "Reply",
+    "forward": "Forward",
+    "delete": "Delete message",
+    "edit": "Edit message",
+    "copy": "Copy message",
+    "timestamp": "Sent at {time}",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "groupByDay": "Group by day",
+    "loadMore": "Load more messages",
+    "noMessages": "No messages yet. Say hello!",
+    "error": "Failed to send message",
+    "retry": "Retry",
+    "connectionLost": "Connection lost. Reconnecting…",
+    "connected": "Connected",
+    "typing": "{name} is typing…",
+    "candidate": "Candidate",
+    "recruiter": "You",
+    "system": "System",
+    "tabs": {
+      "all": "All",
+      "unread": "Unread",
+      "starred": "Starred"
+    },
+    "actions": {
+      "markRead": "Mark as read",
+      "markUnread": "Mark as unread",
+      "star": "Star conversation",
+      "unstar": "Unstar conversation",
+      "archive": "Archive",
+      "delete": "Delete conversation"
+    },
+    "confirmDelete": {
+      "title": "Delete conversation?",
+      "description": "This will permanently delete the conversation. This action cannot be undone.",
+      "confirm": "Delete"
+    },
+    "fileUpload": {
+      "uploading": "Uploading {name}…",
+      "failed": "Failed to upload {name}",
+      "tooLarge": "File too large (max 10MB)",
+      "invalidType": "File type not allowed"
+    },
+    "sidebar": {
+      "title": "Messages",
+      "badge": "Messages",
+      "tooltip": "Open messages"
+    }
+  },
+  "contact": {
       "title": "Contact information",
       "email": "Email",
       "phone": "Phone",

@@ -60,6 +60,17 @@ from shared.core.models.workflow import (
 )
 from shared.core.models.notification import Notification
 from shared.core.models.conversation import Conversation, ConversationMessage
+from shared.core.models.message import (
+    Conversation as CandidateConversation,
+    Message,
+    ConversationStatus,
+    ConversationCreate,
+    ConversationRead,
+    ConversationDetail,
+    MessageCreate,
+    MessageRead,
+    MarkReadRequest,
+)
 from shared.core.models.notification_preference import (
     NotificationChannel,
     NotificationChannelType,
@@ -172,6 +183,9 @@ __all__ = [
     "CodingSession", "CodeSnapshot", "ExecutionResult", "PPEEvaluation",
     "Workflow", "WorkflowRun", "Notification",
     "Conversation", "ConversationMessage",
+    "CandidateConversation", "Message", "ConversationStatus",
+    "ConversationCreate", "ConversationRead", "ConversationDetail",
+    "MessageCreate", "MessageRead", "MarkReadRequest",
     "NotificationChannel", "NotificationChannelType", "NotificationPreference",
     "Metric", "Dashboard", "Report",
     "AuditLog",
