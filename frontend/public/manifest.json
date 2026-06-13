@@ -1,60 +1,94 @@
 {
-  "name": "AI-ROS — AI-Native Recruitment OS",
+  "name": "AI Recrutement OS",
   "short_name": "AI-ROS",
-  "description": "Autonomous AI-native enterprise recruitment platform with multi-agent orchestration.",
-  "start_url": "/dashboard",
-  "scope": "/",
+  "description": "AI-powered recruitment operating system for modern hiring teams",
+  "start_url": "/",
   "display": "standalone",
-  "orientation": "any",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
-  "categories": ["business", "productivity", "utilities"],
-  "lang": "en",
-  "dir": "ltr",
+  "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
     },
     {
-      "src": "/icon-192.png",
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable any"
     }
   ],
   "shortcuts": [
     {
       "name": "Dashboard",
-      "short_name": "Home",
+      "short_name": "Dashboard",
+      "description": "View your recruitment dashboard",
       "url": "/dashboard",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
-    },
-    {
-      "name": "AI Copilot",
-      "short_name": "Copilot",
-      "url": "/dashboard/ai-copilot",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
-    },
-    {
-      "name": "Pipeline",
-      "short_name": "Pipeline",
-      "url": "/dashboard/pipeline",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "icons": [{ "src": "/icons/dashboard.png", "sizes": "192x192" }]
     },
     {
       "name": "Candidates",
       "short_name": "Candidates",
-      "url": "/dashboard/candidates",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "description": "Manage candidates",
+      "url": "/candidates",
+      "icons": [{ "src": "/icons/candidates.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Jobs",
+      "short_name": "Jobs",
+      "description": "Manage job postings",
+      "url": "/jobs",
+      "icons": [{ "src": "/icons/jobs.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Settings",
+      "short_name": "Settings",
+      "description": "Configure your workspace",
+      "url": "/settings",
+      "icons": [{ "src": "/icons/settings.png", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [],
+  "prefer_related_applications": false
 }
