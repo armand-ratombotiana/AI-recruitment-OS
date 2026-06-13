@@ -53,6 +53,7 @@
     "workflows": "Workflows",
     "pipeline": "Pipeline",
     "matching": "AI Matching",
+    "sourcing": "Sourcing",
     "schedule": "Schedule",
     "settings": "Settings",
     "proTip": "Press",
@@ -805,6 +806,134 @@
       "withdrew": "Candidate withdrew",
       "duplicate": "Duplicate application",
       "other": "Other"
+    }
+  },
+  "jdOptimizer": {
+    "title": "Job Description Optimizer",
+    "subtitle": "Analyze, optimize, and improve your job descriptions with AI",
+    "inputLabel": "Job Description",
+    "inputPlaceholder": "Paste your job description here...",
+    "inputHelp": "Include responsibilities, requirements, skills, and any other relevant details.",
+    "analyzeButton": "Analyze",
+    "analyzingButton": "Analyzing...",
+    "optimizeButton": "Optimize",
+    "optimizingButton": "Optimizing...",
+    "applyToJobButton": "Apply to Job",
+    "applyingButton": "Applying...",
+    "analysis": {
+      "title": "Analysis Results",
+      "subtitle": "AI-powered analysis of your job description",
+      "overallScore": "Overall Score",
+      "readabilityScore": "Readability Score",
+      "inclusivityScore": "Inclusivity Score",
+      "seoScore": "SEO Score",
+      "issues": "Issues Found",
+      "issuesEmpty": "No issues found. Great job!",
+      "suggestions": "Suggestions",
+      "suggestionsEmpty": "No suggestions at this time.",
+      "severity": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "issueCategories": {
+        "clarity": "Clarity",
+        "bias": "Bias",
+        "completeness": "Completeness",
+        "tone": "Tone",
+        "structure": "Structure",
+        "keywords": "Keywords"
+      }
+    },
+    "optimization": {
+      "title": "Optimized Versions",
+      "subtitle": "Choose the version that best fits your needs",
+      "tabs": {
+        "standard": "Standard",
+        "inclusive": "Inclusive",
+        "concise": "Concise",
+        "detailed": "Detailed"
+      },
+      "diffView": "Show Changes",
+      "copyButton": "Copy",
+      "copiedButton": "Copied!",
+      "applyButton": "Apply This Version",
+      "applyingButton": "Applying...",
+      "noChanges": "No changes from original"
+    },
+    "keywords": {
+      "title": "Extracted Keywords",
+      "subtitle": "Key terms identified in your job description",
+      "required": "Required Skills",
+      "preferred": "Preferred Skills",
+      "soft": "Soft Skills",
+      "technical": "Technical Keywords",
+      "seoKeywords": "SEO Keywords",
+      "seoSuggestions": "Suggested SEO Keywords",
+      "addKeyword": "Add as keyword"
+    },
+    "readability": {
+      "title": "Readability Analysis",
+      "fleschKincaid": "Flesch-Kincaid Grade Level",
+      "gunningFog": "Gunning Fog Index",
+      "avgSentenceLength": "Avg Sentence Length",
+      "avgWordLength": "Avg Word Length",
+      "sentenceCount": "Sentence Count",
+      "wordCount": "Word Count",
+      "level": {
+        "veryEasy": "Very Easy",
+        "easy": "Easy",
+        "fairlyEasy": "Fairly Easy",
+        "standard": "Standard",
+        "fairlyDifficult": "Fairly Difficult",
+        "difficult": "Difficult",
+        "veryDifficult": "Very Difficult"
+      }
+    },
+    "inclusivity": {
+      "title": "Inclusivity Analysis",
+      "genderNeutral": "Gender-Neutral Language",
+      "ageInclusive": "Age-Inclusive Language",
+      "abilityInclusive": "Ability-Inclusive Language",
+      "culturalInclusive": "Culturally Inclusive Language",
+      "flaggedTerms": "Flagged Terms",
+      "flaggedTermsEmpty": "No non-inclusive terms detected",
+      "suggestions": "Inclusive Alternatives"
+    },
+    "seo": {
+      "title": "SEO Optimization",
+      "keywordDensity": "Keyword Density",
+      "missingKeywords": "Missing High-Volume Keywords",
+      "titleOptimization": "Title Optimization",
+      "metaDescription": "Meta Description",
+      "structuredData": "Structured Data Ready"
+    },
+    "applyToJob": {
+      "title": "Apply to Job",
+      "subtitle": "Update an existing job with the optimized description",
+      "selectJob": "Select a job to update",
+      "searchPlaceholder": "Search jobs...",
+      "noJobs": "No jobs available",
+      "confirmTitle": "Update job description?",
+      "confirmDesc": "This will replace the job description with the optimized version. This action cannot be undone.",
+      "success": "Job description updated successfully",
+      "failed": "Failed to update job description"
+    },
+    "toasts": {
+      "analysisComplete": "Analysis complete",
+      "analysisFailed": "Analysis failed",
+      "optimizationComplete": "Optimization complete",
+      "optimizationFailed": "Optimization failed",
+      "copied": "Copied to clipboard",
+      "copyFailed": "Failed to copy",
+      "applied": "Applied to job",
+      "applyFailed": "Failed to apply"
+    },
+    "errors": {
+      "emptyInput": "Please enter a job description",
+      "inputTooShort": "Job description is too short (minimum 50 characters)",
+      "apiError": "An error occurred. Please try again.",
+      "noJobSelected": "Please select a job to update"
     }
   },
   "public": {
@@ -3504,5 +3633,120 @@
     "error": "Failed to save rule",
     "validationError": "Please fill in all required fields",
     "navLabel": "Pipeline Automation"
+  },
+  "sourcing": {
+    "title": "Sourcing",
+    "subtitle": "Build talent pools and discover candidates from multiple sources",
+    "tabs": {
+      "talentPools": "Talent Pools",
+      "sourceCandidates": "Source Candidates"
+    },
+    "talentPools": {
+      "title": "Talent Pools",
+      "description": "Organize candidates into curated pools for specific roles or skills",
+      "createPool": "Create pool",
+      "createPoolDesc": "Build a new talent pool with custom criteria",
+      "noPools": "No talent pools yet",
+      "noPoolsDesc": "Create your first talent pool to start organizing candidates",
+      "name": "Name",
+      "namePlaceholder": "e.g. Senior React Engineers",
+      "description": "Description",
+      "descriptionPlaceholder": "Pool description and criteria...",
+      "criteria": "Criteria",
+      "memberCount": "{count} members",
+      "members": "Members",
+      "skills": "Skills",
+      "location": "Location",
+      "experience": "Experience",
+      "actions": {
+        "view": "View members",
+        "edit": "Edit pool",
+        "delete": "Delete pool",
+        "addCandidates": "Add candidates"
+      },
+      "confirmDelete": {
+        "title": "Delete talent pool?",
+        "description": "This will permanently delete the talent pool. Members will not be removed from the system.",
+        "confirm": "Delete pool"
+      },
+      "created": "Talent pool created",
+      "updated": "Talent pool updated",
+      "deleted": "Talent pool deleted",
+      "createFailed": "Failed to create talent pool",
+      "updateFailed": "Failed to update talent pool",
+      "deleteFailed": "Failed to delete talent pool"
+    },
+    "sourceCandidates": {
+      "title": "Source Candidates",
+      "description": "Search and import candidates from external sources",
+      "sourceLabel": "Source",
+      "sources": {
+        "linkedin": "LinkedIn",
+        "github": "GitHub",
+        "custom": "Custom Search"
+      },
+      "criteria": {
+        "title": "Search Criteria",
+        "skills": "Skills",
+        "skillsPlaceholder": "e.g. React, TypeScript, Node.js",
+        "location": "Location",
+        "locationPlaceholder": "e.g. San Francisco, Remote, London",
+        "experience": "Years of Experience",
+        "experienceMin": "Min",
+        "experienceMax": "Max",
+        "keywords": "Keywords",
+        "keywordsPlaceholder": "Additional search terms...",
+        "search": "Search",
+        "searching": "Searching...",
+        "clear": "Clear criteria"
+      },
+      "results": {
+        "title": "Search Results",
+        "count": "{count} candidates found",
+        "noResults": "No candidates found",
+        "noResultsDesc": "Try adjusting your search criteria",
+        "selectAll": "Select all",
+        "selected": "{count} selected",
+        "actions": {
+          "addToPool": "Add to pool",
+          "importAsNew": "Import as new candidates"
+        },
+        "preview": {
+          "skills": "Skills",
+          "location": "Location",
+          "experience": "Experience"
+        }
+      }
+    },
+    "poolMembers": {
+      "title": "Pool Members",
+      "back": "Back to pools",
+      "count": "{count} members",
+      "noMembers": "No members in this pool",
+      "noMembersDesc": "Add candidates to start building this talent pool",
+      "remove": "Remove from pool",
+      "confirmRemove": {
+        "title": "Remove from pool?",
+        "description": "This will remove the candidate from this talent pool. Their profile will remain in the system.",
+        "confirm": "Remove"
+      }
+    },
+    "createPoolDialog": {
+      "title": "Create Talent Pool",
+      "description": "Define a new talent pool with name, description, and criteria",
+      "submit": "Create pool"
+    },
+    "editPoolDialog": {
+      "title": "Edit Talent Pool",
+      "description": "Update the talent pool details and criteria",
+      "submit": "Save changes"
+    },
+    "addToPoolDialog": {
+      "title": "Add to Talent Pool",
+      "description": "Select a talent pool to add the selected candidates",
+      "selectPool": "Select pool",
+      "selectPoolPlaceholder": "Choose a pool...",
+      "submit": "Add to pool"
+    }
   }
 }

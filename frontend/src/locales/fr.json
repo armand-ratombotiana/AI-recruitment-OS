@@ -53,6 +53,7 @@
     "workflows": "Flux de travail",
     "pipeline": "Pipeline",
     "matching": "Matching IA",
+    "sourcing": "Sourcing",
     "schedule": "Planning",
     "settings": "Paramètres",
     "proTip": "Appuyez sur",
@@ -803,6 +804,134 @@
       "withdrew": "Candidat s'est retiré",
       "duplicate": "Candidature en doublon",
       "other": "Autre"
+    }
+  },
+  "jdOptimizer": {
+    "title": "Optimiseur de description de poste",
+    "subtitle": "Analysez, optimisez et améliorez vos descriptions de poste avec l'IA",
+    "inputLabel": "Description de poste",
+    "inputPlaceholder": "Collez votre description de poste ici...",
+    "inputHelp": "Incluez les responsabilités, exigences, compétences et tout autre détail pertinent.",
+    "analyzeButton": "Analyser",
+    "analyzingButton": "Analyse en cours...",
+    "optimizeButton": "Optimiser",
+    "optimizingButton": "Optimisation en cours...",
+    "applyToJobButton": "Appliquer à l'offre",
+    "applyingButton": "Application en cours...",
+    "analysis": {
+      "title": "Résultats de l'analyse",
+      "subtitle": "Analyse IA de votre description de poste",
+      "overallScore": "Score global",
+      "readabilityScore": "Score de lisibilité",
+      "inclusivityScore": "Score d'inclusivité",
+      "seoScore": "Score SEO",
+      "issues": "Problèmes détectés",
+      "issuesEmpty": "Aucun problème détecté. Excellent travail !",
+      "suggestions": "Suggestions",
+      "suggestionsEmpty": "Aucune suggestion pour le moment.",
+      "severity": {
+        "high": "Élevé",
+        "medium": "Moyen",
+        "low": "Faible"
+      },
+      "issueCategories": {
+        "clarity": "Clarté",
+        "bias": "Biais",
+        "completeness": "Exhaustivité",
+        "tone": "Ton",
+        "structure": "Structure",
+        "keywords": "Mots-clés"
+      }
+    },
+    "optimization": {
+      "title": "Versions optimisées",
+      "subtitle": "Choisissez la version qui correspond le mieux à vos besoins",
+      "tabs": {
+        "standard": "Standard",
+        "inclusive": "Inclusif",
+        "concise": "Concis",
+        "detailed": "Détaillé"
+      },
+      "diffView": "Afficher les modifications",
+      "copyButton": "Copier",
+      "copiedButton": "Copié !",
+      "applyButton": "Appliquer cette version",
+      "applyingButton": "Application...",
+      "noChanges": "Aucune modification par rapport à l'original"
+    },
+    "keywords": {
+      "title": "Mots-clés extraits",
+      "subtitle": "Termes clés identifiés dans votre description de poste",
+      "required": "Compétences requises",
+      "preferred": "Compétences souhaitées",
+      "soft": "Compétences transverses",
+      "technical": "Mots-clés techniques",
+      "seoKeywords": "Mots-clés SEO",
+      "seoSuggestions": "Mots-clés SEO suggérés",
+      "addKeyword": "Ajouter comme mot-clé"
+    },
+    "readability": {
+      "title": "Analyse de lisibilité",
+      "fleschKincaid": "Niveau Flesch-Kincaid",
+      "gunningFog": "Indice Gunning Fog",
+      "avgSentenceLength": "Longueur moyenne des phrases",
+      "avgWordLength": "Longueur moyenne des mots",
+      "sentenceCount": "Nombre de phrases",
+      "wordCount": "Nombre de mots",
+      "level": {
+        "veryEasy": "Très facile",
+        "easy": "Facile",
+        "fairlyEasy": "Assez facile",
+        "standard": "Standard",
+        "fairlyDifficult": "Assez difficile",
+        "difficult": "Difficile",
+        "veryDifficult": "Très difficile"
+      }
+    },
+    "inclusivity": {
+      "title": "Analyse d'inclusivité",
+      "genderNeutral": "Langage neutre en genre",
+      "ageInclusive": "Langage inclusif par l'âge",
+      "abilityInclusive": "Langage inclusif par la capacité",
+      "culturalInclusive": "Langage culturellement inclusif",
+      "flaggedTerms": "Termes signalés",
+      "flaggedTermsEmpty": "Aucun terme non-inclusif détecté",
+      "suggestions": "Alternatives inclusives"
+    },
+    "seo": {
+      "title": "Optimisation SEO",
+      "keywordDensity": "Densité des mots-clés",
+      "missingKeywords": "Mots-clés à fort volume manquants",
+      "titleOptimization": "Optimisation du titre",
+      "metaDescription": "Meta description",
+      "structuredData": "Données structurées prêtes"
+    },
+    "applyToJob": {
+      "title": "Appliquer à l'offre",
+      "subtitle": "Mettre à jour une offre existante avec la description optimisée",
+      "selectJob": "Sélectionner une offre à mettre à jour",
+      "searchPlaceholder": "Rechercher des offres...",
+      "noJobs": "Aucune offre disponible",
+      "confirmTitle": "Mettre à jour la description de l'offre ?",
+      "confirmDesc": "Cela remplacera la description de l'offre par la version optimisée. Cette action est irréversible.",
+      "success": "Description de l'offre mise à jour avec succès",
+      "failed": "Échec de la mise à jour de la description"
+    },
+    "toasts": {
+      "analysisComplete": "Analyse terminée",
+      "analysisFailed": "Échec de l'analyse",
+      "optimizationComplete": "Optimisation terminée",
+      "optimizationFailed": "Échec de l'optimisation",
+      "copied": "Copié dans le presse-papiers",
+      "copyFailed": "Échec de la copie",
+      "applied": "Appliqué à l'offre",
+      "applyFailed": "Échec de l'application"
+    },
+    "errors": {
+      "emptyInput": "Veuillez entrer une description de poste",
+      "inputTooShort": "La description est trop courte (minimum 50 caractères)",
+      "apiError": "Une erreur s'est produite. Veuillez réessayer.",
+      "noJobSelected": "Veuillez sélectionner une offre à mettre à jour"
     }
   },
   "public": {
@@ -3157,6 +3286,121 @@
     "card": {
       "title": "Conformité",
       "desc": "Posture SOC 2, RGPD et sécurité en un coup d'œil."
+    }
+  },
+  "sourcing": {
+    "title": "Sourcing",
+    "subtitle": "Construisez des viviers de talents et découvrez des candidats depuis plusieurs sources",
+    "tabs": {
+      "talentPools": "Viviers de talents",
+      "sourceCandidates": "Sourcer des candidats"
+    },
+    "talentPools": {
+      "title": "Viviers de talents",
+      "description": "Organisez les candidats dans des viviers curatés pour des rôles ou compétences spécifiques",
+      "createPool": "Créer un vivier",
+      "createPoolDesc": "Créez un nouveau vivier de talents avec des critères personnalisés",
+      "noPools": "Aucun vivier de talents pour l'instant",
+      "noPoolsDesc": "Créez votre premier vivier de talents pour commencer à organiser les candidats",
+      "name": "Nom",
+      "namePlaceholder": "ex. Ingénieurs React Senior",
+      "description": "Description",
+      "descriptionPlaceholder": "Description et critères du vivier...",
+      "criteria": "Critères",
+      "memberCount": "{count} membres",
+      "members": "Membres",
+      "skills": "Compétences",
+      "location": "Localisation",
+      "experience": "Expérience",
+      "actions": {
+        "view": "Voir les membres",
+        "edit": "Modifier le vivier",
+        "delete": "Supprimer le vivier",
+        "addCandidates": "Ajouter des candidats"
+      },
+      "confirmDelete": {
+        "title": "Supprimer le vivier de talents ?",
+        "description": "Cela supprimera définitivement le vivier de talents. Les membres ne seront pas supprimés du système.",
+        "confirm": "Supprimer le vivier"
+      },
+      "created": "Vivier de talents créé",
+      "updated": "Vivier de talents mis à jour",
+      "deleted": "Vivier de talents supprimé",
+      "createFailed": "Échec de la création du vivier de talents",
+      "updateFailed": "Échec de la mise à jour du vivier de talents",
+      "deleteFailed": "Échec de la suppression du vivier de talents"
+    },
+    "sourceCandidates": {
+      "title": "Sourcer des candidats",
+      "description": "Recherchez et importez des candidats depuis des sources externes",
+      "sourceLabel": "Source",
+      "sources": {
+        "linkedin": "LinkedIn",
+        "github": "GitHub",
+        "custom": "Recherche personnalisée"
+      },
+      "criteria": {
+        "title": "Critères de recherche",
+        "skills": "Compétences",
+        "skillsPlaceholder": "ex. React, TypeScript, Node.js",
+        "location": "Localisation",
+        "locationPlaceholder": "ex. Paris, Télétravail, Lyon",
+        "experience": "Années d'expérience",
+        "experienceMin": "Min",
+        "experienceMax": "Max",
+        "keywords": "Mots-clés",
+        "keywordsPlaceholder": "Termes de recherche supplémentaires...",
+        "search": "Rechercher",
+        "searching": "Recherche en cours...",
+        "clear": "Effacer les critères"
+      },
+      "results": {
+        "title": "Résultats de recherche",
+        "count": "{count} candidats trouvés",
+        "noResults": "Aucun candidat trouvé",
+        "noResultsDesc": "Essayez d'ajuster vos critères de recherche",
+        "selectAll": "Tout sélectionner",
+        "selected": "{count} sélectionnés",
+        "actions": {
+          "addToPool": "Ajouter au vivier",
+          "importAsNew": "Importer comme nouveaux candidats"
+        },
+        "preview": {
+          "skills": "Compétences",
+          "location": "Localisation",
+          "experience": "Expérience"
+        }
+      }
+    },
+    "poolMembers": {
+      "title": "Membres du vivier",
+      "back": "Retour aux viviers",
+      "count": "{count} membres",
+      "noMembers": "Aucun membre dans ce vivier",
+      "noMembersDesc": "Ajoutez des candidats pour commencer à construire ce vivier de talents",
+      "remove": "Retirer du vivier",
+      "confirmRemove": {
+        "title": "Retirer du vivier ?",
+        "description": "Cela retirera le candidat de ce vivier de talents. Son profil restera dans le système.",
+        "confirm": "Retirer"
+      }
+    },
+    "createPoolDialog": {
+      "title": "Créer un vivier de talents",
+      "description": "Définissez un nouveau vivier de talents avec nom, description et critères",
+      "submit": "Créer le vivier"
+    },
+    "editPoolDialog": {
+      "title": "Modifier le vivier de talents",
+      "description": "Mettez à jour les détails et critères du vivier de talents",
+      "submit": "Enregistrer les modifications"
+    },
+    "addToPoolDialog": {
+      "title": "Ajouter au vivier de talents",
+      "description": "Sélectionnez un vivier pour y ajouter les candidats sélectionnés",
+      "selectPool": "Sélectionner un vivier",
+      "selectPoolPlaceholder": "Choisir un vivier...",
+      "submit": "Ajouter au vivier"
     }
   },
   "search": {

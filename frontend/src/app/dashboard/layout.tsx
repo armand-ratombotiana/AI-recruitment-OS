@@ -19,6 +19,7 @@ import {
   Sparkles,
   Zap,
   ClipboardList,
+  FileText,
 } from 'lucide-react';
 import {
   UserMenu,
@@ -47,6 +48,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/workflows', key: 'nav.workflows', icon: WorkflowIcon },
   { href: '/dashboard/pipeline', key: 'nav.pipeline', icon: KanbanSquare },
   { href: '/dashboard/matching', key: 'nav.matching', icon: Sparkles },
+  { href: '/dashboard/sourcing', key: 'nav.sourcing', icon: SearchIcon },
   { href: '/dashboard/schedule', key: 'nav.schedule', icon: CalendarDays },
   { href: '/dashboard/settings', key: 'nav.settings', icon: SettingsIcon },
 ];

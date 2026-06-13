@@ -44,7 +44,7 @@
     "workspace": "Espacio de trabajo",
     "dashboard": "Panel",
     "candidates": "Candidatos",
-    "jobs": "Empleos",
+    "jobs": "Ofertas",
     "assessments": "Evaluaciones",
     "interviews": "Entrevistas",
     "ppe": "PPE",
@@ -53,10 +53,11 @@
     "workflows": "Flujos de trabajo",
     "pipeline": "Pipeline",
     "matching": "Matching IA",
+    "sourcing": "Sourcing",
     "schedule": "Agenda",
     "settings": "Ajustes",
-    "proTip": "Pulsa",
-    "proTipCommand": "para abrir la búsqueda y saltar a cualquier sitio."
+    "proTip": "Presiona",
+    "proTipCommand": "para abrir la búsqueda y saltar a cualquier lugar."
   },
   "mobileNav": {
     "open": "Abrir navegación",
@@ -803,6 +804,134 @@
       "withdrew": "El candidato se retiró",
       "duplicate": "Candidatura duplicada",
       "other": "Otro"
+    }
+  },
+  "jdOptimizer": {
+    "title": "Optimizador de descripción de empleo",
+    "subtitle": "Analiza, optimiza y mejora tus descripciones de empleo con IA",
+    "inputLabel": "Descripción de empleo",
+    "inputPlaceholder": "Pega tu descripción de empleo aquí...",
+    "inputHelp": "Incluye responsabilidades, requisitos, habilidades y cualquier otro detalle relevante.",
+    "analyzeButton": "Analizar",
+    "analyzingButton": "Analizando...",
+    "optimizeButton": "Optimizar",
+    "optimizingButton": "Optimizando...",
+    "applyToJobButton": "Aplicar al empleo",
+    "applyingButton": "Aplicando...",
+    "analysis": {
+      "title": "Resultados del análisis",
+      "subtitle": "Análisis con IA de tu descripción de empleo",
+      "overallScore": "Puntuación global",
+      "readabilityScore": "Puntuación de legibilidad",
+      "inclusivityScore": "Puntuación de inclusividad",
+      "seoScore": "Puntuación SEO",
+      "issues": "Problemas detectados",
+      "issuesEmpty": "No se detectaron problemas. ¡Buen trabajo!",
+      "suggestions": "Sugerencias",
+      "suggestionsEmpty": "No hay sugerencias por el momento.",
+      "severity": {
+        "high": "Alta",
+        "medium": "Media",
+        "low": "Baja"
+      },
+      "issueCategories": {
+        "clarity": "Claridad",
+        "bias": "Sesgo",
+        "completeness": "Exhaustividad",
+        "tone": "Tono",
+        "structure": "Estructura",
+        "keywords": "Palabras clave"
+      }
+    },
+    "optimization": {
+      "title": "Versiones optimizadas",
+      "subtitle": "Elige la versión que mejor se adapte a tus necesidades",
+      "tabs": {
+        "standard": "Estándar",
+        "inclusive": "Inclusivo",
+        "concise": "Conciso",
+        "detailed": "Detallado"
+      },
+      "diffView": "Mostrar cambios",
+      "copyButton": "Copiar",
+      "copiedButton": "¡Copiado!",
+      "applyButton": "Aplicar esta versión",
+      "applyingButton": "Aplicando...",
+      "noChanges": "Sin cambios respecto al original"
+    },
+    "keywords": {
+      "title": "Palabras clave extraídas",
+      "subtitle": "Términos clave identificados en tu descripción de empleo",
+      "required": "Habilidades requeridas",
+      "preferred": "Habilidades preferidas",
+      "soft": "Habilidades blandas",
+      "technical": "Palabras clave técnicas",
+      "seoKeywords": "Palabras clave SEO",
+      "seoSuggestions": "Palabras clave SEO sugeridas",
+      "addKeyword": "Añadir como palabra clave"
+    },
+    "readability": {
+      "title": "Análisis de legibilidad",
+      "fleschKincaid": "Nivel Flesch-Kincaid",
+      "gunningFog": "Índice Gunning Fog",
+      "avgSentenceLength": "Longitud media de oraciones",
+      "avgWordLength": "Longitud media de palabras",
+      "sentenceCount": "Número de oraciones",
+      "wordCount": "Número de palabras",
+      "level": {
+        "veryEasy": "Muy fácil",
+        "easy": "Fácil",
+        "fairlyEasy": "Bastante fácil",
+        "standard": "Estándar",
+        "fairlyDifficult": "Bastante difícil",
+        "difficult": "Difícil",
+        "veryDifficult": "Muy difícil"
+      }
+    },
+    "inclusivity": {
+      "title": "Análisis de inclusividad",
+      "genderNeutral": "Lenguaje neutro de género",
+      "ageInclusive": "Lenguaje inclusivo por edad",
+      "abilityInclusive": "Lenguaje inclusivo por capacidad",
+      "culturalInclusive": "Lenguaje culturalmente inclusivo",
+      "flaggedTerms": "Términos marcados",
+      "flaggedTermsEmpty": "No se detectaron términos no inclusivos",
+      "suggestions": "Alternativas inclusivas"
+    },
+    "seo": {
+      "title": "Optimización SEO",
+      "keywordDensity": "Densidad de palabras clave",
+      "missingKeywords": "Palabras clave de alto volumen faltantes",
+      "titleOptimization": "Optimización del título",
+      "metaDescription": "Meta descripción",
+      "structuredData": "Datos estructurados listos"
+    },
+    "applyToJob": {
+      "title": "Aplicar al empleo",
+      "subtitle": "Actualizar un empleo existente con la descripción optimizada",
+      "selectJob": "Seleccionar un empleo para actualizar",
+      "searchPlaceholder": "Buscar empleos...",
+      "noJobs": "No hay empleos disponibles",
+      "confirmTitle": "¿Actualizar la descripción del empleo?",
+      "confirmDesc": "Esto reemplazará la descripción del empleo con la versión optimizada. Esta acción no se puede deshacer.",
+      "success": "Descripción del empleo actualizada correctamente",
+      "failed": "Error al actualizar la descripción"
+    },
+    "toasts": {
+      "analysisComplete": "Análisis completado",
+      "analysisFailed": "Error en el análisis",
+      "optimizationComplete": "Optimización completada",
+      "optimizationFailed": "Error en la optimización",
+      "copied": "Copiado al portapapeles",
+      "copyFailed": "Error al copiar",
+      "applied": "Aplicado al empleo",
+      "applyFailed": "Error al aplicar"
+    },
+    "errors": {
+      "emptyInput": "Por favor ingresa una descripción de empleo",
+      "inputTooShort": "La descripción es demasiado corta (mínimo 50 caracteres)",
+      "apiError": "Ocurrió un error. Inténtalo de nuevo.",
+      "noJobSelected": "Por favor selecciona un empleo para actualizar"
     }
   },
   "public": {
@@ -3162,6 +3291,121 @@
     "card": {
       "title": "Cumplimiento",
       "desc": "Postura de SOC 2, RGPD y seguridad de un vistazo."
+    }
+  },
+  "sourcing": {
+    "title": "Sourcing",
+    "subtitle": "Construye grupos de talento y descubre candidatos desde múltiples fuentes",
+    "tabs": {
+      "talentPools": "Grupos de Talento",
+      "sourceCandidates": "Buscar Candidatos"
+    },
+    "talentPools": {
+      "title": "Grupos de Talento",
+      "description": "Organiza candidatos en grupos curados para roles o habilidades específicas",
+      "createPool": "Crear grupo",
+      "createPoolDesc": "Crea un nuevo grupo de talento con criterios personalizados",
+      "noPools": "No hay grupos de talento aún",
+      "noPoolsDesc": "Crea tu primer grupo de talento para empezar a organizar candidatos",
+      "name": "Nombre",
+      "namePlaceholder": "ej. Ingenieros React Senior",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Descripción y criterios del grupo...",
+      "criteria": "Criterios",
+      "memberCount": "{count} miembros",
+      "members": "Miembros",
+      "skills": "Habilidades",
+      "location": "Ubicación",
+      "experience": "Experiencia",
+      "actions": {
+        "view": "Ver miembros",
+        "edit": "Editar grupo",
+        "delete": "Eliminar grupo",
+        "addCandidates": "Añadir candidatos"
+      },
+      "confirmDelete": {
+        "title": "¿Eliminar grupo de talento?",
+        "description": "Esto eliminará permanentemente el grupo de talento. Los miembros no se eliminarán del sistema.",
+        "confirm": "Eliminar grupo"
+      },
+      "created": "Grupo de talento creado",
+      "updated": "Grupo de talento actualizado",
+      "deleted": "Grupo de talento eliminado",
+      "createFailed": "Error al crear el grupo de talento",
+      "updateFailed": "Error al actualizar el grupo de talento",
+      "deleteFailed": "Error al eliminar el grupo de talento"
+    },
+    "sourceCandidates": {
+      "title": "Buscar Candidatos",
+      "description": "Busca e importa candidatos desde fuentes externas",
+      "sourceLabel": "Fuente",
+      "sources": {
+        "linkedin": "LinkedIn",
+        "github": "GitHub",
+        "custom": "Búsqueda Personalizada"
+      },
+      "criteria": {
+        "title": "Criterios de Búsqueda",
+        "skills": "Habilidades",
+        "skillsPlaceholder": "ej. React, TypeScript, Node.js",
+        "location": "Ubicación",
+        "locationPlaceholder": "ej. Madrid, Remoto, Barcelona",
+        "experience": "Años de Experiencia",
+        "experienceMin": "Mín",
+        "experienceMax": "Máx",
+        "keywords": "Palabras Clave",
+        "keywordsPlaceholder": "Términos de búsqueda adicionales...",
+        "search": "Buscar",
+        "searching": "Buscando...",
+        "clear": "Limpiar criterios"
+      },
+      "results": {
+        "title": "Resultados de Búsqueda",
+        "count": "{count} candidatos encontrados",
+        "noResults": "No se encontraron candidatos",
+        "noResultsDesc": "Intenta ajustar tus criterios de búsqueda",
+        "selectAll": "Seleccionar todo",
+        "selected": "{count} seleccionados",
+        "actions": {
+          "addToPool": "Añadir al grupo",
+          "importAsNew": "Importar como nuevos candidatos"
+        },
+        "preview": {
+          "skills": "Habilidades",
+          "location": "Ubicación",
+          "experience": "Experiencia"
+        }
+      }
+    },
+    "poolMembers": {
+      "title": "Miembros del Grupo",
+      "back": "Volver a grupos",
+      "count": "{count} miembros",
+      "noMembers": "No hay miembros en este grupo",
+      "noMembersDesc": "Añade candidatos para empezar a construir este grupo de talento",
+      "remove": "Eliminar del grupo",
+      "confirmRemove": {
+        "title": "¿Eliminar del grupo?",
+        "description": "Esto eliminará al candidato de este grupo de talento. Su perfil permanecerá en el sistema.",
+        "confirm": "Eliminar"
+      }
+    },
+    "createPoolDialog": {
+      "title": "Crear Grupo de Talento",
+      "description": "Define un nuevo grupo de talento con nombre, descripción y criterios",
+      "submit": "Crear grupo"
+    },
+    "editPoolDialog": {
+      "title": "Editar Grupo de Talento",
+      "description": "Actualiza los detalles y criterios del grupo de talento",
+      "submit": "Guardar cambios"
+    },
+    "addToPoolDialog": {
+      "title": "Añadir al Grupo de Talento",
+      "description": "Selecciona un grupo de talento para añadir los candidatos seleccionados",
+      "selectPool": "Seleccionar grupo",
+      "selectPoolPlaceholder": "Elige un grupo...",
+      "submit": "Añadir al grupo"
     }
   },
   "search": {

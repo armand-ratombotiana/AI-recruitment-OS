@@ -1,0 +1,1 @@
+"""JD Optimizer — AI-powered job description analysis and optimization."""
