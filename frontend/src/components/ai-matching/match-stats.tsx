@@ -46,28 +46,24 @@ export function MatchStats({ totalMatches, avgScore, topScore, topMatches, score
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatsCard
-          label="Total matches"
+          title="Total matches"
           value={formatNumber(totalMatches, locale)}
-          icon={Users}
-          tone="info"
+          icon={<Users className="h-5 w-5" />}
         />
         <StatsCard
-          label="Avg score"
+          title="Avg score"
           value={`${toPct(avgScore)}%`}
-          icon={BarChart3}
-          tone="purple"
+          icon={<BarChart3 className="h-5 w-5" />}
         />
         <StatsCard
-          label="Top score"
+          title="Top score"
           value={`${toPct(topScore)}%`}
-          icon={TrendingUp}
-          tone="success"
+          icon={<TrendingUp className="h-5 w-5" />}
         />
         <StatsCard
-          label="Top matches (80+)"
+          title="Top matches (80+)"
           value={formatNumber(topMatches, locale)}
-          icon={Star}
-          tone="warning"
+          icon={<Star className="h-5 w-5" />}
         />
       </div>
 

@@ -20,6 +20,7 @@ import {
   Sparkles,
   Zap,
   ClipboardList,
+  Target,
   type LucideIcon,
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-media-query';
@@ -44,6 +45,7 @@ export const MOBILE_NAV_ITEMS: MobileNavItem[] = [
   { href: '/dashboard/workflows', key: 'nav.workflows', icon: WorkflowIcon },
   { href: '/dashboard/pipeline', key: 'nav.pipeline', icon: KanbanSquare },
   { href: '/dashboard/matching', key: 'nav.matching', icon: Sparkles },
+  { href: '/dashboard/ai-matching', key: 'nav.aiMatching', icon: Target, badge: 'new' },
   { href: '/dashboard/schedule', key: 'nav.schedule', icon: CalendarDays },
   { href: '/dashboard/settings', key: 'nav.settings', icon: SettingsIcon },
 ];

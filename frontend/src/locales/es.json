@@ -47,12 +47,14 @@
     "jobs": "Ofertas",
     "assessments": "Evaluaciones",
     "interviews": "Entrevistas",
+    "offers": "Ofertas",
     "ppe": "PPE",
     "analytics": "Analíticas",
     "aiCopilot": "Copiloto IA",
     "workflows": "Flujos de trabajo",
     "pipeline": "Pipeline",
     "matching": "Matching IA",
+    "aiMatching": "Matching IA",
     "sourcing": "Sourcing",
     "schedule": "Agenda",
     "settings": "Ajustes",
@@ -3293,6 +3295,46 @@
       "desc": "Postura de SOC 2, RGPD y seguridad de un vistazo."
     }
   },
+  "aiMatching": {
+    "title": "Panel de Matching IA",
+    "subtitle": "Puntuación semántica + híbrida para encontrar el candidato ideal.",
+    "tabCandidates": "Candidatos para un puesto",
+    "tabJobs": "Puestos para un candidato",
+    "selectJob": "Seleccionar un puesto",
+    "selectJobPh": "Elegir un puesto…",
+    "selectCandidate": "Seleccionar un candidato",
+    "selectCandidatePh": "Elegir un candidato…",
+    "runMatch": "Ejecutar matching",
+    "running": "Matching en curso…",
+    "matchComplete": "{count} coincidencias encontradas",
+    "matchFailed": "El matching falló",
+    "loadError": "No se pudieron cargar los datos",
+    "noMatches": "Sin coincidencias",
+    "noMatchesDesc": "Selecciona un puesto y ejecuta el matching para encontrar los mejores candidatos.",
+    "noMatchesJobsDesc": "Selecciona un candidato y ejecuta el matching para encontrar los mejores puestos.",
+    "noResults": "Ningún resultado coincide con el filtro actual.",
+    "searchCandidates": "Buscar candidatos…",
+    "scoreThreshold": "Puntuación mínima",
+    "allScores": "Todas las puntuaciones",
+    "selectedCount": "{count} seleccionado(s)",
+    "addToPipeline": "Añadir al pipeline",
+    "scheduleInterview": "Programar entrevista",
+    "addedToPipeline": "{count} candidato(s) añadido(s) al pipeline",
+    "interviewScheduled": "{count} entrevista(s) en cola",
+    "selectAll": "Seleccionar todo",
+    "selectCandidateRow": "Seleccionar {name}",
+    "filterDepartment": "Departamento",
+    "allDepartments": "Todos los departamentos",
+    "filterLocation": "Filtrar por ubicación…",
+    "showingCount": "{count} coincidencias",
+    "table": {
+      "candidate": "Candidato",
+      "matchScore": "Match",
+      "semanticScore": "Semántico",
+      "hybridScore": "Híbrido",
+      "topSkills": "Habilidades clave"
+    }
+  },
   "sourcing": {
     "title": "Sourcing",
     "subtitle": "Construye grupos de talento y descubre candidatos desde múltiples fuentes",
@@ -3473,6 +3515,112 @@
       "open": "Abierto",
       "closed": "Cerrado",
       "on_hold": "En espera"
+    }
+  },
+  "offers": {
+    "title": "Ofertas",
+    "subtitle": "{total} ofertas en total",
+    "createOffer": "Crear oferta",
+    "newOffer": "Nueva oferta",
+    "newOfferDesc": "Crear y enviar una oferta a un candidato",
+    "search": "Buscar por candidato o puesto…",
+    "allStatuses": "Todos los estados",
+    "allCandidates": "Todos los candidatos",
+    "allJobs": "Todos los puestos",
+    "couldntLoad": "No se pudieron cargar las ofertas",
+    "noOffersYet": "Aún no hay ofertas",
+    "noOffersFound": "No se encontraron ofertas",
+    "noOffersDesc": "Crea tu primera oferta para comenzar.",
+    "tryAdjusting": "Intenta ajustar tus filtros.",
+    "notFound": "Oferta no encontrada",
+    "details": "Detalles de la oferta",
+    "dates": "Fechas",
+    "created": "Creada",
+    "sentOn": "Enviada",
+    "acceptedOn": "Aceptada",
+    "declinedOn": "Rechazada",
+    "signedOn": "Firmada el",
+    "loadFailed": "Error al cargar datos",
+    "createFailed": "Error al crear la oferta",
+    "sendFailed": "Error al enviar la oferta",
+    "acceptFailed": "Error al aceptar la oferta",
+    "declineFailed": "Error al rechazar la oferta",
+    "signFailed": "Error al firmar la oferta",
+    "deleteFailed": "Error al eliminar la oferta",
+    "sent": "Oferta enviada con éxito",
+    "accepted": "Oferta aceptada",
+    "declined": "Oferta rechazada",
+    "signed": "Oferta firmada con éxito",
+    "deleted": "Oferta eliminada",
+    "statuses": {
+      "draft": "Borrador",
+      "sent": "Enviada",
+      "accepted": "Aceptada",
+      "declined": "Rechazada",
+      "expired": "Expirada"
+    },
+    "fields": {
+      "candidate": "Candidato *",
+      "job": "Puesto *",
+      "salary": "Salario",
+      "salaryMin": "Salario mín",
+      "salaryMax": "Salario máx",
+      "currency": "Moneda",
+      "equity": "Participación (%)",
+      "startDate": "Fecha de inicio",
+      "expirationDate": "Fecha de expiración",
+      "template": "Plantilla",
+      "notes": "Notas"
+    },
+    "placeholders": {
+      "candidate": "Seleccionar candidato…",
+      "job": "Seleccionar puesto…",
+      "template": "Seleccionar plantilla…",
+      "notes": "Notas internas sobre esta oferta…"
+    },
+    "steps": {
+      "select": "Seleccionar",
+      "configure": "Configurar",
+      "review": "Revisar"
+    },
+    "step1": {
+      "title": "Seleccionar candidato y puesto",
+      "description": "Elige quién recibirá la oferta y para qué puesto."
+    },
+    "step2": {
+      "title": "Configurar términos de la oferta",
+      "description": "Establece compensación, fechas y otros términos."
+    },
+    "step3": {
+      "title": "Revisar y crear",
+      "description": "Verifica los detalles antes de crear la oferta."
+    },
+    "actions": {
+      "send": "Enviar oferta",
+      "accept": "Aceptar",
+      "decline": "Rechazar",
+      "sign": "Firmar"
+    },
+    "signature": {
+      "title": "Firma abajo",
+      "clear": "Borrar",
+      "save": "Guardar firma"
+    },
+    "timeline": {
+      "title": "Cronología",
+      "empty": "Aún no hay eventos."
+    },
+    "confirmDeclineTitle": "¿Rechazar oferta?",
+    "confirmDeclineDesc": "Esto marcará la oferta como rechazada.",
+    "confirmDeleteTitle": "¿Eliminar oferta?",
+    "confirmDeleteDesc": "Esta acción no se puede deshacer.",
+    "errors": {
+      "candidateRequired": "Por favor selecciona un candidato",
+      "jobRequired": "Por favor selecciona un puesto",
+      "salaryMinInvalid": "El salario debe ser positivo",
+      "salaryMaxInvalid": "El salario debe ser positivo",
+      "salaryRangeInvalid": "El máx debe ser >= al mín",
+      "equityInvalid": "La participación debe ser 0-100%"
     }
   }
 }

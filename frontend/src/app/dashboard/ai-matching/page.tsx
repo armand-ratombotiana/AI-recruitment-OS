@@ -87,7 +87,7 @@ export default function AIMatchingPage() {
   const locale = useLocaleStore((s) => s.locale);
   const t = useCallback((key: string, fb?: string) => translate(locale, key, fb), [locale]);
 
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState('candidates');
   const [jobs, setJobs] = useState<Job[]>([]);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -355,7 +355,7 @@ export default function AIMatchingPage() {
 
       <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
 
-      {activeTab === 0 && (
+      {activeTab === 'candidates' && (
         <div className="space-y-4">
           <Card>
             <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -647,7 +647,7 @@ export default function AIMatchingPage() {
         </div>
       )}
 
-      {activeTab === 1 && (
+      {activeTab === 'jobs' && (
         <div className="space-y-4">
           <Card>
             <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">

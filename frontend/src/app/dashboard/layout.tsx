@@ -20,6 +20,8 @@ import {
   Zap,
   ClipboardList,
   FileText,
+  Target,
+  Search as SearchIcon,
 } from 'lucide-react';
 import {
   UserMenu,
@@ -42,12 +44,14 @@ const NAV_ITEMS = [
   { href: '/dashboard/jobs', key: 'nav.jobs', icon: Briefcase, badge: '5' },
   { href: '/dashboard/assessments', key: 'nav.assessments', icon: ClipboardList },
   { href: '/dashboard/interviews', key: 'nav.interviews', icon: CalendarIcon },
+  { href: '/dashboard/offers', key: 'nav.offers', icon: FileText },
   { href: '/dashboard/ppe', key: 'nav.ppe', icon: Code2 },
   { href: '/dashboard/analytics', key: 'nav.analytics', icon: BarChart3 },
   { href: '/dashboard/ai-copilot', key: 'nav.aiCopilot', icon: Bot, badge: 'new' },
   { href: '/dashboard/workflows', key: 'nav.workflows', icon: WorkflowIcon },
   { href: '/dashboard/pipeline', key: 'nav.pipeline', icon: KanbanSquare },
   { href: '/dashboard/matching', key: 'nav.matching', icon: Sparkles },
+  { href: '/dashboard/ai-matching', key: 'nav.aiMatching', icon: Target, badge: 'new' },
   { href: '/dashboard/sourcing', key: 'nav.sourcing', icon: SearchIcon },
   { href: '/dashboard/schedule', key: 'nav.schedule', icon: CalendarDays },
   { href: '/dashboard/settings', key: 'nav.settings', icon: SettingsIcon },

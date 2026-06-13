@@ -47,12 +47,14 @@
     "jobs": "Jobs",
     "assessments": "Assessments",
     "interviews": "Interviews",
+    "offers": "Offers",
     "ppe": "PPE",
     "analytics": "Analytics",
     "aiCopilot": "AI Copilot",
     "workflows": "Workflows",
     "pipeline": "Pipeline",
     "matching": "AI Matching",
+    "aiMatching": "AI Matching",
     "sourcing": "Sourcing",
     "schedule": "Schedule",
     "settings": "Settings",
@@ -3634,6 +3636,46 @@
     "validationError": "Please fill in all required fields",
     "navLabel": "Pipeline Automation"
   },
+  "aiMatching": {
+    "title": "AI Matching Dashboard",
+    "subtitle": "Semantic + hybrid scoring to find the perfect match.",
+    "tabCandidates": "Match Candidates to Job",
+    "tabJobs": "Match Jobs to Candidate",
+    "selectJob": "Select a job",
+    "selectJobPh": "Choose a job…",
+    "selectCandidate": "Select a candidate",
+    "selectCandidatePh": "Choose a candidate…",
+    "runMatch": "Run matching",
+    "running": "Matching…",
+    "matchComplete": "{count} matches found",
+    "matchFailed": "Matching failed",
+    "loadError": "Couldn't load data",
+    "noMatches": "No matches yet",
+    "noMatchesDesc": "Select a job and run matching to find the best candidates.",
+    "noMatchesJobsDesc": "Select a candidate and run matching to find the best jobs.",
+    "noResults": "No results match the current filter.",
+    "searchCandidates": "Search candidates…",
+    "scoreThreshold": "Min score",
+    "allScores": "All scores",
+    "selectedCount": "{count} selected",
+    "addToPipeline": "Add to pipeline",
+    "scheduleInterview": "Schedule interview",
+    "addedToPipeline": "{count} candidates added to pipeline",
+    "interviewScheduled": "{count} interviews queued",
+    "selectAll": "Select all",
+    "selectCandidateRow": "Select {name}",
+    "filterDepartment": "Department",
+    "allDepartments": "All departments",
+    "filterLocation": "Filter by location…",
+    "showingCount": "{count} matches",
+    "table": {
+      "candidate": "Candidate",
+      "matchScore": "Match",
+      "semanticScore": "Semantic",
+      "hybridScore": "Hybrid",
+      "topSkills": "Top skills"
+    }
+  },
   "sourcing": {
     "title": "Sourcing",
     "subtitle": "Build talent pools and discover candidates from multiple sources",
@@ -3747,6 +3789,112 @@
       "selectPool": "Select pool",
       "selectPoolPlaceholder": "Choose a pool...",
       "submit": "Add to pool"
+    }
+  },
+  "offers": {
+    "title": "Offers",
+    "subtitle": "{total} total offers",
+    "createOffer": "Create offer",
+    "newOffer": "New offer",
+    "newOfferDesc": "Create and send an offer to a candidate",
+    "search": "Search by candidate or job…",
+    "allStatuses": "All statuses",
+    "allCandidates": "All candidates",
+    "allJobs": "All jobs",
+    "couldntLoad": "Couldn't load offers",
+    "noOffersYet": "No offers yet",
+    "noOffersFound": "No offers found",
+    "noOffersDesc": "Create your first offer to get started.",
+    "tryAdjusting": "Try adjusting your filters.",
+    "notFound": "Offer not found",
+    "details": "Offer details",
+    "dates": "Dates",
+    "created": "Created",
+    "sentOn": "Sent",
+    "acceptedOn": "Accepted",
+    "declinedOn": "Declined",
+    "signedOn": "Signed on",
+    "loadFailed": "Failed to load data",
+    "createFailed": "Failed to create offer",
+    "sendFailed": "Failed to send offer",
+    "acceptFailed": "Failed to accept offer",
+    "declineFailed": "Failed to decline offer",
+    "signFailed": "Failed to sign offer",
+    "deleteFailed": "Failed to delete offer",
+    "sent": "Offer sent successfully",
+    "accepted": "Offer accepted",
+    "declined": "Offer declined",
+    "signed": "Offer signed successfully",
+    "deleted": "Offer deleted",
+    "statuses": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "expired": "Expired"
+    },
+    "fields": {
+      "candidate": "Candidate *",
+      "job": "Job *",
+      "salary": "Salary",
+      "salaryMin": "Salary min",
+      "salaryMax": "Salary max",
+      "currency": "Currency",
+      "equity": "Equity (%)",
+      "startDate": "Start date",
+      "expirationDate": "Expiration date",
+      "template": "Template",
+      "notes": "Notes"
+    },
+    "placeholders": {
+      "candidate": "Select candidate…",
+      "job": "Select job…",
+      "template": "Select template…",
+      "notes": "Internal notes about this offer…"
+    },
+    "steps": {
+      "select": "Select",
+      "configure": "Configure",
+      "review": "Review"
+    },
+    "step1": {
+      "title": "Select candidate and job",
+      "description": "Choose who will receive the offer and for which position."
+    },
+    "step2": {
+      "title": "Configure offer terms",
+      "description": "Set compensation, dates, and other terms."
+    },
+    "step3": {
+      "title": "Review and create",
+      "description": "Double-check the details before creating the offer."
+    },
+    "actions": {
+      "send": "Send offer",
+      "accept": "Accept",
+      "decline": "Decline",
+      "sign": "Sign"
+    },
+    "signature": {
+      "title": "Sign below",
+      "clear": "Clear",
+      "save": "Save signature"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "empty": "No events yet."
+    },
+    "confirmDeclineTitle": "Decline offer?",
+    "confirmDeclineDesc": "This will mark the offer as declined.",
+    "confirmDeleteTitle": "Delete offer?",
+    "confirmDeleteDesc": "This action cannot be undone.",
+    "errors": {
+      "candidateRequired": "Please select a candidate",
+      "jobRequired": "Please select a job",
+      "salaryMinInvalid": "Salary must be positive",
+      "salaryMaxInvalid": "Salary must be positive",
+      "salaryRangeInvalid": "Max must be >= min",
+      "equityInvalid": "Equity must be 0-100%"
     }
   }
 }
