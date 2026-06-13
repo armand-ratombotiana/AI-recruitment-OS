@@ -5,11 +5,12 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter, Depends, Header, Query, WebSocket, WebSocketDisconnect, status
 from pydantic import BaseModel, Field
 
-from shared.core.security import decode_token
+from shared.core.security import decode_token, require_tenant, require_user
 from shared.realtime.broadcaster import broadcaster
+from shared.collaboration.manager import collaboration_manager, CollaborationRoom
 
 
 # ── In-Memory Store ─────────────────────────────────────────────────────────────
@@ -124,12 +125,55 @@ class DashboardBroadcastRequest(BaseModel):
     )
 
 
+# ── Collaboration Models ──────────────────────────────────────────────────────────
+
+class CreateRoomRequest(BaseModel):
+    room_id: str = Field(..., min_length=1, max_length=64, description="Unique room identifier")
+    name: str | None = Field(default=None, description="Optional room name")
+
+
+class JoinRoomRequest(BaseModel):
+    user_id: str = Field(..., min_length=1, description="User identifier")
+    user_info: dict[str, Any] = Field(default_factory=dict, description="User metadata (name, color, etc.)")
+
+
+class CursorMoveRequest(BaseModel):
+    user_id: str = Field(..., min_length=1, description="User identifier")
+    cursor: dict[str, Any] = Field(..., description="Cursor position data (x, y, offset, etc.)")
+
+
+class SelectionChangeRequest(BaseModel):
+    user_id: str = Field(..., min_length=1, description="User identifier")
+    selection: dict[str, Any] = Field(..., description="Text selection data (start, end, etc.)")
+
+
+class ContentChangeRequest(BaseModel):
+    user_id: str = Field(..., min_length=1, description="User identifier")
+    operation: dict[str, Any] = Field(..., description="Operational transform / CRDT operation")
+    version: int = Field(..., ge=0, description="Expected content version")
+
+
 # ── Response Models ─────────────────────────────────────────────────────────────
 
 class HealthResponse(BaseModel):
     status: str = "healthy"
     service: str = "websocket"
     active_connections: int
+
+
+class RoomResponse(BaseModel):
+    room_id: str
+    tenant_id: str
+    name: str | None = None
+    created_at: str
+    user_count: int
+
+
+class JoinRoomResponse(BaseModel):
+    room_id: str
+    user_id: str
+    token: str
+    room_state: dict[str, Any]
 
 
 # ── Router ──────────────────────────────────────────────────────────────────────
@@ -303,3 +347,225 @@ async def list_connections():
 @router.get("/broadcast-log", tags=["WebSocket"], summary="Get broadcast log")
 async def get_broadcast_log():
     return {"data": _broadcast_log[-50:], "total": len(_broadcast_log)}
+
+
+# ── Collaboration REST Endpoints ────────────────────────────────────────────────
+
+@router.post(
+    "/realtime/rooms",
+    response_model=RoomResponse,
+    tags=["Collaboration"],
+    summary="Create a new collaboration room",
+)
+async def create_collaboration_room(
+    data: CreateRoomRequest,
+    tenant_id: str = Depends(require_tenant),
+) -> RoomResponse:
+    """Create a new real-time collaboration room for co-editing."""
+    room = await collaboration_manager.create_room(data.room_id, tenant_id)
+    state = await room.get_state()
+    return RoomResponse(
+        room_id=room.room_id,
+        tenant_id=room.tenant_id,
+        name=data.name,
+        created_at=state["created_at"],
+        user_count=0,
+    )
+
+
+@router.get(
+    "/realtime/rooms/{room_id}",
+    tags=["Collaboration"],
+    summary="Get collaboration room state",
+)
+async def get_collaboration_room(
+    room_id: str,
+    tenant_id: str = Depends(require_tenant),
+) -> dict[str, Any]:
+    """Get the current state of a collaboration room including all users, cursors, and selections."""
+    state = await collaboration_manager.get_room_state(room_id, tenant_id)
+    if not state:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail=f"Room {room_id} not found")
+    return state
+
+
+@router.post(
+    "/realtime/rooms/{room_id}/join",
+    response_model=JoinRoomResponse,
+    tags=["Collaboration"],
+    summary="Join a collaboration room",
+)
+async def join_collaboration_room(
+    room_id: str,
+    data: JoinRoomRequest,
+    tenant_id: str = Depends(require_tenant),
+) -> JoinRoomResponse:
+    """Join a collaboration room and get a WebSocket token for real-time updates."""
+    user_state = await collaboration_manager.join_room(room_id, data.user_id, data.user_info, tenant_id)
+    state = await collaboration_manager.get_room_state(room_id, tenant_id)
+
+    token_payload = {
+        "sub": data.user_id,
+        "room_id": room_id,
+        "tenant_id": tenant_id,
+        "type": "collaboration",
+    }
+    from shared.core.security import create_access_token
+    token = create_access_token(token_payload)
+
+    return JoinRoomResponse(
+        room_id=room_id,
+        user_id=data.user_id,
+        token=token,
+        room_state=state or {},
+    )
+
+
+@router.post(
+    "/realtime/rooms/{room_id}/leave",
+    tags=["Collaboration"],
+    summary="Leave a collaboration room",
+)
+async def leave_collaboration_room(
+    room_id: str,
+    user_id: str,
+    tenant_id: str = Depends(require_tenant),
+) -> dict[str, Any]:
+    """Leave a collaboration room."""
+    await collaboration_manager.leave_room(room_id, user_id, tenant_id)
+    return {"left": True, "room_id": room_id, "user_id": user_id}
+
+
+# ── Collaboration WebSocket Endpoint ────────────────────────────────────────────
+
+@router.websocket("/realtime/rooms/{room_id}/ws")
+async def collaboration_websocket(
+    websocket: WebSocket,
+    room_id: str,
+    token: str | None = Query(default=None),
+):
+    """WebSocket endpoint for real-time collaboration in a room.
+
+    Authentication: JWT token passed as query parameter.
+    The token must be a collaboration token (type="collaboration") with matching room_id.
+
+    Accepted inbound messages:
+        {"type": "cursor_move", "cursor": {...}}
+        {"type": "selection_change", "selection": {...}}
+        {"type": "content_change", "operation": {...}, "version": 1}
+
+    Outbound events:
+        {"event": "user_join", "data": {...}}
+        {"event": "user_leave", "data": {...}}
+        {"event": "cursor_move", "data": {...}}
+        {"event": "selection_change", "data": {...}}
+        {"event": "content_change", "data": {...}}
+        {"event": "room_state", "data": {...}}
+    """
+    if not token:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Missing JWT token")
+        return
+
+    payload = decode_token(token)
+    if not payload or payload.get("type") != "collaboration" or not payload.get("sub"):
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Invalid collaboration token")
+        return
+
+    if payload.get("room_id") != room_id:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Token room mismatch")
+        return
+
+    user_id: str = payload["sub"]
+    tenant_id: str = payload.get("tenant_id") or "default"
+
+    room = await collaboration_manager.get_room(room_id, tenant_id)
+    if not room:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Room not found")
+        return
+
+    await websocket.accept()
+
+    try:
+        user_state = await room.add_user(user_id, payload.get("user_info", {}))
+
+        join_event = {
+            "event": "user_join",
+            "data": {
+                "user_id": user_id,
+                "user_info": user_state.user_info,
+                "joined_at": user_state.joined_at.isoformat(),
+            },
+        }
+        await _broadcast_to_room(room, join_event, exclude_user=user_id)
+
+        await websocket.send_json({
+            "event": "room_state",
+            "data": await room.get_state(),
+        })
+
+        while True:
+            try:
+                raw = await websocket.receive_json()
+            except Exception:
+                continue
+
+            msg_type = raw.get("type")
+            if msg_type == "cursor_move":
+                cursor = raw.get("cursor", {})
+                await room.update_cursor(user_id, cursor)
+                await _broadcast_to_room(room, {
+                    "event": "cursor_move",
+                    "data": {"user_id": user_id, "cursor": cursor},
+                }, exclude_user=user_id)
+
+            elif msg_type == "selection_change":
+                selection = raw.get("selection", {})
+                await room.update_selection(user_id, selection)
+                await _broadcast_to_room(room, {
+                    "event": "selection_change",
+                    "data": {"user_id": user_id, "selection": selection},
+                }, exclude_user=user_id)
+
+            elif msg_type == "content_change":
+                operation = raw.get("operation", {})
+                version = raw.get("version", 0)
+                current_version = room.content_version
+                if version != current_version:
+                    await websocket.send_json({
+                        "event": "version_conflict",
+                        "data": {"expected": version, "current": current_version},
+                    })
+                    continue
+                await room.increment_version()
+                await _broadcast_to_room(room, {
+                    "event": "content_change",
+                    "data": {"user_id": user_id, "operation": operation, "version": room.content_version},
+                }, exclude_user=user_id)
+
+            elif msg_type == "ping":
+                await websocket.send_json({"event": "pong", "data": {"ts": datetime.now(timezone.utc).isoformat()}})
+
+    except WebSocketDisconnect:
+        pass
+    finally:
+        await room.remove_user(user_id)
+        leave_event = {
+            "event": "user_leave",
+            "data": {"user_id": user_id},
+        }
+        await _broadcast_to_room(room, leave_event)
+        if room.is_empty():
+            await collaboration_manager.delete_room(room_id, tenant_id)
+
+
+async def _broadcast_to_room(room: CollaborationRoom, message: dict[str, Any], exclude_user: str | None = None) -> None:
+    """Broadcast a message to all WebSocket connections in a room."""
+    for uid, state in room.users.items():
+        if uid == exclude_user:
+            continue
+        if hasattr(state, "websocket") and state.websocket:
+            try:
+                await state.websocket.send_json(message)
+            except Exception:
+                pass

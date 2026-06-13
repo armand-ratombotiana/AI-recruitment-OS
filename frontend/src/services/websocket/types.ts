@@ -69,6 +69,56 @@ export interface InterviewLifecyclePayload {
   interview_id: string;
 }
 
+export interface CollaborationUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string | null;
+  color: string;
+  status: 'active' | 'idle';
+  last_activity?: string;
+  cursor?: { x: number; y: number } | null;
+  selection?: { start: number; end: number; text: string } | null;
+}
+
+export interface PresenceJoinPayload {
+  user: CollaborationUser;
+  room: string;
+}
+
+export interface PresenceLeavePayload {
+  user_id: string;
+  room: string;
+}
+
+export interface PresenceListPayload {
+  room: string;
+  users: CollaborationUser[];
+}
+
+export interface CursorMovePayload {
+  user: CollaborationUser;
+  x: number;
+  y: number;
+  room: string;
+}
+
+export interface SelectionChangePayload {
+  user: CollaborationUser;
+  selection: { start: number; end: number; text: string } | null;
+  room: string;
+}
+
+export interface RoomJoinPayload {
+  room: string;
+  user: CollaborationUser;
+}
+
+export interface RoomLeavePayload {
+  room: string;
+  user_id: string;
+}
+
 export type WSEventPayloadMap = {
   'candidate.created': CandidateCreatedPayload;
   'candidate.updated': CandidateUpdatedPayload;
@@ -82,5 +132,12 @@ export type WSEventPayloadMap = {
   'notification': Record<string, unknown>;
   'ping': Record<string, never>;
   'pong': Record<string, never>;
+  'presence.join': PresenceJoinPayload;
+  'presence.leave': PresenceLeavePayload;
+  'presence.list': PresenceListPayload;
+  'cursor.move': CursorMovePayload;
+  'selection.change': SelectionChangePayload;
+  'room.join': RoomJoinPayload;
+  'room.leave': RoomLeavePayload;
   [key: string]: unknown;
 };
