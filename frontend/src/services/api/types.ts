@@ -2459,6 +2459,97 @@ export namespace ReviewTypes {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Referrals
+// ---------------------------------------------------------------------------
+
+export namespace ReferralTypes {
+  export type ReferralStatus = 'pending' | 'reviewing' | 'qualified' | 'interviewed' | 'offered' | 'hired' | 'rejected' | 'expired';
+  export type RewardType = 'cash' | 'gift_card' | 'bonus' | 'time_off' | 'other';
+
+  export interface ReferralProgramConfig {
+    id: UUID;
+    tenant_id: UUID;
+    reward_amount: number;
+    reward_type: RewardType;
+    reward_currency: string;
+    conditions: string;
+    is_active: boolean;
+    created_at: ISODateString;
+    updated_at: ISODateString;
+  }
+
+  export interface ReferralProgramConfigUpdateRequest {
+    reward_amount?: number;
+    reward_type?: RewardType;
+    reward_currency?: string;
+    conditions?: string;
+    is_active?: boolean;
+  }
+
+  export interface Referral {
+    id: UUID;
+    referrer_id: UUID;
+    referrer_name: string;
+    referrer_email: string;
+    candidate_id: UUID;
+    candidate_name: string;
+    candidate_email: string;
+    job_id: UUID;
+    job_title: string;
+    status: ReferralStatus;
+    reward_amount: number;
+    reward_type: RewardType;
+    reward_currency: string;
+    reward_paid: boolean;
+    reward_paid_at: ISODateString | null;
+    notes: string | null;
+    created_at: ISODateString;
+    updated_at: ISODateString;
+    hired_at: ISODateString | null;
+  }
+
+  export interface ReferralListResponse {
+    data: Referral[];
+    total: number;
+    page?: number;
+    page_size?: number;
+  }
+
+  export interface ReferralCreateRequest {
+    referrer_id?: UUID;
+    candidate_id: UUID;
+    job_id: UUID;
+    notes?: string | null;
+  }
+
+  export interface ReferralUpdateRequest {
+    status?: ReferralStatus;
+    reward_amount?: number;
+    reward_type?: RewardType;
+    reward_currency?: string;
+    reward_paid?: boolean;
+    notes?: string | null;
+  }
+
+  export interface ReferralStats {
+    total_referrals: number;
+    hired: number;
+    pending: number;
+    total_rewards: number;
+    total_rewards_paid: number;
+  }
+
+  export interface ReferralExportRequest {
+    format: 'csv' | 'xlsx' | 'pdf';
+    status?: ReferralStatus;
+    date_from?: ISODateString;
+    date_to?: ISODateString;
+    referrer_id?: UUID;
+    job_id?: UUID;
+  }
+}
+
 export namespace OfferTypes {
   export type OfferStatus = 'draft' | 'sent' | 'accepted' | 'declined' | 'expired';
 

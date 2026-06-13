@@ -48,6 +48,7 @@ import type {
   TagTypes,
   OfferTypes,
   ReviewTypes,
+  ReferralTypes,
 } from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -1379,6 +1380,44 @@ class APIClient {
       this.request<InnovationsTypes.CandidateExperienceReport>(
         `/innovations/candidate-experience/${candidateId}`,
       ),
+  };
+
+  // ========================================================================
+  // REFERRALS SERVICE
+  // ========================================================================
+
+  referrals = {
+    health: () => this.request<HealthResponse>('/referrals/health'),
+    getProgramConfig: () =>
+      this.request<ReferralTypes.ReferralProgramConfig>('/referrals/program'),
+    updateProgramConfig: (data: ReferralTypes.ReferralProgramConfigUpdateRequest) =>
+      this.request<ReferralTypes.ReferralProgramConfig>('/referrals/program', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    list: (params?: Record<string, string>) =>
+      this.request<ReferralTypes.ReferralListResponse>('/referrals/', { params }),
+    get: (referralId: string) =>
+      this.request<ReferralTypes.Referral>(`/referrals/${referralId}`),
+    create: (data: ReferralTypes.ReferralCreateRequest) =>
+      this.request<ReferralTypes.Referral>('/referrals/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (referralId: string, data: ReferralTypes.ReferralUpdateRequest) =>
+      this.request<ReferralTypes.Referral>(`/referrals/${referralId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    delete: (referralId: string) =>
+      this.request<MessageResponse>(`/referrals/${referralId}`, { method: 'DELETE' }),
+    getStats: () =>
+      this.request<ReferralTypes.ReferralStats>('/referrals/stats'),
+    export: (data: ReferralTypes.ReferralExportRequest) =>
+      this.request<{ url: string; data?: string }>('/referrals/export', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   };
 
   // ========================================================================

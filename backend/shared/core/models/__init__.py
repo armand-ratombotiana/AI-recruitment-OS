@@ -153,6 +153,20 @@ from shared.core.models.offer import (
     OfferStatus,
     OfferTemplate,
 )
+from shared.core.models.referral import (
+    Referral,
+    ReferralProgram,
+    ReferralStatus,
+    RewardType,
+    ReferralCreate,
+    ReferralRead,
+    ReferralUpdate,
+    ReferralListResponse,
+    ReferralProgramRead,
+    ReferralProgramCreate,
+    ReferralProgramUpdate,
+    ReferralStats,
+)
 from shared.core.models.assessment import (
     Answer,
     AnswerRead,
@@ -171,6 +185,21 @@ from shared.core.models.assessment import (
     SubmitAnswersRequest,
     SubmitAnswersResponse,
 )
+from shared.core.models.video import (
+    VideoRoom,
+    VideoInterview,
+    VideoRecording,
+    VideoRoomStatus,
+    VideoInterviewStatus,
+    VideoRoomCreate,
+    VideoRoomRead,
+    VideoRoomJoinResponse,
+    VideoInterviewRead,
+    VideoInterviewListResponse,
+    RecordingRead,
+    StartRecordingRequest,
+    StopRecordingResponse,
+)
 
 __all__ = [
     "ApiKey",
@@ -182,6 +211,9 @@ __all__ = [
     "SeniorityLevel", "CandidateStatus",
     "CandidateCreate", "CandidateRead", "CandidateUpdate", "CandidateProfileRead", "SkillRead",
     "CandidateActivity", "CandidateActivityType",
+    "Referral", "ReferralProgram", "ReferralStatus", "RewardType",
+    "ReferralCreate", "ReferralRead", "ReferralUpdate", "ReferralListResponse",
+    "ReferralProgramRead", "ReferralProgramCreate", "ReferralProgramUpdate", "ReferralStats",
     "TalentPool", "TalentPoolMember",
     "TalentPoolCreate", "TalentPoolUpdate", "TalentPoolRead",
     "TalentPoolMemberRead", "TalentPoolWithMembersRead",
