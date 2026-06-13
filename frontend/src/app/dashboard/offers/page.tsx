@@ -120,12 +120,7 @@ export default function OffersPage() {
 
   return (
     <div className="space-y-6">
-      <Breadcrumb
-        items={[
-          { label: t('nav.dashboard', 'Dashboard'), href: '/dashboard' },
-          { label: t('offers.title', 'Offers') },
-        ]}
-      />
+      <Breadcrumb />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -133,7 +128,7 @@ export default function OffersPage() {
             {t('offers.title', 'Offers')}
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {t('offers.subtitle', '{total} total offers', { total: String(offers.length) })}
+            {offers.length} {t('offers.totalOffers', 'total offers')}
           </p>
         </div>
         <Link href="/dashboard/offers/new">
@@ -154,7 +149,6 @@ export default function OffersPage() {
                 placeholder={t('offers.search', 'Search by candidate or job…')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                icon={<Search className="h-4 w-4" />}
               />
             </div>
             <SelectField
@@ -189,7 +183,7 @@ export default function OffersPage() {
           ) : error ? (
             <ErrorState
               title={t('offers.couldntLoad', "Couldn't load offers")}
-              message={error}
+              error={error}
               onRetry={() => window.location.reload()}
             />
           ) : filtered.length === 0 ? (

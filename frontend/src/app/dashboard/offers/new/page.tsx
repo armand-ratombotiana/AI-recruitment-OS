@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Check, FileText, User, Briefcase, Settings } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
@@ -23,8 +23,8 @@ type Step = (typeof STEPS)[number];
 export default function NewOfferPage() {
   const router = useRouter();
   const locale = useLocaleStore((s) => s.locale);
-  const t = (key: string, fb?: string) => translate(locale, key, fb);
-  const { showToast } = useToast();
+  const t = useCallback((key: string, fb?: string) => translate(locale, key, fb), [locale]);
+  const { push: showToast } = useToast();
 
   const [step, setStep] = useState<Step>('select');
   const [candidates, setCandidates] = useState<Array<{ id: string; label: string }>>([]);
@@ -62,7 +62,7 @@ export default function NewOfferPage() {
         setTemplates(tmplRes.data || []);
       })
       .catch(() => {
-        if (!cancelled) showToast(t('offers.loadFailed', 'Failed to load data'), 'error');
+        if (!cancelled) showToast('error', t('offers.loadFailed', 'Failed to load data'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -70,7 +70,7 @@ export default function NewOfferPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [showToast, t]);
 
   const canNext = () => {
     if (step === 'select') return candidateId && jobId;
@@ -103,13 +103,10 @@ export default function NewOfferPage() {
         template_id: templateId || null,
         notes: notes.trim() || null,
       });
-      showToast(t('offers.created', 'Offer created successfully'), 'success');
+      showToast('success', t('offers.created', 'Offer created successfully'));
       router.push(`/dashboard/offers/${offer.id}`);
     } catch (err) {
-      showToast(
-        err instanceof APIError ? err.message : t('offers.createFailed', 'Failed to create offer'),
-        'error'
-      );
+      showToast('error', err instanceof APIError ? err.message : t('offers.createFailed', 'Failed to create offer'));
     } finally {
       setSubmitting(false);
     }
@@ -144,13 +141,7 @@ export default function NewOfferPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Breadcrumb
-          items={[
-            { label: t('nav.dashboard', 'Dashboard'), href: '/dashboard' },
-            { label: t('offers.title', 'Offers'), href: '/dashboard/offers' },
-            { label: t('offers.newOffer', 'New offer') },
-          ]}
-        />
+        <Breadcrumb />
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           {t('common.loading', 'Loading…')}
         </div>
@@ -160,13 +151,7 @@ export default function NewOfferPage() {
 
   return (
     <div className="space-y-6">
-      <Breadcrumb
-        items={[
-          { label: t('nav.dashboard', 'Dashboard'), href: '/dashboard' },
-          { label: t('offers.title', 'Offers'), href: '/dashboard/offers' },
-          { label: t('offers.newOffer', 'New offer') },
-        ]}
-      />
+      <Breadcrumb />
 
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">

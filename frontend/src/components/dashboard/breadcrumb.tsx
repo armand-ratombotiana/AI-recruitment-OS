@@ -17,6 +17,7 @@ const LABELS: Record<string, string> = {
   pipeline: 'Pipeline',
   matching: 'AI Matching',
   schedule: 'Schedule',
+  offers: 'Offers',
 };
 
 export function Breadcrumb() {
