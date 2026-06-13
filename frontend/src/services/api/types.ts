@@ -2285,3 +2285,109 @@ export namespace ActivityTypes {
     data: ActivityTypeOption[];
   }
 }
+
+// ---------------------------------------------------------------------------
+// Offers
+// ---------------------------------------------------------------------------
+
+export namespace OfferTypes {
+  export type OfferStatus = 'draft' | 'sent' | 'accepted' | 'declined' | 'expired';
+
+  export interface Offer {
+    id: UUID;
+    candidate_id: UUID;
+    job_id: UUID;
+    candidate_name?: string;
+    job_title?: string;
+    status: OfferStatus;
+    salary_min: number | null;
+    salary_max: number | null;
+    currency: string;
+    equity_percent: number | null;
+    start_date: ISODateString | null;
+    expiration_date: ISODateString | null;
+    template_id: string | null;
+    notes: string | null;
+    sent_at: ISODateString | null;
+    accepted_at: ISODateString | null;
+    declined_at: ISODateString | null;
+    signed_at: ISODateString | null;
+    signature_data: string | null;
+    created_at: ISODateString;
+    updated_at: ISODateString;
+  }
+
+  export interface OfferSummary {
+    id: UUID;
+    candidate_id: UUID;
+    job_id: UUID;
+    candidate_name: string;
+    job_title: string;
+    status: OfferStatus;
+    salary_min: number | null;
+    salary_max: number | null;
+    currency: string;
+    sent_at: ISODateString | null;
+    expiration_date: ISODateString | null;
+    created_at: ISODateString;
+  }
+
+  export interface OfferListResponse {
+    data: OfferSummary[];
+    total: number;
+    page?: number;
+    page_size?: number;
+  }
+
+  export interface OfferCreateRequest {
+    candidate_id: UUID;
+    job_id: UUID;
+    salary_min?: number | null;
+    salary_max?: number | null;
+    currency?: string;
+    equity_percent?: number | null;
+    start_date?: ISODateString | null;
+    expiration_date?: ISODateString | null;
+    template_id?: string | null;
+    notes?: string | null;
+  }
+
+  export interface OfferUpdateRequest {
+    salary_min?: number | null;
+    salary_max?: number | null;
+    currency?: string;
+    equity_percent?: number | null;
+    start_date?: ISODateString | null;
+    expiration_date?: ISODateString | null;
+    template_id?: string | null;
+    notes?: string | null;
+    status?: OfferStatus;
+  }
+
+  export interface OfferTimelineEntry {
+    id: UUID;
+    action: string;
+    description: string;
+    actor: string;
+    created_at: ISODateString;
+  }
+
+  export interface OfferTimelineResponse {
+    data: OfferTimelineEntry[];
+  }
+
+  export interface OfferTemplate {
+    id: string;
+    name: string;
+    description: string;
+    body: string;
+  }
+
+  export interface OfferTemplateListResponse {
+    data: OfferTemplate[];
+  }
+
+  export interface SignatureRequest {
+    signature_data: string;
+  }
+}

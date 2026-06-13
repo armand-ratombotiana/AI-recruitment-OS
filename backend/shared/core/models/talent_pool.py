@@ -42,7 +42,7 @@ class TalentPoolMember(SQLModel, table=True):
     added_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     source: str = TalentPoolSource.MANUAL
     score: float | None = None
-    metadata: dict[str, Any] = SQLField(default_factory=dict, sa_column=Column(JSON))
+    meta: dict[str, Any] = SQLField(default_factory=dict, sa_column=Column(JSON))
 
 
 # --- API Schemas ---
@@ -113,7 +113,7 @@ class SearchCriteria(BaseModel):
     skills: list[str] = Field(default_factory=list)
     years_experience_min: int | None = None
     years_experience_max: int | None = None
-    sources: list[str] = Field(default_factory=["linkedin", "github"])
+    sources: list[str] = Field(default_factory=lambda: ["linkedin", "github"])
 
 
 class ExternalCandidate(BaseModel):

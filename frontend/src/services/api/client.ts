@@ -46,6 +46,7 @@ import type {
   PaginatedResponse,
   MessageResponse,
   TagTypes,
+  OfferTypes,
 } from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -1363,6 +1364,54 @@ class APIClient {
       this.request<InnovationsTypes.CandidateExperienceReport>(
         `/innovations/candidate-experience/${candidateId}`,
       ),
+  };
+
+  // ========================================================================
+  // OFFERS SERVICE
+  // ========================================================================
+
+  offers = {
+    health: () => this.request<HealthResponse>('/offers/health'),
+    list: (params?: Record<string, string>) =>
+      this.request<OfferTypes.OfferListResponse>('/offers/', { params }),
+    get: (offerId: string) =>
+      this.request<OfferTypes.Offer>(`/offers/${offerId}`),
+    create: (data: OfferTypes.OfferCreateRequest) =>
+      this.request<OfferTypes.Offer>('/offers/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (offerId: string, data: OfferTypes.OfferUpdateRequest) =>
+      this.request<OfferTypes.Offer>(`/offers/${offerId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    delete: (offerId: string) =>
+      this.request<MessageResponse>(`/offers/${offerId}`, { method: 'DELETE' }),
+    send: (offerId: string) =>
+      this.request<OfferTypes.Offer>(`/offers/${offerId}/send`, {
+        method: 'POST',
+      }),
+    accept: (offerId: string) =>
+      this.request<OfferTypes.Offer>(`/offers/${offerId}/accept`, {
+        method: 'POST',
+      }),
+    decline: (offerId: string, reason?: string) =>
+      this.request<OfferTypes.Offer>(`/offers/${offerId}/decline`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      }),
+    sign: (offerId: string, data: OfferTypes.SignatureRequest) =>
+      this.request<OfferTypes.Offer>(`/offers/${offerId}/sign`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getTimeline: (offerId: string) =>
+      this.request<OfferTypes.OfferTimelineResponse>(`/offers/${offerId}/timeline`),
+    listTemplates: () =>
+      this.request<OfferTypes.OfferTemplateListResponse>('/offers/templates'),
+    getTemplate: (templateId: string) =>
+      this.request<OfferTypes.OfferTemplate>(`/offers/templates/${templateId}`),
   };
 
   // ========================================================================

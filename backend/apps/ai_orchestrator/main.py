@@ -890,6 +890,91 @@ async def detect_bias(
     return _attach_request_meta(result, job_id=data.job_id)
 
 
+# ── AI Matching ──────────────────────────────────────────────────────────────
+
+
+class MatchCandidatesRequest(BaseModel):
+    job: dict = Field(..., description="Job object with required_skills, title, etc.")
+    candidates: list[dict] = Field(..., description="List of candidate objects to rank")
+    top_n: int = Field(default=20, ge=1, le=200, description="Max results to return")
+
+
+class MatchJobsRequest(BaseModel):
+    candidate: dict = Field(..., description="Candidate object with skills, experience, etc.")
+    jobs: list[dict] = Field(..., description="List of job objects to rank")
+    top_n: int = Field(default=10, ge=1, le=200, description="Max results to return")
+
+
+@router.post(
+    "/match-candidates",
+    tags=["AI"],
+    summary="Rank candidates against a job using semantic + structured scoring",
+)
+async def match_candidates_endpoint(
+    data: MatchCandidatesRequest,
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
+    from shared.ai.matching import match_candidates_to_job, compute_match_stats
+
+    results = match_candidates_to_job(data.job, data.candidates, top_n=data.top_n)
+    stats = compute_match_stats(results)
+    return {
+        "tenant_id": tenant_id,
+        "job_id": data.job.get("id"),
+        "total_scored": len(data.candidates),
+        "returned": len(results),
+        "matches": [r.to_dict() for r in results],
+        "stats": stats,
+    }
+
+
+@router.post(
+    "/match-jobs",
+    tags=["AI"],
+    summary="Rank jobs for a candidate using semantic + structured scoring",
+)
+async def match_jobs_endpoint(
+    data: MatchJobsRequest,
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
+    from shared.ai.matching import match_job_to_candidates, compute_match_stats
+
+    results = match_job_to_candidates(data.candidate, data.jobs, top_n=data.top_n)
+    stats = compute_match_stats(results)
+    return {
+        "tenant_id": tenant_id,
+        "candidate_id": data.candidate.get("id"),
+        "total_scored": len(data.jobs),
+        "returned": len(results),
+        "matches": [r.to_dict() for r in results],
+        "stats": stats,
+    }
+
+
+@router.get(
+    "/match-stats",
+    tags=["AI"],
+    summary="Get matching statistics for the current tenant",
+)
+async def match_stats_endpoint(
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
+    return {
+        "tenant_id": tenant_id,
+        "semantic_weight": 0.40,
+        "structured_weight": 0.60,
+        "supported_dimensions": [
+            "skills",
+            "experience",
+            "location",
+            "salary",
+            "culture",
+            "semantic_similarity",
+        ],
+        "model": "tfidf-cosine + scoring-engine",
+    }
+
+
 # ── Cache introspection ──────────────────────────────────────────────────────
 
 

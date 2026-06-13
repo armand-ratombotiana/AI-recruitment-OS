@@ -148,6 +148,11 @@ from shared.core.models.talent_pool import (
     ImportResponse,
     TalentPoolSource,
 )
+from shared.core.models.offer import (
+    Offer,
+    OfferStatus,
+    OfferTemplate,
+)
 from shared.core.models.assessment import (
     Answer,
     AnswerRead,
@@ -229,6 +234,7 @@ __all__ = [
     "PopularTagItem", "PopularTagsResponse",
     "EntityTagRead", "EntityTagListResponse",
     "AddEntityTagRequest", "AddEntityTagResponse",
+    "Offer", "OfferStatus", "OfferTemplate",
     "Answer", "AnswerRead", "AnswerSubmit",
     "Assessment", "AssessmentCreate", "AssessmentCreateResponse",
     "AssessmentDetail", "AssessmentListResponse", "AssessmentRead",
