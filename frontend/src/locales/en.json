@@ -3384,5 +3384,125 @@
       "closed": "Closed",
       "on_hold": "On hold"
     }
+  },
+  "pipelineAutomation": {
+    "title": "Pipeline Automation",
+    "subtitle": "Create and manage automation rules for your hiring pipeline.",
+    "createRule": "Create rule",
+    "noRules": "No automation rules yet",
+    "noRulesDesc": "Create your first rule to automate candidate progression, notifications, and actions.",
+    "ruleName": "Rule name",
+    "ruleNamePlaceholder": "e.g. Auto-advance high-scoring candidates",
+    "description": "Description",
+    "descriptionPlaceholder": "What does this rule do?",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "trigger": "Trigger",
+    "condition": "Condition",
+    "action": "Action",
+    "triggers": {
+      "stageChange": "Stage change",
+      "timeInStage": "Time in stage",
+      "scoreThreshold": "Score threshold",
+      "newCandidate": "New candidate",
+      "interviewCompleted": "Interview completed",
+      "assessmentCompleted": "Assessment completed"
+    },
+    "triggerIcons": {
+      "stageChange": "Move",
+      "timeInStage": "Clock",
+      "scoreThreshold": "Target",
+      "newCandidate": "UserPlus",
+      "interviewCompleted": "CheckCircle",
+      "assessmentCompleted": "FileCheck"
+    },
+    "conditions": {
+      "stage": "Stage",
+      "days": "Days in stage",
+      "score": "Score",
+      "operator": "Operator",
+      "value": "Value",
+      "operators": {
+        "equals": "Equals",
+        "notEquals": "Not equals",
+        "greaterThan": "Greater than",
+        "lessThan": "Less than",
+        "greaterOrEqual": "Greater or equal",
+        "lessOrEqual": "Less or equal",
+        "contains": "Contains",
+        "notContains": "Does not contain"
+      }
+    },
+    "actions": {
+      "moveToStage": "Move to stage",
+      "reject": "Reject candidate",
+      "scheduleInterview": "Schedule interview",
+      "notify": "Send notification",
+      "runAgent": "Run AI agent",
+      "addTag": "Add tag",
+      "removeTag": "Remove tag"
+    },
+    "actionConfig": {
+      "targetStage": "Target stage",
+      "rejectionReason": "Rejection reason",
+      "interviewType": "Interview type",
+      "interviewDuration": "Duration (minutes)",
+      "notificationChannel": "Channel",
+      "notificationTemplate": "Template",
+      "agentType": "AI agent",
+      "agentPrompt": "Prompt",
+      "tagName": "Tag name"
+    },
+    "stages": {
+      "applied": "Applied",
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer",
+      "hired": "Hired",
+      "rejected": "Rejected"
+    },
+    "channels": {
+      "email": "Email",
+      "slack": "Slack",
+      "inApp": "In-app",
+      "webhook": "Webhook"
+    },
+    "agents": {
+      "screening": "Screening agent",
+      "matching": "Matching agent",
+      "interview": "Interview agent",
+      "evaluation": "Evaluation agent"
+    },
+    "lastRun": "Last run",
+    "nextRun": "Next run",
+    "runHistory": "Run history",
+    "noRuns": "No runs yet",
+    "runStatus": {
+      "success": "Success",
+      "failed": "Failed",
+      "running": "Running",
+      "pending": "Pending"
+    },
+    "createdAt": "Created",
+    "updatedAt": "Updated",
+    "editRule": "Edit rule",
+    "deleteRule": "Delete rule",
+    "deleteConfirm": "Delete this automation rule?",
+    "deleteConfirmDesc": "This will permanently remove the rule and its run history.",
+    "toggleEnabled": "Toggle rule status",
+    "runNow": "Run now",
+    "duplicateRule": "Duplicate rule",
+    "ruleSummary": "When {trigger}, if {condition}, then {action}",
+    "preview": "Rule preview",
+    "save": "Save rule",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "saving": "Saving...",
+    "created": "Rule created",
+    "updated": "Rule updated",
+    "deleted": "Rule deleted",
+    "error": "Failed to save rule",
+    "validationError": "Please fill in all required fields",
+    "navLabel": "Pipeline Automation"
   }
 }
