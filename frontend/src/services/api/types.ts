@@ -1395,6 +1395,30 @@ export namespace NotificationTypes {
   }
 
   export type PreferencesUpdate = Partial<NotificationPreferences>;
+
+  export interface NotificationChannel {
+    id: UUID;
+    tenant_id: UUID;
+    user_id: UUID;
+    channel_type: 'email' | 'in_app' | 'push' | 'slack' | 'sms';
+    address: string;
+    verified: boolean;
+    created_at: ISODateString;
+    verified_at: ISODateString | null;
+  }
+
+  export interface NotificationChannelsResponse {
+    channels: NotificationChannel[];
+  }
+
+  export interface ChannelCreateRequest {
+    channel_type: 'email' | 'in_app' | 'push' | 'slack' | 'sms';
+    address: string;
+  }
+
+  export interface ChannelVerifyRequest {
+    channel_id: UUID;
+  }
 }
 
 // ---------------------------------------------------------------------------

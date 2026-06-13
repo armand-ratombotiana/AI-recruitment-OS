@@ -706,6 +706,20 @@ class APIClient {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
+    // Channels (push devices, email, etc.)
+    listChannels: () =>
+      this.request<NotificationTypes.NotificationChannelsResponse>('/notifications/channels'),
+    addChannel: (data: NotificationTypes.ChannelCreateRequest) =>
+      this.request<NotificationTypes.NotificationChannel>('/notifications/channels', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    removeChannel: (channelId: string) =>
+      this.request<MessageResponse>(`/notifications/channels/${channelId}`, { method: 'DELETE' }),
+    verifyChannel: (channelId: string) =>
+      this.request<NotificationTypes.NotificationChannel>(`/notifications/channels/${channelId}/verify`, {
+        method: 'POST',
+      }),
   };
 
   // ========================================================================
