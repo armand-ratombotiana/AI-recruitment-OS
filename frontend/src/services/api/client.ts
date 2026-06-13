@@ -47,6 +47,7 @@ import type {
   MessageResponse,
   TagTypes,
   OfferTypes,
+  ReviewTypes,
 } from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -1364,6 +1365,39 @@ class APIClient {
       this.request<InnovationsTypes.CandidateExperienceReport>(
         `/innovations/candidate-experience/${candidateId}`,
       ),
+  };
+
+  // ========================================================================
+  // REVIEWS SERVICE (Performance Reviews)
+  // ========================================================================
+
+  reviews = {
+    health: () => this.request<HealthResponse>('/reviews/health'),
+
+    // Cycles
+    listCycles: (params?: Record<string, string>) =>
+      this.request<PaginatedResponse<ReviewTypes.ReviewCycle>>('/reviews/cycles', { params }),
+    getCycle: (cycleId: string) => this.request<ReviewTypes.ReviewCycle>(`/reviews/cycles/${cycleId}`),
+    createCycle: (data: ReviewTypes.ReviewCycleCreateRequest) =>
+      this.request<ReviewTypes.ReviewCycle>('/reviews/cycles', { method: 'POST', body: JSON.stringify(data) }),
+    updateCycle: (cycleId: string, data: ReviewTypes.ReviewCycleUpdateRequest) =>
+      this.request<ReviewTypes.ReviewCycle>(`/reviews/cycles/${cycleId}`, { method: 'PUT', body: JSON.stringify(data) }),
+    deleteCycle: (cycleId: string) => this.request<MessageResponse>(`/reviews/cycles/${cycleId}`, { method: 'DELETE' }),
+    getCycleQuestions: (cycleId: string) => this.request<ReviewTypes.ReviewQuestion[]>(`/reviews/cycles/${cycleId}/questions`),
+    createCycleQuestion: (cycleId: string, data: ReviewTypes.ReviewQuestionCreateRequest) =>
+      this.request<ReviewTypes.ReviewQuestion>(`/reviews/cycles/${cycleId}/questions`, { method: 'POST', body: JSON.stringify(data) }),
+
+    // Reviews
+    list: (params?: Record<string, string>) =>
+      this.request<ReviewTypes.ReviewListResponse>('/reviews/', { params }),
+    get: (reviewId: string) => this.request<ReviewTypes.Review>(`/reviews/${reviewId}`),
+    create: (data: ReviewTypes.ReviewCreateRequest) =>
+      this.request<ReviewTypes.Review>('/reviews/', { method: 'POST', body: JSON.stringify(data) }),
+    update: (reviewId: string, data: ReviewTypes.ReviewUpdateRequest) =>
+      this.request<ReviewTypes.Review>(`/reviews/${reviewId}`, { method: 'PUT', body: JSON.stringify(data) }),
+    submit: (reviewId: string, data: ReviewTypes.ReviewSubmitRequest) =>
+      this.request<ReviewTypes.Review>(`/reviews/${reviewId}/submit`, { method: 'POST', body: JSON.stringify(data) }),
+    delete: (reviewId: string) => this.request<MessageResponse>(`/reviews/${reviewId}`, { method: 'DELETE' }),
   };
 
   // ========================================================================

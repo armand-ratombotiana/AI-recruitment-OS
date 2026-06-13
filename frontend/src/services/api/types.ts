@@ -2290,6 +2290,151 @@ export namespace ActivityTypes {
 // Offers
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Reviews / Performance Reviews
+// ---------------------------------------------------------------------------
+
+export namespace ReviewTypes {
+  export type ReviewStatus = 'draft' | 'in_progress' | 'completed' | 'archived';
+  export type ReviewCycleStatus = 'open' | 'closed' | 'archived';
+
+  export interface ReviewCycle {
+    id: UUID;
+    name: string;
+    description: string | null;
+    start_date: ISODateString;
+    end_date: ISODateString;
+    status: ReviewCycleStatus;
+    tenant_id: UUID;
+    created_at: ISODateString;
+    updated_at: ISODateString;
+  }
+
+  export interface ReviewCycleCreateRequest {
+    name: string;
+    description?: string | null;
+    start_date: ISODateString;
+    end_date: ISODateString;
+  }
+
+  export interface ReviewCycleUpdateRequest {
+    name?: string;
+    description?: string | null;
+    start_date?: ISODateString;
+    end_date?: ISODateString;
+    status?: ReviewCycleStatus;
+  }
+
+  export interface ReviewQuestion {
+    id: UUID;
+    cycle_id: UUID;
+    order: number;
+    text: string;
+    description?: string | null;
+    category: string;
+    weight: number;
+    required: boolean;
+    created_at: ISODateString;
+  }
+
+  export interface ReviewQuestionCreateRequest {
+    cycle_id: UUID;
+    order: number;
+    text: string;
+    description?: string | null;
+    category: string;
+    weight?: number;
+    required?: boolean;
+  }
+
+  export interface ReviewAnswer {
+    question_id: UUID;
+    score: number; // 1-5 scale
+    comment?: string | null;
+  }
+
+  export interface ReviewStrength {
+    text: string;
+  }
+
+  export interface ReviewImprovement {
+    text: string;
+  }
+
+  export interface ReviewGoal {
+    title: string;
+    description?: string | null;
+    target_date?: ISODateString | null;
+  }
+
+  export interface Review {
+    id: UUID;
+    cycle_id: UUID;
+    reviewee_id: UUID;
+    reviewer_id: UUID;
+    reviewee_name?: string;
+    reviewer_name?: string;
+    cycle_name?: string;
+    status: ReviewStatus;
+    overall_score: number | null;
+    answers: ReviewAnswer[];
+    strengths: ReviewStrength[];
+    improvements: ReviewImprovement[];
+    goals: ReviewGoal[];
+    submitted_at: ISODateString | null;
+    created_at: ISODateString;
+    updated_at: ISODateString;
+  }
+
+  export interface ReviewSummary {
+    id: UUID;
+    cycle_id: UUID;
+    reviewee_id: UUID;
+    reviewer_id: UUID;
+    reviewee_name: string;
+    reviewer_name: string;
+    cycle_name: string;
+    status: ReviewStatus;
+    overall_score: number | null;
+    submitted_at: ISODateString | null;
+    created_at: ISODateString;
+  }
+
+  export type ReviewListResponse = PaginatedResponse<ReviewSummary> & {
+    data?: ReviewSummary[];
+  };
+
+  export interface ReviewCreateRequest {
+    cycle_id: UUID;
+    reviewee_id: UUID;
+    reviewer_id: UUID;
+  }
+
+  export interface ReviewUpdateRequest {
+    status?: ReviewStatus;
+    answers?: ReviewAnswer[];
+    strengths?: ReviewStrength[];
+    improvements?: ReviewImprovement[];
+    goals?: ReviewGoal[];
+  }
+
+  export interface ReviewSubmitRequest {
+    answers: ReviewAnswer[];
+    strengths: ReviewStrength[];
+    improvements: ReviewImprovement[];
+    goals: ReviewGoal[];
+  }
+
+  export interface ReviewFilters {
+    status?: ReviewStatus | 'all';
+    cycle_id?: UUID;
+    reviewee_id?: UUID;
+    reviewer_id?: UUID;
+    page?: number;
+    page_size?: number;
+  }
+}
+
 export namespace OfferTypes {
   export type OfferStatus = 'draft' | 'sent' | 'accepted' | 'declined' | 'expired';
 
