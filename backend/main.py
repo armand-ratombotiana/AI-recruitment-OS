@@ -310,6 +310,7 @@ include_router_safe(app, "apps.cache_service.main", "router", "/api/v1/cache", [
 include_router_safe(app, "apps.versioning_service.main", "router", "/api/v1", ["Versioning"])
 include_router_safe(app, "apps.security_service.main", "router", "/api/v1/security", ["Security"])
 include_router_safe(app, "apps.docs_service.main", "router", "/api/v1/docs", ["Docs"])
+include_router_safe(app, "apps.observability_service.main", "router", "/api/v1/observability", ["Observability"])
 
 # ── Production monitoring & observability ────────────────────────────────────
 try:

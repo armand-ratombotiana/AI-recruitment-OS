@@ -3799,5 +3799,68 @@
     "userAgent": "Agente de usuario",
     "tags": "Etiquetas",
     "testError": "Error de prueba"
+  },
+  "dev": {
+    "title": "Herramientas de desarrollo",
+    "subtitle": "Playground de componentes, explorador API y diagnósticos",
+    "backToApp": "Volver a la aplicación",
+    "back": "Volver a herramientas de desarrollo",
+    "tools": {
+      "title": "Herramientas",
+      "components": "Playground de componentes",
+      "componentsDesc": "Explorar, previsualizar y probar componentes UI con props en vivo.",
+      "api": "Explorador API",
+      "apiDesc": "Probar endpoints, construir solicitudes e inspeccionar respuestas."
+    },
+    "performance": {
+      "title": "Monitor de rendimiento",
+      "fps": "FPS",
+      "memory": "Memoria (MB)",
+      "domNodes": "Nodos DOM",
+      "loadTime": "Carga (ms)"
+    },
+    "errors": {
+      "title": "Probador de error boundary",
+      "trigger": "Activar error de prueba",
+      "empty": "No se han capturado errores. Activa uno para probar."
+    },
+    "components": {
+      "title": "Biblioteca de componentes",
+      "subtitle": "Explorar, previsualizar y auditar componentes UI",
+      "search": "Buscar componentes...",
+      "all": "Todos",
+      "backToList": "Volver a la lista",
+      "props": "props",
+      "showCode": "Mostrar código",
+      "hideCode": "Ocultar código",
+      "copyCode": "Copiar código",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "resetProps": "Restablecer props",
+      "reset": "Restablecer",
+      "stateInspector": "Inspector de estado",
+      "category": "Categoría",
+      "propCount": "Props",
+      "description": "Descripción",
+      "a11yAudit": "Auditoría de accesibilidad",
+      "themePreview": "Vista previa del tema"
+    },
+    "api": {
+      "title": "Explorador API",
+      "subtitle": "Probar endpoints, construir solicitudes e inspeccionar respuestas",
+      "searchEndpoints": "Buscar endpoints...",
+      "endpoints": "Endpoints API",
+      "method": "Método HTTP",
+      "url": "URL de la solicitud",
+      "send": "Enviar",
+      "sending": "Enviando...",
+      "clear": "Borrar solicitud",
+      "requestBody": "Cuerpo de la solicitud",
+      "noParams": "Sin parámetros de consulta. Añádelos directamente a la URL.",
+      "copied": "¡Copiado!",
+      "copyCurl": "Copiar como cURL",
+      "authenticated": "Autenticado",
+      "mockNotice": "Las llamadas API están simuladas para desarrollo. Las respuestas simulan estructuras de datos reales."
+    }
   }
 }

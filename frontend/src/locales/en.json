@@ -4073,5 +4073,68 @@
     "userAgent": "User agent",
     "tags": "Tags",
     "testError": "Test error"
+  },
+  "dev": {
+    "title": "Developer Tools",
+    "subtitle": "Component playground, API explorer & diagnostics",
+    "backToApp": "Back to app",
+    "back": "Back to dev tools",
+    "tools": {
+      "title": "Tools",
+      "components": "Component Playground",
+      "componentsDesc": "Browse, preview, and test UI components with live props.",
+      "api": "API Explorer",
+      "apiDesc": "Test endpoints, build requests, and inspect responses."
+    },
+    "performance": {
+      "title": "Performance Monitor",
+      "fps": "FPS",
+      "memory": "Memory (MB)",
+      "domNodes": "DOM Nodes",
+      "loadTime": "Load (ms)"
+    },
+    "errors": {
+      "title": "Error Boundary Tester",
+      "trigger": "Trigger test error",
+      "empty": "No errors captured. Trigger one to test."
+    },
+    "components": {
+      "title": "Component Library",
+      "subtitle": "Browse, preview, and audit UI components",
+      "search": "Search components...",
+      "all": "All",
+      "backToList": "Back to list",
+      "props": "props",
+      "showCode": "Show code",
+      "hideCode": "Hide code",
+      "copyCode": "Copy code",
+      "copy": "Copy",
+      "copied": "Copied",
+      "resetProps": "Reset props",
+      "reset": "Reset",
+      "stateInspector": "State Inspector",
+      "category": "Category",
+      "propCount": "Props",
+      "description": "Description",
+      "a11yAudit": "Accessibility Audit",
+      "themePreview": "Theme Preview"
+    },
+    "api": {
+      "title": "API Explorer",
+      "subtitle": "Test endpoints, build requests, and inspect responses",
+      "searchEndpoints": "Search endpoints...",
+      "endpoints": "API endpoints",
+      "method": "HTTP method",
+      "url": "Request URL",
+      "send": "Send",
+      "sending": "Sending...",
+      "clear": "Clear request",
+      "requestBody": "Request body",
+      "noParams": "No query parameters. Add them to the URL directly.",
+      "copied": "Copied!",
+      "copyCurl": "Copy as cURL",
+      "authenticated": "Authenticated",
+      "mockNotice": "API calls are mocked for development. Responses simulate real data structures."
+    }
   }
 }

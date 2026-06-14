@@ -3794,5 +3794,68 @@
     "userAgent": "Agent utilisateur",
     "tags": "Étiquettes",
     "testError": "Erreur de test"
+  },
+  "dev": {
+    "title": "Outils développeur",
+    "subtitle": "Playground de composants, explorateur API et diagnostics",
+    "backToApp": "Retour à l'application",
+    "back": "Retour aux outils développeur",
+    "tools": {
+      "title": "Outils",
+      "components": "Playground de composants",
+      "componentsDesc": "Parcourir, prévisualiser et tester les composants UI avec des props en direct.",
+      "api": "Explorateur API",
+      "apiDesc": "Tester les endpoints, construire des requêtes et inspecter les réponses."
+    },
+    "performance": {
+      "title": "Moniteur de performance",
+      "fps": "FPS",
+      "memory": "Mémoire (Mo)",
+      "domNodes": "Nœuds DOM",
+      "loadTime": "Chargement (ms)"
+    },
+    "errors": {
+      "title": "Testeur de boundary d'erreurs",
+      "trigger": "Déclencher une erreur de test",
+      "empty": "Aucune erreur capturée. Déclenchez-en une pour tester."
+    },
+    "components": {
+      "title": "Bibliothèque de composants",
+      "subtitle": "Parcourir, prévisualiser et auditer les composants UI",
+      "search": "Rechercher des composants...",
+      "all": "Tous",
+      "backToList": "Retour à la liste",
+      "props": "props",
+      "showCode": "Afficher le code",
+      "hideCode": "Masquer le code",
+      "copyCode": "Copier le code",
+      "copy": "Copier",
+      "copied": "Copié",
+      "resetProps": "Réinitialiser les props",
+      "reset": "Réinitialiser",
+      "stateInspector": "Inspecteur d'état",
+      "category": "Catégorie",
+      "propCount": "Props",
+      "description": "Description",
+      "a11yAudit": "Audit d'accessibilité",
+      "themePreview": "Aperçu du thème"
+    },
+    "api": {
+      "title": "Explorateur API",
+      "subtitle": "Tester les endpoints, construire des requêtes et inspecter les réponses",
+      "searchEndpoints": "Rechercher des endpoints...",
+      "endpoints": "Endpoints API",
+      "method": "Méthode HTTP",
+      "url": "URL de la requête",
+      "send": "Envoyer",
+      "sending": "Envoi en cours...",
+      "clear": "Effacer la requête",
+      "requestBody": "Corps de la requête",
+      "noParams": "Aucun paramètre de requête. Ajoutez-les directement à l'URL.",
+      "copied": "Copié !",
+      "copyCurl": "Copier en cURL",
+      "authenticated": "Authentifié",
+      "mockNotice": "Les appels API sont simulés pour le développement. Les réponses simulent des structures de données réelles."
+    }
   }
 }
