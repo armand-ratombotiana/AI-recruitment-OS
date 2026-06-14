@@ -23,6 +23,7 @@ import {
   Target,
   Search as SearchIcon,
   Accessibility,
+  Bug,
 } from 'lucide-react';
 import {
   UserMenu,
@@ -58,6 +59,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/schedule', key: 'nav.schedule', icon: CalendarDays },
   { href: '/dashboard/settings', key: 'nav.settings', icon: SettingsIcon },
   { href: '/dashboard/accessibility', key: 'nav.accessibility', icon: Accessibility },
+  { href: '/dashboard/error-tracking', key: 'nav.errorTracking', icon: Bug },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

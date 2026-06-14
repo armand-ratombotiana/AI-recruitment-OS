@@ -30,6 +30,9 @@ export type {
 
 export { useMediaQuery, useIsMobile, useIsTablet, useIsDesktop, breakpoints } from './use-media-query';
 
+export { useErrorTracking } from './use-error-tracking';
+export type { UseErrorTrackingOptions, UseErrorTrackingReturn } from './use-error-tracking';
+
 export {
   useFocusTrap,
   useKeyboardNavigation,

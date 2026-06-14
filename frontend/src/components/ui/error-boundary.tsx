@@ -3,6 +3,7 @@
 import { Component, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { ErrorState } from './error-state';
+import { reportErrorFromException, addBreadcrumb } from '@/utils/error-reporter';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -30,6 +31,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.setState({ errorInfo });
+    addBreadcrumb('error-boundary', `Caught: ${error.message}`, 'error', {
+      level: this.props.level ?? 'section',
+    });
+    reportErrorFromException(error, {
+      componentStack: errorInfo.componentStack ?? undefined,
+      tags: { level: this.props.level ?? 'section', source: 'error-boundary' },
+      severity: this.props.level === 'page' ? 'fatal' : 'error',
+    });
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }

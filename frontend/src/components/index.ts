@@ -81,3 +81,5 @@ export { usePolling } from '@/hooks/use-polling';
 export type { PollingState } from '@/hooks/use-polling';
 export { LazyImage } from './performance/lazy-image';
 export { VirtualList } from './performance/virtual-list';
+export { ErrorBoundary as EnhancedErrorBoundary } from './error/error-boundary';
+export { ErrorPage } from './error/error-page';
