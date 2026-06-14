@@ -121,6 +121,23 @@
       "nameAndEmailRequired": "Name and email are required"
     }
   },
+  "locale": {
+    "title": "Language & Region",
+    "selectLanguage": "Select language",
+    "currentLocale": "Current language",
+    "direction": "Text direction",
+    "ltr": "Left-to-Right",
+    "rtl": "Right-to-Left",
+    "dateFormat": "Date format",
+    "timeFormat": "Time format",
+    "currency": "Currency",
+    "preview": "Preview",
+    "sampleDate": "Date",
+    "sampleNumber": "Number",
+    "sampleCurrency": "Currency",
+    "switchConfirm": "Switch to {language}?",
+    "systemDefault": "System default"
+  },
   "landing": {
     "navFeatures": "Features",
     "navHow": "How it works",

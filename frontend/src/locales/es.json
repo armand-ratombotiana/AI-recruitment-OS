@@ -121,6 +121,23 @@
       "nameAndEmailRequired": "El nombre y el email son obligatorios"
     }
   },
+  "locale": {
+    "title": "Idioma y región",
+    "selectLanguage": "Seleccionar idioma",
+    "currentLocale": "Idioma actual",
+    "direction": "Dirección del texto",
+    "ltr": "De izquierda a derecha",
+    "rtl": "De derecha a izquierda",
+    "dateFormat": "Formato de fecha",
+    "timeFormat": "Formato de hora",
+    "currency": "Moneda",
+    "preview": "Vista previa",
+    "sampleDate": "Fecha",
+    "sampleNumber": "Número",
+    "sampleCurrency": "Moneda",
+    "switchConfirm": "¿Cambiar a {language}?",
+    "systemDefault": "Predeterminado del sistema"
+  },
   "landing": {
     "navFeatures": "Funcionalidades",
     "navHow": "Cómo funciona",

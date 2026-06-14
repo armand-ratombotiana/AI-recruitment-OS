@@ -40,6 +40,7 @@ import {
 import { ToastProvider } from '@/components/ui/toast';
 import { SkipLinks } from '@/components/accessibility/skip-links';
 import { useLocaleStore, translate } from '@/stores/locale-store';
+import { useRTL } from '@/hooks/use-rtl';
 
 const NAV_ITEMS = [
   { href: '/dashboard', key: 'nav.dashboard', icon: LayoutDashboard },
@@ -65,6 +66,7 @@ const NAV_ITEMS = [
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const locale = useLocaleStore((s) => s.locale);
+  const { isRTL } = useRTL();
 
   return (
     <ToastProvider>
@@ -72,7 +74,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <SkipLinks />
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 dark:from-surface-950 dark:via-surface-900 dark:to-surface-950">
           <aside
-            className="fixed inset-y-0 left-0 z-40 hidden lg:flex w-64 bg-white dark:bg-surface-900 border-r border-gray-200 dark:border-surface-700 flex-col shadow-sm"
+            className={`fixed inset-y-0 z-40 hidden lg:flex w-64 bg-white dark:bg-surface-900 border-r border-gray-200 dark:border-surface-700 flex-col shadow-sm ${isRTL ? 'right-0 border-r-0 border-l' : 'left-0'}`}
             aria-label="Sidebar navigation"
           >
             <div className="flex items-center justify-between gap-2 px-5 h-16 border-b border-gray-200 dark:border-surface-700 shrink-0">
@@ -160,7 +162,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </aside>
 
-          <div className="lg:ml-64">
+          <div className={isRTL ? 'lg:mr-64' : 'lg:ml-64'}>
             <header className="sticky top-0 z-30 bg-white/80 dark:bg-surface-900/80 backdrop-blur-md border-b border-gray-200 dark:border-surface-700 h-16 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 lg:px-6">
               <MobileNav />
               <div className="flex-1 min-w-0">

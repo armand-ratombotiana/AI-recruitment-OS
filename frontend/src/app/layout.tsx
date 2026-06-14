@@ -87,7 +87,14 @@ const THEME_INIT_SCRIPT = `
     }
     var loc = localStorage.getItem('airos_locale');
     if (loc) {
-      try { root.lang = (JSON.parse(loc).state && JSON.parse(loc).state.locale) || 'en'; } catch (e) { root.lang = 'en'; }
+      try {
+        var locale = (JSON.parse(loc).state && JSON.parse(loc).state.locale) || 'en';
+        root.lang = locale;
+        var rtlLocales = ['ar', 'he', 'fa', 'ur'];
+        root.dir = rtlLocales.indexOf(locale) !== -1 ? 'rtl' : 'ltr';
+      } catch (e) { root.lang = 'en'; root.dir = 'ltr'; }
+    } else {
+      root.dir = 'ltr';
     }
   } catch (e) {}
 })();

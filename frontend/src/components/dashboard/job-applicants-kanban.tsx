@@ -40,6 +40,7 @@ import {
   formatDate,
   formatRelativeTime,
   formatNumber,
+  type Locale,
 } from '@/stores/locale-store';
 
 export type JobApplicantStage =
@@ -1346,7 +1347,7 @@ interface ApplicantCardProps {
   onOpen: (id: string) => void;
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragEnd: () => void;
-  locale: 'en' | 'fr' | 'es';
+  locale: Locale;
   t: (key: string, fb?: string) => string;
 }
 

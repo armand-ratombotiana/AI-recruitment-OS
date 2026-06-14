@@ -114,7 +114,7 @@ function mapStep(s: Record<string, unknown>, index: number): WorkflowStep {
   };
 }
 
-function formatDuration(ms: number | null | undefined, locale: 'en' | 'fr' | 'es'): string {
+function formatDuration(ms: number | null | undefined, locale: string): string {
   if (ms == null || isNaN(ms)) return '—';
   if (ms < 1000) return `${ms} ms`;
   const seconds = ms / 1000;

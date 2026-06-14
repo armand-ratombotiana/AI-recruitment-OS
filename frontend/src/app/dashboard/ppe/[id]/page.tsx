@@ -66,7 +66,7 @@ const DIFFICULTY_VARIANT: Record<string, 'success' | 'warning' | 'danger' | 'def
   hard: 'danger',
 };
 
-function formatDuration(ms: number | null | undefined, locale: 'en' | 'fr' | 'es'): string {
+function formatDuration(ms: number | null | undefined, locale: string): string {
   if (ms == null) return '—';
   const s = Math.floor(ms / 1000);
   if (s < 60) return `${s}s`;

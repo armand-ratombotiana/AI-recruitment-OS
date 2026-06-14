@@ -5,16 +5,21 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import en from '@/locales/en.json';
 import fr from '@/locales/fr.json';
 import es from '@/locales/es.json';
+import ar from '@/locales/ar.json';
+import he from '@/locales/he.json';
+import { setDirection } from '@/utils/rtl';
 
-export type Locale = 'en' | 'fr' | 'es';
+export type Locale = 'en' | 'fr' | 'es' | 'ar' | 'he';
 
 export const LOCALE_META: Record<Locale, { label: string; native: string; flag: string }> = {
-  en: { label: 'English', native: 'English', flag: 'EN' },
-  fr: { label: 'French', native: 'Français', flag: 'FR' },
-  es: { label: 'Spanish', native: 'Español', flag: 'ES' },
+  en: { label: 'English', native: 'English', flag: '🇺🇸' },
+  fr: { label: 'French', native: 'Français', flag: '🇫🇷' },
+  es: { label: 'Spanish', native: 'Español', flag: '🇪🇸' },
+  ar: { label: 'Arabic', native: 'العربية', flag: '🇸🇦' },
+  he: { label: 'Hebrew', native: 'עברית', flag: '🇮🇱' },
 };
 
-const DICTIONARIES: Record<Locale, any> = { en, fr, es };
+const DICTIONARIES: Record<Locale, any> = { en, fr, es, ar, he };
 
 interface LocaleState {
   locale: Locale;
@@ -29,6 +34,7 @@ export const useLocaleStore = create<LocaleState>()(
         set({ locale });
         if (typeof document !== 'undefined') {
           document.documentElement.lang = locale;
+          setDirection(locale);
         }
       },
     }),
@@ -97,6 +103,10 @@ function localeToBcp47(locale: Locale): string {
       return 'fr-FR';
     case 'es':
       return 'es-ES';
+    case 'ar':
+      return 'ar-SA';
+    case 'he':
+      return 'he-IL';
     default:
       return 'en-US';
   }

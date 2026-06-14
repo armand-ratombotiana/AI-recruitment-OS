@@ -36,23 +36,25 @@ import {
   Breadcrumb,
   useToast,
 } from '@/components';
-import { useLocaleStore, translate, formatDate } from '@/stores/locale-store';
+import { useLocaleStore, translate, formatDate, type Locale } from '@/stores/locale-store';
 
-function formatTime(iso: string, locale: 'en' | 'fr' | 'es'): string {
+function formatTime(iso: string, locale: Locale): string {
   if (!iso) return '';
   const d = new Date(iso);
   if (isNaN(d.getTime())) return '';
-  return new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : locale === 'es' ? 'es-ES' : 'en-US', {
+  const bcp47 = locale === 'fr' ? 'fr-FR' : locale === 'es' ? 'es-ES' : locale === 'ar' ? 'ar-SA' : locale === 'he' ? 'he-IL' : 'en-US';
+  return new Intl.DateTimeFormat(bcp47, {
     hour: '2-digit',
     minute: '2-digit',
   }).format(d);
 }
 
-function formatDateTime(iso: string, locale: 'en' | 'fr' | 'es'): string {
+function formatDateTime(iso: string, locale: Locale): string {
   if (!iso) return '';
   const d = new Date(iso);
   if (isNaN(d.getTime())) return '';
-  return new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : locale === 'es' ? 'es-ES' : 'en-US', {
+  const bcp47 = locale === 'fr' ? 'fr-FR' : locale === 'es' ? 'es-ES' : locale === 'ar' ? 'ar-SA' : locale === 'he' ? 'he-IL' : 'en-US';
+  return new Intl.DateTimeFormat(bcp47, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(d);
