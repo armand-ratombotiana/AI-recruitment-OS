@@ -30,6 +30,14 @@ export type {
 
 export { useMediaQuery, useIsMobile, useIsTablet, useIsDesktop, breakpoints } from './use-media-query';
 
+export {
+  useFocusTrap,
+  useKeyboardNavigation,
+  useScreenReader,
+  useReducedMotion,
+  useHighContrast,
+} from './use-accessibility';
+
 export function useCountUp(end: number, duration = 1500) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLDivElement>(null);

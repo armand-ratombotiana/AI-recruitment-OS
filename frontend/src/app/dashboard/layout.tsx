@@ -22,6 +22,7 @@ import {
   FileText,
   Target,
   Search as SearchIcon,
+  Accessibility,
 } from 'lucide-react';
 import {
   UserMenu,
@@ -36,6 +37,7 @@ import {
   MobileNav,
 } from '@/components';
 import { ToastProvider } from '@/components/ui/toast';
+import { SkipLinks } from '@/components/accessibility/skip-links';
 import { useLocaleStore, translate } from '@/stores/locale-store';
 
 const NAV_ITEMS = [
@@ -55,6 +57,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/sourcing', key: 'nav.sourcing', icon: SearchIcon },
   { href: '/dashboard/schedule', key: 'nav.schedule', icon: CalendarDays },
   { href: '/dashboard/settings', key: 'nav.settings', icon: SettingsIcon },
+  { href: '/dashboard/accessibility', key: 'nav.accessibility', icon: Accessibility },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -64,18 +67,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <ToastProvider>
       <NotificationProvider position="top-right" maxNotifications={5}>
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:shadow-lg"
-        >
-          Skip to main content
-        </a>
-        <a
-          href="#primary-nav"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-32 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:shadow-lg"
-        >
-          Skip to navigation
-        </a>
+        <SkipLinks />
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 dark:from-surface-950 dark:via-surface-900 dark:to-surface-950">
           <aside
             className="fixed inset-y-0 left-0 z-40 hidden lg:flex w-64 bg-white dark:bg-surface-900 border-r border-gray-200 dark:border-surface-700 flex-col shadow-sm"
