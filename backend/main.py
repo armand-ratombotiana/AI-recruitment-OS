@@ -277,6 +277,7 @@ include_router_safe(app, "apps.workflow_automation_service.main", "router", "/ap
 include_router_safe(app, "apps.sso_service.main", "router", "/api/v1/sso", ["SSO"])
 include_router_safe(app, "apps.innovation_service.main", "router", "/api/v1/innovations", ["Innovation"])
 include_router_safe(app, "apps.offer_service.main", "router", "/api/v1/offers", ["Offers"])
+include_router_safe(app, "apps.video_interview.main", "router", "/api/v1/video", ["Video Interview"])
 
 # ── New production-grade routers ─────────────────────────────────────────────
 include_router_safe(app, "apps.export_service.main", "router", "/api/v1/exports", ["Exports"])

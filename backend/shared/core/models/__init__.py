@@ -200,6 +200,12 @@ from shared.core.models.video import (
     StartRecordingRequest,
     StopRecordingResponse,
 )
+from shared.core.models.video_interview import (
+    VideoRoom as VideoInterviewRoom,
+    VideoRoomStatus as VideoInterviewRoomStatus,
+    VideoParticipant,
+    ParticipantRole,
+)
 
 __all__ = [
     "ApiKey",
