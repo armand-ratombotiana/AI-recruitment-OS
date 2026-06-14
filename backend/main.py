@@ -304,6 +304,8 @@ include_router_safe(app, "apps.api_keys.main", "router", "/api/v1/api-keys", ["A
 # ── Rate-limit introspection ──────────────────────────────────────────────────
 app.include_router(rate_limit_router, prefix="/api/v1", tags=["Rate Limit"])
 include_router_safe(app, "apps.audit_service.main", "router", "/api/v1/audit", ["Audit"])
+include_router_safe(app, "apps.cache_service.main", "router", "/api/v1/cache", ["Cache"])
+include_router_safe(app, "apps.versioning_service.main", "router", "/api/v1", ["Versioning"])
 
 # ── Production monitoring & observability ────────────────────────────────────
 try:
