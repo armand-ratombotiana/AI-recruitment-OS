@@ -78,7 +78,7 @@ class DocsIndexResponse(BaseModel):
     servers: list[dict[str, str]]
     tags: list[dict[str, Any]]
     endpoints: list[dict[str, Any]]
-    security: list[dict[str, Any]]
+    security: dict[str, Any]
     common_errors: dict[str, Any]
 
 

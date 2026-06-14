@@ -336,10 +336,8 @@ class TestTagSummary:
 @pytest.mark.asyncio
 class TestDocsEndpoints:
     async def test_docs_requires_auth(self):
-        async with AsyncClient(
-            transport=ASGITransport(app=_make_docs_client()[0] if False else self._app()),
-            base_url="http://test",
-        ) as client:
+        client, _app = _make_docs_client()
+        async with client:
             resp = await client.get("/api/v1/docs")
             assert resp.status_code == 401
 
