@@ -25,6 +25,7 @@ import {
   Accessibility,
   Bug,
   Video as VideoIcon,
+  Star,
 } from 'lucide-react';
 import {
   UserMenu,
@@ -54,6 +55,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/ppe', key: 'nav.ppe', icon: Code2 },
   { href: '/dashboard/analytics', key: 'nav.analytics', icon: BarChart3 },
   { href: '/dashboard/ai-copilot', key: 'nav.aiCopilot', icon: Bot, badge: 'new' },
+  { href: '/dashboard/onboarding', key: 'nav.onboarding', icon: ClipboardList },
   { href: '/dashboard/workflows', key: 'nav.workflows', icon: WorkflowIcon },
   { href: '/dashboard/pipeline', key: 'nav.pipeline', icon: KanbanSquare },
   { href: '/dashboard/matching', key: 'nav.matching', icon: Sparkles },
@@ -62,6 +64,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/schedule', key: 'nav.schedule', icon: CalendarDays },
   { href: '/dashboard/settings', key: 'nav.settings', icon: SettingsIcon },
   { href: '/dashboard/accessibility', key: 'nav.accessibility', icon: Accessibility },
+  { href: '/dashboard/performance-reviews', key: 'nav.performanceReviews', icon: Star },
   { href: '/dashboard/error-tracking', key: 'nav.errorTracking', icon: Bug },
 ];
 
