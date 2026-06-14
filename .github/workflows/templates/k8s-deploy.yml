@@ -1,0 +1,155 @@
+name: Kubernetes Deploy Template
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Target environment (staging, production)'
+      image_tag:
+        required: true
+        type: string
+        description: 'Docker image tag to deploy'
+      namespace:
+        required: false
+        type: string
+        default: ''
+        description: 'Kubernetes namespace (defaults to environment name)'
+      helm_values:
+        required: false
+        type: string
+        default: ''
+        description: 'Additional Helm values file path'
+      timeout:
+        required: false
+        type: string
+        default: '10m'
+        description: 'Helm timeout'
+      dry_run:
+        required: false
+        type: boolean
+        default: false
+        description: 'Helm dry run'
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      POSTGRES_USER:
+        required: false
+      POSTGRES_DB:
+        required: false
+      BACKUP_BUCKET:
+        required: false
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+    env:
+      NAMESPACE: ${{ inputs.namespace || inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: |
+          CLUSTER_NAME="airos-${{ inputs.environment }}"
+          aws eks update-kubeconfig --name "$CLUSTER_NAME" --region ${{ env.AWS_REGION }}
+          kubectl config set-context --current --namespace="$NAMESPACE"
+
+      - name: Pre-deploy checks
+        run: |
+          echo "## Pre-Deploy Checks" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Cluster:** airos-${{ inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Namespace:** $NAMESPACE" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Image Tag:** ${{ inputs.image_tag }}" >> "$GITHUB_STEP_SUMMARY"
+          echo ""
+          echo "### Current deployments:" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          kubectl get deployments -n "$NAMESPACE" 2>/dev/null || echo "No existing deployments" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Pre-deploy backup (production only)
+        if: inputs.environment == 'production' && secrets.BACKUP_BUCKET != ''
+        run: |
+          echo "Creating pre-deploy database backup..."
+          kubectl exec -n "$NAMESPACE" deploy/airos-postgres -- \
+            pg_dump -U ${{ secrets.POSTGRES_USER }} ${{ secrets.POSTGRES_DB }} | \
+            aws s3 cp - "s3://${{ secrets.BACKUP_BUCKET }}/pre-deploy/${{ inputs.image_tag }}.sql"
+
+      - name: Helm upgrade
+        run: |
+          HELM_ARGS="upgrade --install airos ./helm/airos \
+            --namespace $NAMESPACE --create-namespace \
+            --set image.tag=${{ inputs.image_tag }} \
+            --set imageFrontend.tag=${{ inputs.image_tag }} \
+            --set environment=${{ inputs.environment }} \
+            --timeout ${{ inputs.timeout }}"
+
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            HELM_ARGS="$HELM_ARGS --dry-run"
+          fi
+
+          if [ -n "${{ inputs.helm_values }}" ] && [ -f "${{ inputs.helm_values }}" ]; then
+            HELM_ARGS="$HELM_ARGS --values ${{ inputs.helm_values }}"
+          fi
+
+          if [ "${{ inputs.environment }}" = "production" ]; then
+            HELM_ARGS="$HELM_ARGS --set autoscaling.minReplicas.api=5"
+          fi
+
+          helm $HELM_ARGS
+
+      - name: Verify rollout
+        if: inputs.dry_run != true
+        run: |
+          echo "Waiting for deployments to stabilize..."
+          kubectl rollout status deployment/airos-api -n "$NAMESPACE" --timeout=300s
+          kubectl rollout status deployment/airos-frontend -n "$NAMESPACE" --timeout=300s
+
+          echo ""
+          echo "### Post-deploy status:" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          kubectl get pods -n "$NAMESPACE"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post-deploy smoke test
+        if: inputs.dry_run != true
+        run: |
+          if [ "${{ inputs.environment }}" = "production" ]; then
+            URL="https://ai-ros.com"
+          else
+            URL="https://staging.ai-ros.com"
+          fi
+
+          echo "Running smoke tests against $URL..."
+          for i in $(seq 1 30); do
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" "$URL/health" 2>/dev/null || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "Smoke test passed (attempt $i)"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::Smoke test failed after 30 attempts"
+          exit 1
+
+      - name: Rollback on failure
+        if: failure() && inputs.dry_run != true
+        run: |
+          echo "::error::Deployment failed, initiating rollback"
+          helm rollback airos -n "$NAMESPACE"
+          kubectl rollout status deployment/airos-api -n "$NAMESPACE" --timeout=300s

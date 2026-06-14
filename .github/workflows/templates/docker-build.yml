@@ -1,0 +1,114 @@
+name: Docker Build Template
+
+on:
+  workflow_call:
+    inputs:
+      component:
+        required: true
+        type: string
+        description: 'Component name (backend, frontend)'
+      dockerfile:
+        required: true
+        type: string
+        description: 'Path to Dockerfile'
+      image_name:
+        required: true
+        type: string
+        description: 'Docker image name'
+      push:
+        required: false
+        type: boolean
+        default: false
+        description: 'Whether to push the image'
+      platforms:
+        required: false
+        type: string
+        default: 'linux/amd64'
+        description: 'Target platforms'
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+    outputs:
+      image_tag:
+        description: 'Built image tag'
+        value: ${{ jobs.docker-build.outputs.image_tag }}
+      image_digest:
+        description: 'Built image digest'
+        value: ${{ jobs.docker-build.outputs.image_digest }}
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  docker-build:
+    name: Build ${{ inputs.component }}
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+      image_digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        if: inputs.platforms != 'linux/amd64'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        if: inputs.push
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        if: inputs.push
+        uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ inputs.push && format('{0}/{1}', steps.ecr.outputs.registry, inputs.image_name) || inputs.image_name }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ inputs.dockerfile }}
+          platforms: ${{ inputs.platforms }}
+          push: ${{ inputs.push }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_VERSION=${{ github.sha }}
+            BUILD_DATE=${{ fromJSON(steps.meta.outputs.json)['labels']['org.opencontainers.image.created'] }}
+
+      - name: Run Trivy scan
+        if: inputs.push
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.ecr.outputs.registry }}/${{ inputs.image_name }}@${{ steps.build.outputs.digest }}
+          severity: HIGH,CRITICAL
+          format: sarif
+          output: trivy-${{ inputs.component }}.sarif
+
+      - name: Upload scan results
+        if: inputs.push && always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ inputs.component }}.sarif

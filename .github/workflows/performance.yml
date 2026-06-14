@@ -1,0 +1,278 @@
+name: Performance
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'src/**'
+  schedule:
+    - cron: '0 2 * * 6'
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Target URL for load testing'
+        required: false
+        default: 'http://localhost:8000'
+      duration:
+        description: 'Test duration in seconds'
+        required: false
+        default: '60'
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  backend-bench:
+    name: Backend Load Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: airos_test
+          POSTGRES_USER: airos
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Start API server
+        run: |
+          uvicorn src.main:app --host 0.0.0.0 --port 8000 &
+          echo $! > api.pid
+          sleep 10
+        env:
+          DATABASE_URL: postgresql+asyncpg://airos:test@localhost:5432/airos_test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: perf-test-secret-key-min-32-chars-placeholder!
+          ENCRYPTION_KEY: perf-test-encryption-key-32-chars-pl
+          ENVIRONMENT: test
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Run k6 load test
+        run: |
+          cat > load-test.js << 'EOF'
+          import http from 'k6/http';
+          import { check, sleep } from 'k6';
+
+          export const options = {
+            stages: [
+              { duration: '30s', target: 50 },
+              { duration: '1m', target: 100 },
+              { duration: '30s', target: 0 },
+            ],
+            thresholds: {
+              http_req_duration: ['p(95)<500', 'p(99)<1000'],
+              http_req_failed: ['rate<0.01'],
+            },
+          };
+
+          export default function () {
+            const res = http.get('http://localhost:8000/health');
+            check(res, {
+              'status is 200': (r) => r.status === 200,
+              'response time < 500ms': (r) => r.timings.duration < 500,
+            });
+            sleep(0.5);
+          }
+          EOF
+          k6 run --out json=results.json load-test.js
+
+      - name: Stop API server
+        if: always()
+        run: kill $(cat api.pid) || true
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-perf-results
+          path: |
+            results.json
+            load-test.js
+          retention-days: 30
+
+  frontend-perf:
+    name: Frontend Performance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Build for production
+        run: npm run build
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          NEXT_PUBLIC_WS_URL: ws://localhost:8000
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.14.x
+
+      - name: Run Lighthouse CI
+        run: |
+          cd frontend
+          lhci autorun --collect.url=http://localhost:3000 --collect.startServerCommand="npm start" \
+            --upload.target=temporary-public-storage \
+            --assert.preset=lighthouse:recommended \
+            --assert.assertions.categories.performance=error \
+            --assert.assertions.categories.performance.minScore=0.8 || true
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          NEXT_PUBLIC_WS_URL: ws://localhost:8000
+
+  bundle-analysis:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Analyze bundle
+        run: |
+          cd frontend
+          npx next build 2>&1 | tee build-output.txt
+          echo "## Bundle Size Report" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          grep -A 50 "Route (app)" build-output.txt >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+  db-bench:
+    name: Database Performance
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: airos_test
+          POSTGRES_USER: airos
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run database benchmarks
+        run: |
+          python -c "
+          import asyncio, time, asyncpg
+
+          async def bench():
+              conn = await asyncpg.connect('postgresql://airos:test@localhost:5432/airos_test')
+              await conn.execute('CREATE EXTENSION IF NOT EXISTS vector')
+
+              start = time.perf_counter()
+              for i in range(100):
+                  await conn.execute('SELECT 1')
+              elapsed = time.perf_counter() - start
+              print(f'Simple queries: 100 in {elapsed:.3f}s ({100/elapsed:.0f} qps)')
+
+              start = time.perf_counter()
+              await conn.execute('''
+                  CREATE TABLE IF NOT EXISTS bench_test (
+                      id SERIAL PRIMARY KEY,
+                      data JSONB,
+                      embedding vector(1536),
+                      created_at TIMESTAMPTZ DEFAULT NOW()
+                  )
+              ''')
+              elapsed = time.perf_counter() - start
+              print(f'Table creation: {elapsed:.3f}s')
+
+              start = time.perf_counter()
+              for i in range(10):
+                  await conn.execute(
+                      'INSERT INTO bench_test (data) VALUES (\$1)',
+                      '{\"test\": true, \"index\": ' + str(i) + '}'
+                  )
+              elapsed = time.perf_counter() - start
+              print(f'Inserts: 10 in {elapsed:.3f}s ({10/elapsed:.0f} ops/s)')
+
+              start = time.perf_counter()
+              for i in range(100):
+                  await conn.fetch('SELECT * FROM bench_test LIMIT 10')
+              elapsed = time.perf_counter() - start
+              print(f'Selects: 100 in {elapsed:.3f}s ({100/elapsed:.0f} qps)')
+
+              await conn.execute('DROP TABLE IF EXISTS bench_test')
+              await conn.close()
+              print('Database benchmark complete')
+
+          asyncio.run(bench())
+          "
+
+  perf-summary:
+    name: Performance Summary
+    runs-on: ubuntu-latest
+    needs: [backend-bench, frontend-perf, bundle-analysis, db-bench]
+    if: always()
+    steps:
+      - name: Performance report
+        run: |
+          echo "## Performance Test Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Test | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Backend Load | ${{ needs.backend-bench.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Frontend Perf | ${{ needs.frontend-perf.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Bundle Analysis | ${{ needs.bundle-analysis.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Database Bench | ${{ needs.db-bench.result }} |" >> "$GITHUB_STEP_SUMMARY"

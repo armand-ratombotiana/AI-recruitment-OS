@@ -1,0 +1,231 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+'
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  PYTHON_VERSION: '3.12'
+  NODE_VERSION: '20'
+
+jobs:
+  validate-release:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is_prerelease: ${{ steps.version.outputs.is_prerelease }}
+      changelog: ${{ steps.changelog.outputs.changelog }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [[ "$TAG" == *"-rc."* ]] || [[ "$TAG" == *"-beta."* ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Version: $VERSION"
+          echo "Pre-release: ${{ steps.version.outputs.is_prerelease }}"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" "$PREV_TAG"..HEAD)
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" -20)
+          fi
+          {
+            echo "changelog<<CHANGELOG_EOF"
+            echo "$CHANGELOG"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+  test-release:
+    name: Pre-Release Tests
+    runs-on: ubuntu-latest
+    needs: validate-release
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: airos_test
+          POSTGRES_USER: airos
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Backend tests
+        run: |
+          pip install -r requirements.txt
+          python -m pytest tests/ -v --tb=short --cov=. --cov-report=xml -x
+        env:
+          DATABASE_URL: postgresql+asyncpg://airos:test@localhost:5432/airos_test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: release-test-secret-key-min-32-chars!!
+          ENCRYPTION_KEY: release-test-encryption-key-32-chars
+          ENVIRONMENT: test
+
+      - name: Frontend build
+        run: |
+          npm ci
+          npm run build
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          NEXT_PUBLIC_WS_URL: ws://localhost:8000
+
+  build-artifacts:
+    name: Build Release Artifacts
+    runs-on: ubuntu-latest
+    needs: [validate-release, test-release]
+    strategy:
+      matrix:
+        include:
+          - component: backend
+            dockerfile: Dockerfile.backend
+          - component: frontend
+            dockerfile: Dockerfile.frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.component }} image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: false
+          tags: airos-${{ matrix.component }}:${{ needs.validate-release.outputs.version }}
+          outputs: type=docker,dest=/tmp/airos-${{ matrix.component }}.tar
+          cache-from: type=gha
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-${{ matrix.component }}
+          path: /tmp/airos-${{ matrix.component }}.tar
+          retention-days: 90
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, test-release, build-artifacts]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/artifacts
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "AI-ROS v${{ needs.validate-release.outputs.version }}"
+          body: |
+            ## AI-ROS v${{ needs.validate-release.outputs.version }}
+
+            ### Changes
+            ${{ needs.validate-release.outputs.changelog }}
+
+            ### Docker Images
+            ```
+            airos-api:${{ needs.validate-release.outputs.version }}
+            airos-frontend:${{ needs.validate-release.outputs.version }}
+            ```
+
+            ### Deployment
+            ```bash
+            helm upgrade --install airos ./helm/airos \
+              --set image.tag=${{ needs.validate-release.outputs.version }} \
+              --set imageFrontend.tag=${{ needs.validate-release.outputs.version }}
+            ```
+          prerelease: ${{ needs.validate-release.outputs.is_prerelease == 'true' }}
+          files: |
+            /tmp/artifacts/**/*
+          generate_release_notes: false
+
+  publish-images:
+    name: Publish Docker Images
+    runs-on: ubuntu-latest
+    needs: [validate-release, create-release]
+    if: needs.validate-release.outputs.is_prerelease == 'false'
+    strategy:
+      matrix:
+        include:
+          - component: backend
+            dockerfile: Dockerfile.backend
+            image: airos-api
+          - component: frontend
+            dockerfile: Dockerfile.frontend
+            image: airos-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/${{ matrix.image }}:${{ needs.validate-release.outputs.version }}
+            ${{ steps.ecr.outputs.registry }}/${{ matrix.image }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
