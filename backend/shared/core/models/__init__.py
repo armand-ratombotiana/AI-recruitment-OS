@@ -152,6 +152,7 @@ from shared.core.models.offer import (
     Offer,
     OfferStatus,
     OfferTemplate,
+    OfferSignature,
 )
 from shared.core.models.referral import (
     Referral,
@@ -293,7 +294,7 @@ __all__ = [
     "PopularTagItem", "PopularTagsResponse",
     "EntityTagRead", "EntityTagListResponse",
     "AddEntityTagRequest", "AddEntityTagResponse",
-    "Offer", "OfferStatus", "OfferTemplate",
+    "Offer", "OfferStatus", "OfferTemplate", "OfferSignature",
     "Answer", "AnswerRead", "AnswerSubmit",
     "Assessment", "AssessmentCreate", "AssessmentCreateResponse",
     "AssessmentDetail", "AssessmentListResponse", "AssessmentRead",
