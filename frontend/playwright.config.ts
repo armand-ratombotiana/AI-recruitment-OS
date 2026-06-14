@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: './tests',
+  testMatch: /(**\/tests\/e2e\/|**\/tests\/visual\/|**\/tests\/e2e\/advanced\/)**.spec\.ts$/,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -10,6 +11,14 @@ export default defineConfig({
   timeout: 30_000,
   expect: {
     timeout: 5_000,
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.01,
+      threshold: 0.2,
+      animations: 'disabled',
+    },
+    toMatchSnapshot: {
+      maxDiffPixelRatio: 0.01,
+    },
   },
   use: {
     baseURL: 'http://localhost:3000',
@@ -19,10 +28,30 @@ export default defineConfig({
     actionTimeout: 10_000,
     navigationTimeout: 30_000,
   },
+  snapshotPathTemplate: '{testDir}/visual/__screenshots__/{testFilePath}/{arg}{ext}',
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testMatch: /tests\/(e2e|visual)\/.**\.spec\.ts$/,
+    },
+    {
+      name: 'visual-regression',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+      },
+      testMatch: /tests\/visual\/.**\.spec\.ts$/,
+    },
+    {
+      name: 'chromium-mobile',
+      use: { ...devices['Pixel 5'] },
+      testMatch: /tests\/visual\/.**\.spec\.ts$/,
+    },
+    {
+      name: 'chromium-tablet',
+      use: { ...devices['Galaxy Tab S4'] },
+      testMatch: /tests\/visual\/.**\.spec\.ts$/,
     },
   ],
   webServer: {
