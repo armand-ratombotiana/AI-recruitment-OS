@@ -79,3 +79,5 @@ export {
 export { useCountUp, useToast, useWebSocket, useDebouncedValue, useLocalStorage, useClickOutside } from '@/hooks';
 export { usePolling } from '@/hooks/use-polling';
 export type { PollingState } from '@/hooks/use-polling';
+export { LazyImage } from './performance/lazy-image';
+export { VirtualList } from './performance/virtual-list';

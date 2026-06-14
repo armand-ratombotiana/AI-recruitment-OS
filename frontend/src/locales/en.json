@@ -3998,5 +3998,10 @@
       "salaryRangeInvalid": "Max must be >= min",
       "equityInvalid": "Equity must be 0-100%"
     }
+  },
+  "performance": {
+    "imageLoadFailed": "Image failed to load",
+    "emptyList": "Empty list",
+    "noItems": "No items to display"
   }
 }

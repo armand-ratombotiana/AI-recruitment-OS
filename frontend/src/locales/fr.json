@@ -3719,5 +3719,10 @@
       "salaryRangeInvalid": "Le max doit être >= au min",
       "equityInvalid": "Les parts doivent être entre 0 et 100%"
     }
+  },
+  "performance": {
+    "imageLoadFailed": "Échec du chargement de l'image",
+    "emptyList": "Liste vide",
+    "noItems": "Aucun élément à afficher"
   }
 }

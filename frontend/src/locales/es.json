@@ -3724,5 +3724,10 @@
       "salaryRangeInvalid": "El máx debe ser >= al mín",
       "equityInvalid": "La participación debe ser 0-100%"
     }
+  },
+  "performance": {
+    "imageLoadFailed": "Error al cargar la imagen",
+    "emptyList": "Lista vacía",
+    "noItems": "No hay elementos para mostrar"
   }
 }

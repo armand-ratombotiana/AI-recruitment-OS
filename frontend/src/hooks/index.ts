@@ -13,6 +13,21 @@ export type {
   WSMessageListener,
 } from './use-websocket';
 
+export {
+  useIntersectionObserver,
+  useVirtualList,
+  useDebounce,
+  useDebouncedCallback,
+  useThrottle,
+  useThrottledCallback,
+} from './use-performance';
+export type {
+  UseIntersectionObserverOptions,
+  UseIntersectionObserverReturn,
+  UseVirtualListOptions,
+  UseVirtualListReturn,
+} from './use-performance';
+
 export { useMediaQuery, useIsMobile, useIsTablet, useIsDesktop, breakpoints } from './use-media-query';
 
 export function useCountUp(end: number, duration = 1500) {
