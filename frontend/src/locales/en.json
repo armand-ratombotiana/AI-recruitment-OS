@@ -4146,6 +4146,33 @@
       "salaryMaxInvalid": "Salary must be positive",
       "salaryRangeInvalid": "Max must be >= min",
       "equityInvalid": "Equity must be 0-100%"
+    },
+    "templates": {
+      "title": "Offer templates",
+      "subtitle": "Manage reusable offer templates",
+      "createTemplate": "Create template",
+      "editTemplate": "Edit template",
+      "noTemplates": "No templates yet",
+      "noTemplatesDesc": "Create your first offer template to speed up offer creation.",
+      "couldntLoad": "Couldn't load templates",
+      "created": "Template created",
+      "updated": "Template updated",
+      "deleted": "Template deleted",
+      "saveFailed": "Failed to save template",
+      "deleteFailed": "Failed to delete template",
+      "noBody": "No template body.",
+      "confirmDeleteTitle": "Delete template?",
+      "confirmDeleteDesc": "This will permanently delete this template. This action cannot be undone.",
+      "fields": {
+        "name": "Name *",
+        "description": "Description",
+        "body": "Template body"
+      },
+      "placeholders": {
+        "name": "Standard offer",
+        "description": "Brief description of this template…",
+        "body": "Dear {{candidate_name}},\n\nWe are pleased to offer you the position of {{job_title}}…"
+      }
     }
   },
   "performance": {

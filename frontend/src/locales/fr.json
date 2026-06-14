@@ -3867,6 +3867,33 @@
       "salaryMaxInvalid": "Le salaire doit être positif",
       "salaryRangeInvalid": "Le max doit être >= au min",
       "equityInvalid": "Les parts doivent être entre 0 et 100%"
+    },
+    "templates": {
+      "title": "Modèles d'offres",
+      "subtitle": "Gérer les modèles d'offres réutilisables",
+      "createTemplate": "Créer un modèle",
+      "editTemplate": "Modifier le modèle",
+      "noTemplates": "Aucun modèle",
+      "noTemplatesDesc": "Créez votre premier modèle d'offre pour accélérer la création d'offres.",
+      "couldntLoad": "Impossible de charger les modèles",
+      "created": "Modèle créé",
+      "updated": "Modèle mis à jour",
+      "deleted": "Modèle supprimé",
+      "saveFailed": "Échec de l'enregistrement du modèle",
+      "deleteFailed": "Échec de la suppression du modèle",
+      "noBody": "Aucun corps de modèle.",
+      "confirmDeleteTitle": "Supprimer le modèle ?",
+      "confirmDeleteDesc": "Cela supprimera définitivement ce modèle. Cette action est irréversible.",
+      "fields": {
+        "name": "Nom *",
+        "description": "Description",
+        "body": "Corps du modèle"
+      },
+      "placeholders": {
+        "name": "Offre standard",
+        "description": "Brève description de ce modèle…",
+        "body": "Cher(e) {{candidate_name}},\n\nNous avons le plaisir de vous proposer le poste de {{job_title}}…"
+      }
     }
   },
   "performance": {

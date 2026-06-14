@@ -3871,6 +3871,33 @@
       "salaryMaxInvalid": "El salario debe ser positivo",
       "salaryRangeInvalid": "El máx debe ser >= al mín",
       "equityInvalid": "La participación debe ser 0-100%"
+    },
+    "templates": {
+      "title": "Plantillas de ofertas",
+      "subtitle": "Gestionar plantillas de ofertas reutilizables",
+      "createTemplate": "Crear plantilla",
+      "editTemplate": "Editar plantilla",
+      "noTemplates": "Sin plantillas",
+      "noTemplatesDesc": "Crea tu primera plantilla de oferta para acelerar la creación de ofertas.",
+      "couldntLoad": "No se pudieron cargar las plantillas",
+      "created": "Plantilla creada",
+      "updated": "Plantilla actualizada",
+      "deleted": "Plantilla eliminada",
+      "saveFailed": "Error al guardar la plantilla",
+      "deleteFailed": "Error al eliminar la plantilla",
+      "noBody": "Sin cuerpo de plantilla.",
+      "confirmDeleteTitle": "¿Eliminar plantilla?",
+      "confirmDeleteDesc": "Esto eliminará permanentemente esta plantilla. Esta acción no se puede deshacer.",
+      "fields": {
+        "name": "Nombre *",
+        "description": "Descripción",
+        "body": "Cuerpo de la plantilla"
+      },
+      "placeholders": {
+        "name": "Oferta estándar",
+        "description": "Breve descripción de esta plantilla…",
+        "body": "Estimado/a {{candidate_name}},\n\nNos complace ofrecerle el puesto de {{job_title}}…"
+      }
     }
   },
   "performance": {
