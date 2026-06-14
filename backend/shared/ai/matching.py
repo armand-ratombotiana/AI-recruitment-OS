@@ -244,3 +244,154 @@ def compute_match_stats(matches: Sequence[MatchResult]) -> dict[str, Any]:
         "weak": recs.count("WEAK"),
         "no_match": recs.count("NO_MATCH"),
     }
+
+
+# ── CandidateJobMatcher class ─────────────────────────────────────────────────
+
+
+@dataclass
+class MatchReason:
+    dimension: str
+    description: str
+    impact: float
+
+
+class CandidateJobMatcher:
+    """High-level matcher combining scoring engine + semantic similarity.
+
+    Wraps the lower-level functions in this module and adds human-readable
+    match reasons and a 0-100 score scale.
+    """
+
+    def __init__(
+        self,
+        *,
+        semantic_weight: float = SEMANTIC_WEIGHT,
+        structured_weight: float = STRUCTURED_WEIGHT,
+        use_llm: bool = False,
+    ) -> None:
+        self.semantic_weight = semantic_weight
+        self.structured_weight = structured_weight
+        self.use_llm = use_llm
+
+    def calculate_match_score(self, candidate: Dict[str, Any], job: Dict[str, Any]) -> float:
+        """Return a 0-100 match score between candidate and job."""
+        result = _hybrid(
+            candidate,
+            job,
+            semantic_w=self.semantic_weight,
+            structured_w=self.structured_weight,
+        )
+        return round(result.hybrid_score * 100, 2)
+
+    def generate_match_reasons(
+        self, candidate: Dict[str, Any], job: Dict[str, Any]
+    ) -> list[str]:
+        """Generate human-readable reasons explaining the match quality."""
+        reasons: list[str] = []
+        breakdown = score_candidate(candidate, job)
+
+        cand_skills = set(s.lower().strip() for s in (candidate.get("skills") or []))
+        req_skills = set(s.lower().strip() for s in (job.get("required_skills") or []))
+        pref_skills = set(s.lower().strip() for s in (job.get("preferred_skills") or []))
+
+        matched_req = cand_skills & req_skills
+        matched_pref = cand_skills & pref_skills
+        missing_req = req_skills - cand_skills
+
+        if matched_req:
+            reasons.append(
+                f"Matches required skills: {', '.join(sorted(matched_req))}"
+            )
+        if matched_pref:
+            reasons.append(
+                f"Has preferred skills: {', '.join(sorted(matched_pref))}"
+            )
+        if missing_req:
+            reasons.append(
+                f"Missing required skills: {', '.join(sorted(missing_req))}"
+            )
+
+        exp_years = candidate.get("experience_years")
+        req_years = job.get("required_experience_years") or job.get("min_experience_years")
+        if exp_years is not None and req_years:
+            if exp_years >= req_years:
+                reasons.append(
+                    f"Experience ({exp_years}yr) meets requirement ({req_years}yr)"
+                )
+            else:
+                reasons.append(
+                    f"Experience ({exp_years}yr) below requirement ({req_years}yr)"
+                )
+
+        if breakdown.skills_score >= 0.8:
+            reasons.append("Strong technical skill alignment")
+        elif breakdown.skills_score < 0.3:
+            reasons.append("Weak skill overlap with job requirements")
+
+        if breakdown.experience_score >= 0.8:
+            reasons.append("Experience level well-suited for the role")
+
+        if breakdown.location_score >= 0.7:
+            reasons.append("Location compatible with job location")
+        elif breakdown.location_score == 0.0 and not job.get("remote_ok"):
+            reasons.append("Location mismatch with job location")
+
+        if job.get("remote_ok"):
+            reasons.append("Remote-friendly position")
+
+        if breakdown.salary_score >= 0.8:
+            reasons.append("Salary expectations within job range")
+        elif breakdown.salary_score < 0.3:
+            reasons.append("Salary expectations may exceed job budget")
+
+        if breakdown.culture_score >= 0.7:
+            reasons.append("Good cultural fit signal")
+
+        sem = semantic_match(candidate, job)
+        if sem >= 0.5:
+            reasons.append("High semantic similarity between profiles")
+        elif sem < 0.1:
+            reasons.append("Low semantic similarity between profiles")
+
+        return reasons
+
+    def match_candidate_to_jobs(
+        self,
+        candidate_id: str,
+        candidate: Dict[str, Any],
+        jobs: Sequence[Dict[str, Any]],
+        top_n: int = 10,
+    ) -> list[dict[str, Any]]:
+        """Match a candidate against multiple jobs, returning ranked results."""
+        results: list[dict[str, Any]] = []
+        for job in jobs:
+            score = self.calculate_match_score(candidate, job)
+            reasons = self.generate_match_reasons(candidate, job)
+            results.append({
+                "job_id": job.get("id"),
+                "score": score,
+                "reasons": reasons,
+            })
+        results.sort(key=lambda r: r["score"], reverse=True)
+        return results[:top_n]
+
+    def match_job_to_candidates(
+        self,
+        job_id: str,
+        job: Dict[str, Any],
+        candidates: Sequence[Dict[str, Any]],
+        top_n: int = 20,
+    ) -> list[dict[str, Any]]:
+        """Match a job against multiple candidates, returning ranked results."""
+        results: list[dict[str, Any]] = []
+        for candidate in candidates:
+            score = self.calculate_match_score(candidate, job)
+            reasons = self.generate_match_reasons(candidate, job)
+            results.append({
+                "candidate_id": candidate.get("id"),
+                "score": score,
+                "reasons": reasons,
+            })
+        results.sort(key=lambda r: r["score"], reverse=True)
+        return results[:top_n]
