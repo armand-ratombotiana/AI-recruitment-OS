@@ -206,6 +206,27 @@ from shared.core.models.video_interview import (
     VideoParticipant,
     ParticipantRole,
 )
+from shared.core.models.performance_review import (
+    PerformanceReview,
+    ReviewQuestion,
+    ReviewAnswer,
+    ReviewCycle,
+    ReviewStatus,
+    ReviewQuestionType,
+    ReviewCycleStatus,
+    PerformanceReviewCreate,
+    PerformanceReviewUpdate,
+    PerformanceReviewRead,
+    PerformanceReviewListResponse,
+    ReviewAnswerCreate,
+    ReviewAnswerRead,
+    ReviewQuestionCreate,
+    ReviewQuestionRead,
+    ReviewQuestionListResponse,
+    ReviewCycleCreate,
+    ReviewCycleRead,
+    ReviewCycleListResponse,
+)
 
 __all__ = [
     "ApiKey",
@@ -279,4 +300,11 @@ __all__ = [
     "AssessmentResultsResponse", "AssessmentStatus",
     "Question", "QuestionRead", "QuestionType",
     "SubmitAnswersRequest", "SubmitAnswersResponse",
+    "PerformanceReview", "ReviewQuestion", "ReviewAnswer", "ReviewCycle",
+    "ReviewStatus", "ReviewQuestionType", "ReviewCycleStatus",
+    "PerformanceReviewCreate", "PerformanceReviewUpdate", "PerformanceReviewRead",
+    "PerformanceReviewListResponse",
+    "ReviewAnswerCreate", "ReviewAnswerRead",
+    "ReviewQuestionCreate", "ReviewQuestionRead", "ReviewQuestionListResponse",
+    "ReviewCycleCreate", "ReviewCycleRead", "ReviewCycleListResponse",
 ]

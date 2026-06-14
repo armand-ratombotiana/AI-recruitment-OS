@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
@@ -14,20 +14,23 @@ from sqlmodel import SQLModel, Field as SQLField
 
 
 class OnboardingStepType(str, Enum):
-    SIGN_DOCUMENT = "sign_document"
-    WATCH_VIDEO = "watch_video"
-    COMPLETE_TASK = "complete_task"
-    ATTEND_MEETING = "attend_meeting"
-    TAKE_ASSESSMENT = "take_assessment"
-    REVIEW_POLICY = "review_policy"
+    DOCUMENT = "document"
+    VIDEO = "video"
+    TASK = "task"
+    MEETING = "meeting"
+    ASSESSMENT = "assessment"
 
 
 class OnboardingStatus(str, Enum):
-    NOT_STARTED = "not_started"
+    PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
-    OVERDUE = "overdue"
-    CANCELLED = "cancelled"
+
+
+class TaskStatus(str, Enum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
 
 
 @dataclass
@@ -35,9 +38,10 @@ class OnboardingStep:
     id: str
     name: str
     type: OnboardingStepType
-    config: dict[str, Any]
-    order: int
+    description: str = ""
     required: bool = True
+    order: int = 0
+    config: dict[str, Any] = field(default_factory=dict)
 
 
 def _utcnow() -> datetime:
@@ -50,11 +54,14 @@ class OnboardingWorkflow(SQLModel, table=True):
     id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     tenant_id: str = SQLField(index=True, nullable=False)
     name: str
+    description: str | None = None
     steps: list[dict[str, Any]] = SQLField(
         default_factory=list,
         sa_column=Column("steps", JSON, nullable=False, default=list),
     )
+    active: bool = SQLField(default=True, index=True)
     created_at: datetime = SQLField(default_factory=_utcnow, nullable=False)
+    updated_at: datetime = SQLField(default_factory=_utcnow, nullable=False)
 
 
 class CandidateOnboarding(SQLModel, table=True):
@@ -65,13 +72,21 @@ class CandidateOnboarding(SQLModel, table=True):
     candidate_id: str = SQLField(index=True, nullable=False)
     workflow_id: str = SQLField(index=True, nullable=False)
     current_step: int = SQLField(default=0)
-    status: OnboardingStatus = SQLField(default=OnboardingStatus.NOT_STARTED, index=True)
+    status: str = SQLField(default=OnboardingStatus.PENDING.value, index=True)
+    progress_pct: float = SQLField(default=0.0)
     started_at: datetime | None = None
     completed_at: datetime | None = None
-    step_progress: dict[str, Any] = SQLField(
-        default_factory=dict,
-        sa_column=Column("step_progress", JSON, nullable=False, default=dict),
-    )
+
+
+class OnboardingTask(SQLModel, table=True):
+    __tablename__ = "onboarding_tasks"
+
+    id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    onboarding_id: str = SQLField(index=True, nullable=False)
+    step_id: str = SQLField(index=True, nullable=False)
+    status: str = SQLField(default=TaskStatus.PENDING.value, index=True)
+    completed_at: datetime | None = None
+    notes: str | None = None
 
 
 # --- API Schemas ---
@@ -81,47 +96,47 @@ class OnboardingStepCreate(BaseModel):
     id: str
     name: str
     type: OnboardingStepType
-    config: dict[str, Any] = Field(default_factory=dict)
-    order: int
+    description: str = ""
     required: bool = True
+    order: int = 0
+    config: dict[str, Any] = Field(default_factory=dict)
 
 
 class OnboardingStepRead(BaseModel):
     id: str
     name: str
     type: OnboardingStepType
-    config: dict[str, Any]
-    order: int
+    description: str
     required: bool
+    order: int
+    config: dict[str, Any]
 
     model_config = {"from_attributes": True}
 
 
 class OnboardingWorkflowCreate(BaseModel):
     name: str
+    description: str | None = None
     steps: list[OnboardingStepCreate] = Field(default_factory=list)
+    active: bool = True
 
 
 class OnboardingWorkflowUpdate(BaseModel):
     name: str | None = None
+    description: str | None = None
     steps: list[OnboardingStepCreate] | None = None
+    active: bool | None = None
 
 
 class OnboardingWorkflowRead(BaseModel):
     id: str
     tenant_id: str
     name: str
-    steps: list[OnboardingStepRead]
+    description: str | None
+    steps: list[dict[str, Any]]
+    active: bool
     created_at: datetime
-
-    model_config = {"from_attributes": True}
-
-
-class OnboardingWorkflowList(BaseModel):
-    id: str
-    name: str
-    steps_count: int
-    created_at: datetime
+    updated_at: datetime
 
     model_config = {"from_attributes": True}
 
@@ -130,59 +145,19 @@ class AssignWorkflowRequest(BaseModel):
     candidate_id: str
 
 
+class CompleteTaskRequest(BaseModel):
+    notes: str | None = None
+
+
 class CandidateOnboardingRead(BaseModel):
     id: str
     tenant_id: str
     candidate_id: str
     workflow_id: str
-    workflow_name: str | None = None
     current_step: int
-    status: OnboardingStatus
+    status: str
+    progress_pct: float
     started_at: datetime | None
     completed_at: datetime | None
-    step_progress: dict[str, Any]
 
     model_config = {"from_attributes": True}
-
-
-class StepProgressUpdate(BaseModel):
-    step_id: str
-    completed: bool
-    data: dict[str, Any] | None = None
-
-
-STEP_TYPE_CONFIG_SCHEMAS: dict[OnboardingStepType, dict[str, Any]] = {
-    OnboardingStepType.SIGN_DOCUMENT: {
-        "document_id": "str (required)",
-        "document_name": "str",
-        "signature_fields": "list[str]",
-    },
-    OnboardingStepType.WATCH_VIDEO: {
-        "video_url": "str (required)",
-        "duration_seconds": "int",
-        "require_full_watch": "bool",
-    },
-    OnboardingStepType.COMPLETE_TASK: {
-        "task_description": "str (required)",
-        "task_url": "str",
-        "expected_output": "str",
-    },
-    OnboardingStepType.ATTEND_MEETING: {
-        "meeting_title": "str (required)",
-        "meeting_url": "str",
-        "start_time": "datetime (ISO)",
-        "duration_minutes": "int",
-        "organizer_email": "str",
-    },
-    OnboardingStepType.TAKE_ASSESSMENT: {
-        "assessment_id": "str (required)",
-        "passing_score": "float",
-        "max_attempts": "int",
-    },
-    OnboardingStepType.REVIEW_POLICY: {
-        "document_id": "str (required)",
-        "document_name": "str",
-        "require_acknowledgment": "bool",
-        "acknowledgment_text": "str",
-    },
-}
