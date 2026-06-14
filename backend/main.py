@@ -25,6 +25,7 @@ from shared.middleware.cache_headers import CacheHeadersMiddleware
 from shared.middleware.compression import CompressionMiddleware
 from shared.middleware.rate_limit import RateLimitMiddleware, rate_limit_router
 from shared.middleware.versioning import APIVersioningMiddleware
+from shared.security.headers import SecurityHeadersMiddleware
 
 cache_manager = get_cache_manager()
 
@@ -133,6 +134,7 @@ app.add_middleware(APIVersioningMiddleware)
 app.add_middleware(CacheHeadersMiddleware)
 app.add_middleware(CompressionMiddleware)
 app.add_middleware(RateLimitMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -306,6 +308,7 @@ app.include_router(rate_limit_router, prefix="/api/v1", tags=["Rate Limit"])
 include_router_safe(app, "apps.audit_service.main", "router", "/api/v1/audit", ["Audit"])
 include_router_safe(app, "apps.cache_service.main", "router", "/api/v1/cache", ["Cache"])
 include_router_safe(app, "apps.versioning_service.main", "router", "/api/v1", ["Versioning"])
+include_router_safe(app, "apps.security_service.main", "router", "/api/v1/security", ["Security"])
 
 # ── Production monitoring & observability ────────────────────────────────────
 try:
