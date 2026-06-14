@@ -39,6 +39,9 @@ langchain-anthropic==0.3.4
 langgraph==0.2.60
 tiktoken==0.8.0
 
+# === GraphQL ===
+strawberry-graphql==0.262
+
 # === Document Processing ===
 PyMuPDF==1.25.1
 python-docx==1.1.2
