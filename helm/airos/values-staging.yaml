@@ -1,0 +1,118 @@
+# =============================================================================
+# AI-ROS Helm Values — Staging
+# =============================================================================
+
+replicaCount:
+  api: 2
+  worker: 1
+  frontend: 1
+
+image:
+  tag: "staging"
+  pullPolicy: Always
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/websocket-services: "airos-api"
+  hosts:
+    - host: staging.app.airos.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: airos-api
+          port: 8000
+        - path: /ws
+          pathType: Prefix
+          service: airos-api
+          port: 8000
+        - path: /
+          pathType: Prefix
+          service: airos-frontend
+          port: 3000
+  tls:
+    - secretName: airos-staging-tls
+      hosts:
+        - staging.app.airos.com
+
+resources:
+  api:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  worker:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  frontend:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+autoscaling:
+  enabled: false
+
+env:
+  ENVIRONMENT: "staging"
+  DEBUG: "true"
+  WEB_CONCURRENCY: "2"
+  NEXT_PUBLIC_API_URL: "https://staging.app.airos.com"
+  NEXT_PUBLIC_WS_URL: "wss://staging.app.airos.com"
+
+persistence:
+  postgres:
+    enabled: true
+    size: 10Gi
+  redis:
+    enabled: true
+    size: 2Gi
+
+postgresql:
+  primary:
+    persistence:
+      size: 10Gi
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+
+redis:
+  master:
+    persistence:
+      size: 2Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+worker:
+  command:
+    - celery
+    - -A
+    - shared.events.celery_app
+    - worker
+    - -l
+    - info
+    - -Q
+    - default,ai,evaluation,ingestion,notification
+    - -c
+    - "2"

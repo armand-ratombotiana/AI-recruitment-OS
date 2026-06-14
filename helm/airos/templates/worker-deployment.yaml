@@ -2,35 +2,57 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-worker
+  namespace: {{ .Values.namespace | default "airos" }}
   labels:
-    app: airos
-    component: worker
+    {{- include "airos.workerLabels" . | nindent 4 }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount.worker }}
+  {{- end }}
   selector:
     matchLabels:
-      app: airos
-      component: worker
+      {{- include "airos.workerSelectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: airos
-        component: worker
+        {{- include "airos.workerSelectorLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: 60
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: ["sh", "-c", "until nc -z {{ .Release.Name }}-postgresql 5432; do echo waiting for postgres; sleep 2; done"]
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: ["sh", "-c", "until nc -z {{ .Release.Name }}-redis-master 6379; do echo waiting for redis; sleep 2; done"]
       containers:
         - name: worker
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: {{ include "airos.apiImage" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["celery", "-A", "src.workers.celery_app:celery_app", "worker", "-l", "info", "-c", "4"]
+          command:
+            {{- toYaml .Values.worker.command | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: {{ .Release.Name }}-config
             - secretRef:
                 name: {{ .Values.secrets.name }}
           resources:
-            requests:
-              cpu: {{ .Values.resources.worker.requests.cpu }}
-              memory: {{ .Values.resources.worker.requests.memory }}
-            limits:
-              cpu: {{ .Values.resources.worker.limits.cpu }}
-              memory: {{ .Values.resources.worker.limits.memory }}
+            {{- toYaml .Values.resources.worker | nindent 12 }}
+          livenessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - shared.events.celery_app
+                - inspect
+                - ping
+                - --timeout
+                - "10"
+            initialDelaySeconds: 30
+            periodSeconds: 60
+            timeoutSeconds: 15
+            failureThreshold: 3

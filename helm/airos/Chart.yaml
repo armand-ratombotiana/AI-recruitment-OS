@@ -2,9 +2,17 @@ apiVersion: v2
 name: airos
 description: AI-Native Recruitment Operating System
 type: application
-version: 0.1.0
+version: 0.2.0
 appVersion: "1.0.0"
-
+keywords:
+  - ai
+  - recruitment
+  - platform
+home: https://airos.com
+sources:
+  - https://github.com/airos/ai-recrutement-os
+maintainers:
+  - name: AI-ROS Team
 dependencies:
   - name: postgresql
     version: "15.x.x"

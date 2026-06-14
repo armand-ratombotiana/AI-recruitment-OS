@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: airos
+  labels:
+    app.kubernetes.io/name: airos
+    app.kubernetes.io/part-of: airos

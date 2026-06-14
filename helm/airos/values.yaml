@@ -1,16 +1,22 @@
 # =============================================================================
-# AI-ROS Helm Values — Production
+# AI-ROS Helm Values — Defaults
 # =============================================================================
 
+global:
+  imagePullSecrets: []
+  storageClass: standard
+
+namespace: airos
+
 replicaCount:
-  api: 3
-  worker: 3
+  api: 2
+  worker: 2
   frontend: 2
 
 image:
-  repository: <account-id>.dkr.ecr.us-east-1.amazonaws.com/airos
+  repository: ghcr.io/airos
   tag: "latest"
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 service:
   type: ClusterIP
@@ -23,30 +29,23 @@ ingress:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/websocket-services: "airos-api"
   hosts:
     - host: app.airos.com
       paths:
         - path: /api
           pathType: Prefix
-          backend:
-            service:
-              name: airos-api
-              port:
-                number: 8000
+          service: airos-api
+          port: 8000
         - path: /ws
           pathType: Prefix
-          backend:
-            service:
-              name: airos-api
-              port:
-                number: 8000
+          service: airos-api
+          port: 8000
         - path: /
           pathType: Prefix
-          backend:
-            service:
-              name: airos-frontend
-              port:
-                number: 3000
+          service: airos-frontend
+          port: 3000
   tls:
     - secretName: airos-tls
       hosts:
@@ -58,14 +57,14 @@ resources:
       cpu: 250m
       memory: 512Mi
     limits:
-      cpu: 1000m
+      cpu: "1"
       memory: 1Gi
   worker:
     requests:
       cpu: 500m
-      memory: 1Gi
+      memory: 512Mi
     limits:
-      cpu: 2000m
+      cpu: "2"
       memory: 2Gi
   frontend:
     requests:
@@ -76,40 +75,95 @@ resources:
       memory: 512Mi
 
 autoscaling:
-  enabled: true
-  minReplicas:
-    api: 3
-    worker: 2
-  maxReplicas:
-    api: 20
-    worker: 10
-  targetCPUUtilizationPercentage: 70
+  enabled: false
+  api:
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  worker:
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 60
+  frontend:
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 70
 
 env:
+  APP_NAME: "AI-ROS"
+  ENVIRONMENT: "production"
+  DEBUG: "false"
+  WEB_CONCURRENCY: "4"
   DATABASE_URL: "postgresql+asyncpg://airos:$(DB_PASSWORD)@airos-postgresql:5432/airos"
   REDIS_URL: "redis://airos-redis-master:6379/0"
   CELERY_BROKER_URL: "redis://airos-redis-master:6379/1"
   CELERY_RESULT_BACKEND: "redis://airos-redis-master:6379/2"
   KAFKA_BOOTSTRAP_SERVERS: "airos-kafka:9092"
+  ELASTICSEARCH_URL: "http://airos-elasticsearch:9200"
+  OTEL_ENABLED: "true"
+  OTEL_SERVICE_NAME: "airos"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://airos-jaeger:4317"
+  NEXT_PUBLIC_API_URL: "https://app.airos.com"
+  NEXT_PUBLIC_WS_URL: "wss://app.airos.com"
 
 secrets:
   name: airos-secrets
   data:
-    SECRET_KEY: ""  # Set via sealed-secrets or external-secrets
+    SECRET_KEY: ""
     ENCRYPTION_KEY: ""
     OPENAI_API_KEY: ""
     ANTHROPIC_API_KEY: ""
     DB_PASSWORD: ""
+    REDIS_PASSWORD: ""
+    STRIPE_SECRET_KEY: ""
+    STRIPE_WEBHOOK_SECRET: ""
+    GRAFANA_ADMIN_PASSWORD: ""
+
+persistence:
+  postgres:
+    enabled: true
+    size: 20Gi
+    storageClass: standard
+  redis:
+    enabled: true
+    size: 5Gi
+    storageClass: standard
 
 postgresql:
   enabled: true
   auth:
     postgresPassword: ""
     database: airos
+    username: airos
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "2"
+        memory: 2Gi
 
 redis:
   enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: "1"
+        memory: 768Mi
 
 monitoring:
   prometheus:
@@ -118,3 +172,16 @@ monitoring:
     enabled: true
   jaeger:
     enabled: true
+
+worker:
+  command:
+    - celery
+    - -A
+    - shared.events.celery_app
+    - worker
+    - -l
+    - info
+    - -Q
+    - default,ai,evaluation,ingestion,notification
+    - -c
+    - "4"

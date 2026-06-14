@@ -2,24 +2,32 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}-api
+  namespace: {{ .Values.namespace | default "airos" }}
+  labels:
+    {{- include "airos.apiLabels" . | nindent 4 }}
 spec:
+  type: {{ .Values.service.type }}
   selector:
-    app: airos
-    component: api
+    {{- include "airos.apiSelectorLabels" . | nindent 4 }}
   ports:
-    - port: 8000
+    - port: {{ .Values.service.apiPort }}
       targetPort: 8000
+      protocol: TCP
       name: http
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}-frontend
+  namespace: {{ .Values.namespace | default "airos" }}
+  labels:
+    {{- include "airos.frontendLabels" . | nindent 4 }}
 spec:
+  type: {{ .Values.service.type }}
   selector:
-    app: airos
-    component: frontend
+    {{- include "airos.frontendSelectorLabels" . | nindent 4 }}
   ports:
-    - port: 3000
+    - port: {{ .Values.service.frontendPort }}
       targetPort: 3000
+      protocol: TCP
       name: http
