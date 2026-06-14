@@ -785,6 +785,75 @@ export namespace InterviewTypes {
 }
 
 // ---------------------------------------------------------------------------
+// Video Interview Rooms
+// ---------------------------------------------------------------------------
+
+export namespace VideoRoomTypes {
+  export type VideoRoomStatus = 'active' | 'completed' | 'expired';
+  export type RecordingStatus = 'none' | 'recording' | 'saved';
+
+  export interface VideoRoom {
+    id: UUID;
+    interview_id: UUID | null;
+    title: string;
+    candidate_name: string;
+    candidate_email: string | null;
+    room_url: string;
+    status: VideoRoomStatus;
+    recording_status: RecordingStatus;
+    recording_url: string | null;
+    recording_duration_seconds: number | null;
+    participants: Array<{
+      id: UUID;
+      name: string;
+      role: string;
+      joined_at: ISODateString | null;
+    }>;
+    notes: string | null;
+    created_at: ISODateString;
+    updated_at: ISODateString;
+    expires_at: ISODateString | null;
+  }
+
+  export type VideoRoomListResponse = PaginatedResponse<VideoRoom>;
+
+  export interface VideoRoomCreate {
+    title: string;
+    interview_id?: UUID;
+    candidate_name: string;
+    candidate_email?: string;
+    scheduled_at?: ISODateString;
+    duration_minutes?: number;
+    notes?: string;
+  }
+
+  export interface VideoRoomUpdate {
+    title?: string;
+    notes?: string;
+  }
+
+  export interface RecordingInfo {
+    id: UUID;
+    room_id: UUID;
+    url: string;
+    download_url: string;
+    duration_seconds: number;
+    format: string;
+    size_bytes: number;
+    created_at: ISODateString;
+  }
+
+  export interface VideoRoomNote {
+    id: UUID;
+    room_id: UUID;
+    content: string;
+    author: string;
+    created_at: ISODateString;
+    updated_at: ISODateString;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // PPE (Programming Practice Environment)
 // ---------------------------------------------------------------------------
 

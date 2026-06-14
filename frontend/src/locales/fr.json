@@ -38,7 +38,11 @@
     },
     "today": "Aujourd'hui",
     "tomorrow": "Demain",
-    "viewDetails": "Voir les détails"
+    "viewDetails": "Voir les détails",
+    "view": "Voir",
+    "saved": "Enregistré",
+    "deleted": "Supprimé",
+    "expires": "Expire le"
   },
   "nav": {
     "workspace": "Espace de travail",
@@ -48,6 +52,7 @@
     "assessments": "Évaluations",
     "interviews": "Entretiens",
     "offers": "Offres",
+    "referrals": "Parrainages",
     "ppe": "PPE",
     "analytics": "Analyses",
     "aiCopilot": "Copilote IA",
@@ -1543,6 +1548,44 @@
       }
     }
   },
+  "videoInterview": {
+    "title": "Entretiens vidéo",
+    "subtitle": "Gérez les salles d'entretien vidéo, les enregistrements et la lecture",
+    "nav": "Entretiens vidéo",
+    "status": {
+      "active": "Active",
+      "completed": "Terminé",
+      "expired": "Expiré"
+    },
+    "recording": {
+      "none": "Aucun enregistrement",
+      "recording": "Enregistrement en cours",
+      "saved": "Enregistrement sauvegardé"
+    },
+    "actions": {
+      "createRoom": "Créer une salle",
+      "joinRoom": "Rejoindre la salle",
+      "startRecording": "Démarrer l'enregistrement",
+      "stopRecording": "Arrêter l'enregistrement",
+      "viewRecording": "Voir l'enregistrement",
+      "downloadRecording": "Télécharger l'enregistrement",
+      "copyLink": "Copier le lien"
+    },
+    "filters": {
+      "allStatuses": "Tous les statuts",
+      "dateRange": "Plage de dates",
+      "search": "Rechercher des salles..."
+    },
+    "detail": {
+      "roomUrl": "URL de la salle",
+      "participants": "Participants",
+      "notes": "Notes",
+      "addNote": "Ajouter une note",
+      "timeline": "Chronologie",
+      "embeddedPlayer": "Lecteur intégré",
+      "recordingPlayer": "Lecture de l'enregistrement"
+    }
+  },
   "assessments": {
     "title": "Évaluations",
     "subtitle": "{total} évaluations au total",
@@ -2692,7 +2735,8 @@
       "categories": {
         "applications": "Candidatures",
         "applicationsDesc": "Nouveaux candidats, changements de statut et avancement du pipeline.",
-        "interviews": "Entretiens",
+    "interviews": "Entretiens",
+    "videoInterviews": "Entretiens vidéo",
         "interviewsDesc": "Changements de planning, rappels et demandes de feedback.",
         "messages": "Messages",
         "messagesDesc": "Mentions, réponses et messages directs de votre équipe.",

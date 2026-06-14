@@ -38,7 +38,11 @@
     },
     "today": "Hoy",
     "tomorrow": "Mañana",
-    "viewDetails": "Ver detalles"
+    "viewDetails": "Ver detalles",
+    "view": "Ver",
+    "saved": "Guardado",
+    "deleted": "Eliminado",
+    "expires": "Expira"
   },
   "nav": {
     "workspace": "Espacio de trabajo",
@@ -1548,6 +1552,44 @@
       }
     }
   },
+  "videoInterview": {
+    "title": "Entrevistas en video",
+    "subtitle": "Gestiona salas de entrevistas en video, grabaciones y reproducción",
+    "nav": "Entrevistas en video",
+    "status": {
+      "active": "Activa",
+      "completed": "Completada",
+      "expired": "Expirada"
+    },
+    "recording": {
+      "none": "Sin grabación",
+      "recording": "Grabando",
+      "saved": "Grabación guardada"
+    },
+    "actions": {
+      "createRoom": "Crear sala",
+      "joinRoom": "Unirse a la sala",
+      "startRecording": "Iniciar grabación",
+      "stopRecording": "Detener grabación",
+      "viewRecording": "Ver grabación",
+      "downloadRecording": "Descargar grabación",
+      "copyLink": "Copiar enlace"
+    },
+    "filters": {
+      "allStatuses": "Todos los estados",
+      "dateRange": "Rango de fechas",
+      "search": "Buscar salas..."
+    },
+    "detail": {
+      "roomUrl": "URL de la sala",
+      "participants": "Participantes",
+      "notes": "Notas",
+      "addNote": "Añadir nota",
+      "timeline": "Línea de tiempo",
+      "embeddedPlayer": "Reproductor integrado",
+      "recordingPlayer": "Reproducción de grabación"
+    }
+  },
   "assessments": {
     "title": "Evaluaciones",
     "subtitle": "{total} evaluaciones en total",
@@ -2697,7 +2739,8 @@
       "categories": {
         "applications": "Candidaturas",
         "applicationsDesc": "Nuevos candidatos, cambios de estado y avances del pipeline.",
-        "interviews": "Entrevistas",
+    "interviews": "Entrevistas",
+    "videoInterviews": "Entrevistas en video",
         "interviewsDesc": "Cambios de agenda, recordatorios y solicitudes de feedback.",
         "messages": "Mensajes",
         "messagesDesc": "Menciones, respuestas y mensajes directos del equipo.",

@@ -21,6 +21,7 @@ import {
   Zap,
   ClipboardList,
   Target,
+  Video as VideoIcon,
   type LucideIcon,
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-media-query';
@@ -39,6 +40,7 @@ export const MOBILE_NAV_ITEMS: MobileNavItem[] = [
   { href: '/dashboard/jobs', key: 'nav.jobs', icon: Briefcase, badge: '5' },
   { href: '/dashboard/assessments', key: 'nav.assessments', icon: ClipboardList },
   { href: '/dashboard/interviews', key: 'nav.interviews', icon: CalendarIcon },
+  { href: '/dashboard/interviews/video', key: 'nav.videoInterviews', icon: VideoIcon },
   { href: '/dashboard/ppe', key: 'nav.ppe', icon: Code2 },
   { href: '/dashboard/analytics', key: 'nav.analytics', icon: BarChart3 },
   { href: '/dashboard/ai-copilot', key: 'nav.aiCopilot', icon: Bot, badge: 'new' },

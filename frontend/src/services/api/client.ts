@@ -39,6 +39,7 @@ import type {
   ComplianceAutomationTypes,
   TalentIntelTypes,
   WorkflowAutomationTypes,
+  VideoRoomTypes,
   InnovationsTypes,
   ActivityTypes,
   HealthResponse,
@@ -483,6 +484,53 @@ class APIClient {
       this.request<InterviewTypes.InterviewTranscript>(`/interviews/${interviewId}/transcript`),
     getAnalytics: (interviewId: string) =>
       this.request<InterviewTypes.InterviewAnalytics>(`/interviews/${interviewId}/analytics`),
+  };
+
+  // ========================================================================
+  // VIDEO ROOMS SERVICE
+  // ========================================================================
+
+  videoRooms = {
+    list: (params?: Record<string, string>) =>
+      this.request<VideoRoomTypes.VideoRoomListResponse>('/video-rooms/', { params }),
+    get: (roomId: string) =>
+      this.request<VideoRoomTypes.VideoRoom>(`/video-rooms/${roomId}`),
+    create: (data: VideoRoomTypes.VideoRoomCreate) =>
+      this.request<VideoRoomTypes.VideoRoom>('/video-rooms/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (roomId: string, data: VideoRoomTypes.VideoRoomUpdate) =>
+      this.request<VideoRoomTypes.VideoRoom>(`/video-rooms/${roomId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    delete: (roomId: string) =>
+      this.request<MessageResponse>(`/video-rooms/${roomId}`, { method: 'DELETE' }),
+    startRecording: (roomId: string) =>
+      this.request<VideoRoomTypes.RecordingInfo>(`/video-rooms/${roomId}/recording/start`, {
+        method: 'POST',
+      }),
+    stopRecording: (roomId: string) =>
+      this.request<VideoRoomTypes.RecordingInfo>(`/video-rooms/${roomId}/recording/stop`, {
+        method: 'POST',
+      }),
+    getRecording: (roomId: string) =>
+      this.request<VideoRoomTypes.RecordingInfo>(`/video-rooms/${roomId}/recording`),
+    addNote: (roomId: string, content: string) =>
+      this.request<VideoRoomTypes.VideoRoomNote>(`/video-rooms/${roomId}/notes`, {
+        method: 'POST',
+        body: JSON.stringify({ content }),
+      }),
+    listNotes: (roomId: string) =>
+      this.request<VideoRoomTypes.VideoRoomNote[]>(`/video-rooms/${roomId}/notes`),
+    updateNote: (roomId: string, noteId: string, content: string) =>
+      this.request<VideoRoomTypes.VideoRoomNote>(`/video-rooms/${roomId}/notes/${noteId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ content }),
+      }),
+    deleteNote: (roomId: string, noteId: string) =>
+      this.request<MessageResponse>(`/video-rooms/${roomId}/notes/${noteId}`, { method: 'DELETE' }),
   };
 
   // ========================================================================

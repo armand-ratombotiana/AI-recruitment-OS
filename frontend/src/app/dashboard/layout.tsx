@@ -24,6 +24,7 @@ import {
   Search as SearchIcon,
   Accessibility,
   Bug,
+  Video as VideoIcon,
 } from 'lucide-react';
 import {
   UserMenu,
@@ -48,6 +49,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/jobs', key: 'nav.jobs', icon: Briefcase, badge: '5' },
   { href: '/dashboard/assessments', key: 'nav.assessments', icon: ClipboardList },
   { href: '/dashboard/interviews', key: 'nav.interviews', icon: CalendarIcon },
+  { href: '/dashboard/interviews/video', key: 'nav.videoInterviews', icon: VideoIcon },
   { href: '/dashboard/offers', key: 'nav.offers', icon: FileText },
   { href: '/dashboard/ppe', key: 'nav.ppe', icon: Code2 },
   { href: '/dashboard/analytics', key: 'nav.analytics', icon: BarChart3 },

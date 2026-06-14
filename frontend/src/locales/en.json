@@ -38,7 +38,11 @@
     },
     "today": "Today",
     "tomorrow": "Tomorrow",
-    "viewDetails": "View details"
+    "viewDetails": "View details",
+    "view": "View",
+    "saved": "Saved",
+    "deleted": "Deleted",
+    "expires": "Expires"
   },
   "nav": {
     "workspace": "Workspace",
@@ -48,6 +52,7 @@
     "assessments": "Assessments",
     "interviews": "Interviews",
     "offers": "Offers",
+    "referrals": "Referrals",
     "ppe": "PPE",
     "analytics": "Analytics",
     "aiCopilot": "AI Copilot",
@@ -1502,6 +1507,44 @@
       }
     }
   },
+  "videoInterview": {
+    "title": "Video Interviews",
+    "subtitle": "Manage video interview rooms, recordings, and playback",
+    "nav": "Video Interviews",
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "expired": "Expired"
+    },
+    "recording": {
+      "none": "No recording",
+      "recording": "Recording",
+      "saved": "Recording saved"
+    },
+    "actions": {
+      "createRoom": "Create room",
+      "joinRoom": "Join room",
+      "startRecording": "Start recording",
+      "stopRecording": "Stop recording",
+      "viewRecording": "View recording",
+      "downloadRecording": "Download recording",
+      "copyLink": "Copy link"
+    },
+    "filters": {
+      "allStatuses": "All statuses",
+      "dateRange": "Date range",
+      "search": "Search rooms..."
+    },
+    "detail": {
+      "roomUrl": "Room URL",
+      "participants": "Participants",
+      "notes": "Notes",
+      "addNote": "Add note",
+      "timeline": "Timeline",
+      "embeddedPlayer": "Embedded player",
+      "recordingPlayer": "Recording playback"
+    }
+  },
   "assessments": {
     "title": "Assessments",
     "subtitle": "{total} total assessments",
@@ -2665,7 +2708,8 @@
       "categories": {
         "applications": "Applications",
         "applicationsDesc": "New candidates, status changes, and pipeline updates.",
-        "interviews": "Interviews",
+    "interviews": "Interviews",
+    "videoInterviews": "Video Interviews",
         "interviewsDesc": "Schedule changes, reminders, and feedback requests.",
         "messages": "Messages",
         "messagesDesc": "Mentions, replies, and direct messages from your team.",
