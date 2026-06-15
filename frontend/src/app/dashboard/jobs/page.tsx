@@ -10,17 +10,13 @@ import {
   Clock,
   TrendingUp,
   Search,
-  Pencil,
   Trash2,
-  Download,
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
-import { DataTable, DataTableV2, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
+import { DataTableV2, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
 import { ExportMenu } from '@/components/ui/export-menu';
-import { useBulkActions } from '@/hooks/use-bulk-actions';
 import { JobForm } from '@/components/forms';
 import type { JobFormValues } from '@/components/forms';
-import type { Column } from '@/components/ui/data-table';
 import type { ColumnV2 } from '@/components/ui/data-table-v2';
 import { AdvancedFilter, type FilterDefinition, type FilterValues } from '@/components/ui/advanced-filter';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
@@ -403,84 +399,6 @@ export default function JobsPage() {
     setSelected(new Set());
     await load();
   };
-
-  const columns: Column<any>[] = [
-    {
-      key: 'select',
-      label: '',
-      sortable: false,
-      render: (j) => (
-        <input
-          type="checkbox"
-          checked={selected.has(j.id)}
-          onChange={() => {
-            setSelected((p) => {
-              const n = new Set(p);
-              if (n.has(j.id)) n.delete(j.id);
-              else n.add(j.id);
-              return n;
-            });
-          }}
-          onClick={(e) => e.stopPropagation()}
-          aria-label={t('jobs.select', 'Select {title}').replace('{title}', j.title)}
-        />
-      ),
-    },
-    {
-      key: 'title',
-      label: t('jobs.table.position', 'Position'),
-      render: (j) => (
-        <div>
-          <p className="font-semibold text-gray-900 dark:text-gray-100">{j.title}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-0.5">
-            <span className="flex items-center gap-1"><Building2 className="h-3 w-3" /> {j.department || t('jobs.deptGeneral', 'General')}</span>
-            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {j.location || t('jobs.remote', 'Remote')}</span>
-          </p>
-        </div>
-      ),
-    },
-    { key: 'type', label: t('jobs.table.type', 'Type'), render: (j) => <span className="text-gray-600 dark:text-gray-300 text-sm">{j.type || t('jobs.fullTime', 'Full-time')}</span> },
-    { key: 'salary', label: t('jobs.table.salary', 'Salary'), render: (j) => <span className="text-sm text-gray-700 dark:text-gray-200 font-medium">{formatSalary(j.salary_min, j.salary_max, locale)}</span> },
-    {
-      key: 'applicants',
-      label: t('jobs.table.applicants', 'Applicants'),
-      align: 'center',
-      render: (j) => (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 dark:bg-brand-500/20 dark:text-brand-300">
-          <Users className="h-3 w-3" /> {j.applicants || 0}
-        </span>
-      ),
-    },
-    {
-      key: 'status',
-      label: t('jobs.table.status', 'Status'),
-      render: (j) => <Badge variant={STATUS_VARIANT[j.status] || 'default'} size="sm" dot>{t(`jobs.statuses.${j.status}`, j.status)}</Badge>,
-    },
-    {
-      key: 'created_at',
-      label: t('jobs.table.posted', 'Posted'),
-      render: (j) => <span className="text-xs text-gray-500 dark:text-gray-400">{j.created_at || '—'}</span>,
-    },
-    {
-      key: 'row_actions',
-      label: '',
-      sortable: false,
-      render: (j) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            onClick={() => setEditing(j)}
-            className="px-2 py-1 text-[10px] font-semibold rounded bg-gray-50 text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-surface-800 dark:text-gray-200 dark:hover:bg-surface-700 inline-flex items-center gap-1"
-            aria-label={t('jobs.actions.edit', 'Edit job')}
-            title={t('common.edit', 'Edit')}
-          >
-            <Pencil className="h-3 w-3" aria-hidden="true" />
-            {t('common.edit', 'Edit')}
-          </button>
-        </div>
-      ),
-    },
-  ];
 
   const columnsV2: ColumnV2<any>[] = [
     {

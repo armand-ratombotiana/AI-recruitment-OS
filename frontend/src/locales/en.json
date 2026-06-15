@@ -4804,6 +4804,31 @@
     "emptyCanvas": "Drag widgets from the palette to start building your dashboard",
     "saved": "Dashboard saved",
     "saveFailed": "Failed to save dashboard",
-    "unsavedChanges": "You have unsaved changes"
+    "unsavedChanges": "You have unsaved changes",
+    "page": {
+      "namePlaceholder": "Dashboard name...",
+      "settings": {
+        "gridRows": "Grid Row Height",
+        "compactType": "Layout Compaction"
+      }
+    },
+    "templateSelector": {
+      "title": "Choose a Template",
+      "description": "Start from a pre-built template or load a saved one",
+      "builtinTemplates": "Built-in Templates",
+      "savedTemplates": "Saved Templates",
+      "widgets": "widgets",
+      "useTemplate": "Use Template"
+    },
+    "builtinTemplates": {
+      "executiveOverview": "Executive Overview",
+      "executiveOverviewDesc": "High-level KPIs and hiring metrics for leadership",
+      "recruiterPerformance": "Recruiter Performance",
+      "recruiterPerformanceDesc": "Track recruiter activity, placements, and efficiency",
+      "pipelineHealth": "Pipeline Health",
+      "pipelineHealthDesc": "Monitor pipeline stages, bottlenecks, and conversion rates",
+      "diversity": "Diversity & Inclusion",
+      "diversityDesc": "Track diversity metrics across hiring stages"
+    }
   }
 }

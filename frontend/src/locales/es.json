@@ -4464,6 +4464,31 @@
     "emptyCanvas": "Arrastra widgets desde la paleta para empezar a construir tu panel",
     "saved": "Panel guardado",
     "saveFailed": "Error al guardar el panel",
-    "unsavedChanges": "Tienes cambios sin guardar"
+    "unsavedChanges": "Tienes cambios sin guardar",
+    "page": {
+      "namePlaceholder": "Nombre del panel...",
+      "settings": {
+        "gridRows": "Altura de filas de la cuadrícula",
+        "compactType": "Compactación del diseño"
+      }
+    },
+    "templateSelector": {
+      "title": "Elegir una plantilla",
+      "description": "Comienza desde una plantilla prediseñada o carga una guardada",
+      "builtinTemplates": "Plantillas integradas",
+      "savedTemplates": "Plantillas guardadas",
+      "widgets": "widgets",
+      "useTemplate": "Usar plantilla"
+    },
+    "builtinTemplates": {
+      "executiveOverview": "Resumen ejecutivo",
+      "executiveOverviewDesc": "KPIs de alto nivel y métricas de contratación para la dirección",
+      "recruiterPerformance": "Rendimiento del reclutador",
+      "recruiterPerformanceDesc": "Seguimiento de actividad, colocaciones y eficiencia de reclutadores",
+      "pipelineHealth": "Salud del pipeline",
+      "pipelineHealthDesc": "Monitorea etapas del pipeline, cuellos de botella y tasas de conversión",
+      "diversity": "Diversidad e inclusión",
+      "diversityDesc": "Seguimiento de métricas de diversidad en las etapas de contratación"
+    }
   }
 }

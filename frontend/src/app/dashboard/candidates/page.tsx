@@ -14,26 +14,16 @@ import {
   Briefcase,
   Star,
   Upload,
-  Pencil,
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
-import { DataTable, DataTableV2, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
+import { DataTableV2, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
 import { ExportMenu } from '@/components/ui/export-menu';
-import { useBulkActions } from '@/hooks/use-bulk-actions';
 import { CandidateForm } from '@/components/forms';
 import type { CandidateFormValues } from '@/components/forms';
-import type { Column } from '@/components/ui/data-table';
 import type { ColumnV2 } from '@/components/ui/data-table-v2';
 import { AdvancedFilter, type FilterDefinition, type FilterValues } from '@/components/ui/advanced-filter';
 import {
-  SavedSearchToolbar,
-  SaveSearchDialog,
-  SmartFilters,
-} from '@/components/ui/saved-search';
-import {
   useSavedSearches,
-  getSmartFilter,
-  matchesSmartCriteria,
   type SmartFilterCriteria,
   type SmartFilterId,
 } from '@/hooks/use-saved-searches';
@@ -330,20 +320,6 @@ export default function CandidatesPage() {
     });
   }, [candidates, filterValues, search]);
 
-  const toggleSelect = (id: string) => {
-    setSelected((p) => {
-      const n = new Set(p);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
-  };
-
-  const toggleSelectAll = () => {
-    if (selected.size === filtered.length) setSelected(new Set());
-    else setSelected(new Set(filtered.map((c) => c.id)));
-  };
-
   const exportCSV = () => {
     const rows = [['Name', 'Email', 'Status', 'Score', 'Skills', 'Location']];
     const data = selected.size > 0 ? filtered.filter((c) => selected.has(c.id)) : filtered;
@@ -424,96 +400,6 @@ export default function CandidatesPage() {
     setSelected(new Set());
     await load();
   };
-
-  const columns: Column<Candidate>[] = [
-    {
-      key: 'select',
-      label: '',
-      sortable: false,
-      render: (c) => (
-        <input
-          type="checkbox"
-          checked={selected.has(c.id)}
-          onChange={() => toggleSelect(c.id)}
-          onClick={(e) => e.stopPropagation()}
-          aria-label={interpolate(t('candidates.select', 'Select {name}'), { name: c.full_name })}
-        />
-      ),
-    },
-    {
-      key: 'full_name',
-      label: t('candidates.table.candidate', 'Candidate'),
-      render: (c) => (
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-            {c.full_name?.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-          </div>
-          <div>
-            <p className="font-medium text-gray-900 dark:text-gray-100">{c.full_name}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{c.email}</p>
-          </div>
-        </div>
-      ),
-    },
-    { key: 'location', label: t('candidates.table.location', 'Location'), render: (c) => c.location ? <span className="text-gray-600 dark:text-gray-300 text-xs">{c.location}</span> : <span className="text-gray-400">—</span> },
-    {
-      key: 'skills',
-      label: t('candidates.table.skills', 'Skills'),
-      sortable: false,
-      render: (c) => (
-        <div className="flex flex-wrap gap-1 max-w-xs">
-          {c.skills?.slice(0, 3).map((s) => (
-            <span key={s} className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-gray-100 text-gray-700 font-medium dark:bg-surface-800 dark:text-gray-200">{s}</span>
-          ))}
-          {c.skills && c.skills.length > 3 && <span className="text-xs text-gray-400">+{c.skills.length - 3}</span>}
-        </div>
-      ),
-    },
-    { key: 'experience_years', label: t('candidates.table.experience', 'Exp.'), align: 'center', render: (c) => c.experience_years ? `${c.experience_years}y` : '—' },
-    { key: 'score', label: t('candidates.table.score', 'Score'), align: 'center', render: (c) => c.score ? <span className="font-bold text-gray-900 dark:text-gray-100">{c.score}</span> : '—' },
-    {
-      key: 'status',
-      label: t('candidates.table.status', 'Status'),
-      render: (c) => <Badge variant={STATUS_VARIANT[c.status] || 'default'} size="sm" dot>{c.status}</Badge>,
-    },
-    {
-      key: 'actions',
-      label: '',
-      sortable: false,
-      render: (c) => (
-        <div data-tour="candidates-ai" className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            onClick={() => setEditing(c)}
-            className="px-2 py-1 text-[10px] font-semibold rounded bg-gray-50 text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-surface-800 dark:text-gray-200 dark:hover:bg-surface-700 inline-flex items-center gap-1"
-            aria-label={t('candidates.actions.edit', 'Edit candidate')}
-            title={t('common.edit', 'Edit')}
-          >
-            <Pencil className="h-3 w-3" aria-hidden="true" />
-            {t('common.edit', 'Edit')}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleEnrich(c.id)}
-            disabled={enriching.has(c.id)}
-            className="px-2 py-1 text-[10px] font-semibold rounded bg-purple-50 text-purple-700 hover:bg-purple-100 disabled:opacity-50 dark:bg-accent-500/20 dark:text-accent-300 dark:hover:bg-accent-500/30"
-            title="AI enrichment"
-          >
-            {enriching.has(c.id) ? '...' : t('candidates.actions.enrich', 'Enrich')}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleMatch(c.id)}
-            disabled={matching.has(c.id)}
-            className="px-2 py-1 text-[10px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 dark:bg-brand-500/20 dark:text-brand-300 dark:hover:bg-brand-500/30"
-            title="Run AI matching"
-          >
-            {matching.has(c.id) ? '...' : t('candidates.actions.match', 'Match')}
-          </button>
-        </div>
-      ),
-    },
-  ];
 
   const columnsV2: ColumnV2<Candidate>[] = [
     {

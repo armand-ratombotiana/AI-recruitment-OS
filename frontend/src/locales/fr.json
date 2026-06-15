@@ -4460,6 +4460,31 @@
     "emptyCanvas": "Glissez des widgets depuis la palette pour commencer à construire votre tableau de bord",
     "saved": "Tableau de bord enregistré",
     "saveFailed": "Échec de l'enregistrement du tableau de bord",
-    "unsavedChanges": "Vous avez des modifications non enregistrées"
+    "unsavedChanges": "Vous avez des modifications non enregistrées",
+    "page": {
+      "namePlaceholder": "Nom du tableau de bord...",
+      "settings": {
+        "gridRows": "Hauteur des lignes de la grille",
+        "compactType": "Compactage de la disposition"
+      }
+    },
+    "templateSelector": {
+      "title": "Choisir un modèle",
+      "description": "Commencez à partir d'un modèle prédéfini ou chargez-en un enregistré",
+      "builtinTemplates": "Modèles intégrés",
+      "savedTemplates": "Modèles enregistrés",
+      "widgets": "widgets",
+      "useTemplate": "Utiliser le modèle"
+    },
+    "builtinTemplates": {
+      "executiveOverview": "Vue d'ensemble exécutive",
+      "executiveOverviewDesc": "KPIs de haut niveau et métriques de recrutement pour la direction",
+      "recruiterPerformance": "Performance des recruteurs",
+      "recruiterPerformanceDesc": "Suivi de l'activité des recruteurs, des placements et de l'efficacité",
+      "pipelineHealth": "Santé du pipeline",
+      "pipelineHealthDesc": "Surveillez les étapes du pipeline, les goulots d'étranglement et les taux de conversion",
+      "diversity": "Diversité et inclusion",
+      "diversityDesc": "Suivi des métriques de diversité à travers les étapes de recrutement"
+    }
   }
 }
