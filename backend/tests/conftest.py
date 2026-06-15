@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import os
+os.environ.setdefault("SECRET_KEY", "test-secret-key-that-is-at-least-32-chars-long!!")
+os.environ.setdefault("ENCRYPTION_KEY", "test-encryption-key-that-is-at-least-32-chars!!")
+
 import asyncio
 from typing import AsyncGenerator, Generator
 from unittest.mock import AsyncMock, MagicMock

@@ -1,18 +1,19 @@
+import os
 from functools import lru_cache
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     APP_NAME: str = "AI-ROS"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = True
+    DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
     ENVIRONMENT: str = "development"
     API_V1_PREFIX: str = "/api/v1"
 
-    SECRET_KEY: str = "dev-secret-key-change-in-production-min-32-chars!!"
+    SECRET_KEY: str = os.getenv("SECRET_KEY") or ""
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-    ENCRYPTION_KEY: str = "dev-encryption-key-change-in-production-32!!"
+    ENCRYPTION_KEY: str = os.getenv("ENCRYPTION_KEY") or ""
 
     DATABASE_URL: str = "postgresql+asyncpg://airos:airos_dev_password@localhost:5432/airos"
     DATABASE_POOL_SIZE: int = 20
@@ -82,6 +83,11 @@ class Settings(BaseSettings):
     TAX_RATE_PCT: float = 0.0  # 0% by default; set in production
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "case_sensitive": True, "extra": "ignore"}
+
+if not os.getenv("SECRET_KEY") or len(os.getenv("SECRET_KEY", "")) < 32:
+    raise ValueError("SECRET_KEY must be set and at least 32 characters")
+if not os.getenv("ENCRYPTION_KEY") or len(os.getenv("ENCRYPTION_KEY", "")) < 32:
+    raise ValueError("ENCRYPTION_KEY must be set and at least 32 characters")
 
 @lru_cache
 def get_settings() -> Settings:

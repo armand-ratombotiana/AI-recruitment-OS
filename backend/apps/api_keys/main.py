@@ -14,7 +14,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -218,6 +218,7 @@ async def update_key(
 @router.delete(
     "/{key_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     tags=["API Keys"],
     summary="Revoke an API key",
 )
@@ -226,7 +227,7 @@ async def revoke_key(
     db: AsyncSession = Depends(get_db_dependency),
     tenant_id: str = Depends(require_tenant_id),
     user: dict[str, Any] = Depends(require_user),
-) -> None:
+) -> Response:
     existing = await manager.get_api_key(db, key_id, tenant_id)
     if existing is None or existing.user_id != user["id"]:
         raise HTTPException(
@@ -238,7 +239,7 @@ async def revoke_key(
             status_code=status.HTTP_404_NOT_FOUND, detail="API key not found"
         )
     await db.commit()
-    return None
+    return Response(status_code=204)
 
 
 @router.get(
