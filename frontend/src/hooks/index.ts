@@ -13,6 +13,8 @@ export type {
   WSMessageListener,
 } from './use-websocket';
 
+export { usePushNotifications } from './use-push-notifications';
+
 export {
   useIntersectionObserver,
   useVirtualList,

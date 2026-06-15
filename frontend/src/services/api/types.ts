@@ -1488,6 +1488,31 @@ export namespace NotificationTypes {
   export interface ChannelVerifyRequest {
     channel_id: UUID;
   }
+
+  export interface PushDevice {
+    id: UUID;
+    user_id: UUID;
+    platform: 'ios' | 'android' | 'web';
+    device_name: string;
+    token: string;
+    last_active_at: ISODateString;
+    created_at: ISODateString;
+  }
+
+  export interface PushDeviceListResponse {
+    devices: PushDevice[];
+  }
+
+  export interface PushDeviceRegisterRequest {
+    platform: 'ios' | 'android' | 'web';
+    token: string;
+    device_name: string;
+  }
+
+  export interface PushDeviceRegisterResponse {
+    device: PushDevice;
+    qr_code_url?: string;
+  }
 }
 
 // ---------------------------------------------------------------------------

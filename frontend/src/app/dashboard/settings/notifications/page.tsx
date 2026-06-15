@@ -10,6 +10,7 @@ import {
   Loader2,
   Mail,
   Monitor,
+  Plus,
   Save,
   Smartphone,
   Volume2,
@@ -23,12 +24,15 @@ import {
   Card,
   CardContent,
   EmptyState,
+  Modal,
   Skeleton,
   Switch,
   useNotification,
   useToast,
 } from '@/components';
 import { useLocaleStore, translate } from '@/stores/locale-store';
+import { usePushNotifications } from '@/hooks/use-push-notifications';
+import { DeviceCard } from '@/components/notifications/device-card';
 import { cn } from '@/lib/utils';
 
 type Channel = 'email' | 'in_app' | 'push';
@@ -681,6 +685,8 @@ export default function NotificationPreferencesPage() {
         </Card>
       )}
 
+      <PushDevicesSection t={t} commonT={commonT} />
+
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm dark:border-surface-700 dark:bg-surface-900">
         <p className="text-xs text-gray-500 dark:text-gray-400">
           {t(
@@ -718,6 +724,281 @@ interface ChannelCheckboxProps {
   disabled: boolean;
   onChange: () => void;
   label: string;
+}
+
+function PushDevicesSection({
+  t,
+  commonT,
+}: {
+  t: (key: string, fallback?: string) => string;
+  commonT: (key: string, fallback?: string) => string;
+}) {
+  const {
+    devices,
+    loading,
+    registering,
+    permission,
+    error,
+    registerDevice,
+    unregisterDevice,
+    requestPermission,
+  } = usePushNotifications();
+  const { success, error: errorNotify } = useNotification();
+  const [unregisteringId, setUnregisteringId] = useState<string | null>(null);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [manualToken, setManualToken] = useState('');
+  const [registerError, setRegisterError] = useState<string | null>(null);
+
+  const handleRegister = useCallback(async () => {
+    setRegisterError(null);
+    try {
+      await registerDevice();
+      setShowRegisterModal(false);
+      setManualToken('');
+      success(
+        t('pushNotifications.deviceRegistered', 'Device registered'),
+        t('pushNotifications.deviceRegisteredDesc', 'You will now receive push notifications on this device.')
+      );
+    } catch (err: unknown) {
+      setRegisterError(err instanceof APIError ? err.message : 'Registration failed');
+    }
+  }, [registerDevice, success, t]);
+
+  const handleManualRegister = useCallback(async () => {
+    if (!manualToken.trim()) {
+      setRegisterError(t('pushNotifications.tokenRequired', 'Please enter a device token'));
+      return;
+    }
+    setRegisterError(null);
+    try {
+      await registerDevice(manualToken.trim());
+      setShowRegisterModal(false);
+      setManualToken('');
+      success(
+        t('pushNotifications.deviceRegistered', 'Device registered'),
+        t('pushNotifications.deviceRegisteredDesc', 'You will now receive push notifications on this device.')
+      );
+    } catch (err: unknown) {
+      setRegisterError(err instanceof APIError ? err.message : 'Registration failed');
+    }
+  }, [manualToken, registerDevice, success, t]);
+
+  const handleUnregister = useCallback(async (deviceId: string) => {
+    setUnregisteringId(deviceId);
+    try {
+      await unregisterDevice(deviceId);
+      success(
+        t('pushNotifications.deviceUnregistered', 'Device unregistered'),
+        t('pushNotifications.deviceUnregisteredDesc', 'This device will no longer receive push notifications.')
+      );
+    } catch (err: unknown) {
+      errorNotify(
+        t('pushNotifications.unregisterFailed', 'Unregister failed'),
+        err instanceof APIError ? err.message : 'Could not unregister device'
+      );
+    } finally {
+      setUnregisteringId(null);
+    }
+  }, [unregisterDevice, success, errorNotify, t]);
+
+  return (
+    <Card>
+      <CardContent className="p-4 sm:p-6">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+              {t('pushNotifications.title', 'Push notification devices')}
+            </h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {t(
+                'pushNotifications.subtitle',
+                'Manage devices that receive push notifications from AI-ROS.'
+              )}
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={
+              registering
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <Plus className="h-4 w-4" />
+            }
+            onClick={() => setShowRegisterModal(true)}
+            disabled={registering}
+          >
+            {t('pushNotifications.registerDevice', 'Register device')}
+          </Button>
+        </div>
+
+        {error && (
+          <div
+            role="alert"
+            className="mb-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-900 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {permission === 'denied' && (
+          <div
+            role="alert"
+            className="mb-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <div className="flex flex-col gap-1">
+              <span>
+                {t(
+                  'pushNotifications.permissionDenied',
+                  'Push notifications are blocked in your browser. Enable them in your browser settings.'
+                )}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => requestPermission()}
+                className="self-start"
+              >
+                {t('pushNotifications.requestPermission', 'Request permission')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="space-y-2" aria-busy="true">
+            <Skeleton height={60} />
+            <Skeleton height={60} />
+          </div>
+        ) : devices.length === 0 ? (
+          <EmptyState
+            icon={<Smartphone className="h-10 w-10" />}
+            title={t('pushNotifications.noDevices', 'No devices registered')}
+            description={t(
+              'pushNotifications.noDevicesDesc',
+              'Register a device to receive push notifications when something important happens.'
+            )}
+          />
+        ) : (
+          <div className="space-y-3">
+            {devices.map((device) => (
+              <DeviceCard
+                key={device.id}
+                device={device}
+                onUnregister={handleUnregister}
+                unregistering={unregisteringId === device.id}
+                t={(key, fallback) => t(`pushNotifications.${key}`, fallback)}
+              />
+            ))}
+          </div>
+        )}
+      </CardContent>
+
+      <Modal
+        isOpen={showRegisterModal}
+        onClose={() => {
+          if (registering) return;
+          setShowRegisterModal(false);
+          setManualToken('');
+          setRegisterError(null);
+        }}
+        title={t('pushNotifications.registerTitle', 'Register a device')}
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {t(
+              'pushNotifications.registerDesc',
+              'Choose how to register your device for push notifications.'
+            )}
+          </p>
+
+          <div className="space-y-3">
+            <div className="rounded-lg border border-gray-200 p-4 dark:border-surface-700">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {t('pushNotifications.autoRegister', 'Automatic registration')}
+              </h3>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {t(
+                  'pushNotifications.autoRegisterDesc',
+                  'Register this browser automatically using push notifications.'
+                )}
+              </p>
+              <div className="mt-3">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleRegister}
+                  loading={registering}
+                  leftIcon={
+                    registering
+                      ? <Loader2 className="h-4 w-4 animate-spin" />
+                      : <Smartphone className="h-4 w-4" />
+                  }
+                >
+                  {t('pushNotifications.registerThisDevice', 'Register this device')}
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-gray-200 p-4 dark:border-surface-700">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {t('pushNotifications.manualEntry', 'Manual entry')}
+              </h3>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {t(
+                  'pushNotifications.manualEntryDesc',
+                  'Enter a device token from a mobile app or another source.'
+                )}
+              </p>
+              <div className="mt-3 space-y-2">
+                <input
+                  type="text"
+                  value={manualToken}
+                  onChange={(e) => setManualToken(e.target.value)}
+                  placeholder={t('pushNotifications.tokenPlaceholder', 'Enter device token…')}
+                  className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-surface-600 dark:bg-surface-800 dark:text-gray-100"
+                />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleManualRegister}
+                  disabled={registering || !manualToken.trim()}
+                >
+                  {t('pushNotifications.submitToken', 'Submit token')}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {registerError && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-900 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200"
+            >
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>{registerError}</span>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowRegisterModal(false);
+                setManualToken('');
+                setRegisterError(null);
+              }}
+              disabled={registering}
+            >
+              {commonT('cancel', 'Cancel')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </Card>
+  );
 }
 
 function ChannelCheckbox({ checked, disabled, onChange, label }: ChannelCheckboxProps) {

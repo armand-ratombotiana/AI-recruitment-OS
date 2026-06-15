@@ -769,6 +769,15 @@ class APIClient {
       this.request<NotificationTypes.NotificationChannel>(`/notifications/channels/${channelId}/verify`, {
         method: 'POST',
       }),
+    listPushDevices: () =>
+      this.request<NotificationTypes.PushDeviceListResponse>('/notifications/push/devices'),
+    registerPushDevice: (data: NotificationTypes.PushDeviceRegisterRequest) =>
+      this.request<NotificationTypes.PushDeviceRegisterResponse>('/notifications/push/devices', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    unregisterPushDevice: (deviceId: string) =>
+      this.request<MessageResponse>(`/notifications/push/devices/${deviceId}`, { method: 'DELETE' }),
   };
 
   // ========================================================================
