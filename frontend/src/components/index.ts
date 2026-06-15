@@ -3,6 +3,8 @@ export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 export { Badge } from './ui/badge';
 export { DataTable } from './ui/data-table';
 export type { Column } from './ui/data-table';
+export { DataTableV2 } from './ui/data-table-v2';
+export type { ColumnV2 } from './ui/data-table-v2';
 export { Progress } from './ui/progress';
 export { Avatar, AvatarGroup } from './ui/avatar';
 export type { AvatarProps } from './ui/avatar';

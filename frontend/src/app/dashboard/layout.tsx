@@ -26,6 +26,7 @@ import {
   Bug,
   Video as VideoIcon,
   Star,
+  Database,
 } from 'lucide-react';
 import {
   UserMenu,
@@ -66,6 +67,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/accessibility', key: 'nav.accessibility', icon: Accessibility },
   { href: '/dashboard/performance-reviews', key: 'nav.performanceReviews', icon: Star },
   { href: '/dashboard/error-tracking', key: 'nav.errorTracking', icon: Bug },
+  { href: '/graphql/playground', key: 'nav.graphql', icon: Database, badge: 'new' },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

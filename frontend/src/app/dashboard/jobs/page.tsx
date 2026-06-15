@@ -15,12 +15,13 @@ import {
   Download,
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
-import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
+import { DataTable, DataTableV2, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
 import { ExportMenu } from '@/components/ui/export-menu';
 import { useBulkActions } from '@/hooks/use-bulk-actions';
 import { JobForm } from '@/components/forms';
 import type { JobFormValues } from '@/components/forms';
 import type { Column } from '@/components/ui/data-table';
+import type { ColumnV2 } from '@/components/ui/data-table-v2';
 import { AdvancedFilter, type FilterDefinition, type FilterValues } from '@/components/ui/advanced-filter';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
 import { jobsTour } from '@/components/onboarding/tours';
@@ -481,6 +482,58 @@ export default function JobsPage() {
     },
   ];
 
+  const columnsV2: ColumnV2<any>[] = [
+    {
+      key: 'title',
+      label: t('jobs.table.position', 'Position'),
+      width: 260,
+      editable: true,
+      render: (j) => (
+        <div>
+          <p className="font-semibold text-gray-900 dark:text-gray-100">{j.title}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-0.5">
+            <span className="flex items-center gap-1"><Building2 className="h-3 w-3" /> {j.department || t('jobs.deptGeneral', 'General')}</span>
+            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {j.location || t('jobs.remote', 'Remote')}</span>
+          </p>
+        </div>
+      ),
+      expandRender: (j) => (
+        <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+          <p><strong>Department:</strong> {j.department || j.company || 'General'}</p>
+          <p><strong>Location:</strong> {j.location || 'Remote'}</p>
+          <p><strong>Type:</strong> {j.employment_type || j.type || 'Full-time'}</p>
+          <p><strong>Salary:</strong> {formatSalary(j.salary_min, j.salary_max, locale)}</p>
+        </div>
+      ),
+    },
+    { key: 'type', label: t('jobs.table.type', 'Type'), width: 120, render: (j) => <span className="text-gray-600 dark:text-gray-300 text-sm">{j.type || t('jobs.fullTime', 'Full-time')}</span> },
+    { key: 'salary', label: t('jobs.table.salary', 'Salary'), width: 160, render: (j) => <span className="text-sm text-gray-700 dark:text-gray-200 font-medium">{formatSalary(j.salary_min, j.salary_max, locale)}</span> },
+    {
+      key: 'applicants',
+      label: t('jobs.table.applicants', 'Applicants'),
+      width: 110,
+      align: 'center',
+      render: (j) => (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 dark:bg-brand-500/20 dark:text-brand-300">
+          <Users className="h-3 w-3" /> {j.applicants || 0}
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      label: t('jobs.table.status', 'Status'),
+      width: 120,
+      editable: true,
+      render: (j) => <Badge variant={STATUS_VARIANT[j.status] || 'default'} size="sm" dot>{t(`jobs.statuses.${j.status}`, j.status)}</Badge>,
+    },
+    {
+      key: 'created_at',
+      label: t('jobs.table.posted', 'Posted'),
+      width: 120,
+      render: (j) => <span className="text-xs text-gray-500 dark:text-gray-400">{j.created_at || '—'}</span>,
+    },
+  ];
+
   const STATUSES = [
     { value: 'all', label: t('candidates.allStatuses', 'All statuses') },
     ...STATUS_KEYS.map((s) => ({ value: s, label: t(`jobs.statuses.${s}`, s) })),
@@ -595,7 +648,21 @@ export default function JobsPage() {
         />
       ) : (
         <div data-tour="jobs-row" className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 overflow-hidden">
-          <DataTable columns={columns} data={filtered} searchable={false} pageSize={10} rowKey={(j) => j.id} />
+          <DataTableV2
+            columns={columnsV2}
+            data={filtered}
+            storageKey="jobs-table"
+            rowKey={(j) => j.id}
+            selectable
+            selectedRowKeys={Array.from(selected)}
+            onSelectionChange={(keys) => setSelected(new Set(keys))}
+            onCellEdit={(rk, ck, val) => {
+              const j = filtered.find((x) => x.id === rk);
+              if (j && ck === 'status') handleUpdate(rk, { ...j, status: val });
+            }}
+            density="normal"
+            maxHeight="600px"
+          />
         </div>
       )}
 

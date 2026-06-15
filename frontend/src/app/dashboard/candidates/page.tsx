@@ -17,12 +17,13 @@ import {
   Pencil,
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
-import { DataTable, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
+import { DataTable, DataTableV2, EmptyState, Badge, Button, Skeleton, Modal, useToast, Breadcrumb, HelpButton, ConfirmDialog } from '@/components';
 import { ExportMenu } from '@/components/ui/export-menu';
 import { useBulkActions } from '@/hooks/use-bulk-actions';
 import { CandidateForm } from '@/components/forms';
 import type { CandidateFormValues } from '@/components/forms';
 import type { Column } from '@/components/ui/data-table';
+import type { ColumnV2 } from '@/components/ui/data-table-v2';
 import { AdvancedFilter, type FilterDefinition, type FilterValues } from '@/components/ui/advanced-filter';
 import {
   SavedSearchToolbar,
@@ -514,6 +515,58 @@ export default function CandidatesPage() {
     },
   ];
 
+  const columnsV2: ColumnV2<Candidate>[] = [
+    {
+      key: 'full_name',
+      label: t('candidates.table.candidate', 'Candidate'),
+      width: 220,
+      editable: true,
+      render: (c) => (
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+            {c.full_name?.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+          </div>
+          <div>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{c.full_name}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{c.email}</p>
+          </div>
+        </div>
+      ),
+      expandRender: (c) => (
+        <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+          <p><strong>Email:</strong> {c.email}</p>
+          {c.phone && <p><strong>Phone:</strong> {c.phone}</p>}
+          {c.location && <p><strong>Location:</strong> {c.location}</p>}
+          <p><strong>Skills:</strong> {c.skills?.join(', ') || '—'}</p>
+        </div>
+      ),
+    },
+    { key: 'location', label: t('candidates.table.location', 'Location'), width: 140, editable: true, render: (c) => c.location ? <span className="text-gray-600 dark:text-gray-300 text-xs">{c.location}</span> : <span className="text-gray-400">—</span> },
+    {
+      key: 'skills',
+      label: t('candidates.table.skills', 'Skills'),
+      width: 200,
+      sortable: false,
+      render: (c) => (
+        <div className="flex flex-wrap gap-1 max-w-xs">
+          {c.skills?.slice(0, 3).map((s) => (
+            <span key={s} className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-gray-100 text-gray-700 font-medium dark:bg-surface-800 dark:text-gray-200">{s}</span>
+          ))}
+          {c.skills && c.skills.length > 3 && <span className="text-xs text-gray-400">+{c.skills.length - 3}</span>}
+        </div>
+      ),
+    },
+    { key: 'experience_years', label: t('candidates.table.experience', 'Exp.'), width: 80, align: 'center', editable: true, render: (c) => c.experience_years ? `${c.experience_years}y` : '—' },
+    { key: 'score', label: t('candidates.table.score', 'Score'), width: 80, align: 'center', render: (c) => c.score ? <span className="font-bold text-gray-900 dark:text-gray-100">{c.score}</span> : '—' },
+    {
+      key: 'status',
+      label: t('candidates.table.status', 'Status'),
+      width: 120,
+      editable: true,
+      render: (c) => <Badge variant={STATUS_VARIANT[c.status] || 'default'} size="sm" dot>{c.status}</Badge>,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <ToastContainer />
@@ -629,13 +682,21 @@ export default function CandidatesPage() {
         />
       ) : view === 'table' ? (
         <div data-tour="candidates-table" className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 overflow-hidden">
-          <DataTable
-            columns={columns}
+          <DataTableV2
+            columns={columnsV2}
             data={filtered}
-            searchable={false}
-            pageSize={10}
-            onRowClick={(c) => setDetail(c)}
+            storageKey="candidates-table"
             rowKey={(c) => c.id}
+            selectable
+            selectedRowKeys={Array.from(selected)}
+            onSelectionChange={(keys) => setSelected(new Set(keys))}
+            onRowClick={(c) => setDetail(c)}
+            onCellEdit={(rk, ck, val) => {
+              const c = filtered.find((x) => x.id === rk);
+              if (c && ck === 'status') handleUpdate(rk, { ...c, status: val } as any);
+            }}
+            density="normal"
+            maxHeight="600px"
           />
         </div>
       ) : (
