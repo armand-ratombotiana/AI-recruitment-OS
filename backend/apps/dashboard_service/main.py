@@ -17,8 +17,10 @@ import random
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
-from fastapi import APIRouter, Header, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
+
+from shared.auth.dependencies import require_tenant_id
 
 logger = logging.getLogger("dashboard_service")
 router = APIRouter()
@@ -102,7 +104,7 @@ def _deterministic_count(seed: str, lo: int, hi: int) -> int:
 
 @router.get("/stats", response_model=DashboardStats, tags=["Dashboard"], summary="Quick KPI stats")
 async def get_stats(
-    tenant_id: str = Header(default="default", alias="X-Tenant-ID"),
+    tenant_id: str = Depends(require_tenant_id),
     time_range: str = Query(default="30d", description="7d | 30d | 90d"),
 ) -> DashboardStats:
     """Aggregate KPIs for the dashboard widget strip.
@@ -141,7 +143,7 @@ async def get_stats(
 )
 async def get_recent_activity(
     limit: int = Query(default=10, ge=1, le=50),
-    tenant_id: str = Header(default="default", alias="X-Tenant-ID"),
+    tenant_id: str = Depends(require_tenant_id),
 ) -> list[RecentActivity]:
     """Return a curated list of recent tenant activities for the dashboard.
 
@@ -188,7 +190,7 @@ async def get_recent_activity(
 )
 async def get_upcoming(
     limit: int = Query(default=10, ge=1, le=50),
-    tenant_id: str = Header(default="default", alias="X-Tenant-ID"),
+    tenant_id: str = Depends(require_tenant_id),
 ) -> list[UpcomingItem]:
     """Return a deterministic list of upcoming items for the dashboard widget."""
     rng = random.Random(hash(tenant_id + ":upcoming") & 0xFFFFFFFF)
@@ -226,7 +228,7 @@ async def get_upcoming(
 async def get_funnel(
     time_range: str = Query(default="30d"),
     department: str = Query(default="engineering"),
-    tenant_id: str = Header(default="default", alias="X-Tenant-ID"),
+    tenant_id: str = Depends(require_tenant_id),
 ) -> FunnelResponse:
     """Standard recruitment funnel used in dashboards and reports."""
     seed = f"{tenant_id}:{time_range}:{department}"
@@ -280,7 +282,7 @@ async def get_funnel(
     summary="Single-shot payload powering the entire dashboard home screen",
 )
 async def get_widgets(
-    tenant_id: str = Header(default="default", alias="X-Tenant-ID"),
+    tenant_id: str = Depends(require_tenant_id),
 ) -> WidgetsResponse:
     """Compose the four most common widgets in one round trip."""
     stats = await get_stats(tenant_id=tenant_id)

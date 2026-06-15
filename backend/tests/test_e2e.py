@@ -19,6 +19,17 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlmodel import SQLModel
 
 from shared.core.database import get_db_dependency
+from shared.core.security import create_access_token
+
+
+def _auth_headers(tenant_id: str = "default", role: str = "recruiter") -> dict[str, str]:
+    token = create_access_token({
+        "sub": "test-user",
+        "email": "test@test.com",
+        "role": role,
+        "tenant_id": tenant_id,
+    })
+    return {"Authorization": f"Bearer {token}"}
 
 
 # ── Database Fixtures ──────────────────────────────────────────────────────────
@@ -55,7 +66,7 @@ async def client(db_engine) -> AsyncGenerator[AsyncClient, None]:
     app.dependency_overrides[get_db_dependency] = override_db
 
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
+    async with AsyncClient(transport=transport, base_url="http://testserver", headers=_auth_headers()) as ac:
         yield ac
 
 

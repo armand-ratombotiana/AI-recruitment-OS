@@ -17,8 +17,20 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
+from shared.core.security import create_access_token
+
 
 pytestmark = [pytest.mark.integration]
+
+
+def _auth_headers(tenant_id: str = "default", role: str = "recruiter") -> dict[str, str]:
+    token = create_access_token({
+        "sub": "test-user",
+        "email": "test@test.com",
+        "role": role,
+        "tenant_id": tenant_id,
+    })
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -26,7 +38,7 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
     from main import app
 
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+    async with AsyncClient(transport=transport, base_url="http://test", headers=_auth_headers()) as ac:
         yield ac
 
 

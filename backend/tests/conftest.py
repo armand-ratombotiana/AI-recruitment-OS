@@ -21,6 +21,17 @@ from shared.core.config import Settings, get_settings
 from shared.core.models.identity import User, UserRole, UserStatus
 from shared.core.models.candidate import Candidate, CandidateStatus
 from shared.core.models.webhook import Webhook, WebhookDelivery  # noqa: F401  (registers tables)
+from shared.core.security import create_access_token
+
+
+def _auth_headers(tenant_id: str = "default", role: str = "recruiter") -> dict[str, str]:
+    token = create_access_token({
+        "sub": "test-user",
+        "email": "test@test.com",
+        "role": role,
+        "tenant_id": tenant_id,
+    })
+    return {"Authorization": f"Bearer {token}"}
 
 
 TEST_TENANT_ID = str(uuid4())
@@ -71,7 +82,7 @@ async def client(db_engine) -> AsyncGenerator[AsyncClient, None]:
     )
 
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+    async with AsyncClient(transport=transport, base_url="http://test", headers=_auth_headers()) as ac:
         yield ac
 
 

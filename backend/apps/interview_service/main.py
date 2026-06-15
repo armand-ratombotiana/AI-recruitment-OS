@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.auth.dependencies import require_authenticated_user, require_tenant_id
 from shared.core.database import get_db_dependency
 from shared.core.rate_limit_deps import interview_write_rate
 from shared.core.security import require_tenant
@@ -69,6 +70,8 @@ async def health():
 @router.get("/")
 async def list_interviews(
     request: Request,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
     candidate_id: str | None = None,
     job_id: str | None = None,
     limit: int = Query(20, ge=1, le=100),
@@ -101,7 +104,11 @@ async def list_interviews(
 
 
 @router.get("/{interview_id}")
-async def get_interview(interview_id: str):
+async def get_interview(
+    interview_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+):
     record = _INTERVIEW_DB.get(interview_id)
     if record is None:
         record = {
@@ -119,7 +126,12 @@ async def get_interview(interview_id: str):
 
 
 @router.post("/", dependencies=[])
-async def create_interview(data: InterviewCreate, _rl: None = None):
+async def create_interview(
+    data: InterviewCreate,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+    _rl: None = None,
+):
     if _rl is not None:
         pass
     return {
@@ -133,22 +145,38 @@ async def create_interview(data: InterviewCreate, _rl: None = None):
 
 
 @router.post("/{interview_id}/start")
-async def start_interview(interview_id: str):
+async def start_interview(
+    interview_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+):
     return {"id": interview_id, "status": "in_progress", "started_at": "2025-01-20T14:00:00Z"}
 
 
 @router.post("/{interview_id}/complete")
-async def complete_interview(interview_id: str):
+async def complete_interview(
+    interview_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+):
     return {"id": interview_id, "status": "completed", "completed_at": "2025-01-20T15:00:00Z"}
 
 
 @router.post("/{interview_id}/feedback")
-async def submit_feedback(interview_id: str):
+async def submit_feedback(
+    interview_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+):
     return {"id": interview_id, "feedback_submitted": True, "overall_score": 8.2}
 
 
 @router.get("/{interview_id}/transcript")
-async def get_transcript(interview_id: str):
+async def get_transcript(
+    interview_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+):
     return {
         "interview_id": interview_id,
         "transcript": [
@@ -162,7 +190,11 @@ async def get_transcript(interview_id: str):
 
 
 @router.get("/{interview_id}/analytics")
-async def get_interview_analytics(interview_id: str):
+async def get_interview_analytics(
+    interview_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+):
     return {
         "interview_id": interview_id,
         "analytics": {
@@ -186,6 +218,8 @@ async def get_interview_analytics(interview_id: str):
 async def reschedule_interview(
     interview_id: str,
     data: RescheduleRequest,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
     _rl: None = None,
 ) -> RescheduleResponse:
     """Reschedule an interview, returning the previous and new time.
@@ -227,6 +261,8 @@ async def reschedule_interview(
 async def cancel_interview(
     interview_id: str,
     data: CancelRequest,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
     _rl: None = None,
 ) -> CancelResponse:
     """Cancel an interview with a required reason."""

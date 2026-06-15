@@ -6,8 +6,10 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+
+from shared.auth.dependencies import require_authenticated_user, require_tenant_id
 
 
 class Difficulty(str, Enum):
@@ -120,7 +122,11 @@ async def health():
 
 
 @router.get("/problems")
-async def list_problems(difficulty: Optional[str] = None):
+async def list_problems(
+    difficulty: Optional[str] = None,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+):
     problems = list(PROBLEMS_DB.values())
     if difficulty:
         problems = [p for p in problems if p["difficulty"] == difficulty]
@@ -134,7 +140,11 @@ async def list_problems(difficulty: Optional[str] = None):
 
 
 @router.get("/problems/{problem_id}")
-async def get_problem(problem_id: str):
+async def get_problem(
+    problem_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+):
     problem = PROBLEMS_DB.get(problem_id)
     if not problem:
         raise HTTPException(status_code=404, detail=f"Problem {problem_id} not found")
@@ -150,7 +160,11 @@ async def get_problem(problem_id: str):
 
 
 @router.post("/sessions")
-async def create_session(data: PPESessionCreate):
+async def create_session(
+    data: PPESessionCreate,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+):
     if data.problem_id not in PROBLEMS_DB:
         raise HTTPException(status_code=404, detail=f"Problem {data.problem_id} not found")
 
@@ -181,7 +195,11 @@ async def create_session(data: PPESessionCreate):
 
 
 @router.get("/sessions/{session_id}")
-async def get_session(session_id: str):
+async def get_session(
+    session_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+):
     session = SESSIONS_DB.get(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
@@ -201,7 +219,12 @@ async def get_session(session_id: str):
 
 
 @router.post("/sessions/{session_id}/execute")
-async def execute_code(session_id: str, submission: CodeSubmission):
+async def execute_code(
+    session_id: str,
+    submission: CodeSubmission,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+):
     session = SESSIONS_DB.get(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
@@ -246,7 +269,12 @@ async def execute_code(session_id: str, submission: CodeSubmission):
 
 
 @router.post("/sessions/{session_id}/hint")
-async def request_hint(session_id: str, data: Optional[HintRequest] = None):
+async def request_hint(
+    session_id: str,
+    data: Optional[HintRequest] = None,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_authenticated_user),
+):
     session = SESSIONS_DB.get(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")

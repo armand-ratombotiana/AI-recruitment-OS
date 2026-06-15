@@ -15,6 +15,18 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from httpx import ASGITransport, AsyncClient
 
+from shared.core.security import create_access_token
+
+
+def _auth_headers(tenant_id: str = "default", role: str = "recruiter") -> dict[str, str]:
+    token = create_access_token({
+        "sub": "test-user",
+        "email": "test@test.com",
+        "role": role,
+        "tenant_id": tenant_id,
+    })
+    return {"Authorization": f"Bearer {token}"}
+
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -32,7 +44,7 @@ def event_loop():
 async def client():
     from main import app
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
+    async with AsyncClient(transport=transport, base_url="http://testserver", headers=_auth_headers()) as ac:
         yield ac
 
 

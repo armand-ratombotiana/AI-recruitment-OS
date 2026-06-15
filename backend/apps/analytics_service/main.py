@@ -1061,7 +1061,11 @@ async def health() -> dict[str, str]:
 
 
 @router.get("/dashboard")
-async def get_dashboard(time_range: str = "7d", department: str = "engineering") -> dict[str, Any]:
+async def get_dashboard(
+    time_range: str = "7d",
+    department: str = "engineering",
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
     seed = hash(time_range + department) % 10000
     random.seed(seed)
     base_candidates = random.randint(800, 1500)
@@ -1090,7 +1094,11 @@ async def get_dashboard(time_range: str = "7d", department: str = "engineering")
 
 
 @router.get("/pipeline")
-async def get_pipeline(department: str = "engineering", days: int = 30) -> dict[str, Any]:
+async def get_pipeline(
+    department: str = "engineering",
+    days: int = 30,
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
     seed = hash(department + str(days)) % 10000
     random.seed(seed)
     applied = random.randint(120, 200)
@@ -1121,7 +1129,10 @@ async def get_pipeline(department: str = "engineering", days: int = 30) -> dict[
 
 
 @router.get("/ai-performance")
-async def get_ai_performance(agent_type: Optional[str] = None) -> dict[str, Any]:
+async def get_ai_performance(
+    agent_type: Optional[str] = None,
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
     metrics_data = [
         {"name": "Resume Parsing Accuracy", "value": round(random.uniform(91.0, 96.0), 1),
          "target": 95.0, "agent": "resume_parsing"},
@@ -1147,7 +1158,9 @@ async def get_ai_performance(agent_type: Optional[str] = None) -> dict[str, Any]
 
 
 @router.get("/recruiter-productivity")
-async def get_recruiter_productivity() -> dict[str, Any]:
+async def get_recruiter_productivity(
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
     recruiters = [
         {"name": "Jane Smith", "candidates_reviewed": random.randint(30, 60),
          "interviews_conducted": random.randint(8, 18), "hires": random.randint(2, 6),
@@ -1163,7 +1176,9 @@ async def get_recruiter_productivity() -> dict[str, Any]:
 
 
 @router.get("/time-to-hire-legacy")
-async def get_time_to_hire_legacy() -> dict[str, Any]:
+async def get_time_to_hire_legacy(
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
     application = 0
     screening = round(random.uniform(0.8, 2.0), 1)
     interview = round(screening + random.uniform(3.0, 6.0), 1)
@@ -1184,7 +1199,10 @@ async def get_time_to_hire_legacy() -> dict[str, Any]:
 
 
 @router.post("/reports")
-async def generate_report(report_type: str = "monthly") -> dict[str, Any]:
+async def generate_report(
+    report_type: str = "monthly",
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
     report_id = f"report_{_now().strftime('%Y%m%d_%H%M%S')}"
     return {
         "report_id": report_id,
@@ -1195,7 +1213,10 @@ async def generate_report(report_type: str = "monthly") -> dict[str, Any]:
 
 
 @router.get("/reports/{report_id}")
-async def get_report(report_id: str) -> dict[str, Any]:
+async def get_report(
+    report_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+) -> dict[str, Any]:
     return {
         "report_id": report_id,
         "status": "completed",
