@@ -30,7 +30,14 @@ from pydantic import BaseModel, Field
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from shared.auth.dependencies import require_tenant_id
+from shared.analytics.ml_insights import (
+    detect_hiring_bias,
+    forecast_hiring_needs,
+    predict_candidate_success,
+    predict_time_to_hire,
+    recommend_sourcing_channels,
+)
+from shared.auth.dependencies import require_member, require_tenant_id
 from shared.core.database import get_db_dependency
 from shared.core.models.candidate import Candidate, CandidateStatus
 from shared.core.models.interview import Interview, InterviewStatus
@@ -706,6 +713,343 @@ async def get_recruiter_performance(
         total=len(items),
         generated_at=_now().isoformat(),
     )
+
+
+# ── ML-Powered Predictions & Insights ────────────────────────────────────────
+
+
+@router.get(
+    "/predictions/time-to-hire",
+    tags=["Analytics", "ML"],
+    summary="Predict time-to-hire for open positions",
+)
+async def get_prediction_time_to_hire(
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_member),
+    session: AsyncSession = Depends(get_db_dependency),
+) -> dict[str, Any]:
+    """Predict time-to-hire using historical data via linear regression."""
+    rows = (
+        await session.execute(
+            select(
+                Job.created_at,
+                Application.updated_at,
+                Job.department,
+                Job.seniority_required,
+                Job.applicants_count,
+            )
+            .join(Application, Application.job_id == Job.id)
+            .where(
+                and_(
+                    Job.tenant_id == tenant_id,
+                    Application.tenant_id == tenant_id,
+                    Application.status == ApplicationStatus.HIRED,
+                )
+            )
+        )
+    ).all()
+
+    historical: list[dict[str, Any]] = []
+    for job_created, app_updated, dept, seniority, applicants in rows:
+        if not job_created or not app_updated:
+            continue
+        days = (app_updated - job_created).total_seconds() / 86400.0
+        if days < 0:
+            continue
+        historical.append({
+            "days_to_hire": days,
+            "department": dept,
+            "seniority": seniority,
+            "applicants": applicants or 0,
+        })
+
+    open_jobs = (
+        await session.execute(
+            select(Job).where(
+                and_(Job.tenant_id == tenant_id, Job.status == JobStatus.OPEN)
+            )
+        )
+    ).scalars().all()
+
+    predictions = []
+    for job in open_jobs:
+        job_dict = {
+            "department": job.department,
+            "seniority_required": job.seniority_required,
+            "applicants_count": job.applicants_count,
+        }
+        pred = predict_time_to_hire(job_dict, historical)
+        predictions.append({
+            "job_id": job.id,
+            "job_title": job.title,
+            **pred,
+        })
+
+    return {
+        "predictions": predictions,
+        "historical_sample_size": len(historical),
+        "generated_at": _now().isoformat(),
+    }
+
+
+@router.get(
+    "/predictions/candidate-success",
+    tags=["Analytics", "ML"],
+    summary="Predict candidate success probability",
+)
+async def get_prediction_candidate_success(
+    candidate_id: str,
+    job_id: str,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_member),
+    session: AsyncSession = Depends(get_db_dependency),
+) -> dict[str, Any]:
+    """Predict the probability of a candidate succeeding in a given role."""
+    candidate = await session.get(Candidate, candidate_id)
+    if not candidate or candidate.tenant_id != tenant_id:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+
+    job = await session.get(Job, job_id)
+    if not job or job.tenant_id != tenant_id:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    hired_apps = (
+        await session.execute(
+            select(Application, Job)
+            .join(Job, Application.job_id == Job.id)
+            .where(
+                and_(
+                    Application.tenant_id == tenant_id,
+                    Application.status == ApplicationStatus.HIRED,
+                )
+            )
+        )
+    ).all()
+
+    historical_hires: list[dict[str, Any]] = []
+    for app, j in hired_apps:
+        cand = await session.get(Candidate, app.candidate_id)
+        historical_hires.append({
+            "source": cand.source if cand else None,
+            "location": cand.location if cand else None,
+            "department": j.department,
+            "seniority": j.seniority_required,
+            "hired": True,
+            "performed_well": True,
+        })
+
+    from shared.core.models.candidate import CandidateProfile
+
+    profile = (
+        await session.execute(
+            select(CandidateProfile).where(CandidateProfile.candidate_id == candidate_id)
+        )
+    ).scalar_one_or_none()
+
+    cand_dict = {
+        "source": candidate.source,
+        "location": candidate.location,
+        "years_experience": profile.years_experience if profile else None,
+        "seniority": profile.seniority_level if profile else None,
+        "skills": [],
+    }
+    job_dict = {
+        "department": job.department,
+        "seniority_required": job.seniority_required,
+        "location": job.location,
+        "required_skills": [],
+    }
+
+    result = predict_candidate_success(cand_dict, job_dict, historical_hires)
+    return {
+        "candidate_id": candidate_id,
+        "job_id": job_id,
+        **result,
+        "generated_at": _now().isoformat(),
+    }
+
+
+@router.get(
+    "/insights/bias-detection",
+    tags=["Analytics", "ML"],
+    summary="Detect potential hiring bias",
+)
+async def get_bias_detection(
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_member),
+    session: AsyncSession = Depends(get_db_dependency),
+) -> dict[str, Any]:
+    """Analyze applications and hires for potential bias patterns."""
+    applications = (
+        await session.execute(
+            select(Application, Candidate)
+            .join(Candidate, Application.candidate_id == Candidate.id)
+            .where(
+                and_(
+                    Application.tenant_id == tenant_id,
+                    Candidate.tenant_id == tenant_id,
+                )
+            )
+        )
+    ).all()
+
+    apps_data: list[dict[str, Any]] = []
+    hired_ids: set[str] = set()
+    for app, cand in applications:
+        apps_data.append({
+            "candidate_id": app.candidate_id,
+            "location": cand.location,
+            "source": cand.source,
+            "status": app.status.value if hasattr(app.status, "value") else str(app.status),
+        })
+        if app.status == ApplicationStatus.HIRED:
+            hired_ids.add(app.candidate_id)
+
+    hires_data = [
+        {"candidate_id": cid}
+        for cid in hired_ids
+    ]
+
+    result = detect_hiring_bias(apps_data, hires_data)
+    return result
+
+
+@router.get(
+    "/insights/sourcing-recommendations",
+    tags=["Analytics", "ML"],
+    summary="Recommend sourcing channel allocation",
+)
+async def get_sourcing_recommendations(
+    budget: float = 10000.0,
+    job_id: str | None = None,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_member),
+    session: AsyncSession = Depends(get_db_dependency),
+) -> dict[str, Any]:
+    """Recommend optimal sourcing channel allocation based on historical data."""
+    source_data = (
+        await session.execute(
+            select(Candidate.source, Candidate.id)
+            .where(Candidate.tenant_id == tenant_id)
+        )
+    ).all()
+
+    hired_ids: set[str] = set(
+        (
+            await session.execute(
+                select(Application.candidate_id).where(
+                    and_(
+                        Application.tenant_id == tenant_id,
+                        Application.status == ApplicationStatus.HIRED,
+                    )
+                )
+            )
+        ).scalars().all()
+    )
+
+    channel_stats: dict[str, dict[str, int]] = defaultdict(lambda: {"total": 0, "hired": 0})
+    for source, cid in source_data:
+        ch = source or "unknown"
+        channel_stats[ch]["total"] += 1
+        if cid in hired_ids:
+            channel_stats[ch]["hired"] += 1
+
+    historical_channels: list[dict[str, Any]] = []
+    for ch, stats in channel_stats.items():
+        total = stats["total"]
+        hired = stats["hired"]
+        conv_rate = hired / total if total > 0 else 0.05
+        cost_map = {
+            "linkedin": 50.0, "indeed": 30.0, "referral": 15.0,
+            "careers_site": 5.0, "agency": 200.0, "job_board": 20.0,
+        }
+        cpc = cost_map.get(ch.lower(), 35.0)
+        cph = cpc / conv_rate if conv_rate > 0 else 1000.0
+        historical_channels.append({
+            "channel": ch,
+            "cost_per_candidate": cpc,
+            "conversion_rate": conv_rate,
+            "avg_cost_per_hire": round(cph, 2),
+            "candidates_sourced": total,
+        })
+
+    job_dict: dict[str, Any] = {"department": None, "seniority_required": None}
+    if job_id:
+        job = await session.get(Job, job_id)
+        if job and job.tenant_id == tenant_id:
+            job_dict = {
+                "department": job.department,
+                "seniority_required": job.seniority_required,
+                "job_type": job.job_type.value if hasattr(job.job_type, "value") else str(job.job_type),
+            }
+
+    result = recommend_sourcing_channels(job_dict, budget, historical_channels)
+    return result
+
+
+@router.get(
+    "/forecasts/hiring-needs",
+    tags=["Analytics", "ML"],
+    summary="Forecast hiring needs",
+)
+async def get_forecast_hiring_needs(
+    months: int = 6,
+    tenant_id: str = Depends(require_tenant_id),
+    user: dict = Depends(require_member),
+    session: AsyncSession = Depends(get_db_dependency),
+) -> dict[str, Any]:
+    """Forecast hiring needs using historical hiring trends."""
+    months = max(1, min(months, 24))
+
+    rows = (
+        await session.execute(
+            select(func.count(Application.id), func.strftime("%Y-%m", Application.updated_at))
+            .where(
+                and_(
+                    Application.tenant_id == tenant_id,
+                    Application.status == ApplicationStatus.HIRED,
+                )
+            )
+            .group_by(func.strftime("%Y-%m", Application.updated_at))
+            .order_by(func.strftime("%Y-%m", Application.updated_at))
+        )
+    ).all()
+
+    historical: list[dict[str, Any]] = []
+    for count, month_str in rows:
+        if month_str:
+            historical.append({"month": month_str, "hires_count": int(count)})
+
+    open_count = await session.scalar(
+        select(func.count(Job.id)).where(
+            and_(Job.tenant_id == tenant_id, Job.status == JobStatus.OPEN)
+        )
+    )
+
+    total_hires = await session.scalar(
+        select(func.count(Application.id)).where(
+            and_(
+                Application.tenant_id == tenant_id,
+                Application.status == ApplicationStatus.HIRED,
+            )
+        )
+    )
+    total_apps = await session.scalar(
+        select(func.count(Application.id)).where(Application.tenant_id == tenant_id)
+    )
+    attrition = 0.05
+    if total_apps and total_apps > 0 and total_hires:
+        hire_rate = int(total_hires or 0) / int(total_apps)
+        attrition = max(0.01, min(0.2, 1.0 - hire_rate))
+
+    result = forecast_hiring_needs(
+        tenant_id=tenant_id,
+        months_ahead=months,
+        historical_hiring_data=historical,
+        current_open_positions=int(open_count or 0),
+        attrition_rate=attrition,
+    )
+    return result
 
 
 # ── Legacy endpoints (kept for backwards compatibility) ─────────────────────
