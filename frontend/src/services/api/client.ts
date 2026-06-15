@@ -54,6 +54,12 @@ import type {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+const getCsrfToken = (): string | null => {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(/csrf_token=([^;]+)/);
+  return match ? match[1] : null;
+};
+
 type UnauthorizedHandler = () => void;
 const unauthorizedHandlers: Set<UnauthorizedHandler> = new Set();
 
@@ -89,6 +95,12 @@ class APIClient {
     };
     const token = this.getToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const method = (fetchOptions.method || 'GET').toUpperCase();
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+      const csrfToken = getCsrfToken();
+      if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
+    }
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);

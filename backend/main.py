@@ -26,6 +26,7 @@ from shared.middleware.compression import CompressionMiddleware
 from shared.middleware.rate_limit import RateLimitMiddleware, rate_limit_router
 from shared.middleware.versioning import APIVersioningMiddleware
 from shared.security.headers import SecurityHeadersMiddleware
+from shared.security.csrf import CSRFMiddleware
 
 cache_manager = get_cache_manager()
 
@@ -135,13 +136,17 @@ app.add_middleware(CacheHeadersMiddleware)
 app.add_middleware(CompressionMiddleware)
 app.add_middleware(RateLimitMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
+origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Tenant-ID", "X-CSRF-Token"],
 )
+
+app.add_middleware(CSRFMiddleware)
 
 
 # Exception handler
