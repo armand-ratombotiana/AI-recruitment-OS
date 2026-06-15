@@ -6,8 +6,6 @@ import {
   LayoutGrid,
   ChevronRight,
   Home,
-  Settings,
-  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { DashboardDesigner, type DesignerWidget, type DashboardTemplate } from '@/components/dashboards/designer';
@@ -24,7 +22,7 @@ const TEMPLATES_STORAGE_KEY = 'airos_dashboard_templates_v1';
 
 export default function DashboardDesignerPage() {
   const locale = useLocaleStore((s) => s.locale);
-  const t = (key: string, fb?: string) => translate(locale, key, fb);
+  const t = useCallback((key: string, fb?: string) => translate(locale, key, fb), [locale]);
   const { push, ToastContainer } = useToast();
 
   const [dashboardName, setDashboardName] = useState('');
