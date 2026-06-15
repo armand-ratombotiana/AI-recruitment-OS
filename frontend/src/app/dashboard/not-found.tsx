@@ -4,20 +4,22 @@ import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FileQuestion, Search, ArrowLeft, Home, Users, Briefcase, KanbanSquare, BarChart3, Bot, Sparkles, CalendarDays } from 'lucide-react';
-
-const QUICK_LINKS = [
-  { href: '/dashboard/candidates', label: 'Candidates', icon: Users },
-  { href: '/dashboard/jobs', label: 'Jobs', icon: Briefcase },
-  { href: '/dashboard/pipeline', label: 'Pipeline', icon: KanbanSquare },
-  { href: '/dashboard/interviews', label: 'Interviews', icon: CalendarDays },
-  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/dashboard/ai-copilot', label: 'AI Copilot', icon: Bot },
-  { href: '/dashboard/matching', label: 'Matching', icon: Sparkles },
-];
+import { useLocaleStore, translate } from '@/stores/locale-store';
 
 export default function DashboardNotFound() {
   const router = useRouter();
+  const { locale } = useLocaleStore();
   const [query, setQuery] = useState('');
+
+  const QUICK_LINKS = [
+    { href: '/dashboard/candidates', label: translate(locale, 'nav.candidates', 'Candidates'), icon: Users },
+    { href: '/dashboard/jobs', label: translate(locale, 'nav.jobs', 'Jobs'), icon: Briefcase },
+    { href: '/dashboard/pipeline', label: translate(locale, 'nav.pipeline', 'Pipeline'), icon: KanbanSquare },
+    { href: '/dashboard/interviews', label: translate(locale, 'nav.interviews', 'Interviews'), icon: CalendarDays },
+    { href: '/dashboard/analytics', label: translate(locale, 'nav.analytics', 'Analytics'), icon: BarChart3 },
+    { href: '/dashboard/ai-copilot', label: translate(locale, 'nav.aiCopilot', 'AI Copilot'), icon: Bot },
+    { href: '/dashboard/matching', label: translate(locale, 'nav.matching', 'Matching'), icon: Sparkles },
+  ];
 
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -43,23 +45,23 @@ export default function DashboardNotFound() {
             >
               404
             </p>
-            <span className="sr-only">404 — Page not found</span>
+            <span className="sr-only">404 — {translate(locale, 'notFound.title', 'Page Not Found')}</span>
 
             <h1 className="mt-4 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-              Page not found
+              {translate(locale, 'notFound.title', 'Page Not Found')}
             </h1>
             <p className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-              Sorry, we couldn&apos;t find the dashboard page you&apos;re looking for. It may have been moved, renamed, or never existed.
+              {translate(locale, 'notFound.description', 'The page you are looking for does not exist or has been moved.')}
             </p>
 
             <form
               onSubmit={handleSearch}
               role="search"
               className="mt-8 mx-auto max-w-md"
-              aria-label="Search the dashboard"
+              aria-label={translate(locale, 'notFound.searchAria', 'Search the dashboard')}
             >
               <label htmlFor="dashboard-404-search" className="sr-only">
-                Search
+                {translate(locale, 'common.search', 'Search')}
               </label>
               <div className="relative">
                 <Search
@@ -72,7 +74,7 @@ export default function DashboardNotFound() {
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search candidates, jobs, interviews…"
+                  placeholder={translate(locale, 'notFound.searchPlaceholder', 'Search candidates, jobs, interviews…')}
                   autoComplete="off"
                   className="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 pl-11 pr-4 py-3 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
@@ -86,21 +88,21 @@ export default function DashboardNotFound() {
                 className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-950 transition"
               >
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-                Go back
+                {translate(locale, 'notFound.goBack', 'Go back')}
               </button>
               <Link
                 href="/dashboard"
                 className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-950 transition"
               >
                 <Home className="h-4 w-4" aria-hidden="true" />
-                Dashboard home
+                {translate(locale, 'notFound.goHome', 'Go to Dashboard')}
               </Link>
             </div>
           </div>
 
           <div className="relative border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 px-6 py-6 sm:px-10">
             <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-center">
-              Or jump to a common page
+              {translate(locale, 'notFound.quickLinks', 'Or jump to a common page')}
             </p>
             <ul className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
               {QUICK_LINKS.map((item) => {
@@ -122,7 +124,7 @@ export default function DashboardNotFound() {
         </div>
 
         <p className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
-          Need help? Try the <kbd className="px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 font-mono text-[10px]">⌘K</kbd> shortcut to search anywhere.
+          {translate(locale, 'notFound.needHelp', 'Need help? Try the')} <kbd className="px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 font-mono text-[10px]">⌘K</kbd> {translate(locale, 'notFound.shortcutHint', 'shortcut to search anywhere.')}
         </p>
       </div>
     </div>

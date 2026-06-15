@@ -38,7 +38,11 @@
     },
     "today": "היום",
     "tomorrow": "מחר",
-    "viewDetails": "הצג פרטים"
+    "viewDetails": "הצג פרטים",
+    "view": "הצג",
+    "saved": "שמור",
+    "deleted": "נמחק",
+    "expires": "פג"
   },
   "nav": {
     "workspace": "סביבת עבודה",
@@ -61,7 +65,11 @@
     "accessibility": "נגישות",
     "errorTracking": "מעקב שגיאות",
     "proTip": "לחץ",
-    "proTipCommand": "לפתיחת חיפוש וקפיצה לכל מקום."
+    "proTipCommand": "לפתיחת חיפוש וקפיצה לכל מקום.",
+    "referrals": "הפניות",
+    "onboarding": "הכשרה",
+    "performanceReviews": "הערכות ביצועים",
+    "graphql": "GraphQL"
   },
   "mobileNav": {
     "open": "פתח ניווט",
@@ -102,7 +110,14 @@
     "loginFailed": "ההתחברות נכשלה. אנא בדוק את הפרטים ונסה שוב.",
     "creatingAccount": "יוצר חשבון…",
     "signingIn": "מתחבר…",
-    "strengthLabels": ["חלשה מאוד", "חלשה", "סבירה", "טובה", "חזקה", "מצוינת"],
+    "strengthLabels": [
+      "חלשה מאוד",
+      "חלשה",
+      "סבירה",
+      "טובה",
+      "חזקה",
+      "מצוינת"
+    ],
     "passwordRules": {
       "length": "לפחות 8 תווים",
       "upper": "אות גדולה אחת",
@@ -181,7 +196,124 @@
     }
   },
   "landing": {
-    "language": "עברית (ישראל)"
+    "language": "עברית (ישראל)",
+    "hero": {
+      "eyebrow": "Now with AI Copilot v3",
+      "title": "The Future of Hiring",
+      "titleHighlight": "is Autonomous",
+      "subtitle": "AI-ROS deploys intelligent agents that screen candidates, conduct interviews, and surface the best hires — so your team can focus on building.",
+      "getStarted": "Get started free",
+      "viewJobs": "View open positions",
+      "noCard": "No credit card required",
+      "trial": "14-day free trial",
+      "cancel": "Cancel anytime"
+    },
+    "trusted": "Trusted by innovative teams worldwide",
+    "features": {
+      "eyebrow": "Features",
+      "title": "Everything you need to hire smarter",
+      "subtitle": "Powered by AI, designed for humans. A complete platform from sourcing to offer.",
+      "items": {
+        "screening": {
+          "title": "Autonomous Screening",
+          "description": "LLM-powered analysis ranks every applicant with an explainable score and top reasons."
+        },
+        "matching": {
+          "title": "Smart Matching",
+          "description": "Skill graphs + embeddings deliver 95%+ matching accuracy and instant shortlists."
+        },
+        "interviews": {
+          "title": "Live Code Interviews",
+          "description": "Pair-program in the browser with real-time AI feedback and rubric scoring."
+        },
+        "pipeline": {
+          "title": "Pipeline Automation",
+          "description": "Drag-and-drop Kanban with workflow triggers, reminders and SLAs."
+        },
+        "compliance": {
+          "title": "Compliance First",
+          "description": "GDPR & SOC2 ready with full audit trails, consent and DSAR tooling."
+        },
+        "enterprise": {
+          "title": "Enterprise Ready",
+          "description": "SSO/SAML, multi-tenant, granular RBAC and 99.9% uptime SLA."
+        }
+      }
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "title": "Three steps to autonomous hiring",
+      "subtitle": "Go from job description to top candidate in minutes, not weeks.",
+      "steps": {
+        "one": {
+          "title": "Upload & configure",
+          "description": "Add your job descriptions, requirements and evaluation rubric in minutes."
+        },
+        "two": {
+          "title": "AI takes over",
+          "description": "Our agents screen, interview and evaluate candidates 24/7 — autonomously."
+        },
+        "three": {
+          "title": "Review & hire",
+          "description": "Compare ranked candidates, run a final call, and send the offer in one click."
+        }
+      }
+    },
+    "stats": {
+      "eyebrow": "By the numbers",
+      "title": "Results recruiters love",
+      "candidates": "Candidates processed",
+      "companies": "Companies hiring",
+      "time": "Hours saved per hire",
+      "accuracy": "Matching accuracy"
+    },
+    "testimonials": {
+      "eyebrow": "Testimonials",
+      "title": "Trusted by leading teams",
+      "subtitle": "Real stories from real customers.",
+      "items": {
+        "sarah": {
+          "name": "Sarah Chen",
+          "role": "VP People, TechScale",
+          "quote": "AI-ROS cut our time-to-hire from 42 days to 12. The AI screening is honestly magical.",
+          "metric": "71% faster"
+        },
+        "marcus": {
+          "name": "Marcus Rodriguez",
+          "role": "Head of Talent, DataFlow",
+          "quote": "We now process 10× more candidates with the same team. The ROI was obvious in week one.",
+          "metric": "10× capacity"
+        },
+        "emily": {
+          "name": "Emily Watson",
+          "role": "CTO, CloudNine",
+          "quote": "The best ROI of any HR tool we've ever deployed. Setup took less than 30 minutes.",
+          "metric": "4.9× ROI"
+        },
+        "noah": {
+          "name": "Noah Bennett",
+          "role": "Head of Engineering, NexusAI",
+          "quote": "Live code interviews with AI feedback removed all the bias from our technical loop.",
+          "metric": "0 bias flags"
+        }
+      }
+    },
+    "pricingPreview": {
+      "eyebrow": "Pricing",
+      "title": "Plans for every stage",
+      "subtitle": "Start free, scale as you grow. Cancel anytime.",
+      "seeAll": "See full pricing",
+      "perMonth": "/mo",
+      "perYear": "/yr",
+      "mostPopular": "Most popular",
+      "fromPrefix": "from"
+    },
+    "cta": {
+      "title": "Ready to transform your hiring?",
+      "subtitle": "Join hundreds of teams already hiring smarter, faster and fairer with AI-ROS.",
+      "primary": "Start free trial",
+      "secondary": "Talk to sales"
+    }
   },
   "public": {
     "nav": {
@@ -209,6 +341,4449 @@
         "privacy": "פרטיות",
         "terms": "תנאים",
         "cookies": "עוגיות"
+      }
+    },
+    "home": {
+      "positionsCta": "ראה את כל המשרות הפתוחות",
+      "positionsCtaDesc": "עיין ב-{count} משרות פתוחות ב-{companies} חברות והגש מועמדות תוך דקות."
+    },
+    "jobs": {
+      "metaTitle": "משרות פתוחות · AI-ROS",
+      "metaDescription": "עיין במשרות פתוחות בחברות שמגייסות עם AI-ROS.",
+      "hero": {
+        "eyebrow": "קריירה",
+        "title": "מצא את המשרה הבאה שלך",
+        "subtitle": "עיין ב-{count} משרות פתוחות בחברות שמשתמשות ב-AI-ROS לגיוס חכם.",
+        "searchPlaceholder": "חפש לפי כותרת, מילת מפתח…",
+        "searchAria": "חפש משרות פתוחות"
+      },
+      "filters": {
+        "title": "סינון",
+        "clearAll": "נקה הכל",
+        "department": "מחלקה",
+        "departmentAll": "כל המחלקות",
+        "location": "מיקום",
+        "locationAll": "כל המיקומים",
+        "employmentType": "סוג העסקה",
+        "employmentTypeAll": "כל הסוגים",
+        "experienceLevel": "רמת ניסיון",
+        "experienceLevelAll": "כל הרמות",
+        "remote": "מרחוק בלבד",
+        "activeCount": "{count} פעיל"
+      },
+      "sort": {
+        "label": "מיין לפי",
+        "newest": "החדש ביותר",
+        "oldest": "הישן ביותר",
+        "popular": "הכי פופולרי",
+        "salaryHigh": "שכר: מהגבוה לנמוך",
+        "salaryLow": "שכר: מהנמוך לגבוה",
+        "titleAsc": "כותרת: א→ת"
+      },
+      "pagination": {
+        "previous": "הקודם",
+        "next": "הבא",
+        "page": "עמוד {page} מתוך {total}",
+        "rangeAria": "עימוד"
+      },
+      "savedLink": "משרות שמורות",
+      "savedLinkCount": "שמורות ({count})",
+      "alertsCta": "צור התראת משרה",
+      "save": {
+        "save": "שמור משרה",
+        "saved": "שמור",
+        "toastSaved": "המשרה נשמרה ברשימה שלך",
+        "toastUnsaved": "הוסר מהמשרות השמורות"
+      },
+      "share": {
+        "title": "שתף",
+        "openMenu": "שתף משרה זו",
+        "linkedin": "LinkedIn",
+        "twitter": "Twitter / X",
+        "email": "דוא\"ל",
+        "copyLink": "העתק קישור",
+        "copied": "הקישור הועתק",
+        "message": "בדוק את המשרה הזו: {title}"
+      },
+      "alerts": {
+        "title": "Get job alerts",
+        "subtitle": "Tell us what you are looking for and we will email you new matching roles.",
+        "subtitleJob": "Be notified about roles similar to {title}.",
+        "emailLabel": "Email address",
+        "keywordsLabel": "Keywords or job title",
+        "keywordsHint": "e.g. \"Senior React Engineer\", \"Product Designer\"",
+        "locationLabel": "Location (optional)",
+        "frequencyLabel": "Frequency",
+        "frequency": {
+          "instant": "Instant",
+          "daily": "Daily digest",
+          "weekly": "Weekly digest"
+        },
+        "remoteOnly": "Remote roles only",
+        "cta": "Get job alerts",
+        "ctaShort": "Alerts",
+        "submit": "Create alert",
+        "submitting": "Saving…",
+        "successTitle": "Alerts activated",
+        "successDescription": "We will email you when new matching roles open up. You can manage your alerts any time.",
+        "emailSubject": "Your AI-ROS job alerts are active",
+        "emailBody": "You will receive {frequency} alerts for: {keywords}",
+        "errors": {
+          "keywords": "Please enter at least one keyword"
+        }
+      },
+      "saved": {
+        "eyebrow": "Your shortlist",
+        "title": "Saved jobs",
+        "subtitle": "{count, plural, one {# job saved} other {# jobs saved}}",
+        "searchAria": "Search saved jobs",
+        "searchPlaceholder": "Filter by title, company, location…",
+        "savedOn": "Saved {when}",
+        "clearAll": "Clear all",
+        "clearConfirm": "Remove all saved jobs?",
+        "cleared": "All saved jobs removed.",
+        "clearSearch": "Clear search",
+        "noMatches": "No saved jobs match \"{query}\".",
+        "empty": {
+          "title": "No saved jobs yet",
+          "description": "Tap the bookmark icon on any role to keep track of it here.",
+          "cta": "Browse open roles"
+        }
+      },
+      "experience": {
+        "entry": "רמת כניסה",
+        "mid": "רמה בינונית",
+        "senior": "בכיר",
+        "lead": "מוביל / ראשי",
+        "executive": "הנהלה"
+      },
+      "employment": {
+        "full_time": "משרה מלאה",
+        "part_time": "משרה חלקית",
+        "contract": "חוזה",
+        "internship": "התמחות",
+        "temporary": "זמני"
+      },
+      "resultsCount": "{count, plural, one {# משרה פתוחה} other {# משרות פתוחות}}",
+      "resultsCountFiltered": "מציג {shown} מתוך {total} משרות",
+      "loadMore": "טען עוד",
+      "noResults": {
+        "title": "אין משרות שתואמות את הסינון שלך",
+        "description": "נסה להתאים את החיפוש שלך או לנקות את הסינון כדי לראות עוד משרות.",
+        "cta": "נקה את כל הסינון"
+      },
+      "card": {
+        "posted": "פורסם {when}",
+        "new": "חדש",
+        "applicants": "{count} מועמדים",
+        "salaryUndisclosed": "שכר לא פורסם",
+        "apply": "הגש מועמדות עכשיו",
+        "viewDetails": "ראה פרטים",
+        "departmentFallback": "כללי"
+      },
+      "detail": {
+        "metaTitle": "{title} · AI-ROS",
+        "notFound": "המשרה לא נמצאה",
+        "notFoundDesc": "ייתכן שמשרה זו אויש או הוסר.",
+        "backToJobs": "← חזרה לכל המשרות הפתוחות",
+        "posted": "פורסם {when}",
+        "applicantsCount": "{count} מועמדים עד כה",
+        "departmentFallback": "כללי",
+        "salaryUndisclosed": "שכר לא פורסם",
+        "section": {
+          "description": "אודות התפקיד",
+          "requirements": "דרישות",
+          "niceToHave": "רצוי שיהיה",
+          "skills": "מיומנויות",
+          "benefits": "הטבות"
+        },
+        "employmentType": "העסקה",
+        "experience": "ניסיון",
+        "experienceYears": "{min}–{max} שנים",
+        "location": "מיקום",
+        "department": "מחלקה",
+        "applyCta": "הגש מועמדות עכשיו",
+        "share": "שתף",
+        "shareCopied": "הקישור הועתק ללוח",
+        "openInNewTab": "פתח בכרטיסייה חדשה"
+      },
+      "apply": {
+        "metaTitle": "Apply for {title} · AI-ROS Careers",
+        "backToJob": "← Back to job details",
+        "title": "Apply for {title}",
+        "subtitle": "at {company} · {location}",
+        "eyebrow": "Apply",
+        "back": "← Back",
+        "notFound": "This job is no longer accepting applications.",
+        "discard": "Discard draft",
+        "discardConfirm": "Discard this draft?",
+        "draft": "Auto-saved",
+        "continue": "Continue",
+        "personalHelp": "We will use these to contact you about this application.",
+        "stepPersonal": "Your details",
+        "stepResume": "Resume & cover letter",
+        "stepReview": "Review & submit",
+        "steps": {
+          "label": "Application steps",
+          "personal": "Your details",
+          "cover": "Cover letter",
+          "questions": "Questions",
+          "review": "Review"
+        },
+        "coverHelp": "Optional. A short note about why you are a great fit for {title}.",
+        "coverPlaceholder": "Tell the team what excites you about this role…",
+        "coverCount": "{count} characters",
+        "coverMin": "Minimum 30 characters to enable submission.",
+        "questionsHelp": "These help the team evaluate your application.",
+        "fields": {
+          "fullName": "Full name",
+          "email": "Email",
+          "phone": "Phone",
+          "location": "Current location",
+          "linkedin": "LinkedIn URL",
+          "portfolio": "Portfolio URL",
+          "headline": "Headline",
+          "headlinePlaceholder": "e.g. Senior Frontend Engineer",
+          "resume": "Resume (PDF, DOC, DOCX)",
+          "resumeHelp": "Max 5 MB. PDF, DOC or DOCX.",
+          "coverLetter": "Cover letter",
+          "coverLetterHelp": "Tell us why you are a great fit (optional)."
+        },
+        "resume": {
+          "title": "Resume",
+          "help": "PDF, DOC, or DOCX — up to 5 MB. Optional but recommended.",
+          "uploadLabel": "Upload resume",
+          "uploadDesc": "Drag and drop or click to browse",
+          "remove": "Remove resume"
+        },
+        "questions": {
+          "workAuth": "Are you legally authorized to work in the role's location?",
+          "workAuthOptions": {
+            "yes": "Yes, I am authorized",
+            "no": "No, I am not authorized",
+            "sponsorship": "I will need visa sponsorship"
+          },
+          "notice": "Notice period",
+          "noticeOptions": {
+            "immediate": "Immediately",
+            "two_weeks": "2 weeks",
+            "one_month": "1 month",
+            "two_months": "2 months",
+            "other": "Other"
+          },
+          "salary": "Salary expectation (annual, optional)",
+          "startDate": "Earliest start date",
+          "referral": "How did you hear about us?",
+          "referralOptions": {
+            "job_board": "Job board",
+            "social": "Social media",
+            "referral": "Employee referral",
+            "search": "Search engine",
+            "company_site": "Company site",
+            "other": "Other"
+          }
+        },
+        "actions": {
+          "submit": "Submit application",
+          "submitting": "Submitting…",
+          "next": "Continue",
+          "back": "Back",
+          "cancel": "Cancel"
+        },
+        "review": {
+          "title": "Review your application",
+          "personal": "Personal details",
+          "cover": "Cover letter",
+          "questions": "Your answers",
+          "target": "Applying for",
+          "coverEmpty": "Not provided.",
+          "documents": "Documents",
+          "notProvided": "Not provided",
+          "change": "Change",
+          "consent": "I confirm the information above is accurate and consent to the hiring team processing my application."
+        },
+        "errors": {
+          "name": "Please enter your full name",
+          "email": "Please enter a valid email address",
+          "phone": "Please enter a valid phone number",
+          "resumeRequired": "Please attach your resume",
+          "resumeSize": "Resume must be smaller than 5 MB",
+          "resumeType": "Resume must be a PDF, DOC or DOCX file",
+          "submit": "We could not submit your application. Please try again.",
+          "loadJob": "We could not load this job. Please try again."
+        },
+        "success": {
+          "title": "Application submitted!",
+          "subtitle": "Thanks for applying to {title}.",
+          "description": "Thanks for applying to {title}. The team will review your application and reach out if there is a match.",
+          "reference": "Reference code",
+          "viewJobs": "Browse more roles",
+          "viewSaved": "View saved jobs",
+          "statusTitle": "What happens next?",
+          "browseMore": "Browse more open positions",
+          "backHome": "Back to homepage"
+        },
+        "status": {
+          "received": "Application received",
+          "receivedHelp": "We've logged your submission and the recruiter will see it shortly.",
+          "reviewing": "Initial review",
+          "reviewingHelp": "A recruiter reviews your background and decides on next steps.",
+          "interview": "Interview loop",
+          "interviewHelp": "Selected candidates are invited to chat with the team."
+        }
+      }
+    }
+  },
+  "notFound": {
+    "title": "הדף לא נמצא",
+    "description": "הדף שאתה מחפש אינו קיים או שהועבר.",
+    "goHome": "חזור ללוח הבקרה",
+    "goBack": "חזרה",
+    "search": "חיפוש",
+    "searchAria": "חיפוש בלוח הבקרה",
+    "searchPlaceholder": "חפש מועמדים, משרות, ראיונות…",
+    "quickLinks": "או קפוץ לדף נפוץ",
+    "needHelp": "צריך עזרה? נסה את",
+    "shortcutHint": "קיצור הדרך לחיפוש בכל מקום."
+  },
+  "candidates": {
+    "title": "מועמדים",
+    "totalShown": "{total} סה\"כ · {shown} מוצגים",
+    "addCandidate": "הוסף מועמד",
+    "search": "חפש מועמדים לפי שם או דוא\"ל...",
+    "allStatuses": "כל הסטטוסים",
+    "statuses": {
+      "active": "פעיל",
+      "screening": "סינון",
+      "ppe": "PPE",
+      "interviewing": "ראיון",
+      "offer": "הצעה",
+      "hired": "גויס",
+      "rejected": "נדחה"
+    },
+    "table": {
+      "candidate": "מועמד",
+      "location": "מיקום",
+      "skills": "מיומנויות",
+      "experience": "ניסיון",
+      "score": "ציון",
+      "status": "סטטוס"
+    },
+    "filterSkills": "מיומנויות:",
+    "minScore": "ציון מינימלי:",
+    "filter": {
+      "status": "סטטוס",
+      "location": "מיקום",
+      "locationPh": "עיר, מדינה או מרחוק",
+      "skills": "מיומנויות",
+      "tags": "תגיות",
+      "experience": "ניסיון (שנים)",
+      "min": "מינימום",
+      "max": "מקסימום",
+      "years": "ש"
+    },
+    "selected": "{count} נבחרו",
+    "clear": "נקה",
+    "exported": "{count} מועמד(ים) יוצאו ל-CSV",
+    "exportedFormat": "{count} מועמד(ים) יוצאו ל-{format}",
+    "exportFailed": "הייצוא נכשל",
+    "removed": "{count} מועמד(ים) הוסרו",
+    "select": "בחר {name}",
+    "searchAria": "חפש מועמדים",
+    "viewTable": "תצוגת טבלה",
+    "viewGrid": "תצוגת רשת",
+    "filterByStatus": "סנן לפי סטטוס",
+    "couldntLoad": "לא ניתן לטעון מועמדים",
+    "noCandidatesYet": "אין מועמדים עדיין",
+    "noCandidatesFound": "לא נמצאו מועמדים",
+    "noCandidatesDesc": "הוסף את המועמד הראשון שלך כדי להתחיל לבנות את מאגר הכישרונות שלך.",
+    "tryAdjusting": "נסה להתאים את הסינון שלך.",
+    "add": "הוסף מועמד",
+    "newCandidate": "Add new candidate",
+    "newCandidateDesc": "Create a candidate profile. They will appear in the screening queue.",
+    "fields": {
+      "fullName": "Full name *",
+      "email": "Email *",
+      "phone": "Phone",
+      "location": "Location",
+      "experience": "Years of experience",
+      "skills": "Skills (comma separated)",
+      "tags": "Tags"
+    },
+    "tagsPlaceholder": "e.g. Senior, Remote, Top-priority",
+    "tagsHelp": "Press Enter or comma to add. Pick a color for new tags. Click × to remove.",
+    "actions": {
+      "enrich": "Enrich",
+      "match": "Match"
+    },
+    "enrichStarted": "AI enrichment started",
+    "matchComplete": "Match complete",
+    "matchCompleteWithScore": "Match complete — score {score}%",
+    "addedToCandidates": "{name} added to candidates",
+    "viewDetails": "View candidate details",
+    "confirmBulkDelete": {
+      "title": "Delete {count} candidate(s)?",
+      "description": "This will permanently remove the selected candidates from your talent pool. This action cannot be undone.",
+      "confirm": "Delete candidates",
+      "cancel": "Cancel"
+    },
+    "createFailed": "Failed to create candidate",
+    "bulkDeleteFailed": "Some candidates could not be deleted",
+    "compare": {
+      "add": "Add to compare",
+      "remove": "Remove from compare",
+      "compareButton": "Compare ({count})",
+      "title": "Compare Candidates",
+      "subtitle": "Comparing {count} candidates",
+      "selectHint": "Select 2-4 candidates to compare side-by-side.",
+      "backToList": "Back to candidates",
+      "attribute": "Attribute",
+      "maxReached": "You can compare up to 4 candidates at a time.",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "location": "Location",
+      "titleLabel": "Title",
+      "experience": "Experience",
+      "education": "Education",
+      "score": "AI Score",
+      "status": "Status",
+      "skills": "Skills",
+      "addMore": "You can add up to {max} candidates."
+    }
+  },
+  "candidateDetail": {
+    "backToCandidates": "Back to candidates",
+    "notFound": "Candidate not found",
+    "notFoundDesc": "The candidate you're looking for doesn't exist or has been removed.",
+    "couldntLoad": "Couldn't load candidate",
+    "tabs": {
+      "overview": "Overview",
+      "resume": "Resume",
+      "timeline": "Timeline",
+      "notes": "Notes",
+      "applications": "Applications",
+      "score": "Score",
+      "activity": "Activity",
+      "aria": "Candidate sections"
+    },
+    "matchScore": "Match",
+    "years": "years",
+    "scheduleInterview": "Schedule interview",
+    "sendMessage": "Send message",
+    "addToPipeline": "Add to pipeline",
+    "sendEmail": "Send email",
+    "addToJob": "Add to job",
+    "starShortlist": "Shortlist",
+    "unstarShortlist": "Remove from shortlist",
+    "starred": "Shortlisted",
+    "scheduleStarted": "Interview scheduling opened",
+    "scheduleSoon": "Interview scheduling will be available soon",
+    "messageSoon": "Messaging will be available soon",
+    "addedToPipeline": "Added to pipeline",
+    "pipelineFailed": "Failed to add to pipeline",
+    "statusChanged": "Status changed to {status}",
+    "statusChangeFailed": "Failed to change status",
+    "shortlistAdded": "Added to shortlist",
+    "shortlistRemoved": "Removed from shortlist",
+    "emailSent": "Email queued",
+    "emailFailed": "Failed to send email",
+    "addedToJob": "Added to job pipeline",
+    "addToJobFailed": "Failed to add to job",
+    "quickActions": "Quick actions",
+    "stats": {
+      "experience": "Experience",
+      "skills": "Skills",
+      "applications": "Applications",
+      "interviews": "Interviews",
+      "match": "Best match",
+      "shortlisted": "Shortlisted"
+    },
+    "messaging": {
+      "title": "Messages",
+      "subtitle": "Real-time chat with candidates",
+      "conversations": "Conversations",
+      "newConversation": "New conversation",
+      "search": "Search conversations…",
+      "noConversations": "No conversations yet",
+      "noMatches": "No conversations match your search",
+      "emptyState": "Start a conversation with a candidate",
+      "messageThread": "Message thread",
+      "typeMessage": "Type a message…",
+      "send": "Send",
+      "sending": "Sending…",
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read",
+      "unread": "Unread",
+      "unreadCount": "{count} unread",
+      "attachFile": "Attach file",
+      "emoji": "Emoji",
+      "reply": "Reply",
+      "forward": "Forward",
+      "delete": "Delete message",
+      "edit": "Edit message",
+      "copy": "Copy message",
+      "timestamp": "Sent at {time}",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "groupByDay": "Group by day",
+      "loadMore": "Load more messages",
+      "noMessages": "No messages yet. Say hello!",
+      "error": "Failed to send message",
+      "retry": "Retry",
+      "connectionLost": "Connection lost. Reconnecting…",
+      "connected": "Connected",
+      "typing": "{name} is typing…",
+      "candidate": "Candidate",
+      "recruiter": "You",
+      "system": "System",
+      "tabs": {
+        "all": "All",
+        "unread": "Unread",
+        "starred": "Starred"
+      },
+      "actions": {
+        "markRead": "Mark as read",
+        "markUnread": "Mark as unread",
+        "star": "Star conversation",
+        "unstar": "Unstar conversation",
+        "archive": "Archive",
+        "delete": "Delete conversation"
+      },
+      "confirmDelete": {
+        "title": "Delete conversation?",
+        "description": "This will permanently delete the conversation. This action cannot be undone.",
+        "confirm": "Delete"
+      },
+      "fileUpload": {
+        "uploading": "Uploading {name}…",
+        "failed": "Failed to upload {name}",
+        "tooLarge": "File too large (max 10MB)",
+        "invalidType": "File type not allowed"
+      },
+      "sidebar": {
+        "title": "Messages",
+        "badge": "Messages",
+        "tooltip": "Open messages"
+      }
+    },
+    "contact": {
+      "title": "Contact information",
+      "email": "Email",
+      "phone": "Phone",
+      "location": "Location"
+    },
+    "skills": {
+      "title": "Skills",
+      "total": "total",
+      "empty": "No skills listed yet."
+    },
+    "experience": {
+      "title": "Experience",
+      "present": "Present",
+      "empty": "No experience listed yet."
+    },
+    "education": {
+      "title": "Education",
+      "empty": "No education listed yet.",
+      "degree": "Degree",
+      "school": "School",
+      "year": "Year"
+    },
+    "summary": "Summary",
+    "resume": {
+      "title": "Resume",
+      "download": "Download original",
+      "noResume": "No resume on file",
+      "noResumeDesc": "Upload a resume to see parsed experience, education, and skills here.",
+      "uploadResume": "Upload resume",
+      "uploading": "Uploading…",
+      "uploaded": "Resume uploaded",
+      "uploadFailed": "Upload failed",
+      "files": "Files",
+      "parsed": "Parsed",
+      "notParsed": "Not parsed yet",
+      "size": "Size",
+      "uploadedAt": "Uploaded",
+      "reparse": "Re-parse",
+      "reparsing": "Re-parsing…",
+      "reparseStarted": "Re-parsing started",
+      "reparseFailed": "Re-parse failed"
+    },
+    "timeline": {
+      "added": "Added to talent pool",
+      "updated": "Profile updated",
+      "interview": "interview",
+      "scheduled": "scheduled",
+      "empty": "No timeline events yet.",
+      "groupByDay": "Group by day"
+    },
+    "notes": {
+      "title": "Notes",
+      "add": "Add note",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "empty": "No notes yet. Add the first one to remember context for next time.",
+      "placeholder": "Write a note for the team…",
+      "titlePlaceholder": "Note title (optional)",
+      "deleted": "Note deleted",
+      "saved": "Note saved",
+      "saveFailed": "Failed to save note",
+      "by": "by",
+      "pinned": "Pinned",
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "primary": "Primary note",
+      "primaryEdit": "Edit primary note",
+      "primaryPlaceholder": "Headline note shown in the candidate summary…"
+    },
+    "applications": {
+      "title": "Job applications",
+      "empty": "This candidate hasn't applied to any jobs yet.",
+      "appliedOn": "Applied",
+      "stage": "Stage",
+      "viewJob": "View job",
+      "noJobs": "No applications",
+      "loadFailed": "Couldn't load applications"
+    },
+    "scoreTab": {
+      "title": "AI match scores",
+      "subtitle": "How this candidate matches against every open job.",
+      "empty": "No match scores yet. Run a match to populate this list.",
+      "runMatch": "Run match",
+      "running": "Matching…",
+      "matched": "Match complete",
+      "matchFailed": "Match failed",
+      "rationale": "Why this score",
+      "matchedSkills": "Matched skills",
+      "missingSkills": "Missing skills",
+      "noJobs": "No jobs to score against"
+    },
+    "activity": {
+      "title": "Activity log",
+      "empty": "No activity recorded yet.",
+      "loadFailed": "Couldn't load activity",
+      "actor": "Actor",
+      "system": "System"
+    },
+    "modals": {
+      "email": {
+        "title": "Send email to {name}",
+        "subject": "Subject",
+        "subjectPlaceholder": "Quick intro or follow-up…",
+        "body": "Message",
+        "bodyPlaceholder": "Hi {name}, …",
+        "send": "Send email",
+        "sending": "Sending…",
+        "includeResume": "Attach resume link",
+        "template": "Template",
+        "templates": {
+          "intro": "Introduction",
+          "interview": "Interview invite",
+          "rejection": "Polite rejection",
+          "offer": "Offer"
+        }
+      },
+      "interview": {
+        "title": "Schedule interview with {name}",
+        "type": "Interview type",
+        "types": {
+          "phone": "Phone screen",
+          "video": "Video interview",
+          "onsite": "On-site",
+          "technical": "Technical",
+          "panel": "Panel"
+        },
+        "duration": "Duration (minutes)",
+        "scheduledAt": "Date & time",
+        "interviewer": "Interviewer email",
+        "interviewerPlaceholder": "recruiter@company.com",
+        "notes": "Notes",
+        "notesPlaceholder": "Topics to cover, agenda, candidate context…",
+        "schedule": "Schedule",
+        "scheduling": "Scheduling…",
+        "scheduled": "Interview scheduled",
+        "scheduleFailed": "Failed to schedule interview"
+      },
+      "addToJob": {
+        "title": "Add {name} to a job",
+        "selectJob": "Select job",
+        "searchPlaceholder": "Search jobs…",
+        "stage": "Pipeline stage",
+        "stages": {
+          "active": "Active",
+          "screening": "Screening",
+          "interview": "Interview",
+          "offer": "Offer",
+          "hired": "Hired",
+          "rejected": "Rejected"
+        },
+        "add": "Add to job",
+        "adding": "Adding…",
+        "added": "Added to job",
+        "addFailed": "Failed to add to job"
+      }
+    },
+    "addedOn": "Added on",
+    "lastUpdated": "Last updated"
+  },
+  "jobs": {
+    "title": "משרות",
+    "openTotal": "{open} פתוחות · {total} סה\"כ מועמדים",
+    "createJob": "צור משרה",
+    "search": "חפש משרות לפי כותרת...",
+    "stats": {
+      "avgTimeAria": "Average time to hire: {value}"
+    },
+    "table": {
+      "position": "משרה",
+      "type": "סוג",
+      "salary": "שכר",
+      "applicants": "מועמדים",
+      "status": "סטטוס",
+      "posted": "פורסם"
+    },
+    "wizard": {
+      "title": "Create new job",
+      "desc": "A 3-step wizard to get your job posted in under a minute.",
+      "steps": [
+        "Basics",
+        "Requirements",
+        "Review"
+      ],
+      "stepBasics": "Basics",
+      "stepRequirements": "Requirements",
+      "stepReview": "Review",
+      "continue": "Continue",
+      "create": "Create job",
+      "ready": "Ready to post",
+      "readyDesc": "Your job will be published and start receiving applications immediately. The AI screening will rank candidates automatically."
+    },
+    "filterByStatus": "סנן לפי סטטוס",
+    "searchAria": "חפש משרות",
+    "createFailed": "לא ניתן ליצור משרה",
+    "fields": {
+      "title": "Job title *",
+      "department": "Department",
+      "type": "Employment type",
+      "location": "Location",
+      "salaryMin": "Salary min ($)",
+      "salaryMax": "Salary max ($)",
+      "description": "Job description",
+      "requirements": "Requirements",
+      "skills": "Required skills (comma separated)",
+      "tags": "Tags"
+    },
+    "tagsPlaceholder": "e.g. Urgent, Remote, Senior",
+    "tagsHelp": "Press Enter or comma to add. Pick a color for new tags. Click × to remove.",
+    "filter": {
+      "status": "Status",
+      "department": "Department",
+      "employmentType": "Employment type",
+      "location": "Location",
+      "locationPh": "City, country, or remote",
+      "tags": "Tags",
+      "salary": "Salary range",
+      "min": "Min",
+      "max": "Max"
+    },
+    "statuses": {
+      "open": "Open",
+      "draft": "Draft",
+      "closed": "Closed",
+      "on_hold": "On hold"
+    },
+    "created": "Job \"{title}\" created successfully",
+    "couldntLoad": "Couldn't load jobs",
+    "selected": "{count} selected",
+    "select": "Select {title}",
+    "exported": "Exported {count} job(s) to CSV",
+    "exportedFormat": "Exported {count} job(s) to {format}",
+    "exportFailed": "Export failed",
+    "removed": "Removed {count} job(s)",
+    "bulkDeleteFailed": "Some jobs could not be deleted",
+    "confirmBulkDelete": {
+      "title": "Delete {count} job(s)?",
+      "description": "This will permanently remove the selected jobs. This action cannot be undone.",
+      "confirm": "Delete jobs"
+    },
+    "noJobsYet": "אין משרות עדיין",
+    "noJobsFound": "לא נמצאו משרות",
+    "noJobsDesc": "צור את משרתך הראשונה כדי להתחיל לקבל מועמדים.",
+    "deptGeneral": "כללי",
+    "remote": "מרחוק",
+    "fullTime": "משרה מלאה"
+  },
+  "jobDetail": {
+    "tabs": {
+      "overview": "Overview",
+      "applicants": "Applicants"
+    }
+  },
+  "jobKanban": {
+    "title": "Applicant tracking",
+    "subtitle": "Drag candidates between stages. Click a card to view full details.",
+    "search": "Search applicants…",
+    "couldntLoad": "Couldn't load applicants",
+    "moveFailed": "Failed to move candidate",
+    "moved": "Moved to {stage}",
+    "stages": {
+      "applied": "Applied",
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer",
+      "hired": "Hired",
+      "rejected": "Rejected"
+    },
+    "stats": {
+      "total": "Total applicants",
+      "inProgress": "In progress",
+      "hired": "Hired",
+      "rejected": "Rejected"
+    },
+    "empty": {
+      "title": "No applicants yet",
+      "desc": "When candidates apply for this job, they will appear here organized by stage."
+    },
+    "emptyColumn": "No candidates in this stage",
+    "columnAria": "Drop candidate to move to {stage}",
+    "selectAllInColumn": "Select all in {stage}",
+    "deselectAllInColumn": "Deselect all in {stage}",
+    "selectAllVisible": "Select all visible applicants",
+    "selectApplicant": "Select {name}",
+    "deselectApplicant": "Deselect {name}",
+    "openApplicant": "Open {name}",
+    "unnamed": "Unnamed",
+    "terminalWarning": "Terminal",
+    "scoreAria": "Match score {score}",
+    "yearsFmt": "{n} years",
+    "detail": {
+      "status": "Status",
+      "phone": "Phone",
+      "appliedOn": "Applied on",
+      "notes": "Notes",
+      "openFull": "Open full profile"
+    },
+    "confirmMove": {
+      "title": "Confirm move",
+      "desc": "Move {name} to {stage}? This is a significant status change.",
+      "confirm": "Move candidate"
+    },
+    "bulk": {
+      "region": "Bulk actions",
+      "selected": "{count} selected",
+      "fromStage": "from",
+      "moveStage": "Move to stage",
+      "reject": "Reject with reason",
+      "moveTitle": "Move candidates to stage",
+      "moveDesc": "Choose the target stage for {count} candidate(s).",
+      "moveConfirm": "Move",
+      "movedCount": "{count} candidate(s) moved to {stage}",
+      "movedPartial": "{success} moved, {failed} failed",
+      "moveFailed": "Bulk move failed",
+      "rejectTitle": "Reject candidates",
+      "rejectDesc": "Provide a reason. This will be recorded as a note on each of the {count} candidate(s).",
+      "rejectConfirm": "Reject {count}",
+      "rejectedCount": "{count} candidate(s) rejected",
+      "rejectedPartial": "{success} rejected, {failed} failed",
+      "rejectFailed": "Bulk reject failed",
+      "reasonLabel": "Reason",
+      "detailsLabel": "Additional details (optional)",
+      "detailsPh": "Add any context for the candidate record…",
+      "confirmTerminal": {
+        "title": "Confirm terminal move",
+        "desc": "You are about to move {count} candidate(s) to {stage}. This is a significant status change."
+      }
+    },
+    "rejectReasons": {
+      "not_a_fit": "Not a fit for the role",
+      "experience": "Insufficient experience",
+      "skills": "Missing required skills",
+      "availability": "Availability mismatch",
+      "salary": "Salary expectations",
+      "culture": "Culture mismatch",
+      "withdrew": "Candidate withdrew",
+      "duplicate": "Duplicate application",
+      "other": "Other"
+    }
+  },
+  "jdOptimizer": {
+    "title": "Job Description Optimizer",
+    "subtitle": "Analyze, optimize, and improve your job descriptions with AI",
+    "inputLabel": "Job Description",
+    "inputPlaceholder": "Paste your job description here...",
+    "inputHelp": "Include responsibilities, requirements, skills, and any other relevant details.",
+    "analyzeButton": "Analyze",
+    "analyzingButton": "Analyzing...",
+    "optimizeButton": "Optimize",
+    "optimizingButton": "Optimizing...",
+    "applyToJobButton": "Apply to Job",
+    "applyingButton": "Applying...",
+    "analysis": {
+      "title": "Analysis Results",
+      "subtitle": "AI-powered analysis of your job description",
+      "overallScore": "Overall Score",
+      "readabilityScore": "Readability Score",
+      "inclusivityScore": "Inclusivity Score",
+      "seoScore": "SEO Score",
+      "issues": "Issues Found",
+      "issuesEmpty": "No issues found. Great job!",
+      "suggestions": "Suggestions",
+      "suggestionsEmpty": "No suggestions at this time.",
+      "severity": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "issueCategories": {
+        "clarity": "Clarity",
+        "bias": "Bias",
+        "completeness": "Completeness",
+        "tone": "Tone",
+        "structure": "Structure",
+        "keywords": "Keywords"
+      }
+    },
+    "optimization": {
+      "title": "Optimized Versions",
+      "subtitle": "Choose the version that best fits your needs",
+      "tabs": {
+        "standard": "Standard",
+        "inclusive": "Inclusive",
+        "concise": "Concise",
+        "detailed": "Detailed"
+      },
+      "diffView": "Show Changes",
+      "copyButton": "Copy",
+      "copiedButton": "Copied!",
+      "applyButton": "Apply This Version",
+      "applyingButton": "Applying...",
+      "noChanges": "No changes from original"
+    },
+    "keywords": {
+      "title": "Extracted Keywords",
+      "subtitle": "Key terms identified in your job description",
+      "required": "Required Skills",
+      "preferred": "Preferred Skills",
+      "soft": "Soft Skills",
+      "technical": "Technical Keywords",
+      "seoKeywords": "SEO Keywords",
+      "seoSuggestions": "Suggested SEO Keywords",
+      "addKeyword": "Add as keyword"
+    },
+    "readability": {
+      "title": "Readability Analysis",
+      "fleschKincaid": "Flesch-Kincaid Grade Level",
+      "gunningFog": "Gunning Fog Index",
+      "avgSentenceLength": "Avg Sentence Length",
+      "avgWordLength": "Avg Word Length",
+      "sentenceCount": "Sentence Count",
+      "wordCount": "Word Count",
+      "level": {
+        "veryEasy": "Very Easy",
+        "easy": "Easy",
+        "fairlyEasy": "Fairly Easy",
+        "standard": "Standard",
+        "fairlyDifficult": "Fairly Difficult",
+        "difficult": "Difficult",
+        "veryDifficult": "Very Difficult"
+      }
+    },
+    "inclusivity": {
+      "title": "Inclusivity Analysis",
+      "genderNeutral": "Gender-Neutral Language",
+      "ageInclusive": "Age-Inclusive Language",
+      "abilityInclusive": "Ability-Inclusive Language",
+      "culturalInclusive": "Culturally Inclusive Language",
+      "flaggedTerms": "Flagged Terms",
+      "flaggedTermsEmpty": "No non-inclusive terms detected",
+      "suggestions": "Inclusive Alternatives"
+    },
+    "seo": {
+      "title": "SEO Optimization",
+      "keywordDensity": "Keyword Density",
+      "missingKeywords": "Missing High-Volume Keywords",
+      "titleOptimization": "Title Optimization",
+      "metaDescription": "Meta Description",
+      "structuredData": "Structured Data Ready"
+    },
+    "applyToJob": {
+      "title": "Apply to Job",
+      "subtitle": "Update an existing job with the optimized description",
+      "selectJob": "Select a job to update",
+      "searchPlaceholder": "Search jobs...",
+      "noJobs": "No jobs available",
+      "confirmTitle": "Update job description?",
+      "confirmDesc": "This will replace the job description with the optimized version. This action cannot be undone.",
+      "success": "Job description updated successfully",
+      "failed": "Failed to update job description"
+    },
+    "toasts": {
+      "analysisComplete": "Analysis complete",
+      "analysisFailed": "Analysis failed",
+      "optimizationComplete": "Optimization complete",
+      "optimizationFailed": "Optimization failed",
+      "copied": "Copied to clipboard",
+      "copyFailed": "Failed to copy",
+      "applied": "Applied to job",
+      "applyFailed": "Failed to apply"
+    },
+    "errors": {
+      "emptyInput": "Please enter a job description",
+      "inputTooShort": "Job description is too short (minimum 50 characters)",
+      "apiError": "An error occurred. Please try again.",
+      "noJobSelected": "Please select a job to update"
+    }
+  },
+  "interviews": {
+    "title": "ראיונות",
+    "totalUpcoming": "{total} סה\"כ · {upcoming} קרובים",
+    "schedule": "קבע ראיון",
+    "search": "חפש ראיונות...",
+    "searchAria": "חפש ראיונות",
+    "upcomingThisWeek": "קרובים השבוע",
+    "minutes": "דקות",
+    "types": {
+      "all": "כל הסוגים",
+      "phone": "שיחת טלפון",
+      "video": "שיחת וידאו",
+      "technical": "טכני",
+      "panel": "פאנל",
+      "onsite": "באתר"
+    },
+    "statuses": {
+      "scheduled": "מתוכנן",
+      "in_progress": "בתהליך",
+      "completed": "הושלם",
+      "cancelled": "בוטל",
+      "no_show": "לא הופיע"
+    },
+    "started": "Interview started",
+    "completed": "Interview marked complete",
+    "updated": "Interview updated",
+    "scheduledWith": "Interview scheduled with {name}",
+    "formErrorRequired": "Candidate name, date and time are required",
+    "fields": {
+      "candidate": "Candidate",
+      "candidateName": "Candidate name *",
+      "job": "Job",
+      "jobPosition": "Job position *",
+      "date": "Date *",
+      "time": "Time *",
+      "scheduledAt": "Date and time",
+      "scheduledAtHelp": "Local timezone. Format: YYYY-MM-DDTHH:mm",
+      "duration": "Duration (min)",
+      "type": "Type",
+      "location": "Location",
+      "interviewers": "Interviewers",
+      "interviewersHelp": "Press Enter or comma to add. Click × to remove.",
+      "notes": "Notes",
+      "panel": "Panel (initials, comma separated)"
+    },
+    "formErrors": {
+      "candidateRequired": "Please select a candidate",
+      "jobRequired": "Please select a job",
+      "scheduledAtRequired": "Date and time are required",
+      "scheduledAtInvalid": "Please enter a valid date and time",
+      "durationInvalid": "Duration must be a positive number of minutes",
+      "durationTooLong": "Duration cannot exceed 24 hours",
+      "typeRequired": "Please select an interview type"
+    },
+    "placeholders": {
+      "candidate": "Select candidate…",
+      "job": "Select job…",
+      "interviewers": "Add or pick interviewers…",
+      "location": "e.g. Zoom link, office address, or \"Remote\"",
+      "notes": "Agenda, topics to cover, or prep notes…"
+    },
+    "table": {
+      "candidate": "Candidate",
+      "when": "When",
+      "type": "Type",
+      "panel": "Panel",
+      "status": "Status"
+    },
+    "couldntLoad": "לא ניתן לטעון ראיונות",
+    "noInterviewsYet": "אין ראיונות עדיין",
+    "noInterviewsFound": "לא נמצאו ראיונות",
+    "noInterviewsDesc": "קבע את הראיון הראשון שלך כדי להתחיל.",
+    "tryAdjusting": "נסה להתאים את הסינון שלך.",
+    "viewList": "תצוגת רשימה",
+    "viewCalendar": "תצוגת לוח שנה",
+    "view": {
+      "listHint": "Showing all interviews in a sortable list.",
+      "calendarHint": "See interviews at a glance by month."
+    },
+    "filterByStatus": "סנן לפי סטטוס",
+    "filterByType": "סנן לפי סוג",
+    "actions": {
+      "start": "Start",
+      "complete": "Complete",
+      "edit": "Edit",
+      "startAria": "Start interview with {name}",
+      "completeAria": "Mark interview with {name} complete",
+      "editAria": "Edit interview with {name}"
+    },
+    "calendar": {
+      "today": "Today",
+      "prev": "Previous week",
+      "next": "Next week",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "weekOf": "Week of {date}",
+      "monthOf": "{month} {year}",
+      "monthCount": "{count} this month",
+      "noEvents": "No interviews",
+      "moreCount": "+{n} more",
+      "interviewsOn": "Interviews on {date}",
+      "clearDay": "Clear day selection",
+      "pickDay": "Click a day to see scheduled interviews.",
+      "unnamed": "Untitled"
+    },
+    "durations": {
+      "30": "30 minutes",
+      "45": "45 minutes",
+      "60": "1 hour",
+      "90": "1.5 hours",
+      "120": "2 hours",
+      "short": "{n} min"
+    },
+    "modal": {
+      "title": "Schedule interview",
+      "description": "Set up a new interview with a candidate.",
+      "editTitle": "Edit interview",
+      "editDescription": "Update the interview details."
+    },
+    "createFailed": "Failed to schedule interview",
+    "updateFailed": "Failed to update interview",
+    "startFailed": "Failed to start interview",
+    "completeFailed": "Failed to complete interview",
+    "video": {
+      "title": "Video Interviews",
+      "subtitle": "Manage video interview rooms and recordings",
+      "rooms": {
+        "title": "Video Rooms",
+        "empty": "No video rooms yet",
+        "emptyDesc": "Create your first video interview room to start interviewing candidates remotely.",
+        "createRoom": "Create room",
+        "joinRoom": "Join room",
+        "leaveRoom": "Leave room",
+        "roomName": "Room name",
+        "roomNamePlaceholder": "e.g. Senior Engineer Interview",
+        "roomId": "Room ID",
+        "status": {
+          "waiting": "Waiting",
+          "live": "Live",
+          "ended": "Ended",
+          "recording": "Recording"
+        },
+        "participants": "Participants",
+        "duration": "Duration",
+        "createdAt": "Created",
+        "actions": {
+          "join": "Join",
+          "copyLink": "Copy link",
+          "delete": "Delete",
+          "viewRecording": "View recording"
+        }
+      },
+      "room": {
+        "title": "Video Interview",
+        "joinTitle": "Join Video Interview",
+        "waitingForHost": "Waiting for host to start...",
+        "hostControls": "Host controls",
+        "participantList": "Participants",
+        "chat": "Chat",
+        "chatPlaceholder": "Type a message...",
+        "send": "Send",
+        "mute": "Mute",
+        "unmute": "Unmute",
+        "cameraOn": "Camera on",
+        "cameraOff": "Camera off",
+        "screenShare": "Share screen",
+        "stopShare": "Stop sharing",
+        "startRecording": "Start recording",
+        "stopRecording": "Stop recording",
+        "recording": "Recording",
+        "recordingIndicator": "● REC",
+        "leaveCall": "Leave call",
+        "endCall": "End call for all",
+        "connectionQuality": "Connection",
+        "you": "You",
+        "noParticipants": "No other participants",
+        "waitingForParticipants": "Waiting for participants to join...",
+        "screenShareStarted": "Screen sharing started",
+        "screenShareStopped": "Screen sharing stopped",
+        "recordingStarted": "Recording started",
+        "recordingStopped": "Recording stopped and saved",
+        "recordingFailed": "Failed to start recording",
+        "copiedLink": "Room link copied to clipboard",
+        "copyLinkFailed": "Failed to copy link",
+        "micAccessDenied": "Microphone access denied",
+        "cameraAccessDenied": "Camera access denied",
+        "screenShareDenied": "Screen share permission denied"
+      },
+      "recordings": {
+        "title": "Recordings",
+        "empty": "No recordings yet",
+        "emptyDesc": "Recordings will appear here after you finish a video interview.",
+        "play": "Play",
+        "pause": "Pause",
+        "download": "Download",
+        "delete": "Delete",
+        "duration": "Duration",
+        "recordedAt": "Recorded",
+        "chapters": "Chapters",
+        "noChapters": "No chapters",
+        "speed": "Speed",
+        "fullscreen": "Fullscreen",
+        "timeline": "Timeline",
+        "transcript": "Transcript",
+        "share": "Share"
+      },
+      "player": {
+        "loading": "Loading video...",
+        "error": "Failed to load video",
+        "noVideo": "No video available",
+        "playbackSpeed": "Playback speed",
+        "downloadVideo": "Download video",
+        "copyTimestamp": "Copy timestamp",
+        "keyboardShortcuts": "Keyboard shortcuts",
+        "shortcuts": {
+          "playPause": "Space - Play/Pause",
+          "seekForward": "→ - Forward 10s",
+          "seekBackward": "← - Backward 10s",
+          "fullscreen": "F - Fullscreen",
+          "mute": "M - Mute",
+          "speedUp": "> - Speed up",
+          "speedDown": "< - Slow down"
+        }
+      }
+    }
+  },
+  "videoInterview": {
+    "title": "Video Interviews",
+    "subtitle": "Manage video interview rooms, recordings, and playback",
+    "nav": "Video Interviews",
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "expired": "Expired"
+    },
+    "recording": {
+      "none": "No recording",
+      "recording": "Recording",
+      "saved": "Recording saved"
+    },
+    "actions": {
+      "createRoom": "Create room",
+      "joinRoom": "Join room",
+      "startRecording": "Start recording",
+      "stopRecording": "Stop recording",
+      "viewRecording": "View recording",
+      "downloadRecording": "Download recording",
+      "copyLink": "Copy link"
+    },
+    "filters": {
+      "allStatuses": "All statuses",
+      "dateRange": "Date range",
+      "search": "Search rooms..."
+    },
+    "detail": {
+      "roomUrl": "Room URL",
+      "participants": "Participants",
+      "notes": "Notes",
+      "addNote": "Add note",
+      "timeline": "Timeline",
+      "embeddedPlayer": "Embedded player",
+      "recordingPlayer": "Recording playback"
+    }
+  },
+  "assessments": {
+    "title": "Assessments",
+    "subtitle": "{total} total assessments",
+    "create": "New assessment",
+    "newTitle": "Create new assessment",
+    "newSubtitle": "Send a tailored assessment to evaluate a candidate for a job.",
+    "createDraft": "Save as draft",
+    "createAndSend": "Create & send",
+    "created": "Assessment created",
+    "createdAndSent": "Assessment created and sent",
+    "createdNotSent": "Assessment created but failed to send",
+    "createFailed": "Failed to create assessment",
+    "assessment": "Assessment",
+    "couldntLoad": "Couldn't load assessment",
+    "backToList": "Back to assessments",
+    "backToDetails": "Back to details",
+    "notFoundTitle": "Assessment not found",
+    "notFoundDesc": "This assessment may have been deleted or never existed.",
+    "search": "Search by title, candidate, or job…",
+    "searchAria": "Search assessments",
+    "emptyTitle": "No assessments yet",
+    "emptyDesc": "Create your first assessment to evaluate candidates for a job.",
+    "emptyFiltered": "No assessments match your filters",
+    "tryAdjusting": "Try adjusting your filters.",
+    "clearFilters": "Clear filters",
+    "filterByStatus": "Filter by status",
+    "filterByCandidate": "Filter by candidate",
+    "filterByJob": "Filter by job",
+    "allCandidates": "All candidates",
+    "allJobs": "All jobs",
+    "allStatuses": "All statuses",
+    "tabs": {
+      "all": "All ({n})"
+    },
+    "statuses": {
+      "all": "All statuses",
+      "draft": "Draft",
+      "pending": "Pending",
+      "sent": "Sent",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "expired": "Expired",
+      "cancelled": "Cancelled"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "types": {
+      "mcq": "Multiple choice",
+      "short_answer": "Short answer",
+      "text": "Long form",
+      "coding": "Coding"
+    },
+    "recommendation": {
+      "strong_hire": "Strong hire",
+      "hire": "Hire",
+      "neutral": "Neutral",
+      "no_hire": "No hire",
+      "strong_no_hire": "Strong no hire"
+    },
+    "validation": {
+      "candidateRequired": "Please choose a candidate",
+      "jobRequired": "Please choose a job",
+      "titleRequired": "A title is required",
+      "questionCountMin": "At least 1 question is required",
+      "questionTypesRequired": "Choose at least one question type",
+      "timeLimitMin": "Time limit must be at least 1 minute",
+      "passingScoreRange": "Passing score must be 0–100",
+      "chooseOption": "Please choose an option",
+      "provideAnswer": "Please provide an answer",
+      "writeCode": "Please write your code",
+      "pickLanguage": "Please select a language",
+      "tooLong": "Answer must be at most {max} characters"
+    },
+    "fields": {
+      "title": "Assessment title",
+      "titleHelp": "Auto-filled from candidate and job — feel free to customize.",
+      "candidate": "Candidate",
+      "job": "Job",
+      "description": "Description (optional)",
+      "descriptionHelp": "This appears on the assessment welcome screen.",
+      "questionCount": "Number of questions",
+      "questionCountHelp": "AI will pick the best questions for this candidate.",
+      "difficulty": "Difficulty",
+      "questionTypes": "Question types",
+      "timeLimit": "Time limit (min)",
+      "timeLimitHelp": "Candidates can submit before the timer expires.",
+      "passingScore": "Passing score (%)",
+      "passingScoreHelp": "Used to label results as Pass/Fail once the test is submitted."
+    },
+    "placeholders": {
+      "candidate": "Select candidate…",
+      "job": "Select job…",
+      "title": "e.g. Senior Frontend Engineer – Skills check",
+      "description": "Add context, instructions, or a brief message…",
+      "short": "Type your answer…",
+      "text": "Write a detailed response…",
+      "code": "// Write your solution here…"
+    },
+    "placeholdersAria": {
+      "candidate": "Select candidate",
+      "job": "Select job"
+    },
+    "noOptions": "No options configured for this question.",
+    "answered": "Answered",
+    "notAnswered": "Not yet answered",
+    "points": "{n} pts",
+    "minutesShort": "{n} min",
+    "unlimited": "Untimed",
+    "questionsCount": "{n} questions",
+    "score": "Score",
+    "due": "Due {when}",
+    "dueNotice": "This assessment is due {when}.",
+    "language": "Language",
+    "languageAria": "Programming language",
+    "codeAria": "Code editor",
+    "feedbackLabel": "Feedback",
+    "feedback": {
+      "earned": "{earned}/{possible}"
+    },
+    "stats": {
+      "questions": "Questions",
+      "difficulty": "Difficulty",
+      "timeLimit": "Time limit"
+    },
+    "descriptionLabel": "Instructions",
+    "questionsLabel": "Questions",
+    "results": {
+      "finalScore": "Final score",
+      "scoreRaw": "{earned} of {total} points",
+      "aiFeedback": "AI feedback"
+    },
+    "progress": "Question {current} of {total}",
+    "progressPercent": "{n}% complete",
+    "progressSummary": "{answered} of {total} answered",
+    "previous": "Previous",
+    "submit": "Submit assessment",
+    "submitFinal": "Submit",
+    "submitFailed": "Could not submit your assessment",
+    "submitted": "Assessment submitted!",
+    "saveFailed": "Could not save your answer",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "notSaved": "Not yet saved",
+    "goToQuestion": "Go to question {n}",
+    "timer": {
+      "underMinute": "< 1 min left",
+      "minutesLeft": "{n} min left"
+    },
+    "unansweredNotice": "Please answer all questions before submitting. {n} remain.",
+    "confirmSubmitTitle": "Submit your assessment?",
+    "confirmSubmitUnfinished": "{answered} of {total} answered. Unanswered questions will be marked as 0. Continue?",
+    "confirmSubmitDone": "You answered all questions. Ready to submit your final answers?",
+    "viewResults": "View results",
+    "alreadyCompletedTitle": "Already completed",
+    "alreadyCompletedDesc": "You have already submitted this assessment.",
+    "review": {
+      "questionsSummary": "{n} questions · {difficulty}",
+      "notice": "You can save as a draft to edit later, or create and send it to the candidate right away."
+    },
+    "steps": {
+      "candidateJob": "Candidate & Job",
+      "configure": "Configure",
+      "review": "Review"
+    },
+    "step1": {
+      "title": "Who is taking the assessment?",
+      "description": "Pick a candidate and the job you want to evaluate them for."
+    },
+    "step2": {
+      "title": "Configure the assessment",
+      "description": "Choose how many questions, the difficulty, and the formats."
+    },
+    "step3": {
+      "title": "Review and create",
+      "description": "Double-check the details. You can still go back to edit."
+    },
+    "actions": {
+      "take": "Take",
+      "continue": "Continue",
+      "send": "Send",
+      "cancel": "Cancel"
+    },
+    "sent": "Assessment sent to candidate",
+    "sendFailed": "Failed to send assessment",
+    "cancelled": "Assessment cancelled",
+    "cancelFailed": "Failed to cancel assessment",
+    "deleted": "Assessment deleted",
+    "deleteFailed": "Failed to delete assessment",
+    "deleteTitle": "Delete assessment?",
+    "deleteDesc": "This will permanently remove the assessment and its questions. This action cannot be undone.",
+    "unknownCandidate": "Unknown candidate",
+    "unknownJob": "Unknown job"
+  },
+  "days": {
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun"
+  },
+  "ppe": {
+    "title": "Pair Programming Evaluation",
+    "selectProblem": "Select problem…",
+    "language": "Language",
+    "examples": "Examples",
+    "constraints": "Constraints",
+    "input": "Input:",
+    "output": "Output:",
+    "hint": "Hint",
+    "hintAria": "Request a hint",
+    "fetching": "Fetching…",
+    "runTests": "Run tests",
+    "running": "Running…",
+    "submit": "Submit",
+    "submitting": "Submitting…",
+    "submitFailed": "Submission failed",
+    "submitted": "Submitted for AI evaluation",
+    "defaultHint": "Consider the time complexity of your approach.",
+    "elapsedAria": "Elapsed time",
+    "codeEditorAria": "Code editor",
+    "outputAria": "Code output",
+    "sessionLive": "Session live",
+    "startingSession": "Starting session…",
+    "result": "Result",
+    "testsPassed": "{passed} / {total} tests passed",
+    "score": "Score",
+    "aiFeedback": "AI feedback",
+    "selectProblemDesc": "Select a problem to begin",
+    "noProblemsTitle": "No coding problems available",
+    "noProblemsDesc": "Once an admin adds problems, you'll be able to start a pair-programming session here.",
+    "couldntLoad": "Couldn't load problems",
+    "noActiveSession": "No active session",
+    "executed": "Code executed",
+    "executionFailed": "Execution failed",
+    "hintFailed": "Could not fetch hint",
+    "sessionFailed": "Could not start session: {error}"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "stats": {
+      "totalCandidates": "Total Candidates",
+      "activeJobs": "Active Jobs",
+      "interviews": "Interviews",
+      "passRate": "Pass Rate"
+    },
+    "funnel": "Pipeline funnel",
+    "aiPerformance": "AI agent performance",
+    "agents": "agents",
+    "stages": "stages",
+    "tasks": "tasks",
+    "avgConfidence": "avg confidence",
+    "noPipeline": "No pipeline data",
+    "noPipelineDesc": "Once candidates start moving through the funnel, you'll see the breakdown here.",
+    "noAiMetrics": "No AI metrics yet",
+    "noAiMetricsDesc": "Run the AI orchestrator to populate per-agent performance stats.",
+    "productivity": "Productivity signals",
+    "rangeLabel": "Time range",
+    "couldntLoad": "Couldn't load analytics",
+    "metrics": {
+      "avgTimeToHire": "Avg time to hire",
+      "hires": "Hires this period",
+      "rejections": "Rejections",
+      "offerAcceptance": "Offer acceptance"
+    }
+  },
+  "aiCopilot": {
+    "title": "AI Recruiting Copilot",
+    "subtitle": "Powered by GPT-4o · routed through the orchestrator",
+    "subtitleLong": "Ask questions about your pipeline, candidates, and evaluations.",
+    "welcome": "Hello! I'm your AI recruiting copilot. I can help you summarize candidates, explain AI evaluation scores, compare applicants, recommend hiring decisions, and generate interview questions. Pick a suggestion below or type your own question to get started.",
+    "placeholder": "Ask about candidates, evaluations, pipeline…",
+    "send": "Send",
+    "sending": "Sending…",
+    "thinking": "AI is thinking…",
+    "reasoning": "Show reasoning",
+    "confidence": "confidence",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyAria": "Copy message",
+    "copiedAria": "Copied",
+    "copyFailed": "Could not copy",
+    "regenerate": "Regenerate",
+    "regenerateAria": "Regenerate response",
+    "regenNotFound": "Could not find the original message to regenerate.",
+    "stop": "Stop",
+    "stopAria": "Stop generating",
+    "error": "AI service error",
+    "feedbackAria": "Rate response",
+    "thumbUpAria": "Thumbs up",
+    "thumbDownAria": "Thumbs down",
+    "feedbackThanks": "Thanks for the feedback!",
+    "feedbackRecorded": "Feedback recorded — we will learn from this.",
+    "newConversation": "New conversation",
+    "newConversationAria": "Start new conversation",
+    "startedNew": "Started a new conversation",
+    "searchConversations": "Search conversations…",
+    "searchConversationsAria": "Search conversations",
+    "noConversations": "No conversations yet",
+    "noMatches": "No conversations match your search",
+    "messageSingular": "message",
+    "messagePlural": "messages",
+    "deleteAria": "Delete conversation",
+    "conversationDeleted": "Conversation deleted",
+    "clearAll": "Clear all conversations",
+    "confirmClearAll": "Delete all conversations? This cannot be undone.",
+    "clearedAll": "All conversations cleared",
+    "sidebarAria": "Conversations sidebar",
+    "toggleSidebarAria": "Toggle conversations sidebar",
+    "suggested": [
+      "Summarize my top candidates",
+      "Who should I move to interview next?",
+      "Explain the score for Sarah Chen",
+      "Where is the pipeline bottlenecked?"
+    ],
+    "suggestedShort": [
+      "Summarize candidates",
+      "Explain scores",
+      "Compare applicants",
+      "Identify risks"
+    ],
+    "cards": {
+      "topCandidates": {
+        "title": "Find me top candidates for X",
+        "subtitle": "Surface the best matches from your pipeline",
+        "prompt": "Find me my top 5 candidates across all open roles, ranked by AI evaluation score, and explain why each one stands out."
+      },
+      "jobDescription": {
+        "title": "Write a job description for Y",
+        "subtitle": "Generate an inclusive, compelling JD",
+        "prompt": "Write a structured, inclusive job description for a Senior Full-Stack Engineer role (React, Node.js, 5+ years experience, remote-friendly). Include responsibilities, must-have and nice-to-have skills, and a short equal-opportunity statement."
+      },
+      "analyzeResume": {
+        "title": "Analyze this resume",
+        "subtitle": "Score, strengths, gaps, and risks",
+        "prompt": "Analyze the most recently uploaded resume. Provide an overall match score, top 3 strengths, top 3 risks/gaps, and a recommended next action (interview, hold, reject)."
+      },
+      "interviewQuestions": {
+        "title": "Generate interview questions",
+        "subtitle": "Behavioral + technical + role-specific",
+        "prompt": "Generate 8 interview questions for a Senior Frontend Engineer interview: 3 behavioral, 3 technical (React, TypeScript, performance), and 2 system-design. For each, include what a strong answer looks like."
+      }
+    },
+    "pipelineSummary": "Pipeline summary",
+    "suggestedActions": "Suggested actions",
+    "emailDrafts": "Email drafts",
+    "agentName": "Recruiting Copilot",
+    "requestFailed": "Copilot request failed. Please try again.",
+    "requestFailedDesc": "I'm having trouble reaching the AI service right now. Please check that the backend is running, then try again.",
+    "requestFailedPanel": "I had trouble reaching the AI service. Please verify the backend is running and try again.",
+    "processed": "I have processed your request.",
+    "cleared": "Conversation cleared",
+    "history": "History",
+    "historyAria": "Conversation history",
+    "clear": "Clear",
+    "clearAria": "Clear all history",
+    "switchAgent": "Switch agent",
+    "switchAgentAria": "Switch agent",
+    "toggleHistoryAria": "Toggle history",
+    "conversationAria": "Conversation",
+    "inputAria": "Ask the copilot",
+    "sendAria": "Send message"
+  },
+  "aiConversation": {
+    "title": "Conversations",
+    "titleLabel": "Conversation title",
+    "rename": "Rename",
+    "renameAria": "Rename conversation",
+    "saveRename": "Save name",
+    "cancelRename": "Cancel rename",
+    "delete": "Delete",
+    "deleteAria": "Delete conversation",
+    "deleteConfirm": {
+      "title": "Delete this conversation?",
+      "description": "All messages in this conversation will be removed. This action cannot be undone.",
+      "confirm": "Delete conversation"
+    },
+    "deleted": "Conversation deleted",
+    "renamed": "Conversation renamed",
+    "created": "Conversation created",
+    "loadError": "Could not load conversations — showing local copy",
+    "saveError": "Could not save changes to the server",
+    "searchPlaceholder": "Search conversations…",
+    "searchAria": "Search conversations",
+    "filterByAgent": "Filter by agent",
+    "allAgents": "All agents",
+    "newConversation": "New conversation",
+    "newConversationAria": "Start new conversation",
+    "noConversations": "No conversations yet",
+    "noMatches": "No conversations match your search",
+    "untitled": "New conversation",
+    "messageSingular": "message",
+    "messagePlural": "messages",
+    "lastActivity": "Last activity {when}",
+    "moreActions": "More actions",
+    "actionsAria": "Conversation actions",
+    "editMessage": "Edit message",
+    "editAria": "Edit message",
+    "saveAndResend": "Save & resend",
+    "saveAndResendHint": "Sends the updated message and regenerates the response",
+    "messageCount": "{count} messages",
+    "timestamp": "Sent at {time}",
+    "autoTitled": "{preview}",
+    "titleFromMessage": "Conversation about: {preview}",
+    "feedback": "Feedback",
+    "feedbackAria": "Rate this response",
+    "regenerate": "Regenerate response",
+    "regenerateAria": "Regenerate the assistant response",
+    "copyMessage": "Copy message",
+    "copiedMessage": "Copied to clipboard",
+    "failedCopy": "Could not copy message"
+  },
+  "workflows": {
+    "title": "Workflows",
+    "subtitle": "{count} workflows · {active} active",
+    "all": "All",
+    "active": "Active",
+    "paused": "Paused",
+    "create": "Create workflow",
+    "noWorkflows": "No workflows yet",
+    "noWorkflowsDesc": "Build automated pipelines that screen, schedule, and message candidates without lifting a finger.",
+    "noMatch": "No workflows match this filter",
+    "tryAll": "Try selecting \"All\" to see your workflows.",
+    "couldntLoad": "Couldn't load workflows",
+    "filterLabel": "Filter workflows",
+    "actionsAria": "More actions",
+    "stepsAria": "Workflow steps",
+    "runNowAria": "Run workflow now",
+    "createFirst": "Create your first workflow",
+    "activeBadge": "Active",
+    "pausedBadge": "Paused",
+    "runs": "runs",
+    "success": "success",
+    "last": "Last",
+    "never": "never",
+    "pause": "Pause",
+    "activate": "Activate",
+    "runNow": "Run now",
+    "duplicate": "Duplicate",
+    "viewDetails": "View details",
+    "delete": "Delete",
+    "duplicated": "Duplicated",
+    "duplicatedDesc": "Created a copy of \"{name}\"",
+    "deleted": "Deleted",
+    "deletedDesc": "\"{name}\" has been removed.",
+    "pausedNotify": "Workflow paused",
+    "activatedNotify": "Workflow activated",
+    "triggered": "Workflow triggered",
+    "triggeredDesc": "\"{name}\" is running.",
+    "created": "Workflow created",
+    "createdDesc": "\"{name}\" is ready. Toggle it on to start.",
+    "triggerFailed": "Failed to trigger workflow",
+    "duplicateFailed": "Failed to duplicate workflow",
+    "deleteFailed": "Failed to delete workflow",
+    "updateFailed": "Failed to update workflow",
+    "createFailed": "Failed to create workflow",
+    "confirmDeleteTitle": "Delete workflow?",
+    "confirmDeleteDesc": "This will permanently remove \"{name}\". Any active runs will be cancelled.",
+    "createModal": {
+      "title": "Create workflow",
+      "desc": "Pick a template to get started in seconds.",
+      "custom": "Custom builder",
+      "customDesc": "Need a fully custom workflow? Reach out and we'll help you build it."
+    },
+    "details": {
+      "title": "Workflow",
+      "desc": "Execution log and stats",
+      "totalRuns": "Total runs",
+      "successRate": "Success rate",
+      "lastRun": "Last run",
+      "neverRun": "Never",
+      "steps": "Steps",
+      "close": "Close"
+    },
+    "stepTypes": {
+      "trigger": "Trigger",
+      "condition": "Condition",
+      "action": "Action",
+      "notify": "Notify"
+    },
+    "templates": {
+      "highPriority": {
+        "name": "High-priority candidate alert",
+        "desc": "Notify hiring manager when a candidate scores 90+",
+        "trigger": "New AI score",
+        "condition": "Score > 90",
+        "notify": "Slack + Email"
+      },
+      "weeklyDigest": {
+        "name": "Weekly hiring digest",
+        "desc": "Send a hiring summary to leadership every Monday",
+        "trigger": "Monday 9am",
+        "action": "Build report",
+        "notify": "Email leadership"
+      },
+      "reEngage": {
+        "name": "Re-engage stale candidates",
+        "desc": "Reach out to candidates who haven't progressed in 14 days",
+        "trigger": "No activity 14d",
+        "condition": "Status not hired",
+        "action": "AI outreach"
+      }
+    }
+  },
+  "pipeline": {
+    "title": "צנרת",
+    "subtitle": "{count} מועמדים על פני {stages} שלבים. גרור כדי להעביר בין שלבים.",
+    "stages": {
+      "active": "פעיל",
+      "screening": "סינון",
+      "ppe": "PPE",
+      "interview": "ראיון",
+      "offer": "הצעה",
+      "hired": "גויס",
+      "rejected": "נדחה"
+    },
+    "v2": {
+      "title": "Application pipeline",
+      "subtitle": "{count} applications across {stages} stages. Drag to move between stages.",
+      "filterJob": "Filter by job",
+      "filterJobAll": "All jobs",
+      "filterRecruiter": "Filter by recruiter",
+      "filterRecruiterAll": "All recruiters",
+      "filterSearch": "Search candidates",
+      "clearFilters": "Clear filters",
+      "daysInStage": "{n}d in stage",
+      "noApplications": "No applications match the current filters.",
+      "noApplicationsDesc": "Adjust the filters above to see more candidates, or drag a card between stages to keep momentum.",
+      "couldntLoad": "Couldn't load the global pipeline",
+      "moveFailed": "Failed to move application",
+      "summary": {
+        "title": "Stage overview",
+        "candidates": "{count} candidates",
+        "avgDays": "Avg {days}d in stage",
+        "conversion": "{pct}% advance to next",
+        "noData": "Not enough data yet"
+      },
+      "actions": {
+        "open": "Open candidate",
+        "openJob": "Open job pipeline",
+        "schedule": "Schedule interview",
+        "reject": "Reject application",
+        "message": "Send message"
+      },
+      "confirmMove": {
+        "title": "Confirm application move",
+        "desc": "Move {name} from {from} to {to}? This will update the candidate's status across the platform."
+      }
+    },
+    "noCandidates": "אין מועמדים",
+    "noCandidatesInPipeline": "אין מועמדים בצנרת",
+    "noCandidatesDesc": "הוסף מועמדים והם יופיעו כאן, מאורגנים לפי שלב.",
+    "moved": "הועבר ל-{status}",
+    "couldntLoad": "לא ניתן לטעון צנרת",
+    "moveFailed": "לא ניתן להעביר מועמד",
+    "confirmMove": {
+      "title": "Confirm move",
+      "desc": "Move this candidate from",
+      "warning": "This is a significant status change.",
+      "confirm": "Move candidate"
+    },
+    "dropZone": "Drop candidate to move to {stage}",
+    "moreSkills": "{n} more skills: {skills}"
+  },
+  "applicationCard": {
+    "unnamed": "Unnamed candidate",
+    "scoreAria": "Match score {score}",
+    "lastActivity": "Last activity {when}",
+    "noActivity": "No recent activity",
+    "daysAria": "{n} days in current stage",
+    "appliedOn": "Applied {when}",
+    "stage": "Stage",
+    "job": "Job",
+    "actions": {
+      "schedule": "Schedule interview",
+      "scheduleScheduled": "Scheduling…",
+      "scheduleTooltip": "Open the interview scheduler for {name}",
+      "reject": "Reject",
+      "rejectRejecting": "Rejecting…",
+      "rejectTooltip": "Move {name} to the Rejected stage",
+      "message": "Message",
+      "messageSending": "Sending…",
+      "messageTooltip": "Send {name} a quick email",
+      "openCandidate": "Open candidate profile",
+      "openJob": "View job applicants"
+    },
+    "toasts": {
+      "interviewCreated": "Interview created for {name}",
+      "interviewFailed": "Could not create interview",
+      "movedToRejected": "{name} moved to Rejected",
+      "moveFailed": "Could not move {name}",
+      "messageSent": "Email queued for {name}",
+      "messageFailed": "Could not send email"
+    }
+  },
+  "stageSummary": {
+    "title": "Stage summary",
+    "count": "Candidates",
+    "avgTime": "Avg time",
+    "conversion": "Next-stage conversion",
+    "days": "{n}d",
+    "percent": "{pct}%",
+    "noData": "—",
+    "advanceTo": "Advance to {stage}"
+  },
+  "matching": {
+    "title": "AI Matching",
+    "run": "Run AI matching",
+    "scoring": "Scoring…",
+    "topCandidates": "Top Candidates",
+    "openPositions": "Open Positions",
+    "noCandidates": "No candidates yet",
+    "noPositions": "No open positions",
+    "factorBreakdown": "Match factor breakdown",
+    "complete": "AI matching complete",
+    "couldntLoad": "Couldn't load data"
+  },
+  "schedule": {
+    "title": "Schedule",
+    "today": "Today",
+    "week": "This Week",
+    "month": "This Month",
+    "nothing": "Nothing scheduled",
+    "nothingToday": "Your day is clear.",
+    "nothingPeriod": "No events in this period.",
+    "scheduleCta": "Schedule an interview →",
+    "couldntLoad": "Couldn't load schedule",
+    "rangeLabel": "Date range",
+    "listLabel": "Scheduled events"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "subtitle": "נהל את החשבון, הצוות והעדפות החיוב שלך.",
+    "tabs": {
+      "profile": "פרופיל",
+      "account": "חשבון",
+      "notifications": "התראות",
+      "appearance": "מראה",
+      "security": "אבטחה",
+      "api": "API",
+      "team": "צוות",
+      "billing": "חיוב"
+    },
+    "account": {
+      "title": "Account",
+      "emailLabel": "Email address",
+      "emailHint": "Contact your workspace admin to change the email on your account.",
+      "passwordTitle": "Password",
+      "passwordDesc": "Choose a strong password you don't use anywhere else.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "update": "Update password",
+      "tooShort": "Password too short",
+      "tooShortDesc": "Use at least 8 characters.",
+      "mismatch": "Mismatch",
+      "mismatchDesc": "New passwords do not match.",
+      "updated": "Password updated",
+      "updatedDesc": "You can now sign in with your new password.",
+      "twofaTitle": "Two-factor authentication",
+      "twofaDesc": "Add an extra layer of security to your account.",
+      "authenticator": "Authenticator app",
+      "authenticatorDesc": "Use an app like 1Password, Authy, or Google Authenticator.",
+      "enable": "Enable",
+      "disable": "Disable",
+      "setupTitle": "Set up 2FA",
+      "setupDesc": "Scan this QR code with your authenticator app, then enter the 6-digit code to confirm.",
+      "code": "6-digit code",
+      "codePlaceholder": "123456",
+      "verify": "Verify",
+      "verifyFailed": "Verification failed",
+      "backupCodes": "Backup codes",
+      "backupCodesDesc": "Save these codes in a safe place. You can use them to sign in if you lose your authenticator.",
+      "copiedCode": "Code copied",
+      "enabledToast": "2FA enabled",
+      "enabledToastDesc": "Use your authenticator app to sign in from now on.",
+      "disabledToast": "2FA disabled",
+      "disabledToastDesc": "Two-factor authentication has been turned off."
+    },
+    "appearance": {
+      "title": "Appearance",
+      "theme": "Theme",
+      "themeDesc": "Choose how AIROS looks for you. System follows your OS preference.",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "themeSystem": "System",
+      "language": "Language",
+      "languageDesc": "Set the language used across AI-ROS.",
+      "timezone": "Timezone",
+      "timezoneDesc": "Times and dates will be shown in this timezone.",
+      "dateFormat": "Date format",
+      "dateFormatDesc": "How dates are displayed in lists and tables.",
+      "saved": "Appearance updated",
+      "savedDesc": "Your appearance preferences have been saved."
+    },
+    "loginHistory": {
+      "title": "Login history",
+      "desc": "Recent sign-ins to your account. If you see something unfamiliar, change your password and revoke the session.",
+      "noHistory": "No login activity recorded yet",
+      "ip": "IP",
+      "device": "Device",
+      "location": "Location",
+      "when": "When",
+      "current": "Current session"
+    },
+    "profile": {
+      "picture": "Profile picture",
+      "pictureDesc": "A square image works best, max 2MB.",
+      "upload": "Upload",
+      "remove": "Remove",
+      "personal": "Personal info",
+      "phone": "Phone",
+      "role": "Role / Title",
+      "bio": "Bio",
+      "saved": "Profile saved",
+      "savedDesc": "Your changes have been updated.",
+      "saveFailed": "Save failed"
+    },
+    "notifications": {
+      "email": "Email",
+      "push": "Push notifications",
+      "sms": "SMS",
+      "saved": "Preferences saved",
+      "savedDesc": "Your notification settings have been updated."
+    },
+    "security": {
+      "password": "Password",
+      "passwordDesc": "Choose a strong password you don't use anywhere else.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "update": "Update password",
+      "tooShort": "Password too short",
+      "tooShortDesc": "Use at least 8 characters.",
+      "mismatch": "Mismatch",
+      "mismatchDesc": "New passwords do not match.",
+      "updated": "Password updated",
+      "updatedDesc": "You can now sign in with your new password.",
+      "twofa": "Two-factor authentication",
+      "twofaDesc": "Add an extra layer of security to your account.",
+      "authenticator": "Authenticator app",
+      "authenticatorDesc": "Use an app like 1Password, Authy, or Google Authenticator.",
+      "sessions": "Active sessions",
+      "sessionsDesc": "Devices that are currently signed in to your account.",
+      "thisDevice": "This device",
+      "revoke": "Revoke"
+    },
+    "api": {
+      "keys": "API keys",
+      "keysDesc": "Use these keys to access the AIROS API from your own tools. Keep them secret.",
+      "newKey": "New key",
+      "noKeys": "No API keys yet",
+      "noKeysDesc": "Create your first key to start integrating AIROS with your own systems.",
+      "created": "Created",
+      "lastUsed": "Last used",
+      "revoke": "Revoke",
+      "saveWarning": "Save this key now — you won't see it again.",
+      "copy": "Copy",
+      "copied": "Copied to clipboard",
+      "revoked": "Key revoked",
+      "revokedDesc": "This key can no longer be used.",
+      "createKey": "Create API key",
+      "keyName": "Key name",
+      "keyNameDesc": "Give the key a clear name so you can identify it later.",
+      "create": "Create",
+      "webhooks": "Webhooks",
+      "endpoint": "Endpoint URL"
+    },
+    "team": {
+      "members": "Team members",
+      "membersDesc": "Manage who has access to your workspace.",
+      "invite": "Invite",
+      "name": "Name",
+      "role": "Role",
+      "status": "Status",
+      "lastActive": "Last active",
+      "actions": "Actions",
+      "remove": "Remove",
+      "inviteTitle": "Invite team member",
+      "email": "Email address",
+      "emailPlaceholder": "name@company.com",
+      "sendInvite": "Send invite",
+      "invited": "Invitation sent",
+      "invitedDesc": "{email} will receive an email shortly.",
+      "invalidEmail": "Invalid email",
+      "invalidEmailDesc": "Please enter a valid email address.",
+      "roles": {
+        "admin": "Admin",
+        "recruiter": "Recruiter",
+        "hiring_manager": "Hiring manager",
+        "viewer": "Viewer"
+      }
+    },
+    "billing": {
+      "plan": "Current plan",
+      "manageSeats": "Manage seats",
+      "upgrade": "Upgrade plan",
+      "usage": "Usage this month",
+      "invoices": "Invoices",
+      "exportAll": "Export all"
+    }
+  },
+  "onboarding": {
+    "welcome": "Welcome to AI-ROS",
+    "progress": "{done} of {total} complete · {pct}%",
+    "dismiss": "Dismiss onboarding",
+    "steps": {
+      "profile": {
+        "label": "Complete your profile",
+        "desc": "Add your name, photo, and role"
+      },
+      "firstJob": {
+        "label": "Post your first job",
+        "desc": "Create a job listing to start receiving applications"
+      },
+      "firstCandidate": {
+        "label": "Add a candidate",
+        "desc": "Import candidates or invite them via email"
+      },
+      "aiCopilot": {
+        "label": "Try the AI Copilot",
+        "desc": "Ask the AI to evaluate, match, or summarize"
+      },
+      "pipeline": {
+        "label": "Set up your pipeline",
+        "desc": "Customize stages for your hiring workflow"
+      }
+    },
+    "workflows": {
+      "title": "Onboarding Workflows",
+      "totalWorkflows": "total workflows",
+      "createWorkflow": "Create workflow",
+      "newWorkflow": "New Onboarding Workflow",
+      "newWorkflowDesc": "Build a structured onboarding workflow with steps for new candidates.",
+      "search": "Search workflows…",
+      "allStatuses": "All",
+      "active": "Active",
+      "inactive": "Inactive",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "activated": "Workflow activated",
+      "deactivated": "Workflow deactivated",
+      "steps": "steps",
+      "candidates": "candidates",
+      "executions": "Executions",
+      "noWorkflowsYet": "No workflows yet",
+      "noWorkflowsFound": "No workflows found",
+      "noWorkflowsDesc": "Create your first onboarding workflow to get started.",
+      "tryAdjusting": "Try adjusting your filters.",
+      "couldntLoad": "Couldn't load workflows",
+      "name": "Name",
+      "namePlaceholder": "e.g. Engineering Onboarding",
+      "nameRequired": "Name is required",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe the purpose of this workflow…",
+      "stepsEditor": "Steps",
+      "stepsList": "Workflow steps",
+      "noSteps": "No steps defined yet.",
+      "addStep": "Add a step",
+      "stepName": "Step name",
+      "stepNamePlaceholder": "e.g. Sign NDA",
+      "stepType": "Type",
+      "stepDescription": "Description",
+      "stepDescriptionPlaceholder": "What does this step involve?",
+      "stepRequired": "Required",
+      "required": "Required",
+      "created": "Workflow created",
+      "createFailed": "Failed to create workflow",
+      "deleted": "Workflow deleted",
+      "deleteFailed": "Failed to delete",
+      "updateFailed": "Failed to update",
+      "notFound": "Workflow not found",
+      "confirmDeleteTitle": "Delete workflow?",
+      "confirmDeleteDesc": "This action cannot be undone.",
+      "assignedCandidates": "Assigned candidates",
+      "noCandidates": "No candidates assigned yet.",
+      "details": "Details",
+      "createdAt": "Created",
+      "updatedAt": "Updated",
+      "lastRun": "Last run",
+      "trigger": "Trigger"
+    },
+    "stepTypes": {
+      "document": "Document",
+      "video": "Video",
+      "task": "Task",
+      "meeting": "Meeting",
+      "assessment": "Assessment"
+    },
+    "stepStatus": {
+      "pending": "Pending",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "skipped": "Skipped"
+    },
+    "candidate": {
+      "onboardingStatus": "Onboarding progress",
+      "progress": "Progress",
+      "complete": "complete",
+      "stepsList": "Onboarding steps",
+      "stepCompleted": "Step completed",
+      "notes": "Notes",
+      "notesPlaceholder": "Add notes about this candidate…",
+      "notesSaved": "Notes saved",
+      "notesFailed": "Failed to save notes",
+      "summary": "Summary",
+      "completed": "completed",
+      "inProgress": "in progress",
+      "pending": "pending",
+      "couldntLoad": "Couldn't load candidate",
+      "notFound": "Candidate not found"
+    }
+  },
+  "tour": {
+    "help": "Show tour",
+    "skip": "Skip",
+    "next": "Next",
+    "prev": "Back",
+    "finish": "Finish",
+    "step": "Step {current} of {total}",
+    "replay": "Replay tour",
+    "candidates": {
+      "title": "Welcome to Candidates",
+      "intro": "Manage your entire talent pool in one place. Let's take a quick tour.",
+      "filters": {
+        "title": "Search & filter",
+        "desc": "Quickly find candidates by name, email, status, or skills."
+      },
+      "add": {
+        "title": "Add a candidate",
+        "desc": "Click here to manually add a candidate or import from your ATS."
+      },
+      "import": {
+        "title": "Import in bulk",
+        "desc": "Upload a CSV or connect your ATS to bring in hundreds of candidates at once."
+      },
+      "table": {
+        "title": "Candidates table",
+        "desc": "View, sort, and select candidates. Run AI enrichment or matching from the action column."
+      },
+      "ai": {
+        "title": "AI actions",
+        "desc": "Click Enrich to extract skills/insights or Match to score against open jobs."
+      },
+      "bulk": {
+        "title": "Bulk actions",
+        "desc": "Select multiple candidates to export to CSV, delete, or trigger bulk AI actions."
+      },
+      "details": {
+        "title": "Click any candidate",
+        "desc": "Open a candidate to see their full profile, run AI actions, and view their application history."
+      }
+    },
+    "jobs": {
+      "title": "Welcome to Jobs",
+      "intro": "Post new positions and manage your open roles here.",
+      "filters": {
+        "title": "Filter jobs",
+        "desc": "Filter by status (open, draft, closed) or search by title."
+      },
+      "stats": {
+        "title": "Job stats at a glance",
+        "desc": "Quickly see total openings, applicants, and average time to hire."
+      },
+      "create": {
+        "title": "Create a job",
+        "desc": "A 3-step wizard walks you through title, requirements, and pipeline setup."
+      },
+      "manage": {
+        "title": "Manage candidates per job",
+        "desc": "Click any job to see its applicants, ranking, and screening status."
+      }
+    },
+    "ppe": {
+      "title": "Pair Programming Evaluation",
+      "intro": "Run real coding interviews and let AI evaluate solutions.",
+      "choose": {
+        "title": "Choose a problem",
+        "desc": "Pick a problem and language. A starter template is provided."
+      },
+      "language": {
+        "title": "Pick a language",
+        "desc": "Choose from Python, JavaScript, TypeScript, Java, Go, or C++."
+      },
+      "timer": {
+        "title": "Session timer",
+        "desc": "A live timer tracks your session duration once you start a problem."
+      },
+      "editor": {
+        "title": "Code editor",
+        "desc": "Write your solution in a syntax-highlighted editor."
+      },
+      "run": {
+        "title": "Run tests",
+        "desc": "Submit your code to execute the test suite and get instant feedback."
+      },
+      "hint": {
+        "title": "Request a hint",
+        "desc": "Stuck? Ask the AI for a contextual hint without spoiling the solution."
+      },
+      "submit": {
+        "title": "Submit for AI evaluation",
+        "desc": "Your submission is scored on correctness, performance, and code quality."
+      }
+    },
+    "aiCopilot": {
+      "title": "AI Copilot",
+      "intro": "Your always-on recruiting assistant. Ask anything about your candidates or pipeline.",
+      "agents": {
+        "title": "AI agents",
+        "desc": "Behind the scenes, specialized agents handle matching, screening, and scheduling."
+      },
+      "prompts": {
+        "title": "Suggested prompts",
+        "desc": "Get started quickly with curated prompts that demonstrate what the copilot can do."
+      },
+      "input": {
+        "title": "Ask anything",
+        "desc": "Type your question in natural language. The copilot can summarize, recommend, and explain."
+      },
+      "response": {
+        "title": "AI response",
+        "desc": "Get a structured answer with a confidence score, reasoning chain, and suggested actions."
+      },
+      "history": {
+        "title": "Conversation history",
+        "desc": "Your chat history is preserved during the session so you can refer back to past answers."
+      }
+    },
+    "pipeline": {
+      "title": "Pipeline",
+      "intro": "Visualize and manage every candidate's journey.",
+      "stages": {
+        "title": "Stages",
+        "desc": "Each column is a stage. Drag candidates between stages to update their status."
+      },
+      "card": {
+        "title": "Candidate card",
+        "desc": "Each card shows key info at a glance: name, role, and skills."
+      },
+      "drag": {
+        "title": "Drag to move",
+        "desc": "Click and hold a card to drag it to a new stage. The change is saved automatically."
+      },
+      "ai": {
+        "title": "AI-suggested next actions",
+        "desc": "Open a candidate to see AI-recommended next steps based on their profile."
+      }
+    },
+    "interviews": {
+      "title": "Interviews",
+      "intro": "Schedule, manage, and join interviews with your candidates.",
+      "schedule": {
+        "title": "Schedule interview",
+        "desc": "Click here to schedule a phone, technical, panel, or onsite interview."
+      },
+      "upcoming": {
+        "title": "Upcoming this week",
+        "desc": "At-a-glance view of interviews happening in the next seven days."
+      },
+      "filters": {
+        "title": "Filter interviews",
+        "desc": "Search by candidate, filter by status or type, or switch to the calendar view."
+      },
+      "table": {
+        "title": "Interview list",
+        "desc": "View scheduled interviews with type, panel, and status at a glance."
+      },
+      "join": {
+        "title": "Start or join",
+        "desc": "Click Start when the interview begins, or Complete when finished to log the outcome."
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "intro": "Manage your account, security, team, and billing in one place.",
+      "tabs": {
+        "title": "Tabs",
+        "desc": "Switch between Profile, Notifications, Security, API, Team, and Billing."
+      },
+      "save": {
+        "title": "Save changes",
+        "desc": "Don't forget to save your changes after editing. Most tabs autosave."
+      }
+    },
+    "analytics": {
+      "title": "Analytics",
+      "intro": "Real-time insights into your hiring funnel and AI performance.",
+      "range": {
+        "title": "Time range",
+        "desc": "Switch between 7-day, 30-day, and 90-day windows to compare trends."
+      },
+      "stats": {
+        "title": "Key metrics",
+        "desc": "Total candidates, active jobs, interviews this week, and pass rate."
+      },
+      "funnel": {
+        "title": "Pipeline funnel",
+        "desc": "See how candidates progress through each stage of your pipeline."
+      },
+      "ai": {
+        "title": "AI agent performance",
+        "desc": "Track how each AI agent is performing: tasks completed, confidence, accuracy."
+      },
+      "export": {
+        "title": "Export & share",
+        "desc": "Take screenshots or copy numbers directly. CSV export is available on the reports page."
+      }
+    },
+    "workflows": {
+      "title": "Workflows",
+      "intro": "Automate repetitive tasks with no-code workflows.",
+      "create": {
+        "title": "Create workflow",
+        "desc": "Pick a template or build a custom workflow from triggers, conditions, and actions."
+      },
+      "filter": {
+        "title": "Filter workflows",
+        "desc": "Toggle between All, Active, and Paused to focus on what matters."
+      },
+      "list": {
+        "title": "Workflow list",
+        "desc": "Each workflow is a sequence of triggers, conditions, actions, and notifications."
+      },
+      "activate": {
+        "title": "Activate workflows",
+        "desc": "Toggle a workflow on to let it run automatically. Pause any time to stop execution."
+      },
+      "actions": {
+        "title": "Workflow actions",
+        "desc": "Pause/activate, run, duplicate, or delete a workflow from the card menu."
+      }
+    }
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "label": "Language",
+    "select": "Select language"
+  },
+  "quickActions": {
+    "open": "Open quick actions",
+    "close": "Close quick actions"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unread": "unread",
+    "markAllRead": "Mark all read",
+    "loading": "Loading…",
+    "none": "No notifications",
+    "viewAll": "View all activity",
+    "page": {
+      "subtitle": "Stay on top of interviews, candidates, and system activity.",
+      "search": {
+        "placeholder": "Search notifications…",
+        "label": "Search notifications",
+        "clear": "Clear search",
+        "noResults": "No notifications match your search."
+      },
+      "filters": {
+        "all": "All",
+        "unread": "Unread",
+        "mentions": "Mentions",
+        "system": "System"
+      },
+      "groups": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "thisWeek": "This Week",
+        "older": "Older"
+      },
+      "bulk": {
+        "selected": "{count} selected",
+        "selectAll": "Select all visible",
+        "clearSelection": "Clear selection",
+        "delete": "Delete selected",
+        "deleteConfirmTitle": "Delete {count} notification(s)?",
+        "deleteConfirmDescription": "This action cannot be undone. The selected notifications will be permanently removed.",
+        "deleted": "Deleted {count} notification(s)",
+        "deleteFailed": "Some notifications could not be deleted"
+      },
+      "newItem": "New notification",
+      "realtime": "Live",
+      "reconnecting": "Reconnecting…",
+      "clearRead": "Clear read",
+      "refreshing": "Refreshing…",
+      "refresh": "Refresh",
+      "new": "New",
+      "justNow": "Just now",
+      "markAsRead": "Mark as read",
+      "open": "Open notification",
+      "dismiss": "Dismiss notification",
+      "select": "Select notification",
+      "empty": {
+        "title": "You're all caught up",
+        "description": "No notifications match the current filter. We'll let you know when something new comes in."
+      },
+      "error": {
+        "title": "Couldn't load notifications",
+        "retry": "Try again"
+      },
+      "counts": {
+        "total": "Total",
+        "unread": "Unread",
+        "read": "Read"
+      },
+      "tabs": {
+        "aria": "Filter notifications by category"
+      },
+      "list": {
+        "aria": "Notifications list"
+      },
+      "actions": {
+        "aria": "Bulk notification actions"
+      }
+    },
+    "settings": {
+      "title": "Notification preferences",
+      "subtitle": "Choose how and where AI-ROS notifies you.",
+      "channels": {
+        "title": "Channels",
+        "subtitle": "Master switches for each delivery channel. Turning a channel off silences every event in that channel.",
+        "email": "Email",
+        "emailDesc": "Daily digests, important alerts, and weekly summaries.",
+        "inApp": "In-app",
+        "inAppDesc": "Alerts that appear in the notification bell and the top of your dashboard.",
+        "push": "Push",
+        "pushDesc": "Real-time browser push notifications when something urgent happens."
+      },
+      "matrix": {
+        "event": "Event",
+        "email": "Email",
+        "inApp": "In-app",
+        "push": "Push",
+        "enableAll": "Enable all",
+        "disableAll": "Disable all"
+      },
+      "categories": {
+        "applications": "Applications",
+        "applicationsDesc": "New candidates, status changes, and pipeline updates.",
+        "interviews": "Interviews",
+        "videoInterviews": "Video Interviews",
+        "contentGenerator": "Content Generator",
+        "interviewsDesc": "Schedule changes, reminders, and feedback requests.",
+        "messages": "Messages",
+        "messagesDesc": "Mentions, replies, and direct messages from your team.",
+        "system": "System",
+        "systemDesc": "Security alerts, billing, and product maintenance notices.",
+        "marketing": "Marketing",
+        "marketingDesc": "Product updates, newsletters, and recruiter tips."
+      },
+      "events": {
+        "applicationReceived": "New application received",
+        "applicationStatusChanged": "Application status changed",
+        "candidateShortlisted": "Candidate shortlisted",
+        "interviewScheduled": "Interview scheduled",
+        "interviewReminder": "Interview reminder",
+        "interviewRescheduled": "Interview rescheduled",
+        "interviewFeedbackRequested": "Feedback requested",
+        "newMessage": "New team message",
+        "mention": "You were @-mentioned",
+        "teamReply": "Reply to your comment",
+        "systemAlert": "System alert",
+        "securityAlert": "Security alert",
+        "billingUpdate": "Billing & subscription update",
+        "productUpdates": "Product updates",
+        "newsletter": "Weekly newsletter",
+        "tipsAndTricks": "Recruiter tips & tricks"
+      },
+      "saved": "Preferences saved",
+      "savedDesc": "Your notification settings have been updated.",
+      "saveFailed": "Save failed",
+      "save": "Save preferences",
+      "saving": "Saving…",
+      "loadError": "Could not load your preferences. Defaults are shown."
+    },
+    "pushNotifications": {
+      "title": "Push notification devices",
+      "subtitle": "Manage devices that receive push notifications from AI-ROS.",
+      "registerDevice": "Register device",
+      "registerTitle": "Register a device",
+      "registerDesc": "Choose how to register your device for push notifications.",
+      "autoRegister": "Automatic registration",
+      "autoRegisterDesc": "Register this browser automatically using push notifications.",
+      "registerThisDevice": "Register this device",
+      "manualEntry": "Manual entry",
+      "manualEntryDesc": "Enter a device token from a mobile app or another source.",
+      "tokenPlaceholder": "Enter device token…",
+      "submitToken": "Submit token",
+      "tokenRequired": "Please enter a device token",
+      "deviceRegistered": "Device registered",
+      "deviceRegisteredDesc": "You will now receive push notifications on this device.",
+      "deviceUnregistered": "Device unregistered",
+      "deviceUnregisteredDesc": "This device will no longer receive push notifications.",
+      "unregisterFailed": "Unregister failed",
+      "unregister": "Unregister",
+      "lastActive": "Last active",
+      "noDevices": "No devices registered",
+      "noDevicesDesc": "Register a device to receive push notifications when something important happens.",
+      "permissionDenied": "Push notifications are blocked in your browser. Enable them in your browser settings.",
+      "requestPermission": "Request permission",
+      "type": "Notification type",
+      "channelEmail": "Email",
+      "channelPush": "Push",
+      "channelInApp": "In-app",
+      "saved": "Preferences saved",
+      "savedDesc": "Your notification settings have been updated.",
+      "saveFailed": "Save failed",
+      "save": "Save preferences",
+      "saving": "Saving…"
+    }
+  },
+  "userMenu": {
+    "open": "Open user menu",
+    "profile": "Your profile",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "tags": {
+    "title": "Tag manager",
+    "customColor": "Custom color",
+    "preview": "Preview",
+    "previewHelp": "This is how the tag will appear.",
+    "usage": "{count} use(s)",
+    "totalCount": "{count} total",
+    "allEntityTypes": "All entity types",
+    "entityTypes": {
+      "global": "Global",
+      "candidate": "Candidate",
+      "job": "Job",
+      "interview": "Interview",
+      "resume": "Resume"
+    },
+    "entityDescriptions": {
+      "global": "Global tags available on every entity",
+      "candidate": "Tags that belong to candidates",
+      "job": "Tags that belong to jobs",
+      "interview": "Tags that belong to interviews",
+      "resume": "Tags that belong to resumes"
+    },
+    "fields": {
+      "name": "Name",
+      "namePh": "e.g. Senior, Remote, Top-priority",
+      "entityType": "Entity type",
+      "color": "Color",
+      "customColor": "Custom color",
+      "description": "Description",
+      "descriptionPh": "Optional context for teammates…"
+    },
+    "filter": {
+      "entityType": "Filter by entity type"
+    },
+    "errors": {
+      "nameInvalid": "Name must be between 1 and 50 characters",
+      "descriptionTooLong": "Description must be 200 characters or less",
+      "saveFailed": "Failed to save tag",
+      "deleteFailed": "Failed to delete tag"
+    },
+    "empty": {
+      "title": "No tags yet",
+      "desc": "Create your first tag to start labeling candidates, jobs, and other entities.",
+      "filteredTitle": "No tags match your filters",
+      "filteredDesc": "Try clearing the search or filter."
+    },
+    "accessDenied": "Access denied",
+    "accessDeniedDesc": "You need administrator privileges to manage tags."
+  },
+  "reports": {
+    "title": "Reports & Analytics",
+    "subtitle": "Generate, download, and schedule hiring reports to share with your team.",
+    "datePresets": "Date range presets",
+    "last7days": "7d",
+    "last30days": "30d",
+    "last90days": "90d",
+    "yearToDate": "YTD",
+    "custom": "Custom",
+    "selectRange": "Select date range",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing…",
+    "loadError": "Couldn't load reports",
+    "retry": "Try again",
+    "filters": "Filters",
+    "department": "Department",
+    "allDepartments": "All departments",
+    "location": "Location",
+    "allLocations": "All locations",
+    "job": "Job",
+    "allJobs": "All jobs",
+    "clear": "Clear",
+    "exportOptions": "Export options",
+    "export": "Export",
+    "exportReady": "Export ready",
+    "exportQueued": "Export queued — you will be notified when ready",
+    "exportError": "Export failed",
+    "scheduleReport": "Schedule report",
+    "scheduleReportDesc": "Choose a report, format, frequency, and recipient.",
+    "reportType": "Report",
+    "format": "Format",
+    "frequency": "Frequency",
+    "emailTo": "Send to email",
+    "emailRequired": "Please enter a recipient email",
+    "scheduled": "Report scheduled",
+    "scheduleError": "Failed to schedule report",
+    "scheduleRemoved": "Schedule removed",
+    "scheduleRemoveError": "Failed to remove schedule",
+    "generated": "Report generated",
+    "generateError": "Failed to generate report",
+    "download": "Download",
+    "downloadUnavailable": "Download link is not available",
+    "cancel": "Cancel",
+    "confirmSchedule": "Schedule report",
+    "delete": "Delete",
+    "pause": "Pause",
+    "resume": "Resume",
+    "active": "active",
+    "paused": "paused",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "nextRun": "Next run",
+    "totalExports": "Total exports",
+    "thisMonth": "This month",
+    "activeSchedules": "Active schedules",
+    "totalHires": "Total hires",
+    "avgTimeToHire": "Avg time to hire",
+    "totalsAndTrends": "Totals & trends",
+    "section1Title": "Hiring overview",
+    "section2Title": "Pipeline health",
+    "bottlenecks": "Bottlenecks & drop-off",
+    "section3Title": "Source effectiveness",
+    "channels": "Channels & ROI",
+    "section4Title": "Recruiter performance",
+    "topPerformers": "Top performers & response times",
+    "section5Title": "Quality metrics",
+    "quality": "Offer acceptance, retention, satisfaction",
+    "totalCandidates": "Total candidates",
+    "newCandidates": "New candidates",
+    "thisPeriod": "this period",
+    "activeJobs": "Active jobs",
+    "interviews": "Interviews",
+    "hires": "Hires",
+    "candidates": "Candidates",
+    "trendChart": "Hiring trend",
+    "trendChartDesc": "Candidates, hires, and interviews over the selected period",
+    "pipelineFunnel": "Pipeline funnel",
+    "pipelineFunnelDesc": "Candidates at each stage of the hiring process",
+    "noPipeline": "No pipeline data",
+    "noPipelineDesc": "Once candidates flow through the funnel, you will see the breakdown here.",
+    "stageAnalysis": "Stage analysis",
+    "stageAnalysisDesc": "Drop-off rate and time-in-stage for each step",
+    "stage": "Stage",
+    "count": "Count",
+    "dropOff": "Drop-off",
+    "avgDays": "Avg days",
+    "noData": "No data",
+    "noDataDesc": "Start moving candidates to see stage metrics.",
+    "sourceMix": "Candidate source mix",
+    "sourceMixDesc": "Share of candidates by acquisition channel",
+    "sourceROI": "Source ROI",
+    "sourceROIDesc": "Hires and ROI by channel",
+    "noSources": "No source data",
+    "noSourcesDesc": "Once candidates start applying, you will see source performance here.",
+    "recruiterLeaderboard": "Recruiter leaderboard",
+    "recruiterLeaderboardDesc": "Productivity and outcome metrics per recruiter",
+    "reviewed": "Reviewed",
+    "responseScore": "Response & score",
+    "responseScoreDesc": "Avg response time and quality score",
+    "noRecruiters": "No recruiter data",
+    "noRecruitersDesc": "Once recruiters start working, you will see their performance here.",
+    "qualityScores": "Quality scores",
+    "qualityScoresDesc": "Current value vs. target for each KPI",
+    "qualityBreakdown": "Quality breakdown",
+    "qualityBreakdownDesc": "Performance against target for each metric",
+    "offerAcceptance": "Offer acceptance",
+    "retention": "90-day retention",
+    "satisfaction": "Candidate satisfaction",
+    "rejectionRate": "Rejection rate",
+    "prebuilt": "Pre-built reports",
+    "available": "available",
+    "hiringFunnel": "Hiring funnel",
+    "hiringFunnelDesc": "Conversion and drop-off across each pipeline stage.",
+    "timeToHire": "Time to hire",
+    "timeToHireDesc": "Average, median, and trend for time-to-hire by job and source.",
+    "sourceEffectiveness": "Source effectiveness",
+    "sourceEffectivenessDesc": "Which channels deliver the best candidates and ROI.",
+    "interviewFeedback": "Interview feedback",
+    "interviewFeedbackDesc": "Aggregated interviewer scores and feedback by role.",
+    "diversityInclusion": "Diversity & inclusion",
+    "diversityInclusionDesc": "Diversity metrics across the pipeline and hires.",
+    "costPerHire": "Cost per hire",
+    "costPerHireDesc": "Recruiting spend and cost per hire by source and team.",
+    "lastGenerated": "Last generated",
+    "neverGenerated": "Never generated",
+    "formatOptions": "Format options",
+    "generate": "Generate",
+    "schedule": "Schedule",
+    "recentlyGenerated": "Recently generated",
+    "noRecent": "No exports yet",
+    "noRecentDesc": "Generate your first report above and it will appear here for quick download.",
+    "scheduledReports": "Scheduled reports",
+    "noSchedules": "No scheduled reports",
+    "noSchedulesDesc": "Schedule a report to be delivered to your inbox on a recurring basis."
+  },
+  "pricing": {
+    "metaTitle": "Pricing · AI-ROS",
+    "hero": {
+      "eyebrow": "Pricing",
+      "title": "Simple, transparent pricing",
+      "subtitle": "Pick the plan that fits your team. Upgrade, downgrade or cancel anytime."
+    },
+    "toggle": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "save": "Save 20%"
+    },
+    "billing": {
+      "monthly": "per month",
+      "yearly": "per year",
+      "billedYearly": "Billed yearly",
+      "free": "Free forever"
+    },
+    "popular": "Most popular",
+    "ctaStart": "Start free",
+    "ctaTrial": "Start 14-day trial",
+    "ctaContact": "Contact sales",
+    "custom": "Custom",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "tagline": "For small teams just getting started",
+        "features": [
+          "Up to 25 candidates / month",
+          "1 active job posting",
+          "Basic AI screening",
+          "Community support",
+          "Single workspace"
+        ]
+      },
+      "starter": {
+        "name": "Starter",
+        "tagline": "For growing teams hiring regularly",
+        "features": [
+          "Up to 200 candidates / month",
+          "5 active jobs",
+          "AI matching + screening",
+          "Email support",
+          "Branded careers page",
+          "3 team members"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "tagline": "For scaling teams that hire continuously",
+        "features": [
+          "Up to 1,000 candidates / month",
+          "Unlimited active jobs",
+          "Advanced AI matching",
+          "Live coding interviews",
+          "Custom workflows",
+          "Priority support",
+          "10 team members",
+          "Advanced analytics"
+        ]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "tagline": "For large organisations with bespoke needs",
+        "features": [
+          "Unlimited candidates",
+          "Unlimited jobs & seats",
+          "Custom AI models",
+          "Dedicated success manager",
+          "SSO / SAML, SCIM, audit log",
+          "On-prem or VPC deployment",
+          "99.9% uptime SLA",
+          "Custom integrations"
+        ]
+      }
+    },
+    "compare": {
+      "title": "Compare every feature",
+      "subtitle": "All plans include unlimited interviews, secure storage and EU/US data residency.",
+      "feature": "Feature",
+      "yes": "Included",
+      "no": "Not included",
+      "rows": {
+        "candidates": "Candidates per month",
+        "jobs": "Active jobs",
+        "users": "Team members",
+        "aiScreening": "AI screening",
+        "aiMatching": "AI matching",
+        "liveInterviews": "Live coding interviews",
+        "workflows": "Custom workflows",
+        "branding": "Branded careers page",
+        "analytics": "Advanced analytics",
+        "api": "API access & webhooks",
+        "sso": "SSO / SAML / SCIM",
+        "audit": "Audit log",
+        "support": "Support",
+        "sla": "Uptime SLA"
+      },
+      "values": {
+        "supportCommunity": "Community",
+        "supportEmail": "Email",
+        "supportPriority": "Priority",
+        "supportDedicated": "Dedicated CSM",
+        "apiReadonly": "Read-only",
+        "apiFull": "Full",
+        "aiBasic": "Basic",
+        "aiAdvanced": "Advanced",
+        "aiCustom": "Custom models",
+        "unlimited": "Unlimited",
+        "none": "None",
+        "standard": "Standard"
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "subtitle": "Can't find what you're looking for? Reach out to our team.",
+      "items": {
+        "trial": {
+          "q": "Do you offer a free trial?",
+          "a": "Yes — every paid plan includes a 14-day free trial with full feature access. No credit card required."
+        },
+        "switch": {
+          "q": "Can I change plans later?",
+          "a": "Absolutely. Upgrade, downgrade or cancel from the billing portal anytime. Changes are prorated to the day."
+        },
+        "payment": {
+          "q": "Which payment methods do you accept?",
+          "a": "We accept all major credit cards, ACH, SEPA direct debit and wire transfer for Enterprise plans."
+        },
+        "data": {
+          "q": "Where is my data stored?",
+          "a": "We offer EU (Frankfurt) and US (Virginia) data residency. Enterprise customers can choose dedicated regions."
+        },
+        "security": {
+          "q": "Is AI-ROS secure?",
+          "a": "Yes. We're SOC2 Type II certified, GDPR compliant, encrypt data in transit and at rest, and never train shared models on your data."
+        },
+        "integrations": {
+          "q": "Does it integrate with my ATS?",
+          "a": "We integrate natively with Greenhouse, Lever, Workday and BambooHR, plus a full REST API and webhooks."
+        },
+        "discount": {
+          "q": "Do you offer non-profit or startup discounts?",
+          "a": "Yes — 50% off for registered non-profits and qualifying early-stage startups. Contact us to apply."
+        },
+        "cancel": {
+          "q": "What happens if I cancel?",
+          "a": "You keep access until the end of your billing period. Your data is exportable in CSV/JSON for 30 days."
+        },
+        "support": {
+          "q": "What kind of support do you offer?",
+          "a": "Community support on Free, email on Starter, priority on Pro, and a dedicated CSM with 1-hour SLA on Enterprise."
+        },
+        "onboarding": {
+          "q": "Do you help with onboarding?",
+          "a": "All plans get our guided onboarding. Pro and Enterprise include white-glove migration from your current ATS."
+        }
+      }
+    }
+  },
+  "about": {
+    "metaTitle": "About · AI-ROS",
+    "hero": {
+      "eyebrow": "Our story",
+      "title": "Hiring should be human, not heavy.",
+      "subtitle": "We started AI-ROS to give every recruiter the leverage of a Fortune-500 talent team — without the spreadsheets."
+    },
+    "mission": {
+      "title": "Our mission",
+      "body": "Make every hiring decision smarter, faster and fairer using AI that recruiters and candidates actually trust."
+    },
+    "vision": {
+      "title": "Our vision",
+      "body": "A world where the best person for the job is always found — regardless of network, geography or pedigree."
+    },
+    "values": {
+      "title": "What we value",
+      "items": {
+        "transparency": {
+          "title": "Radical transparency",
+          "description": "Every AI score is explainable. Every candidate gets feedback. No black boxes."
+        },
+        "fairness": {
+          "title": "Fairness by design",
+          "description": "We continuously audit our models for bias and publish quarterly fairness reports."
+        },
+        "craft": {
+          "title": "Obsess over craft",
+          "description": "Beautiful, fast, accessible product — because recruiters deserve great tools too."
+        },
+        "candidates": {
+          "title": "Candidates first",
+          "description": "Every feature is built so the candidate experience is delightful, not extractive."
+        }
+      }
+    },
+    "team": {
+      "title": "Meet the team",
+      "subtitle": "A small, senior team building the future of hiring from Paris, NYC and remote.",
+      "members": {
+        "alex": {
+          "name": "Alex Dupont",
+          "role": "Co-founder & CEO",
+          "bio": "Ex-LinkedIn, ex-Greenhouse. Spent 10 years building hiring tools."
+        },
+        "priya": {
+          "name": "Priya Sharma",
+          "role": "Co-founder & CTO",
+          "bio": "Former staff ML engineer at Meta. PhD in NLP."
+        },
+        "diego": {
+          "name": "Diego Martín",
+          "role": "Head of Product",
+          "bio": "Previously built Notion's onboarding and Linear's pipeline."
+        },
+        "lina": {
+          "name": "Lina Park",
+          "role": "Head of Design",
+          "bio": "Design systems at Stripe and Figma."
+        },
+        "yusuf": {
+          "name": "Yusuf Okonkwo",
+          "role": "Head of AI Research",
+          "bio": "Published 30+ papers on responsible AI."
+        },
+        "claire": {
+          "name": "Claire Laurent",
+          "role": "Head of People",
+          "bio": "Built people teams at Datadog and Algolia."
+        }
+      }
+    },
+    "investors": {
+      "title": "Backed by the best",
+      "subtitle": "We're proud to be supported by investors and partners who believe in fairer hiring.",
+      "backers": [
+        "Sequoia",
+        "Accel",
+        "Index Ventures",
+        "Y Combinator",
+        "First Round",
+        "Headline"
+      ]
+    },
+    "cta": {
+      "title": "Want to join us?",
+      "subtitle": "We're hiring across product, engineering and design.",
+      "primary": "See open roles",
+      "secondary": "Contact us"
+    }
+  },
+  "contact": {
+    "metaTitle": "Contact · AI-ROS",
+    "hero": {
+      "eyebrow": "Contact",
+      "title": "Let's talk hiring",
+      "subtitle": "Questions about pricing, security, integrations or just want a demo? We'd love to hear from you."
+    },
+    "form": {
+      "title": "Send us a message",
+      "subtitle": "We typically reply within one business day.",
+      "name": "Full name",
+      "namePlaceholder": "Jane Doe",
+      "email": "Work email",
+      "emailPlaceholder": "jane@company.com",
+      "company": "Company",
+      "companyPlaceholder": "Acme Inc.",
+      "topic": "How can we help?",
+      "topics": {
+        "sales": "Talk to sales",
+        "support": "Get product support",
+        "partnership": "Partnerships",
+        "press": "Press / Media",
+        "other": "Something else"
+      },
+      "message": "Your message",
+      "messagePlaceholder": "Tell us a bit about your team and what you're trying to solve…",
+      "submit": "Send message",
+      "submitting": "Sending…",
+      "successTitle": "Message sent!",
+      "successBody": "Thanks for reaching out. We'll get back to you within one business day.",
+      "errorTitle": "Could not send",
+      "errorBody": "Something went wrong on our end. Please email us at hello@ai-ros.com instead.",
+      "errors": {
+        "name": "Please enter your name",
+        "email": "Please enter a valid work email",
+        "message": "Please write a short message (at least 10 characters)"
+      },
+      "consent": "By submitting this form you agree to our Privacy Policy."
+    },
+    "offices": {
+      "title": "Our offices",
+      "items": {
+        "paris": {
+          "city": "Paris",
+          "address": "12 rue de la Paix, 75002 Paris, France",
+          "tz": "CET — Mon–Fri 9:00–18:00"
+        },
+        "newyork": {
+          "city": "New York",
+          "address": "401 Broadway, NY 10013, United States",
+          "tz": "EST — Mon–Fri 9:00–18:00"
+        },
+        "remote": {
+          "city": "Remote-first",
+          "address": "Team members across 14 countries",
+          "tz": "Async by default"
+        }
+      }
+    },
+    "channels": {
+      "title": "Other ways to reach us",
+      "salesTitle": "Sales",
+      "salesBody": "sales@ai-ros.com",
+      "supportTitle": "Support",
+      "supportBody": "support@ai-ros.com",
+      "pressTitle": "Press",
+      "pressBody": "press@ai-ros.com"
+    },
+    "social": {
+      "title": "Follow us"
+    }
+  },
+  "compliance": {
+    "title": "Compliance Dashboard",
+    "subtitle": "Monitor SOC 2, GDPR, and security controls across your tenant.",
+    "refresh": "Refresh compliance data",
+    "runChecks": "Run checks",
+    "accessDenied": "Access Denied",
+    "accessDeniedDesc": "You need administrator privileges to view the compliance dashboard.",
+    "loadError": "Could not load compliance data",
+    "loadErrorDesc": "There was a problem fetching your tenant compliance status.",
+    "overallScore": "Overall score",
+    "compliant": "Compliant",
+    "scoreHelp": "Based on the latest automated checks across all compliance frameworks.",
+    "lastRun": "Last run: {date}",
+    "lastAudit": "Last audit: {date}",
+    "noAudit": "No audit recorded yet",
+    "lastChecked": "Last checked: {date}",
+    "justNow": "just now",
+    "frameworks": {
+      "title": "Framework status",
+      "desc": "GDPR, CCPA, and HIPAA posture based on the last automated audit."
+    },
+    "gdpr": {
+      "title": "GDPR"
+    },
+    "ccpa": {
+      "title": "CCPA"
+    },
+    "hipaa": {
+      "title": "HIPAA"
+    },
+    "counts": {
+      "passed": "Passed",
+      "failed": "Failed",
+      "warnings": "Warnings"
+    },
+    "status": {
+      "pass": "Pass",
+      "fail": "Fail",
+      "warning": "Warning",
+      "compliant": "Compliant",
+      "violation": "Non-compliant",
+      "warningOverall": "Needs attention",
+      "unknown": "Unknown"
+    },
+    "recommendations": {
+      "title": "Recommendations",
+      "desc": "Prioritized actions to improve your compliance posture."
+    },
+    "checks": {
+      "title": "Compliance checks",
+      "desc": "SOC 2, GDPR, and security controls evaluated against your tenant.",
+      "soc2": {
+        "accessControl": {
+          "name": "Logical access controls",
+          "desc": "Restricts logical access to information assets, systems, and data to authorized users only.",
+          "evidence": "Role-based access control (RBAC) enforced across all endpoints.\nMFA enabled for 100% of admin accounts.\nQuarterly access reviews performed on {date}."
+        },
+        "encryption": {
+          "name": "Encryption at rest and in transit",
+          "desc": "All sensitive data is encrypted using industry-standard algorithms in transit and at rest.",
+          "evidence": "TLS 1.3 enforced on all public endpoints.\nAES-256 encryption for database storage and object storage.\nKey rotation every 90 days via KMS."
+        },
+        "monitoring": {
+          "name": "Security monitoring and anomaly detection",
+          "desc": "Continuous monitoring of systems for security events, anomalies, and intrusion attempts.",
+          "evidence": "Centralized SIEM with 24/7 alerting.\n90-day hot retention, 365-day cold retention.\nLast 30 days: 0 critical incidents, 4 medium, 18 low."
+        },
+        "changeMgmt": {
+          "name": "Change management and deployment controls",
+          "desc": "Changes to production systems follow documented review, testing, and approval workflows.",
+          "evidence": "All production changes require peer review and CI pipeline validation.\nDeployment logs retained for 365 days.\nLast deployment: {date}."
+        },
+        "vendorRisk": {
+          "name": "Vendor and third-party risk management",
+          "desc": "Identifies, assesses, and mitigates risks from third-party vendors with access to data.",
+          "evidence": "Active vendor inventory: 47 vendors.\n14 vendors pending SOC2 review.\nLast assessment cycle: Q3 2025."
+        }
+      },
+      "gdpr": {
+        "records": {
+          "name": "Records of processing activities",
+          "desc": "Maintains a comprehensive record of all processing activities involving personal data.",
+          "evidence": "Article 30 register up to date with 23 processing activities.\nData Protection Officer appointed and registered with supervisory authority.\nLast review: {date}."
+        },
+        "security": {
+          "name": "Security of processing (Art. 32)",
+          "desc": "Implements appropriate technical and organizational measures to ensure data security.",
+          "evidence": "Encryption, access controls, and pseudonymization implemented.\nRegular penetration tests (last: {date}).\nEmployee security training: 98% completion rate."
+        },
+        "dsar": {
+          "name": "Data subject access & erasure requests",
+          "desc": "Process and respond to data subject access and erasure requests within 30 days.",
+          "evidence": "Average DSAR response time: 4.2 days (SLA: 30 days).\n12 DSARs processed this quarter — 11 completed, 1 in progress.\nNo overdue requests."
+        },
+        "privacyByDesign": {
+          "name": "Privacy by design and by default",
+          "desc": "Privacy principles are embedded into processing activities and business practices.",
+          "evidence": "DPIA performed for all new features handling personal data.\nData minimization applied across candidate and resume services.\n3 DPIAs completed in the last quarter."
+        }
+      },
+      "security": {
+        "tls": {
+          "name": "TLS configuration and certificate health",
+          "desc": "All public endpoints use valid TLS certificates and follow current best practices.",
+          "evidence": "All certificates managed via automated ACME/Let's Encrypt.\nTLS 1.0/1.1 disabled; only TLS 1.2+ allowed.\nHSTS enabled with 1-year max-age."
+        },
+        "mfa": {
+          "name": "Multi-factor authentication enforcement",
+          "desc": "Privileged users must authenticate using multiple factors to access sensitive systems.",
+          "evidence": "MFA enforced for 100% of admin users.\n8.5% of regular users have MFA enabled (target: 60%).\nSSO providers supported: Okta, Azure AD, Google Workspace."
+        },
+        "backup": {
+          "name": "Backup and disaster recovery",
+          "desc": "Regular backups are performed and verified through periodic restore drills.",
+          "evidence": "Automated daily backups with 30-day retention.\nLast successful restore drill: {date} (RPO: 24h, RTO: 4h).\nCross-region backup replication enabled."
+        },
+        "secrets": {
+          "name": "Secrets management hygiene",
+          "desc": "Secrets are stored in a managed vault with rotation and no plain-text exposure in code.",
+          "evidence": "All secrets stored in HashiCorp Vault with audit logging.\nLast secret rotation: {date}.\n0 secrets detected in code repositories (GitHub secret scanning enabled)."
+        },
+        "auditLog": {
+          "name": "Audit log integrity and retention",
+          "desc": "Audit logs capture all administrative actions and are tamper-resistant.",
+          "evidence": "Append-only audit log with cryptographic chaining.\nRetention: 365 days hot, 7 years cold.\nLast integrity verification: {date} — all checks passed."
+        },
+        "vuln": {
+          "name": "Vulnerability scanning",
+          "desc": "Regular vulnerability scans are run against infrastructure and dependencies.",
+          "evidence": "Weekly automated scans (Snyk + Trivy).\nLast scan: {date} — 2 medium findings, 0 high/critical.\nMean time to remediate critical: 2.3 days."
+        }
+      }
+    },
+    "filter": {
+      "label": "Filter checks",
+      "all": "All",
+      "pass": "Pass",
+      "fail": "Fail",
+      "warning": "Warning"
+    },
+    "evidence": {
+      "title": "Evidence",
+      "show": "View evidence",
+      "hide": "Hide evidence"
+    },
+    "summary": "{shown} of {total} checks shown · {passed} passed · {failed} failed · {warnings} warnings",
+    "export": "Export report",
+    "export.success": "Report downloaded",
+    "run": {
+      "success": "Checks complete: {passed} passed, {failed} failed, {warnings} warnings"
+    },
+    "empty": {
+      "title": "No checks match this filter",
+      "desc": "Try a different status filter or run a fresh compliance check."
+    }
+  },
+  "adminCompliance": {
+    "link": "View compliance dashboard",
+    "card": {
+      "title": "Compliance",
+      "desc": "SOC 2, GDPR, and security posture at a glance."
+    }
+  },
+  "search": {
+    "title": "Search",
+    "subtitle": "Find candidates, jobs, applications, and more in one place.",
+    "placeholder": "Search candidates, jobs, applications...",
+    "clear": "Clear search",
+    "categories": "Categories",
+    "all": "All",
+    "candidates": "Candidates",
+    "jobs": "Jobs",
+    "applications": "Applications",
+    "recent": "Recent searches",
+    "trending": "Trending searches",
+    "noRecent": "Your recent searches will appear here.",
+    "results": "Search results",
+    "noResults": "No results found",
+    "noResultsDesc": "We couldn't find anything matching",
+    "noResultsHint": "Try a different keyword or check your spelling.",
+    "noInCategory": "No matches in this category",
+    "noInCategoryDesc": "Switch to another category to see more results.",
+    "viewAllResults": "View all results",
+    "runs": "runs",
+    "active": "Active",
+    "paused": "Paused",
+    "filters": "Filters",
+    "clearAll": "Clear all",
+    "sortBy": "Sort by",
+    "relevance": "Relevance",
+    "date": "Date",
+    "score": "Score",
+    "name": "Name",
+    "view": "View",
+    "grid": "Grid",
+    "list": "List",
+    "saveSearch": "Save search as alert",
+    "saveSearchDesc": "Get notified when new matches are found",
+    "searchWithin": "Search within results",
+    "searchWithinPlaceholder": "Filter results...",
+    "facets": {
+      "status": "Status",
+      "location": "Location",
+      "skills": "Skills",
+      "experience": "Experience",
+      "salary": "Salary",
+      "department": "Department",
+      "remote": "Remote",
+      "onsite": "On-site",
+      "hybrid": "Hybrid"
+    },
+    "experienceLevels": {
+      "entry": "Entry (0-2 yrs)",
+      "mid": "Mid (3-5 yrs)",
+      "senior": "Senior (6-10 yrs)",
+      "lead": "Lead (10+ yrs)"
+    },
+    "statuses": {
+      "active": "Active",
+      "draft": "Draft",
+      "screening": "Screening",
+      "interviewing": "Interviewing",
+      "offer": "Offer",
+      "hired": "Hired",
+      "rejected": "Rejected",
+      "open": "Open",
+      "closed": "Closed",
+      "on_hold": "On hold"
+    }
+  },
+  "pipelineAutomation": {
+    "title": "Pipeline Automation",
+    "subtitle": "Create and manage automation rules for your hiring pipeline.",
+    "createRule": "Create rule",
+    "noRules": "No automation rules yet",
+    "noRulesDesc": "Create your first rule to automate candidate progression, notifications, and actions.",
+    "ruleName": "Rule name",
+    "ruleNamePlaceholder": "e.g. Auto-advance high-scoring candidates",
+    "description": "Description",
+    "descriptionPlaceholder": "What does this rule do?",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "trigger": "Trigger",
+    "condition": "Condition",
+    "action": "Action",
+    "triggers": {
+      "stageChange": "Stage change",
+      "timeInStage": "Time in stage",
+      "scoreThreshold": "Score threshold",
+      "newCandidate": "New candidate",
+      "interviewCompleted": "Interview completed",
+      "assessmentCompleted": "Assessment completed"
+    },
+    "triggerIcons": {
+      "stageChange": "Move",
+      "timeInStage": "Clock",
+      "scoreThreshold": "Target",
+      "newCandidate": "UserPlus",
+      "interviewCompleted": "CheckCircle",
+      "assessmentCompleted": "FileCheck"
+    },
+    "conditions": {
+      "stage": "Stage",
+      "days": "Days in stage",
+      "score": "Score",
+      "operator": "Operator",
+      "value": "Value",
+      "operators": {
+        "equals": "Equals",
+        "notEquals": "Not equals",
+        "greaterThan": "Greater than",
+        "lessThan": "Less than",
+        "greaterOrEqual": "Greater or equal",
+        "lessOrEqual": "Less or equal",
+        "contains": "Contains",
+        "notContains": "Does not contain"
+      }
+    },
+    "actions": {
+      "moveToStage": "Move to stage",
+      "reject": "Reject candidate",
+      "scheduleInterview": "Schedule interview",
+      "notify": "Send notification",
+      "runAgent": "Run AI agent",
+      "addTag": "Add tag",
+      "removeTag": "Remove tag"
+    },
+    "actionConfig": {
+      "targetStage": "Target stage",
+      "rejectionReason": "Rejection reason",
+      "interviewType": "Interview type",
+      "interviewDuration": "Duration (minutes)",
+      "notificationChannel": "Channel",
+      "notificationTemplate": "Template",
+      "agentType": "AI agent",
+      "agentPrompt": "Prompt",
+      "tagName": "Tag name"
+    },
+    "stages": {
+      "applied": "Applied",
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer",
+      "hired": "Hired",
+      "rejected": "Rejected"
+    },
+    "channels": {
+      "email": "Email",
+      "slack": "Slack",
+      "inApp": "In-app",
+      "webhook": "Webhook"
+    },
+    "agents": {
+      "screening": "Screening agent",
+      "matching": "Matching agent",
+      "interview": "Interview agent",
+      "evaluation": "Evaluation agent"
+    },
+    "lastRun": "Last run",
+    "nextRun": "Next run",
+    "runHistory": "Run history",
+    "noRuns": "No runs yet",
+    "runStatus": {
+      "success": "Success",
+      "failed": "Failed",
+      "running": "Running",
+      "pending": "Pending"
+    },
+    "createdAt": "Created",
+    "updatedAt": "Updated",
+    "editRule": "Edit rule",
+    "deleteRule": "Delete rule",
+    "deleteConfirm": "Delete this automation rule?",
+    "deleteConfirmDesc": "This will permanently remove the rule and its run history.",
+    "toggleEnabled": "Toggle rule status",
+    "runNow": "Run now",
+    "duplicateRule": "Duplicate rule",
+    "ruleSummary": "When {trigger}, if {condition}, then {action}",
+    "preview": "Rule preview",
+    "save": "Save rule",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "saving": "Saving...",
+    "created": "Rule created",
+    "updated": "Rule updated",
+    "deleted": "Rule deleted",
+    "error": "Failed to save rule",
+    "validationError": "Please fill in all required fields",
+    "navLabel": "Pipeline Automation"
+  },
+  "aiMatching": {
+    "title": "AI Matching Dashboard",
+    "subtitle": "Semantic + hybrid scoring to find the perfect match.",
+    "tabCandidates": "Match Candidates to Job",
+    "tabJobs": "Match Jobs to Candidate",
+    "selectJob": "Select a job",
+    "selectJobPh": "Choose a job…",
+    "selectCandidate": "Select a candidate",
+    "selectCandidatePh": "Choose a candidate…",
+    "runMatch": "Run matching",
+    "running": "Matching…",
+    "matchComplete": "{count} matches found",
+    "matchFailed": "Matching failed",
+    "loadError": "Couldn't load data",
+    "noMatches": "No matches yet",
+    "noMatchesDesc": "Select a job and run matching to find the best candidates.",
+    "noMatchesJobsDesc": "Select a candidate and run matching to find the best jobs.",
+    "noResults": "No results match the current filter.",
+    "searchCandidates": "Search candidates…",
+    "scoreThreshold": "Min score",
+    "allScores": "All scores",
+    "selectedCount": "{count} selected",
+    "addToPipeline": "Add to pipeline",
+    "scheduleInterview": "Schedule interview",
+    "addedToPipeline": "{count} candidates added to pipeline",
+    "interviewScheduled": "{count} interviews queued",
+    "selectAll": "Select all",
+    "selectCandidateRow": "Select {name}",
+    "filterDepartment": "Department",
+    "allDepartments": "All departments",
+    "filterLocation": "Filter by location…",
+    "showingCount": "{count} matches",
+    "table": {
+      "candidate": "Candidate",
+      "matchScore": "Match",
+      "semanticScore": "Semantic",
+      "hybridScore": "Hybrid",
+      "topSkills": "Top skills"
+    }
+  },
+  "sourcing": {
+    "title": "Sourcing",
+    "subtitle": "Build talent pools and discover candidates from multiple sources",
+    "tabs": {
+      "talentPools": "Talent Pools",
+      "sourceCandidates": "Source Candidates"
+    },
+    "talentPools": {
+      "title": "Talent Pools",
+      "description": "Description",
+      "createPool": "Create pool",
+      "createPoolDesc": "Build a new talent pool with custom criteria",
+      "noPools": "No talent pools yet",
+      "noPoolsDesc": "Create your first talent pool to start organizing candidates",
+      "name": "Name",
+      "namePlaceholder": "e.g. Senior React Engineers",
+      "descriptionPlaceholder": "Pool description and criteria...",
+      "criteria": "Criteria",
+      "memberCount": "{count} members",
+      "members": "Members",
+      "skills": "Skills",
+      "location": "Location",
+      "experience": "Experience",
+      "actions": {
+        "view": "View members",
+        "edit": "Edit pool",
+        "delete": "Delete pool",
+        "addCandidates": "Add candidates"
+      },
+      "confirmDelete": {
+        "title": "Delete talent pool?",
+        "description": "This will permanently delete the talent pool. Members will not be removed from the system.",
+        "confirm": "Delete pool"
+      },
+      "created": "Talent pool created",
+      "updated": "Talent pool updated",
+      "deleted": "Talent pool deleted",
+      "createFailed": "Failed to create talent pool",
+      "updateFailed": "Failed to update talent pool",
+      "deleteFailed": "Failed to delete talent pool"
+    },
+    "sourceCandidates": {
+      "title": "Source Candidates",
+      "description": "Search and import candidates from external sources",
+      "sourceLabel": "Source",
+      "sources": {
+        "linkedin": "LinkedIn",
+        "github": "GitHub",
+        "custom": "Custom Search"
+      },
+      "criteria": {
+        "title": "Search Criteria",
+        "skills": "Skills",
+        "skillsPlaceholder": "e.g. React, TypeScript, Node.js",
+        "location": "Location",
+        "locationPlaceholder": "e.g. San Francisco, Remote, London",
+        "experience": "Years of Experience",
+        "experienceMin": "Min",
+        "experienceMax": "Max",
+        "keywords": "Keywords",
+        "keywordsPlaceholder": "Additional search terms...",
+        "search": "Search",
+        "searching": "Searching...",
+        "clear": "Clear criteria"
+      },
+      "results": {
+        "title": "Search Results",
+        "count": "{count} candidates found",
+        "noResults": "No candidates found",
+        "noResultsDesc": "Try adjusting your search criteria",
+        "selectAll": "Select all",
+        "selected": "{count} selected",
+        "actions": {
+          "addToPool": "Add to pool",
+          "importAsNew": "Import as new candidates"
+        },
+        "preview": {
+          "skills": "Skills",
+          "location": "Location",
+          "experience": "Experience"
+        }
+      }
+    },
+    "poolMembers": {
+      "title": "Pool Members",
+      "back": "Back to pools",
+      "count": "{count} members",
+      "noMembers": "No members in this pool",
+      "noMembersDesc": "Add candidates to start building this talent pool",
+      "remove": "Remove from pool",
+      "confirmRemove": {
+        "title": "Remove from pool?",
+        "description": "This will remove the candidate from this talent pool. Their profile will remain in the system.",
+        "confirm": "Remove"
+      }
+    },
+    "createPoolDialog": {
+      "title": "Create Talent Pool",
+      "description": "Define a new talent pool with name, description, and criteria",
+      "submit": "Create pool"
+    },
+    "editPoolDialog": {
+      "title": "Edit Talent Pool",
+      "description": "Update the talent pool details and criteria",
+      "submit": "Save changes"
+    },
+    "addToPoolDialog": {
+      "title": "Add to Talent Pool",
+      "description": "Select a talent pool to add the selected candidates",
+      "selectPool": "Select pool",
+      "selectPoolPlaceholder": "Choose a pool...",
+      "submit": "Add to pool"
+    }
+  },
+  "offers": {
+    "title": "Offers",
+    "subtitle": "{total} total offers",
+    "createOffer": "Create offer",
+    "newOffer": "New offer",
+    "newOfferDesc": "Create and send an offer to a candidate",
+    "search": "Search by candidate or job…",
+    "allStatuses": "All statuses",
+    "allCandidates": "All candidates",
+    "allJobs": "All jobs",
+    "couldntLoad": "Couldn't load offers",
+    "noOffersYet": "No offers yet",
+    "noOffersFound": "No offers found",
+    "noOffersDesc": "Create your first offer to get started.",
+    "tryAdjusting": "Try adjusting your filters.",
+    "notFound": "Offer not found",
+    "details": "Offer details",
+    "dates": "Dates",
+    "created": "Created",
+    "sentOn": "Sent",
+    "acceptedOn": "Accepted",
+    "declinedOn": "Declined",
+    "signedOn": "Signed on",
+    "loadFailed": "Failed to load data",
+    "createFailed": "Failed to create offer",
+    "sendFailed": "Failed to send offer",
+    "acceptFailed": "Failed to accept offer",
+    "declineFailed": "Failed to decline offer",
+    "signFailed": "Failed to sign offer",
+    "deleteFailed": "Failed to delete offer",
+    "sent": "Offer sent successfully",
+    "accepted": "Offer accepted",
+    "declined": "Offer declined",
+    "signed": "Offer signed successfully",
+    "deleted": "Offer deleted",
+    "statuses": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "expired": "Expired"
+    },
+    "fields": {
+      "candidate": "Candidate *",
+      "job": "Job *",
+      "salary": "Salary",
+      "salaryMin": "Salary min",
+      "salaryMax": "Salary max",
+      "currency": "Currency",
+      "equity": "Equity (%)",
+      "startDate": "Start date",
+      "expirationDate": "Expiration date",
+      "template": "Template",
+      "notes": "Notes"
+    },
+    "placeholders": {
+      "candidate": "Select candidate…",
+      "job": "Select job…",
+      "template": "Select template…",
+      "notes": "Internal notes about this offer…"
+    },
+    "steps": {
+      "select": "Select",
+      "configure": "Configure",
+      "review": "Review"
+    },
+    "step1": {
+      "title": "Select candidate and job",
+      "description": "Choose who will receive the offer and for which position."
+    },
+    "step2": {
+      "title": "Configure offer terms",
+      "description": "Set compensation, dates, and other terms."
+    },
+    "step3": {
+      "title": "Review and create",
+      "description": "Double-check the details before creating the offer."
+    },
+    "actions": {
+      "send": "Send offer",
+      "accept": "Accept",
+      "decline": "Decline",
+      "sign": "Sign"
+    },
+    "signature": {
+      "title": "Sign below",
+      "clear": "Clear",
+      "save": "Save signature"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "empty": "No events yet."
+    },
+    "confirmDeclineTitle": "Decline offer?",
+    "confirmDeclineDesc": "This will mark the offer as declined.",
+    "confirmDeleteTitle": "Delete offer?",
+    "confirmDeleteDesc": "This action cannot be undone.",
+    "errors": {
+      "candidateRequired": "Please select a candidate",
+      "jobRequired": "Please select a job",
+      "salaryMinInvalid": "Salary must be positive",
+      "salaryMaxInvalid": "Salary must be positive",
+      "salaryRangeInvalid": "Max must be >= min",
+      "equityInvalid": "Equity must be 0-100%"
+    },
+    "templates": {
+      "title": "Offer templates",
+      "subtitle": "Manage reusable offer templates",
+      "createTemplate": "Create template",
+      "editTemplate": "Edit template",
+      "noTemplates": "No templates yet",
+      "noTemplatesDesc": "Create your first offer template to speed up offer creation.",
+      "couldntLoad": "Couldn't load templates",
+      "created": "Template created",
+      "updated": "Template updated",
+      "deleted": "Template deleted",
+      "saveFailed": "Failed to save template",
+      "deleteFailed": "Failed to delete template",
+      "noBody": "No template body.",
+      "confirmDeleteTitle": "Delete template?",
+      "confirmDeleteDesc": "This will permanently delete this template. This action cannot be undone.",
+      "fields": {
+        "name": "Name *",
+        "description": "Description",
+        "body": "Template body"
+      },
+      "placeholders": {
+        "name": "Standard offer",
+        "description": "Brief description of this template…",
+        "body": "Dear {{candidate_name}},\n\nWe are pleased to offer you the position of {{job_title}}…"
+      }
+    }
+  },
+  "performance": {
+    "imageLoadFailed": "Image failed to load",
+    "emptyList": "Empty list",
+    "noItems": "No items to display"
+  },
+  "accessibility": {
+    "title": "Accessibility",
+    "subtitle": "Customize your experience for comfort and usability.",
+    "fontSize": "Font size",
+    "fontSizeDesc": "Adjust the base font size across the application.",
+    "fontSizeSmall": "Small",
+    "fontSizeMedium": "Medium",
+    "fontSizeLarge": "Large",
+    "fontSizeXLarge": "Extra Large",
+    "currentFontSize": "Current size: {size}",
+    "highContrast": "High contrast",
+    "highContrastDesc": "Increase contrast for better readability.",
+    "reducedMotion": "Reduced motion",
+    "reducedMotionDesc": "Minimize animations and transitions.",
+    "systemReducedMotion": "(Your system prefers reduced motion)",
+    "reset": "Reset to defaults",
+    "resetDesc": "Restore all accessibility settings to their default values.",
+    "wcagTitle": "WCAG 2.1 AA Compliance",
+    "wcagDesc": "This application is designed to meet WCAG 2.1 Level AA standards. We support keyboard navigation, screen readers, and customizable display settings.",
+    "skipToContent": "Skip to main content",
+    "skipToNav": "Skip to navigation",
+    "liveRegion": "Live region",
+    "announcement": "Announcement",
+    "navLabel": "Accessibility settings",
+    "rowSelected": "Row {row} selected",
+    "rowDeselected": "Row {row} deselected",
+    "sortedBy": "Sorted by {column}, {direction}",
+    "ascending": "ascending",
+    "descending": "descending",
+    "pageChanged": "Page {page} of {total}",
+    "loadingData": "Loading data",
+    "dataLoaded": "Data loaded, {count} items",
+    "dialogOpened": "Dialog opened: {title}",
+    "dialogClosed": "Dialog closed"
+  },
+  "errors": {
+    "trackingTitle": "Error Tracking",
+    "trackingDescription": "Monitor and debug errors captured in the application.",
+    "pageTitle": "Something went wrong",
+    "pageDescription": "An unexpected error occurred. Our team has been notified. You can try again or return to the dashboard.",
+    "componentFailed": "This component failed to load",
+    "sectionFailed": "This section failed to load",
+    "goHome": "Go to dashboard",
+    "report": "Report error",
+    "reporting": "Sending…",
+    "reported": "Error report sent successfully",
+    "reference": "Reference",
+    "details": "Error details",
+    "technicalDetails": "Technical details",
+    "recentErrors": "Recent errors",
+    "breadcrumbs": "Breadcrumbs",
+    "breadcrumbsLeading": "Breadcrumbs leading to error",
+    "allSeverities": "All severities",
+    "fatal": "Fatal",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Info",
+    "clearAll": "Clear all",
+    "clearBreadcrumbs": "Clear breadcrumbs",
+    "noErrors": "No errors captured yet",
+    "noErrorsHint": "Errors will appear here when they occur in the application.",
+    "noBreadcrumbs": "No breadcrumbs recorded yet",
+    "stackTrace": "Stack trace",
+    "url": "URL",
+    "userAgent": "User agent",
+    "tags": "Tags",
+    "testError": "Test error"
+  },
+  "dev": {
+    "title": "Developer Tools",
+    "subtitle": "Component playground, API explorer & diagnostics",
+    "backToApp": "Back to app",
+    "back": "Back to dev tools",
+    "tools": {
+      "title": "Tools",
+      "components": "Component Playground",
+      "componentsDesc": "Browse, preview, and test UI components with live props.",
+      "api": "API Explorer",
+      "apiDesc": "Test endpoints, build requests, and inspect responses."
+    },
+    "performance": {
+      "title": "Performance Monitor",
+      "fps": "FPS",
+      "memory": "Memory (MB)",
+      "domNodes": "DOM Nodes",
+      "loadTime": "Load (ms)"
+    },
+    "errors": {
+      "title": "Error Boundary Tester",
+      "trigger": "Trigger test error",
+      "empty": "No errors captured. Trigger one to test."
+    },
+    "components": {
+      "title": "Component Library",
+      "subtitle": "Browse, preview, and audit UI components",
+      "search": "Search components...",
+      "all": "All",
+      "backToList": "Back to list",
+      "props": "props",
+      "showCode": "Show code",
+      "hideCode": "Hide code",
+      "copyCode": "Copy code",
+      "copy": "Copy",
+      "copied": "Copied",
+      "resetProps": "Reset props",
+      "reset": "Reset",
+      "stateInspector": "State Inspector",
+      "category": "Category",
+      "propCount": "Props",
+      "description": "Description",
+      "a11yAudit": "Accessibility Audit",
+      "themePreview": "Theme Preview"
+    },
+    "api": {
+      "title": "API Explorer",
+      "subtitle": "Test endpoints, build requests, and inspect responses",
+      "searchEndpoints": "Search endpoints...",
+      "endpoints": "API endpoints",
+      "method": "HTTP method",
+      "url": "Request URL",
+      "send": "Send",
+      "sending": "Sending...",
+      "clear": "Clear request",
+      "requestBody": "Request body",
+      "noParams": "No query parameters. Add them to the URL directly.",
+      "copied": "Copied!",
+      "copyCurl": "Copy as cURL",
+      "authenticated": "Authenticated",
+      "mockNotice": "API calls are mocked for development. Responses simulate real data structures."
+    }
+  },
+  "performanceReviews": {
+    "title": "Performance Reviews",
+    "subtitle": "Manage employee performance reviews, cycles, and questions.",
+    "totalReviews": "total reviews",
+    "createReview": "Create review",
+    "search": "Search by reviewee or reviewer…",
+    "allStatuses": "All statuses",
+    "allCycles": "All cycles",
+    "allReviewers": "All reviewers",
+    "noReviewsYet": "No reviews yet",
+    "noReviewsFound": "No reviews found",
+    "noReviewsDesc": "Create your first performance review to get started.",
+    "tryAdjusting": "Try adjusting your filters.",
+    "couldntLoad": "Couldn't load reviews",
+    "statuses": {
+      "draft": "Draft",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "archived": "Archived"
+    },
+    "fields": {
+      "reviewee": "Reviewee",
+      "reviewer": "Reviewer",
+      "cycle": "Cycle",
+      "status": "Status",
+      "overallScore": "Overall Score",
+      "selectReviewee": "Select reviewee…",
+      "selectReviewer": "Select reviewer…",
+      "selectCycle": "Select cycle…"
+    },
+    "newReview": "New review",
+    "newReviewDesc": "Create a new performance review for an employee.",
+    "reviewCreated": "Review created successfully",
+    "createFailed": "Failed to create review",
+    "questions": {
+      "title": "Questions",
+      "subtitle": "Manage review questions by category.",
+      "createQuestion": "Create question",
+      "editQuestion": "Edit question",
+      "deleteQuestion": "Delete question",
+      "confirmDelete": "Are you sure you want to delete this question?",
+      "questionDeleted": "Question deleted",
+      "questionCreated": "Question created",
+      "questionUpdated": "Question updated",
+      "allCategories": "All categories",
+      "noQuestions": "No questions yet",
+      "noQuestionsDesc": "Create questions to use in performance reviews.",
+      "text": "Question text",
+      "description": "Description",
+      "category": "Category",
+      "weight": "Weight",
+      "order": "Order",
+      "required": "Required",
+      "categories": {
+        "performance": "Performance",
+        "communication": "Communication",
+        "leadership": "Leadership",
+        "teamwork": "Teamwork",
+        "innovation": "Innovation",
+        "general": "General"
+      }
+    },
+    "cycles": {
+      "title": "Review Cycles",
+      "subtitle": "Manage performance review cycles.",
+      "createCycle": "Create cycle",
+      "editCycle": "Edit cycle",
+      "noCycles": "No cycles yet",
+      "noCyclesDesc": "Create a review cycle to organize performance reviews.",
+      "cycleCreated": "Cycle created successfully",
+      "cycleUpdated": "Cycle updated successfully",
+      "cycleDeleted": "Cycle deleted",
+      "confirmDelete": "Are you sure you want to delete this cycle?",
+      "name": "Name",
+      "description": "Description",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "statuses": {
+        "open": "Open",
+        "closed": "Closed",
+        "archived": "Archived"
+      }
+    },
+    "detail": {
+      "reviewDetail": "Review Detail",
+      "answers": "Answers",
+      "strengths": "Strengths",
+      "improvements": "Areas for Improvement",
+      "goals": "Goals",
+      "noAnswers": "No answers provided yet.",
+      "noStrengths": "No strengths listed.",
+      "noImprovements": "No improvements listed.",
+      "noGoals": "No goals set.",
+      "score": "Score",
+      "comment": "Comment",
+      "statusTimeline": "Status Timeline",
+      "edit": "Edit",
+      "submit": "Submit",
+      "complete": "Complete",
+      "saveDraft": "Save draft",
+      "reviewSubmitted": "Review submitted",
+      "reviewCompleted": "Review completed",
+      "reviewSaved": "Review saved",
+      "submitFailed": "Failed to submit review",
+      "saveFailed": "Failed to save review",
+      "confirmSubmit": "Submit this review?",
+      "confirmSubmitDesc": "Once submitted, answers may no longer be editable.",
+      "confirmComplete": "Complete this review?",
+      "confirmCompleteDesc": "This will mark the review as completed."
+    },
+    "rating": "Rating",
+    "yourResponse": "Your response",
+    "addStrength": "Add strength",
+    "addImprovement": "Add improvement",
+    "addGoal": "Add goal",
+    "goalTitle": "Goal title",
+    "goalDescription": "Goal description",
+    "targetDate": "Target date"
+  },
+  "contentGenerator": {
+    "title": "Content Generator",
+    "subtitle": "Generate job descriptions, emails, offer letters, and more with AI.",
+    "configure": "Configure",
+    "contentType": "Content type",
+    "tone": "Tone",
+    "jobTitle": "Job title",
+    "jobTitlePlaceholder": "e.g. Senior Frontend Engineer",
+    "company": "Company name",
+    "companyPlaceholder": "e.g. Acme Corp",
+    "requirements": "Requirements / Key details",
+    "requirementsPlaceholder": "List key requirements, skills, benefits...",
+    "candidateName": "Candidate name",
+    "candidateNamePlaceholder": "e.g. Jane Doe",
+    "candidateEmail": "Candidate email",
+    "candidateEmailPlaceholder": "e.g. jane@example.com",
+    "additionalContext": "Additional context",
+    "additionalContextPlaceholder": "Any extra details to include...",
+    "generate": "Generate",
+    "generating": "Generating...",
+    "generatedContent": "Generated content",
+    "noContent": "No content generated yet",
+    "noContentDesc": "Fill in the form and click Generate to create content",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
+    "copyFailed": "Failed to copy",
+    "download": "Download",
+    "downloaded": "File downloaded",
+    "saveAsTemplate": "Save as template",
+    "savedAsTemplate": "Saved as template",
+    "contentUpdated": "Content updated",
+    "generationSuccess": "Content generated successfully",
+    "generationFailed": "Generation failed",
+    "manageTemplates": "Templates",
+    "templatesTitle": "Content Templates",
+    "templatesSubtitle": "Manage your reusable content templates.",
+    "createTemplate": "Create template",
+    "editTemplate": "Edit template",
+    "templateName": "Template name",
+    "templateNamePlaceholder": "e.g. Standard JD for Engineers",
+    "templateDescription": "Description",
+    "templateDescriptionPlaceholder": "Brief description...",
+    "templateContent": "Template content",
+    "templateContentPlaceholder": "Write your template content here...",
+    "templateRequired": "Name and content are required",
+    "templateCreated": "Template created",
+    "templateUpdated": "Template updated",
+    "templateDeleted": "Template deleted",
+    "useTemplate": "Use",
+    "searchTemplates": "Search templates...",
+    "noTemplates": "No templates found",
+    "noTemplatesDesc": "Create your first template to get started.",
+    "types": {
+      "job_description": "Job Description",
+      "email": "Email",
+      "offer_letter": "Offer Letter",
+      "rejection": "Rejection",
+      "linkedin_post": "LinkedIn Post"
+    },
+    "tones": {
+      "professional": "Professional",
+      "friendly": "Friendly",
+      "formal": "Formal"
+    }
+  },
+  "dataTable": {
+    "search": "Search...",
+    "filter": "Filter",
+    "filterPlaceholder": "Filter...",
+    "clearFilter": "Clear filter",
+    "clearAllFilters": "Clear all filters",
+    "filtersActive": "{count} filter(s) active",
+    "columns": "Columns",
+    "columnSettings": "Column settings",
+    "pinLeft": "Pin left",
+    "pinRight": "Pin right",
+    "unpin": "Unpin",
+    "showColumn": "Show column",
+    "hideColumn": "Hide column",
+    "resize": "Resize column",
+    "reorder": "Reorder column",
+    "expand": "Expand row",
+    "collapse": "Collapse row",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
+    "edit": "Edit cell",
+    "save": "Save",
+    "cancel": "Cancel",
+    "copy": "Copy",
+    "paste": "Paste",
+    "copied": "Copied to clipboard",
+    "export": "Export",
+    "exportCSV": "Export CSV",
+    "exportJSON": "Export JSON",
+    "exportExcel": "Export Excel",
+    "exportPDF": "Export PDF",
+    "views": "Views",
+    "saveView": "Save current view",
+    "viewName": "View name",
+    "viewNamePlaceholder": "Enter view name...",
+    "loadView": "Load view",
+    "deleteView": "Delete view",
+    "noViews": "No saved views",
+    "viewSaved": "View saved",
+    "viewDeleted": "View deleted",
+    "viewLoaded": "View loaded",
+    "rows": "{count} rows",
+    "selected": "{count} selected",
+    "selectAll": "Select all rows",
+    "deselectAll": "Deselect all rows",
+    "selectRow": "Select row",
+    "sortAsc": "Sort ascending",
+    "sortDesc": "Sort descending",
+    "noSort": "No sort",
+    "noData": "No data",
+    "noDataDesc": "No rows match your current filters.",
+    "loading": "Loading data...",
+    "keyboardNav": "Use arrow keys to navigate, Enter to edit, Escape to cancel",
+    "aria": {
+      "table": "Data table",
+      "grid": "Data grid with {rows} rows and {cols} columns",
+      "sortedBy": "Sorted by {column}, {direction}",
+      "ascending": "ascending",
+      "descending": "descending",
+      "filteredBy": "Filtered by {column}",
+      "expanded": "Row expanded",
+      "collapsed": "Row collapsed",
+      "editing": "Editing cell {column}",
+      "selected": "{count} rows selected"
+    }
+  },
+  "graphql": {
+    "playground": {
+      "title": "GraphQL Playground",
+      "desc": "Explore and test the GraphQL API"
+    },
+    "execute": "Execute",
+    "executing": "Executing...",
+    "examples": "Examples",
+    "exampleQueries": "Example Queries",
+    "authSet": "Auth set",
+    "setToken": "Set Token",
+    "history": "History",
+    "queryHistory": "Query History",
+    "clearHistory": "Clear",
+    "noHistory": "No queries executed yet.",
+    "backToDev": "Back to Dev Tools",
+    "tokenLabel": "JWT Bearer Token",
+    "tokenPlaceholder": "Paste your JWT token...",
+    "tokenHint": "Token is stored locally and sent as Authorization: Bearer header.",
+    "queryTab": "Query",
+    "variablesTab": "Variables",
+    "queryPlaceholder": "Enter your GraphQL query...",
+    "variablesPlaceholder": "{ \"key\": \"value\" }",
+    "queryAria": "GraphQL query editor",
+    "variablesAria": "GraphQL variables editor",
+    "shortcut": "Ctrl+Enter to execute",
+    "response": "Response",
+    "responseAria": "GraphQL response",
+    "copy": "Copy",
+    "copied": "Copied",
+    "loading": "Loading...",
+    "noResponse": "Execute a query to see the response",
+    "introspection": "Schema Introspection",
+    "introspectionDesc": "Run this query to explore the available schema types and fields.",
+    "candidates": {
+      "title": "Candidates",
+      "searchPlaceholder": "Search...",
+      "statusFilter": "Filter by status",
+      "allStatuses": "All",
+      "statusNew": "New",
+      "statusActive": "Active",
+      "statusArchived": "Archived",
+      "statusHired": "Hired",
+      "refresh": "Refresh",
+      "empty": "No candidates found",
+      "phone": "Phone",
+      "location": "Location",
+      "added": "Added",
+      "pageInfo": "Page {page} of {total}",
+      "prev": "Prev",
+      "next": "Next"
+    },
+    "jobs": {
+      "createTitle": "Create Job Posting",
+      "created": "Job created successfully!",
+      "title": "Job Title",
+      "titlePlaceholder": "e.g. Senior Frontend Engineer",
+      "department": "Department",
+      "selectDepartment": "Select...",
+      "location": "Location",
+      "locationPlaceholder": "e.g. Remote, Paris, London",
+      "employmentType": "Employment Type",
+      "salaryMin": "Salary Min",
+      "salaryMax": "Salary Max",
+      "description": "Description",
+      "descPlaceholder": "Describe the role, requirements, and benefits...",
+      "reset": "Reset",
+      "create": "Create Job",
+      "creating": "Creating..."
+    }
+  },
+  "dashboardDesigner": {
+    "title": "Dashboard Designer",
+    "subtitle": "Build custom dashboards with drag-and-drop widgets",
+    "palette": "Widget Palette",
+    "configPanel": "Widget Configuration",
+    "canvas": "Canvas",
+    "toolbar": {
+      "save": "Save",
+      "saving": "Saving...",
+      "preview": "Preview",
+      "exitPreview": "Exit Preview",
+      "template": "Template",
+      "settings": "Settings",
+      "undo": "Undo",
+      "redo": "Redo",
+      "export": "Export JSON",
+      "import": "Import JSON"
+    },
+    "widgets": {
+      "metric": "Metric",
+      "metricDesc": "Single value with label and trend",
+      "lineChart": "Line Chart",
+      "lineChartDesc": "Time series data visualization",
+      "barChart": "Bar Chart",
+      "barChartDesc": "Categorical comparison chart",
+      "pieChart": "Pie Chart",
+      "pieChartDesc": "Proportional data distribution",
+      "funnelChart": "Funnel Chart",
+      "funnelChartDesc": "Pipeline stage funnel",
+      "table": "Table",
+      "tableDesc": "Tabular data display",
+      "map": "Map",
+      "mapDesc": "Geographic data visualization",
+      "text": "Text",
+      "textDesc": "Rich text or markdown block",
+      "iframe": "Iframe",
+      "iframeDesc": "Embedded external content"
+    },
+    "config": {
+      "title": "Title",
+      "titlePlaceholder": "Widget title...",
+      "dataSource": "Data Source",
+      "dataSourcePlaceholder": "Select an endpoint...",
+      "endpoints": {
+        "candidates": "Candidates API",
+        "jobs": "Jobs API",
+        "interviews": "Interviews API",
+        "analytics": "Analytics API",
+        "pipeline": "Pipeline API",
+        "activity": "Activity API",
+        "custom": "Custom URL"
+      },
+      "customUrl": "Custom URL",
+      "customUrlPlaceholder": "https://api.example.com/data",
+      "filters": "Filters",
+      "addFilter": "Add filter",
+      "filterField": "Field",
+      "filterOperator": "Operator",
+      "filterValue": "Value",
+      "operators": {
+        "equals": "equals",
+        "notEquals": "not equals",
+        "contains": "contains",
+        "greaterThan": "greater than",
+        "lessThan": "less than",
+        "in": "in"
+      },
+      "refreshInterval": "Refresh Interval",
+      "refreshOptions": {
+        "off": "Off",
+        "5s": "5 seconds",
+        "15s": "15 seconds",
+        "30s": "30 seconds",
+        "1m": "1 minute",
+        "5m": "5 minutes"
+      },
+      "chartOptions": "Chart Options",
+      "colors": "Colors",
+      "primaryColor": "Primary color",
+      "showLegend": "Show legend",
+      "showGrid": "Show grid",
+      "showTooltip": "Show tooltip",
+      "xAxis": "X Axis",
+      "yAxis": "Y Axis",
+      "xAxisLabel": "X axis label",
+      "yAxisLabel": "Y axis label",
+      "stacked": "Stacked",
+      "smooth": "Smooth curves",
+      "conditionalFormatting": "Conditional Formatting",
+      "addRule": "Add rule",
+      "condition": "Condition",
+      "color": "Color",
+      "text": "Text content",
+      "textPlaceholder": "Enter text or markdown...",
+      "iframeUrl": "Iframe URL",
+      "iframeUrlPlaceholder": "https://...",
+      "metricField": "Metric field",
+      "metricFieldPlaceholder": "e.g. totalCandidates",
+      "metricLabel": "Metric label",
+      "metricLabelPlaceholder": "e.g. Total Candidates",
+      "metricPrefix": "Prefix",
+      "metricSuffix": "Suffix",
+      "removeFilter": "Remove filter",
+      "noWidgetSelected": "Select a widget to configure"
+    },
+    "actions": {
+      "addWidget": "Add widget",
+      "duplicate": "Duplicate",
+      "copy": "Copy",
+      "paste": "Paste",
+      "delete": "Delete",
+      "remove": "Remove widget"
+    },
+    "templates": {
+      "title": "Templates",
+      "saveAs": "Save as template",
+      "load": "Load template",
+      "templateName": "Template name",
+      "templateNamePlaceholder": "My dashboard...",
+      "noTemplates": "No saved templates",
+      "recruitmentOverview": "Recruitment Overview",
+      "hiringPipeline": "Hiring Pipeline",
+      "teamAnalytics": "Team Analytics",
+      "saved": "Template saved",
+      "loaded": "Template loaded",
+      "deleted": "Template deleted"
+    },
+    "responsive": {
+      "desktop": "Desktop",
+      "tablet": "Tablet",
+      "mobile": "Mobile"
+    },
+    "emptyCanvas": "Drag widgets from the palette to start building your dashboard",
+    "saved": "Dashboard saved",
+    "saveFailed": "Failed to save dashboard",
+    "unsavedChanges": "You have unsaved changes",
+    "page": {
+      "namePlaceholder": "Dashboard name...",
+      "settings": {
+        "gridRows": "Grid Row Height",
+        "compactType": "Layout Compaction"
+      }
+    },
+    "templateSelector": {
+      "title": "Choose a Template",
+      "description": "Start from a pre-built template or load a saved one",
+      "builtinTemplates": "Built-in Templates",
+      "savedTemplates": "Saved Templates",
+      "widgets": "widgets",
+      "useTemplate": "Use Template"
+    },
+    "builtinTemplates": {
+      "executiveOverview": "Executive Overview",
+      "executiveOverviewDesc": "High-level KPIs and hiring metrics for leadership",
+      "recruiterPerformance": "Recruiter Performance",
+      "recruiterPerformanceDesc": "Track recruiter activity, placements, and efficiency",
+      "pipelineHealth": "Pipeline Health",
+      "pipelineHealthDesc": "Monitor pipeline stages, bottlenecks, and conversion rates",
+      "diversity": "Diversity & Inclusion",
+      "diversityDesc": "Track diversity metrics across hiring stages"
+    }
+  },
+  "dataTableV2": {
+    "search": "Search...",
+    "filter": "Filter",
+    "filters": "Filters",
+    "clearFilters": "Clear all filters",
+    "export": "Export",
+    "exportCSV": "Export CSV",
+    "exportJSON": "Export JSON",
+    "views": "Views",
+    "saveView": "Save current view",
+    "viewName": "View name...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "columns": "Columns",
+    "pinLeft": "Pin left",
+    "pinRight": "Pin right",
+    "selected": "selected",
+    "clear": "Clear",
+    "copy": "Copy",
+    "rows": "rows",
+    "noData": "No data",
+    "error": "Error",
+    "demo": {
+      "title": "DataTable V2 Demo",
+      "description": "Interactive showcase of all DataTable V2 features: sorting, filtering, resizing, reordering, pinning, saved views, keyboard navigation, inline editing, export, and virtualization.",
+      "density": "Density",
+      "density.compact": "Compact",
+      "density.normal": "Normal",
+      "density.comfortable": "Comfortable",
+      "rowsSelected": "row(s) selected",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "department": "Department",
+      "status": "Status",
+      "salary": "Salary",
+      "startDate": "Start Date",
+      "skills": "Skills",
+      "rating": "Rating",
+      "location": "Location",
+      "searchPlaceholder": "Search demo data...",
+      "caption": "DataTable V2 feature demonstration table",
+      "ariaLabel": "Demo data table",
+      "features": {
+        "sorting": {
+          "title": "Sorting",
+          "desc": "Click column headers to sort asc/desc/none. Tri-state cycling."
+        },
+        "filtering": {
+          "title": "Column Filters",
+          "desc": "Toggle the filter button to show per-column filter inputs."
+        },
+        "resize": {
+          "title": "Column Resize",
+          "desc": "Drag the right edge of any column header to resize."
+        },
+        "reorder": {
+          "title": "Column Reorder",
+          "desc": "Drag column headers by the grip icon to reorder."
+        },
+        "pin": {
+          "title": "Column Pinning",
+          "desc": "Use the column settings menu to pin columns left or right."
+        },
+        "views": {
+          "title": "Saved Views",
+          "desc": "Save and restore column layout, filters, and sort state."
+        },
+        "keyboard": {
+          "title": "Keyboard Navigation",
+          "desc": "Arrow keys, Tab, Enter to edit, Escape to cancel, Ctrl+C to copy."
+        },
+        "edit": {
+          "title": "Inline Editing",
+          "desc": "Double-click editable cells to edit in place. Press Enter to commit."
+        },
+        "export": {
+          "title": "Export",
+          "desc": "Export visible data to CSV or JSON via the download button."
+        },
+        "virtual": {
+          "title": "Virtualization",
+          "desc": "Auto-enabled for 100+ rows using react-window for smooth scrolling."
+        },
+        "expand": {
+          "title": "Row Expansion",
+          "desc": "Click the chevron to expand rows and show additional details."
+        },
+        "dark": {
+          "title": "Dark Mode",
+          "desc": "Full dark mode support with surface-level color tokens."
+        }
       }
     }
   }

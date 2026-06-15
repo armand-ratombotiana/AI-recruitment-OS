@@ -110,7 +110,14 @@
     "loginFailed": "Échec de la connexion. Veuillez vérifier vos identifiants et réessayer.",
     "creatingAccount": "Création du compte…",
     "signingIn": "Connexion en cours…",
-    "strengthLabels": ["Très faible", "Faible", "Moyen", "Bon", "Fort", "Excellent"],
+    "strengthLabels": [
+      "Très faible",
+      "Faible",
+      "Moyen",
+      "Bon",
+      "Fort",
+      "Excellent"
+    ],
     "passwordRules": {
       "length": "Au moins 8 caractères",
       "upper": "Une lettre majuscule",
@@ -147,87 +154,123 @@
     "systemDefault": "Par défaut du système"
   },
   "landing": {
-    "navFeatures": "Fonctionnalités",
-    "navHow": "Comment ça marche",
-    "navPricing": "Tarifs",
-    "navFaq": "FAQ",
-    "signIn": "Se connecter",
-    "getStarted": "Commencer",
-    "newBadge": "NOUVEAU : Recrutement piloté par IA v3.0",
-    "heroTitle1": "L'avenir du recrutement",
-    "heroTitle2": "est autonome",
-    "heroSubtitle": "AI-ROS déploie des agents intelligents qui trient les candidats, mènent les entretiens et prennent des décisions d'embauche — pour que votre équipe puisse se concentrer sur l'essentiel.",
-    "heroCtaPrimary": "Démarrer l'essai gratuit",
-    "heroCtaSecondary": "Voir comment ça marche",
-    "heroTricheck": "✓ Aucune carte bancaire requise   ✓ Essai gratuit de 14 jours   ✓ Annulable à tout moment",
-    "trustedBy": "Choisi par des équipes innovantes dans le monde entier",
-    "statsCompanies": "Entreprises",
-    "statsCandidates": "Candidats traités",
-    "statsAccuracy": "Taux de précision",
-    "statsFaster": "Recrutement plus rapide",
-    "featuresTitle": "Pourquoi AI-ROS ?",
-    "featuresSubtitle": "Propulsé par l'IA, conçu pour les humains. Une plateforme complète du sourcing à l'offre.",
+    "hero": {
+      "eyebrow": "Avec AI Copilot v3",
+      "title": "L'avenir du recrutement",
+      "titleHighlight": "est autonome",
+      "subtitle": "AI-ROS déploie des agents intelligents qui présélectionnent les candidats, mènent les entretiens et identifient les meilleurs talents — pour que votre équipe puisse se concentrer sur l'essentiel.",
+      "getStarted": "Commencer gratuitement",
+      "viewJobs": "Voir les postes",
+      "noCard": "Sans carte bancaire",
+      "trial": "Essai gratuit de 14 jours",
+      "cancel": "Annulation à tout moment"
+    },
+    "trusted": "La confiance d'équipes innovantes dans le monde entier",
     "features": {
-      "screening": "Présélection IA",
-      "screeningDesc": "Des agents autonomes trient et évaluent les candidats 24h/24 avec une notation multidimensionnelle et détection des biais.",
-      "coding": "Codage en direct",
-      "codingDesc": "Entretiens de pair programming en temps réel avec évaluation IA, indices progressifs et notation automatisée.",
-      "matching": "Matching intelligent",
-      "matchingDesc": "Matching candidat-offre propulsé par ML avec scores explicables grâce aux embeddings et graphes de compétences.",
-      "workflow": "Moteur de workflows",
-      "workflowDesc": "Automatisez tout votre pipeline de recrutement avec workflows visuels, déclencheurs événementiels et chaînes d'approbation.",
-      "analytics": "Analyses",
-      "analyticsDesc": "Informations en temps réel sur les métriques de recrutement, suivi des performances IA et analyses prédictives des effectifs.",
-      "security": "Sécurité entreprise",
-      "securityDesc": "Conforme SOC2 avec SSO, contrôle d'accès par rôle, chiffrement de bout en bout et journaux d'audit."
-    },
-    "howTitle": "Trois étapes vers un recrutement autonome",
-    "howSubtitle": "Passez de la fiche de poste au candidat idéal en quelques minutes, pas en semaines.",
-    "howSteps": {
-      "step1Title": "Importez et configurez",
-      "step1Desc": "Ajoutez vos fiches de poste, exigences et critères d'évaluation en quelques minutes.",
-      "step2Title": "L'IA prend le relais",
-      "step2Desc": "Nos agents trient, interviewent et évaluent les candidats de façon autonome.",
-      "step3Title": "Examinez et recrutez",
-      "step3Desc": "Consultez les recommandations IA, comparez les candidats et prenez des décisions éclairées."
-    },
-    "testimonialsTitle": "Choisi par des équipes de premier plan",
-    "testimonialsSubtitle": "Des histoires vraies de clients réels.",
-    "pricingTitle": "Tarifs simples et transparents",
-    "pricingSubtitle": "Commencez gratuitement, évoluez à votre rythme",
-    "monthly": "Mensuel",
-    "yearly": "Annuel",
-    "save20": "-20%",
-    "mostPopular": "Le plus populaire",
-    "pricingTiers": {
-      "starter": {
-        "name": "Starter",
-        "description": "100 candidats, 3 utilisateurs, IA basique",
-        "cta": "Démarrer l'essai gratuit"
-      },
-      "professional": {
-        "name": "Professional",
-        "description": "500 candidats, 10 utilisateurs, IA avancée",
-        "cta": "Démarrer l'essai gratuit"
-      },
-      "enterprise": {
-        "name": "Enterprise",
-        "description": "Tout illimité",
-        "cta": "Contacter les ventes"
+      "eyebrow": "Fonctionnalités",
+      "title": "Tout ce qu'il faut pour recruter mieux",
+      "subtitle": "Une plateforme complète, propulsée par l'IA et pensée pour les humains.",
+      "items": {
+        "screening": {
+          "title": "Présélection autonome",
+          "description": "Analyse LLM avec score explicable et raisons clés pour chaque candidat."
+        },
+        "matching": {
+          "title": "Matching intelligent",
+          "description": "Graphes de compétences et embeddings : plus de 95 % de précision."
+        },
+        "interviews": {
+          "title": "Entretiens code en direct",
+          "description": "Pair-programming dans le navigateur avec retours d'IA en temps réel."
+        },
+        "pipeline": {
+          "title": "Pipeline automatisé",
+          "description": "Kanban glisser-déposer avec workflows, rappels et SLAs."
+        },
+        "compliance": {
+          "title": "Conformité d'abord",
+          "description": "RGPD & SOC2, journaux d'audit, consentement et DSAR."
+        },
+        "enterprise": {
+          "title": "Prêt pour l'entreprise",
+          "description": "SSO/SAML, multi-tenant, RBAC granulaire, SLA 99,9 %."
+        }
       }
     },
-    "faqTitle": "Des questions ? Nous avons les réponses",
-    "faqSubtitle": "Tout ce qu'il faut savoir pour démarrer.",
-    "footerTagline": "Plateforme de recrutement IA-native pour les équipes modernes. Recrutez plus vite, plus équitable, plus malin.",
-    "operational": "Tous les systèmes opérationnels",
-    "footerCopyright": "© 2026 AI-ROS. Tous droits réservés.",
-    "language": "Français (France)",
-    "ctaFinalTitle": "Prêt à transformer votre recrutement ?",
-    "ctaFinalSubtitle": "Rejoignez plus de 500 entreprises qui utilisent déjà AI-ROS pour recruter plus malin, plus vite, plus équitable.",
-    "ctaFinalButton": "Commencer",
-    "emailPlaceholder": "Entrez votre email",
-    "emailSent": "✓ Vérifiez votre boîte de réception pour l'email de bienvenue",
-    "noCreditCard": "Aucune carte bancaire requise. Essai gratuit de 14 jours."
+    "how": {
+      "eyebrow": "Comment ça marche",
+      "title": "Trois étapes vers le recrutement autonome",
+      "subtitle": "De la fiche de poste au meilleur candidat en quelques minutes.",
+      "steps": {
+        "one": {
+          "title": "Importer & configurer",
+          "description": "Ajoutez vos descriptions de poste et critères d'évaluation en quelques minutes."
+        },
+        "two": {
+          "title": "L'IA prend le relais",
+          "description": "Nos agents évaluent et interviewent les candidats 24/7."
+        },
+        "three": {
+          "title": "Valider & recruter",
+          "description": "Comparez les candidats classés, faites l'entretien final, envoyez l'offre."
+        }
+      }
+    },
+    "stats": {
+      "eyebrow": "En chiffres",
+      "title": "Des résultats qui parlent",
+      "candidates": "Candidats traités",
+      "companies": "Entreprises clientes",
+      "time": "Heures gagnées par recrutement",
+      "accuracy": "Précision du matching"
+    },
+    "testimonials": {
+      "eyebrow": "Témoignages",
+      "title": "La confiance des équipes leaders",
+      "subtitle": "De vraies histoires de vrais clients.",
+      "items": {
+        "sarah": {
+          "name": "Sarah Chen",
+          "role": "VP People, TechScale",
+          "quote": "AI-ROS a réduit notre time-to-hire de 42 à 12 jours. La présélection IA est bluffante.",
+          "metric": "71 % plus rapide"
+        },
+        "marcus": {
+          "name": "Marcus Rodriguez",
+          "role": "Head of Talent, DataFlow",
+          "quote": "Nous traitons 10× plus de candidats avec la même équipe. Le ROI a été immédiat.",
+          "metric": "10× de capacité"
+        },
+        "emily": {
+          "name": "Emily Watson",
+          "role": "CTO, CloudNine",
+          "quote": "Le meilleur ROI de tous nos outils RH. Installation en moins de 30 minutes.",
+          "metric": "4,9× de ROI"
+        },
+        "noah": {
+          "name": "Noah Bennett",
+          "role": "Head of Engineering, NexusAI",
+          "quote": "Les entretiens code avec IA ont éliminé tout biais de notre processus technique.",
+          "metric": "0 biais détecté"
+        }
+      }
+    },
+    "pricingPreview": {
+      "eyebrow": "Tarifs",
+      "title": "Un plan pour chaque étape",
+      "subtitle": "Commencez gratuitement, évoluez à votre rythme. Annulez à tout moment.",
+      "seeAll": "Voir tous les tarifs",
+      "perMonth": "/mois",
+      "perYear": "/an",
+      "mostPopular": "Plus populaire",
+      "fromPrefix": "à partir de"
+    },
+    "cta": {
+      "title": "Prêt à transformer votre recrutement ?",
+      "subtitle": "Rejoignez les centaines d'équipes qui recrutent déjà mieux avec AI-ROS.",
+      "primary": "Commencer l'essai gratuit",
+      "secondary": "Parler aux ventes"
+    }
   },
   "dashboard": {
     "welcomeBack": "Bon retour",
@@ -424,76 +467,76 @@
       "match": "Meilleur match",
       "shortlisted": "Présélectionné"
     },
-  "messaging": {
-    "title": "Messages",
-    "subtitle": "Chat en temps réel avec les candidats",
-    "conversations": "Conversations",
-    "newConversation": "Nouvelle conversation",
-    "search": "Rechercher des conversations…",
-    "noConversations": "Aucune conversation",
-    "noMatches": "Aucune conversation ne correspond",
-    "emptyState": "Démarrez une conversation avec un candidat",
-    "messageThread": "Fil de discussion",
-    "typeMessage": "Écrivez un message…",
-    "send": "Envoyer",
-    "sending": "Envoi…",
-    "sent": "Envoyé",
-    "delivered": "Distribué",
-    "read": "Lu",
-    "unread": "Non lu",
-    "unreadCount": "{count} non lus",
-    "attachFile": "Joindre un fichier",
-    "emoji": "Emoji",
-    "reply": "Répondre",
-    "forward": "Transférer",
-    "delete": "Supprimer le message",
-    "edit": "Modifier le message",
-    "copy": "Copier le message",
-    "timestamp": "Envoyé à {time}",
-    "today": "Aujourd'hui",
-    "yesterday": "Hier",
-    "groupByDay": "Grouper par jour",
-    "loadMore": "Charger plus de messages",
-    "noMessages": "Aucun message. Dites bonjour !",
-    "error": "Échec de l'envoi",
-    "retry": "Réessayer",
-    "connectionLost": "Connexion perdue. Reconnexion…",
-    "connected": "Connecté",
-    "typing": "{name} est en train d'écrire…",
-    "candidate": "Candidat",
-    "recruiter": "Vous",
-    "system": "Système",
-    "tabs": {
-      "all": "Tout",
-      "unread": "Non lus",
-      "starred": "Favoris"
-    },
-    "actions": {
-      "markRead": "Marquer comme lu",
-      "markUnread": "Marquer comme non lu",
-      "star": "Ajouter aux favoris",
-      "unstar": "Retirer des favoris",
-      "archive": "Archiver",
-      "delete": "Supprimer la conversation"
-    },
-    "confirmDelete": {
-      "title": "Supprimer la conversation ?",
-      "description": "Cela supprimera définitivement la conversation. Cette action est irréversible.",
-      "confirm": "Supprimer"
-    },
-    "fileUpload": {
-      "uploading": "Téléversement de {name}…",
-      "failed": "Échec du téléversement de {name}",
-      "tooLarge": "Fichier trop volumineux (max 10 Mo)",
-      "invalidType": "Type de fichier non autorisé"
-    },
-    "sidebar": {
+    "messaging": {
       "title": "Messages",
-      "badge": "Messages",
-      "tooltip": "Ouvrir les messages"
-    }
-  },
-  "contact": {
+      "subtitle": "Chat en temps réel avec les candidats",
+      "conversations": "Conversations",
+      "newConversation": "Nouvelle conversation",
+      "search": "Rechercher des conversations…",
+      "noConversations": "Aucune conversation",
+      "noMatches": "Aucune conversation ne correspond",
+      "emptyState": "Démarrez une conversation avec un candidat",
+      "messageThread": "Fil de discussion",
+      "typeMessage": "Écrivez un message…",
+      "send": "Envoyer",
+      "sending": "Envoi…",
+      "sent": "Envoyé",
+      "delivered": "Distribué",
+      "read": "Lu",
+      "unread": "Non lu",
+      "unreadCount": "{count} non lus",
+      "attachFile": "Joindre un fichier",
+      "emoji": "Emoji",
+      "reply": "Répondre",
+      "forward": "Transférer",
+      "delete": "Supprimer le message",
+      "edit": "Modifier le message",
+      "copy": "Copier le message",
+      "timestamp": "Envoyé à {time}",
+      "today": "Aujourd'hui",
+      "yesterday": "Hier",
+      "groupByDay": "Grouper par jour",
+      "loadMore": "Charger plus de messages",
+      "noMessages": "Aucun message. Dites bonjour !",
+      "error": "Échec de l'envoi",
+      "retry": "Réessayer",
+      "connectionLost": "Connexion perdue. Reconnexion…",
+      "connected": "Connecté",
+      "typing": "{name} est en train d'écrire…",
+      "candidate": "Candidat",
+      "recruiter": "Vous",
+      "system": "Système",
+      "tabs": {
+        "all": "Tout",
+        "unread": "Non lus",
+        "starred": "Favoris"
+      },
+      "actions": {
+        "markRead": "Marquer comme lu",
+        "markUnread": "Marquer comme non lu",
+        "star": "Ajouter aux favoris",
+        "unstar": "Retirer des favoris",
+        "archive": "Archiver",
+        "delete": "Supprimer la conversation"
+      },
+      "confirmDelete": {
+        "title": "Supprimer la conversation ?",
+        "description": "Cela supprimera définitivement la conversation. Cette action est irréversible.",
+        "confirm": "Supprimer"
+      },
+      "fileUpload": {
+        "uploading": "Téléversement de {name}…",
+        "failed": "Échec du téléversement de {name}",
+        "tooLarge": "Fichier trop volumineux (max 10 Mo)",
+        "invalidType": "Type de fichier non autorisé"
+      },
+      "sidebar": {
+        "title": "Messages",
+        "badge": "Messages",
+        "tooltip": "Ouvrir les messages"
+      }
+    },
+    "contact": {
       "title": "Informations de contact",
       "email": "Email",
       "phone": "Téléphone",
@@ -678,7 +721,11 @@
     "wizard": {
       "title": "Créer un nouvel emploi",
       "desc": "Un assistant en 3 étapes pour publier votre offre en moins d'une minute.",
-      "steps": ["Bases", "Exigences", "Révision"],
+      "steps": [
+        "Bases",
+        "Exigences",
+        "Révision"
+      ],
       "stepBasics": "Bases",
       "stepRequirements": "Exigences",
       "stepReview": "Révision",
@@ -1165,7 +1212,14 @@
         "notFound": "Ce poste n'accepte plus de candidatures.",
         "discard": "Supprimer le brouillon",
         "discardConfirm": "Supprimer ce brouillon ?",
-        "draft": "Sauvegardé",
+        "draft": {
+          "resume": "Vous pouvez quitter à tout moment — nous sauvegardons votre brouillon automatiquement.",
+          "saved": "Brouillon sauvegardé",
+          "resumed": "Nous avons restauré votre dernier brouillon.",
+          "discard": "Supprimer le brouillon",
+          "discarded": "Brouillon supprimé",
+          "lastSaved": "Dernier enregistrement {when}"
+        },
         "continue": "Continuer",
         "personalHelp": "Nous les utiliserons pour vous contacter au sujet de cette candidature.",
         "stepPersonal": "Vos informations",
@@ -1187,14 +1241,6 @@
         "coverCount": "{count} caractères",
         "coverMin": "Minimum 30 caractères pour pouvoir envoyer.",
         "questionsHelp": "Elles aident l'équipe à évaluer votre candidature.",
-        "draft": {
-          "resume": "Vous pouvez quitter à tout moment — nous sauvegardons votre brouillon automatiquement.",
-          "saved": "Brouillon sauvegardé",
-          "resumed": "Nous avons restauré votre dernier brouillon.",
-          "discard": "Supprimer le brouillon",
-          "discarded": "Brouillon supprimé",
-          "lastSaved": "Dernier enregistrement {when}"
-        },
         "questions": {
           "title": "Quelques questions supplémentaires",
           "description": "Elles aident l'équipe à évaluer votre profil. Aucune n'est obligatoire sauf indication.",
@@ -1293,8 +1339,8 @@
         "status": {
           "title": "Statut de la candidature",
           "submitted": "Envoyée",
-          "received": "Reçue",
-          "reviewing": "En cours d'examen",
+          "received": "Candidature reçue",
+          "reviewing": "Première évaluation",
           "failed": "Échec de l'envoi",
           "submittedDesc": "Votre candidature est en route.",
           "receivedDesc": "Nous avons confirmé la réception de votre candidature.",
@@ -1303,9 +1349,7 @@
           "referenceLabel": "Référence",
           "applicationId": "ID candidature",
           "submittedAt": "Envoyée {when}",
-          "received": "Candidature reçue",
           "receivedHelp": "Nous avons enregistré votre envoi et le recruteur va le consulter sous peu.",
-          "reviewing": "Première évaluation",
           "reviewingHelp": "Un recruteur examine votre profil et décide de la suite.",
           "interview": "Entretiens",
           "interviewHelp": "Les candidats retenus sont invités à échanger avec l'équipe."
@@ -2822,9 +2866,9 @@
       "categories": {
         "applications": "Candidatures",
         "applicationsDesc": "Nouveaux candidats, changements de statut et avancement du pipeline.",
-    "interviews": "Entretiens",
-    "videoInterviews": "Entretiens vidéo",
-    "contentGenerator": "Générateur de contenu",
+        "interviews": "Entretiens",
+        "videoInterviews": "Entretiens vidéo",
+        "contentGenerator": "Générateur de contenu",
         "interviewsDesc": "Changements de planning, rappels et demandes de feedback.",
         "messages": "Messages",
         "messagesDesc": "Mentions, réponses et messages directs de votre équipe.",
@@ -2972,125 +3016,6 @@
     },
     "accessDenied": "Accès refusé",
     "accessDeniedDesc": "Vous avez besoin des droits administrateur pour gérer les tags."
-  },
-  "landing": {
-    "hero": {
-      "eyebrow": "Avec AI Copilot v3",
-      "title": "L'avenir du recrutement",
-      "titleHighlight": "est autonome",
-      "subtitle": "AI-ROS déploie des agents intelligents qui présélectionnent les candidats, mènent les entretiens et identifient les meilleurs talents — pour que votre équipe puisse se concentrer sur l'essentiel.",
-      "getStarted": "Commencer gratuitement",
-      "viewJobs": "Voir les postes",
-      "noCard": "Sans carte bancaire",
-      "trial": "Essai gratuit de 14 jours",
-      "cancel": "Annulation à tout moment"
-    },
-    "trusted": "La confiance d'équipes innovantes dans le monde entier",
-    "features": {
-      "eyebrow": "Fonctionnalités",
-      "title": "Tout ce qu'il faut pour recruter mieux",
-      "subtitle": "Une plateforme complète, propulsée par l'IA et pensée pour les humains.",
-      "items": {
-        "screening": {
-          "title": "Présélection autonome",
-          "description": "Analyse LLM avec score explicable et raisons clés pour chaque candidat."
-        },
-        "matching": {
-          "title": "Matching intelligent",
-          "description": "Graphes de compétences et embeddings : plus de 95 % de précision."
-        },
-        "interviews": {
-          "title": "Entretiens code en direct",
-          "description": "Pair-programming dans le navigateur avec retours d'IA en temps réel."
-        },
-        "pipeline": {
-          "title": "Pipeline automatisé",
-          "description": "Kanban glisser-déposer avec workflows, rappels et SLAs."
-        },
-        "compliance": {
-          "title": "Conformité d'abord",
-          "description": "RGPD & SOC2, journaux d'audit, consentement et DSAR."
-        },
-        "enterprise": {
-          "title": "Prêt pour l'entreprise",
-          "description": "SSO/SAML, multi-tenant, RBAC granulaire, SLA 99,9 %."
-        }
-      }
-    },
-    "how": {
-      "eyebrow": "Comment ça marche",
-      "title": "Trois étapes vers le recrutement autonome",
-      "subtitle": "De la fiche de poste au meilleur candidat en quelques minutes.",
-      "steps": {
-        "one": {
-          "title": "Importer & configurer",
-          "description": "Ajoutez vos descriptions de poste et critères d'évaluation en quelques minutes."
-        },
-        "two": {
-          "title": "L'IA prend le relais",
-          "description": "Nos agents évaluent et interviewent les candidats 24/7."
-        },
-        "three": {
-          "title": "Valider & recruter",
-          "description": "Comparez les candidats classés, faites l'entretien final, envoyez l'offre."
-        }
-      }
-    },
-    "stats": {
-      "eyebrow": "En chiffres",
-      "title": "Des résultats qui parlent",
-      "candidates": "Candidats traités",
-      "companies": "Entreprises clientes",
-      "time": "Heures gagnées par recrutement",
-      "accuracy": "Précision du matching"
-    },
-    "testimonials": {
-      "eyebrow": "Témoignages",
-      "title": "La confiance des équipes leaders",
-      "subtitle": "De vraies histoires de vrais clients.",
-      "items": {
-        "sarah": {
-          "name": "Sarah Chen",
-          "role": "VP People, TechScale",
-          "quote": "AI-ROS a réduit notre time-to-hire de 42 à 12 jours. La présélection IA est bluffante.",
-          "metric": "71 % plus rapide"
-        },
-        "marcus": {
-          "name": "Marcus Rodriguez",
-          "role": "Head of Talent, DataFlow",
-          "quote": "Nous traitons 10× plus de candidats avec la même équipe. Le ROI a été immédiat.",
-          "metric": "10× de capacité"
-        },
-        "emily": {
-          "name": "Emily Watson",
-          "role": "CTO, CloudNine",
-          "quote": "Le meilleur ROI de tous nos outils RH. Installation en moins de 30 minutes.",
-          "metric": "4,9× de ROI"
-        },
-        "noah": {
-          "name": "Noah Bennett",
-          "role": "Head of Engineering, NexusAI",
-          "quote": "Les entretiens code avec IA ont éliminé tout biais de notre processus technique.",
-          "metric": "0 biais détecté"
-        }
-      }
-    },
-    "pricingPreview": {
-      "eyebrow": "Tarifs",
-      "title": "Un plan pour chaque étape",
-      "subtitle": "Commencez gratuitement, évoluez à votre rythme. Annulez à tout moment.",
-      "seeAll": "Voir tous les tarifs",
-      "perMonth": "/mois",
-      "perYear": "/an",
-      "mostPopular": "Plus populaire",
-      "fromPrefix": "à partir de"
-    },
-    "cta": {
-      "title": "Prêt à transformer votre recrutement ?",
-      "subtitle": "Rejoignez les centaines d'équipes qui recrutent déjà mieux avec AI-ROS.",
-      "primary": "Commencer l'essai gratuit",
-      "secondary": "Parler aux ventes"
-    }
   },
   "pricing": {
     "metaTitle": "Tarifs · AI-ROS",
@@ -3627,14 +3552,13 @@
     },
     "talentPools": {
       "title": "Viviers de talents",
-      "description": "Organisez les candidats dans des viviers curatés pour des rôles ou compétences spécifiques",
+      "description": "Description",
       "createPool": "Créer un vivier",
       "createPoolDesc": "Créez un nouveau vivier de talents avec des critères personnalisés",
       "noPools": "Aucun vivier de talents pour l'instant",
       "noPoolsDesc": "Créez votre premier vivier de talents pour commencer à organiser les candidats",
       "name": "Nom",
       "namePlaceholder": "ex. Ingénieurs React Senior",
-      "description": "Description",
       "descriptionPlaceholder": "Description et critères du vivier...",
       "criteria": "Critères",
       "memberCount": "{count} membres",
@@ -4531,19 +4455,67 @@
       "caption": "Table de démonstration des fonctionnalités de DataTable V2",
       "ariaLabel": "Table de données démo",
       "features": {
-        "sorting": { "title": "Tri", "desc": "Cliquez sur les en-têtes de colonne pour trier asc/desc/aucun. Cycle à trois états." },
-        "filtering": { "title": "Filtres par colonne", "desc": "Activez le bouton filtre pour afficher les entrées de filtre par colonne." },
-        "resize": { "title": "Redimensionnement", "desc": "Faites glisser le bord droit de l'en-tête pour redimensionner." },
-        "reorder": { "title": "Réorganisation", "desc": "Faites glisser les en-têtes par l'icône de poignée pour réorganiser." },
-        "pin": { "title": "Épinglage de colonnes", "desc": "Utilisez le menu des paramètres de colonne pour épingler à gauche ou à droite." },
-        "views": { "title": "Vues enregistrées", "desc": "Enregistrez et restaurez la disposition, les filtres et le tri." },
-        "keyboard": { "title": "Navigation clavier", "desc": "Touches fléchées, Tab, Entrée pour éditer, Échap pour annuler, Ctrl+C pour copier." },
-        "edit": { "title": "Édition en ligne", "desc": "Double-cliquez sur les cellules éditables. Appuyez sur Entrée pour valider." },
-        "export": { "title": "Export", "desc": "Exportez les données visibles en CSV ou JSON via le bouton de téléchargement." },
-        "virtual": { "title": "Virtualisation", "desc": "Activée automatiquement pour 100+ lignes avec react-window." },
-        "expand": { "title": "Expansion de lignes", "desc": "Cliquez sur le chevron pour déplier les lignes et voir les détails." },
-        "dark": { "title": "Mode sombre", "desc": "Support complet du mode sombre avec les tokens de couleur surface." }
+        "sorting": {
+          "title": "Tri",
+          "desc": "Cliquez sur les en-têtes de colonne pour trier asc/desc/aucun. Cycle à trois états."
+        },
+        "filtering": {
+          "title": "Filtres par colonne",
+          "desc": "Activez le bouton filtre pour afficher les entrées de filtre par colonne."
+        },
+        "resize": {
+          "title": "Redimensionnement",
+          "desc": "Faites glisser le bord droit de l'en-tête pour redimensionner."
+        },
+        "reorder": {
+          "title": "Réorganisation",
+          "desc": "Faites glisser les en-têtes par l'icône de poignée pour réorganiser."
+        },
+        "pin": {
+          "title": "Épinglage de colonnes",
+          "desc": "Utilisez le menu des paramètres de colonne pour épingler à gauche ou à droite."
+        },
+        "views": {
+          "title": "Vues enregistrées",
+          "desc": "Enregistrez et restaurez la disposition, les filtres et le tri."
+        },
+        "keyboard": {
+          "title": "Navigation clavier",
+          "desc": "Touches fléchées, Tab, Entrée pour éditer, Échap pour annuler, Ctrl+C pour copier."
+        },
+        "edit": {
+          "title": "Édition en ligne",
+          "desc": "Double-cliquez sur les cellules éditables. Appuyez sur Entrée pour valider."
+        },
+        "export": {
+          "title": "Export",
+          "desc": "Exportez les données visibles en CSV ou JSON via le bouton de téléchargement."
+        },
+        "virtual": {
+          "title": "Virtualisation",
+          "desc": "Activée automatiquement pour 100+ lignes avec react-window."
+        },
+        "expand": {
+          "title": "Expansion de lignes",
+          "desc": "Cliquez sur le chevron pour déplier les lignes et voir les détails."
+        },
+        "dark": {
+          "title": "Mode sombre",
+          "desc": "Support complet du mode sombre avec les tokens de couleur surface."
+        }
       }
     }
+  },
+  "notFound": {
+    "title": "Page Non Trouvée",
+    "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "goHome": "Retour au Tableau de Bord",
+    "goBack": "Retour",
+    "search": "Rechercher",
+    "searchAria": "Rechercher dans le tableau de bord",
+    "searchPlaceholder": "Rechercher candidats, offres, entretiens…",
+    "quickLinks": "Ou accédez à une page courante",
+    "needHelp": "Besoin d'aide ? Essayez le",
+    "shortcutHint": "raccourci pour rechercher partout."
   }
 }

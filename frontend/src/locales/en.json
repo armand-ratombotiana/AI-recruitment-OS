@@ -110,7 +110,14 @@
     "loginFailed": "Login failed. Please check your credentials and try again.",
     "creatingAccount": "Creating account…",
     "signingIn": "Signing you in…",
-    "strengthLabels": ["Very weak", "Weak", "Fair", "Good", "Strong", "Excellent"],
+    "strengthLabels": [
+      "Very weak",
+      "Weak",
+      "Fair",
+      "Good",
+      "Strong",
+      "Excellent"
+    ],
     "passwordRules": {
       "length": "At least 8 characters",
       "upper": "One uppercase letter",
@@ -147,87 +154,123 @@
     "systemDefault": "System default"
   },
   "landing": {
-    "navFeatures": "Features",
-    "navHow": "How it works",
-    "navPricing": "Pricing",
-    "navFaq": "FAQ",
-    "signIn": "Sign In",
-    "getStarted": "Get Started",
-    "newBadge": "NEW: AI-Powered Recruitment v3.0",
-    "heroTitle1": "The Future of Hiring",
-    "heroTitle2": "is Autonomous",
-    "heroSubtitle": "AI-ROS deploys intelligent agents that screen candidates, conduct interviews, and make hiring decisions — so your team can focus on building.",
-    "heroCtaPrimary": "Start Free Trial",
-    "heroCtaSecondary": "See how it works",
-    "heroTricheck": "✓ No credit card required   ✓ 14-day free trial   ✓ Cancel anytime",
-    "trustedBy": "Trusted by innovative teams worldwide",
-    "statsCompanies": "Companies",
-    "statsCandidates": "Candidates Processed",
-    "statsAccuracy": "Accuracy Rate",
-    "statsFaster": "Faster Hiring",
-    "featuresTitle": "Why AI-ROS?",
-    "featuresSubtitle": "Powered by AI, designed for humans. A complete platform from sourcing to offer.",
+    "hero": {
+      "eyebrow": "Now with AI Copilot v3",
+      "title": "The Future of Hiring",
+      "titleHighlight": "is Autonomous",
+      "subtitle": "AI-ROS deploys intelligent agents that screen candidates, conduct interviews, and surface the best hires — so your team can focus on building.",
+      "getStarted": "Get started free",
+      "viewJobs": "View open positions",
+      "noCard": "No credit card required",
+      "trial": "14-day free trial",
+      "cancel": "Cancel anytime"
+    },
+    "trusted": "Trusted by innovative teams worldwide",
     "features": {
-      "screening": "AI Screening",
-      "screeningDesc": "Autonomous agents screen and evaluate candidates 24/7 with multi-dimensional scoring and bias detection.",
-      "coding": "Live Coding",
-      "codingDesc": "Real-time pair programming interviews with AI evaluation, progressive hints, and automated scoring.",
-      "matching": "Smart Matching",
-      "matchingDesc": "ML-powered candidate-job matching with explainable scores using embeddings and skill graphs.",
-      "workflow": "Workflow Engine",
-      "workflowDesc": "Automate your entire hiring pipeline with visual workflows, event-driven triggers, and approval chains.",
-      "analytics": "Analytics",
-      "analyticsDesc": "Real-time insights into recruitment metrics, AI performance tracking, and predictive workforce analytics.",
-      "security": "Enterprise Security",
-      "securityDesc": "SOC2 compliant with SSO, role-based access, end-to-end encryption, and audit logs."
-    },
-    "howTitle": "Three steps to autonomous hiring",
-    "howSubtitle": "Go from job description to top candidate in minutes, not weeks.",
-    "howSteps": {
-      "step1Title": "Upload & configure",
-      "step1Desc": "Add your job descriptions, requirements, and evaluation criteria in minutes.",
-      "step2Title": "AI takes over",
-      "step2Desc": "Our agents screen, interview, and evaluate candidates autonomously.",
-      "step3Title": "Review & hire",
-      "step3Desc": "Review AI recommendations, compare candidates, and make informed decisions."
-    },
-    "testimonialsTitle": "Trusted by leading teams",
-    "testimonialsSubtitle": "Real stories from real customers.",
-    "pricingTitle": "Simple, transparent pricing",
-    "pricingSubtitle": "Start free, scale as you grow",
-    "monthly": "Monthly",
-    "yearly": "Yearly",
-    "save20": "-20%",
-    "mostPopular": "Most Popular",
-    "pricingTiers": {
-      "starter": {
-        "name": "Starter",
-        "description": "100 candidates, 3 users, basic AI",
-        "cta": "Start Free Trial"
-      },
-      "professional": {
-        "name": "Professional",
-        "description": "500 candidates, 10 users, advanced AI",
-        "cta": "Start Free Trial"
-      },
-      "enterprise": {
-        "name": "Enterprise",
-        "description": "Unlimited everything",
-        "cta": "Contact Sales"
+      "eyebrow": "Features",
+      "title": "Everything you need to hire smarter",
+      "subtitle": "Powered by AI, designed for humans. A complete platform from sourcing to offer.",
+      "items": {
+        "screening": {
+          "title": "Autonomous Screening",
+          "description": "LLM-powered analysis ranks every applicant with an explainable score and top reasons."
+        },
+        "matching": {
+          "title": "Smart Matching",
+          "description": "Skill graphs + embeddings deliver 95%+ matching accuracy and instant shortlists."
+        },
+        "interviews": {
+          "title": "Live Code Interviews",
+          "description": "Pair-program in the browser with real-time AI feedback and rubric scoring."
+        },
+        "pipeline": {
+          "title": "Pipeline Automation",
+          "description": "Drag-and-drop Kanban with workflow triggers, reminders and SLAs."
+        },
+        "compliance": {
+          "title": "Compliance First",
+          "description": "GDPR & SOC2 ready with full audit trails, consent and DSAR tooling."
+        },
+        "enterprise": {
+          "title": "Enterprise Ready",
+          "description": "SSO/SAML, multi-tenant, granular RBAC and 99.9% uptime SLA."
+        }
       }
     },
-    "faqTitle": "Questions? We have answers",
-    "faqSubtitle": "Everything you need to know to get started.",
-    "footerTagline": "AI-native recruitment platform for modern teams. Hire faster, fairer, smarter.",
-    "operational": "All systems operational",
-    "footerCopyright": "© 2026 AI-ROS. All rights reserved.",
-    "language": "English (US)",
-    "ctaFinalTitle": "Ready to transform your hiring?",
-    "ctaFinalSubtitle": "Join 500+ companies already using AI-ROS to hire smarter, faster, and fairer.",
-    "ctaFinalButton": "Get Started",
-    "emailPlaceholder": "Enter your email",
-    "emailSent": "✓ Check your inbox for the welcome email",
-    "noCreditCard": "No credit card required. Free 14-day trial."
+    "how": {
+      "eyebrow": "How it works",
+      "title": "Three steps to autonomous hiring",
+      "subtitle": "Go from job description to top candidate in minutes, not weeks.",
+      "steps": {
+        "one": {
+          "title": "Upload & configure",
+          "description": "Add your job descriptions, requirements and evaluation rubric in minutes."
+        },
+        "two": {
+          "title": "AI takes over",
+          "description": "Our agents screen, interview and evaluate candidates 24/7 — autonomously."
+        },
+        "three": {
+          "title": "Review & hire",
+          "description": "Compare ranked candidates, run a final call, and send the offer in one click."
+        }
+      }
+    },
+    "stats": {
+      "eyebrow": "By the numbers",
+      "title": "Results recruiters love",
+      "candidates": "Candidates processed",
+      "companies": "Companies hiring",
+      "time": "Hours saved per hire",
+      "accuracy": "Matching accuracy"
+    },
+    "testimonials": {
+      "eyebrow": "Testimonials",
+      "title": "Trusted by leading teams",
+      "subtitle": "Real stories from real customers.",
+      "items": {
+        "sarah": {
+          "name": "Sarah Chen",
+          "role": "VP People, TechScale",
+          "quote": "AI-ROS cut our time-to-hire from 42 days to 12. The AI screening is honestly magical.",
+          "metric": "71% faster"
+        },
+        "marcus": {
+          "name": "Marcus Rodriguez",
+          "role": "Head of Talent, DataFlow",
+          "quote": "We now process 10× more candidates with the same team. The ROI was obvious in week one.",
+          "metric": "10× capacity"
+        },
+        "emily": {
+          "name": "Emily Watson",
+          "role": "CTO, CloudNine",
+          "quote": "The best ROI of any HR tool we've ever deployed. Setup took less than 30 minutes.",
+          "metric": "4.9× ROI"
+        },
+        "noah": {
+          "name": "Noah Bennett",
+          "role": "Head of Engineering, NexusAI",
+          "quote": "Live code interviews with AI feedback removed all the bias from our technical loop.",
+          "metric": "0 bias flags"
+        }
+      }
+    },
+    "pricingPreview": {
+      "eyebrow": "Pricing",
+      "title": "Plans for every stage",
+      "subtitle": "Start free, scale as you grow. Cancel anytime.",
+      "seeAll": "See full pricing",
+      "perMonth": "/mo",
+      "perYear": "/yr",
+      "mostPopular": "Most popular",
+      "fromPrefix": "from"
+    },
+    "cta": {
+      "title": "Ready to transform your hiring?",
+      "subtitle": "Join hundreds of teams already hiring smarter, faster and fairer with AI-ROS.",
+      "primary": "Start free trial",
+      "secondary": "Talk to sales"
+    }
   },
   "dashboard": {
     "welcomeBack": "Welcome back",
@@ -424,76 +467,76 @@
       "match": "Best match",
       "shortlisted": "Shortlisted"
     },
-  "messaging": {
-    "title": "Messages",
-    "subtitle": "Real-time chat with candidates",
-    "conversations": "Conversations",
-    "newConversation": "New conversation",
-    "search": "Search conversations…",
-    "noConversations": "No conversations yet",
-    "noMatches": "No conversations match your search",
-    "emptyState": "Start a conversation with a candidate",
-    "messageThread": "Message thread",
-    "typeMessage": "Type a message…",
-    "send": "Send",
-    "sending": "Sending…",
-    "sent": "Sent",
-    "delivered": "Delivered",
-    "read": "Read",
-    "unread": "Unread",
-    "unreadCount": "{count} unread",
-    "attachFile": "Attach file",
-    "emoji": "Emoji",
-    "reply": "Reply",
-    "forward": "Forward",
-    "delete": "Delete message",
-    "edit": "Edit message",
-    "copy": "Copy message",
-    "timestamp": "Sent at {time}",
-    "today": "Today",
-    "yesterday": "Yesterday",
-    "groupByDay": "Group by day",
-    "loadMore": "Load more messages",
-    "noMessages": "No messages yet. Say hello!",
-    "error": "Failed to send message",
-    "retry": "Retry",
-    "connectionLost": "Connection lost. Reconnecting…",
-    "connected": "Connected",
-    "typing": "{name} is typing…",
-    "candidate": "Candidate",
-    "recruiter": "You",
-    "system": "System",
-    "tabs": {
-      "all": "All",
-      "unread": "Unread",
-      "starred": "Starred"
-    },
-    "actions": {
-      "markRead": "Mark as read",
-      "markUnread": "Mark as unread",
-      "star": "Star conversation",
-      "unstar": "Unstar conversation",
-      "archive": "Archive",
-      "delete": "Delete conversation"
-    },
-    "confirmDelete": {
-      "title": "Delete conversation?",
-      "description": "This will permanently delete the conversation. This action cannot be undone.",
-      "confirm": "Delete"
-    },
-    "fileUpload": {
-      "uploading": "Uploading {name}…",
-      "failed": "Failed to upload {name}",
-      "tooLarge": "File too large (max 10MB)",
-      "invalidType": "File type not allowed"
-    },
-    "sidebar": {
+    "messaging": {
       "title": "Messages",
-      "badge": "Messages",
-      "tooltip": "Open messages"
-    }
-  },
-  "contact": {
+      "subtitle": "Real-time chat with candidates",
+      "conversations": "Conversations",
+      "newConversation": "New conversation",
+      "search": "Search conversations…",
+      "noConversations": "No conversations yet",
+      "noMatches": "No conversations match your search",
+      "emptyState": "Start a conversation with a candidate",
+      "messageThread": "Message thread",
+      "typeMessage": "Type a message…",
+      "send": "Send",
+      "sending": "Sending…",
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read",
+      "unread": "Unread",
+      "unreadCount": "{count} unread",
+      "attachFile": "Attach file",
+      "emoji": "Emoji",
+      "reply": "Reply",
+      "forward": "Forward",
+      "delete": "Delete message",
+      "edit": "Edit message",
+      "copy": "Copy message",
+      "timestamp": "Sent at {time}",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "groupByDay": "Group by day",
+      "loadMore": "Load more messages",
+      "noMessages": "No messages yet. Say hello!",
+      "error": "Failed to send message",
+      "retry": "Retry",
+      "connectionLost": "Connection lost. Reconnecting…",
+      "connected": "Connected",
+      "typing": "{name} is typing…",
+      "candidate": "Candidate",
+      "recruiter": "You",
+      "system": "System",
+      "tabs": {
+        "all": "All",
+        "unread": "Unread",
+        "starred": "Starred"
+      },
+      "actions": {
+        "markRead": "Mark as read",
+        "markUnread": "Mark as unread",
+        "star": "Star conversation",
+        "unstar": "Unstar conversation",
+        "archive": "Archive",
+        "delete": "Delete conversation"
+      },
+      "confirmDelete": {
+        "title": "Delete conversation?",
+        "description": "This will permanently delete the conversation. This action cannot be undone.",
+        "confirm": "Delete"
+      },
+      "fileUpload": {
+        "uploading": "Uploading {name}…",
+        "failed": "Failed to upload {name}",
+        "tooLarge": "File too large (max 10MB)",
+        "invalidType": "File type not allowed"
+      },
+      "sidebar": {
+        "title": "Messages",
+        "badge": "Messages",
+        "tooltip": "Open messages"
+      }
+    },
+    "contact": {
       "title": "Contact information",
       "email": "Email",
       "phone": "Phone",
@@ -661,10 +704,7 @@
     "createJob": "Create job",
     "search": "Search jobs by title...",
     "stats": {
-      "total": "Total Jobs",
-      "open": "Open",
-      "applicants": "Applicants",
-      "avgTime": "Avg Time"
+      "avgTimeAria": "Average time to hire: {value}"
     },
     "table": {
       "position": "Position",
@@ -677,7 +717,11 @@
     "wizard": {
       "title": "Create new job",
       "desc": "A 3-step wizard to get your job posted in under a minute.",
-      "steps": ["Basics", "Requirements", "Review"],
+      "steps": [
+        "Basics",
+        "Requirements",
+        "Review"
+      ],
       "stepBasics": "Basics",
       "stepRequirements": "Requirements",
       "stepReview": "Review",
@@ -688,9 +732,6 @@
     },
     "filterByStatus": "Filter by status",
     "searchAria": "Search jobs",
-    "stats": {
-      "avgTimeAria": "Average time to hire: {value}"
-    },
     "createFailed": "Failed to create job",
     "fields": {
       "title": "Job title *",
@@ -2795,9 +2836,9 @@
       "categories": {
         "applications": "Applications",
         "applicationsDesc": "New candidates, status changes, and pipeline updates.",
-    "interviews": "Interviews",
-    "videoInterviews": "Video Interviews",
-    "contentGenerator": "Content Generator",
+        "interviews": "Interviews",
+        "videoInterviews": "Video Interviews",
+        "contentGenerator": "Content Generator",
         "interviewsDesc": "Schedule changes, reminders, and feedback requests.",
         "messages": "Messages",
         "messagesDesc": "Mentions, replies, and direct messages from your team.",
@@ -2875,30 +2916,6 @@
   },
   "tags": {
     "title": "Tag manager",
-    "subtitle": "Create and manage tags used across candidates, jobs, and more.",
-    "create": "Create tag",
-    "createTitle": "Create new tag",
-    "createDesc": "Tags help you organize candidates, jobs, and more.",
-    "createNew": "Create new tag \"{name}\"",
-    "editTitle": "Edit tag",
-    "editDesc": "Update the tag definition and color.",
-    "updated": "Tag updated",
-    "created": "Tag created",
-    "deleted": "Tag deleted",
-    "deleteTitle": "Delete tag?",
-    "deleteDesc": "\u201c{name}\u201d will be removed from all entities that use it.",
-    "search": "Search tags…",
-    "refresh": "Refresh tags",
-    "loadError": "Could not load tags",
-    "loading": "Loading tags…",
-    "noMatches": "No matching tags",
-    "add": "Add",
-    "addAria": "Add tag",
-    "inputPlaceholder": "Add a tag…",
-    "inputAria": "Tags",
-    "removeAria": "Remove tag {name}",
-    "maxReached": "Maximum number of tags reached",
-    "color": "New tag color",
     "customColor": "Custom color",
     "preview": "Preview",
     "previewHelp": "This is how the tag will appear.",
@@ -3082,174 +3099,6 @@
     "scheduledReports": "Scheduled reports",
     "noSchedules": "No scheduled reports",
     "noSchedulesDesc": "Schedule a report to be delivered to your inbox on a recurring basis."
-  },
-  "tags": {
-    "title": "Tag manager",
-    "customColor": "Custom color",
-    "preview": "Preview",
-    "previewHelp": "This is how the tag will appear.",
-    "usage": "{count} use(s)",
-    "totalCount": "{count} total",
-    "allEntityTypes": "All entity types",
-    "entityTypes": {
-      "global": "Global",
-      "candidate": "Candidate",
-      "job": "Job",
-      "interview": "Interview",
-      "resume": "Resume"
-    },
-    "entityDescriptions": {
-      "global": "Global tags available on every entity",
-      "candidate": "Tags that belong to candidates",
-      "job": "Tags that belong to jobs",
-      "interview": "Tags that belong to interviews",
-      "resume": "Tags that belong to resumes"
-    },
-    "fields": {
-      "name": "Name",
-      "namePh": "e.g. Senior, Remote, Top-priority",
-      "entityType": "Entity type",
-      "color": "Color",
-      "customColor": "Custom color",
-      "description": "Description",
-      "descriptionPh": "Optional context for teammates…"
-    },
-    "filter": {
-      "entityType": "Filter by entity type"
-    },
-    "errors": {
-      "nameInvalid": "Name must be between 1 and 50 characters",
-      "descriptionTooLong": "Description must be 200 characters or less",
-      "saveFailed": "Failed to save tag",
-      "deleteFailed": "Failed to delete tag"
-    },
-    "empty": {
-      "title": "No tags yet",
-      "desc": "Create your first tag to start labeling candidates, jobs, and other entities.",
-      "filteredTitle": "No tags match your filters",
-      "filteredDesc": "Try clearing the search or filter."
-    },
-    "accessDenied": "Access denied",
-    "accessDeniedDesc": "You need administrator privileges to manage tags."
-  },
-  "landing": {
-    "hero": {
-      "eyebrow": "Now with AI Copilot v3",
-      "title": "The Future of Hiring",
-      "titleHighlight": "is Autonomous",
-      "subtitle": "AI-ROS deploys intelligent agents that screen candidates, conduct interviews, and surface the best hires — so your team can focus on building.",
-      "getStarted": "Get started free",
-      "viewJobs": "View open positions",
-      "noCard": "No credit card required",
-      "trial": "14-day free trial",
-      "cancel": "Cancel anytime"
-    },
-    "trusted": "Trusted by innovative teams worldwide",
-    "features": {
-      "eyebrow": "Features",
-      "title": "Everything you need to hire smarter",
-      "subtitle": "Powered by AI, designed for humans. A complete platform from sourcing to offer.",
-      "items": {
-        "screening": {
-          "title": "Autonomous Screening",
-          "description": "LLM-powered analysis ranks every applicant with an explainable score and top reasons."
-        },
-        "matching": {
-          "title": "Smart Matching",
-          "description": "Skill graphs + embeddings deliver 95%+ matching accuracy and instant shortlists."
-        },
-        "interviews": {
-          "title": "Live Code Interviews",
-          "description": "Pair-program in the browser with real-time AI feedback and rubric scoring."
-        },
-        "pipeline": {
-          "title": "Pipeline Automation",
-          "description": "Drag-and-drop Kanban with workflow triggers, reminders and SLAs."
-        },
-        "compliance": {
-          "title": "Compliance First",
-          "description": "GDPR & SOC2 ready with full audit trails, consent and DSAR tooling."
-        },
-        "enterprise": {
-          "title": "Enterprise Ready",
-          "description": "SSO/SAML, multi-tenant, granular RBAC and 99.9% uptime SLA."
-        }
-      }
-    },
-    "how": {
-      "eyebrow": "How it works",
-      "title": "Three steps to autonomous hiring",
-      "subtitle": "Go from job description to top candidate in minutes, not weeks.",
-      "steps": {
-        "one": {
-          "title": "Upload & configure",
-          "description": "Add your job descriptions, requirements and evaluation rubric in minutes."
-        },
-        "two": {
-          "title": "AI takes over",
-          "description": "Our agents screen, interview and evaluate candidates 24/7 — autonomously."
-        },
-        "three": {
-          "title": "Review & hire",
-          "description": "Compare ranked candidates, run a final call, and send the offer in one click."
-        }
-      }
-    },
-    "stats": {
-      "eyebrow": "By the numbers",
-      "title": "Results recruiters love",
-      "candidates": "Candidates processed",
-      "companies": "Companies hiring",
-      "time": "Hours saved per hire",
-      "accuracy": "Matching accuracy"
-    },
-    "testimonials": {
-      "eyebrow": "Testimonials",
-      "title": "Trusted by leading teams",
-      "subtitle": "Real stories from real customers.",
-      "items": {
-        "sarah": {
-          "name": "Sarah Chen",
-          "role": "VP People, TechScale",
-          "quote": "AI-ROS cut our time-to-hire from 42 days to 12. The AI screening is honestly magical.",
-          "metric": "71% faster"
-        },
-        "marcus": {
-          "name": "Marcus Rodriguez",
-          "role": "Head of Talent, DataFlow",
-          "quote": "We now process 10× more candidates with the same team. The ROI was obvious in week one.",
-          "metric": "10× capacity"
-        },
-        "emily": {
-          "name": "Emily Watson",
-          "role": "CTO, CloudNine",
-          "quote": "The best ROI of any HR tool we've ever deployed. Setup took less than 30 minutes.",
-          "metric": "4.9× ROI"
-        },
-        "noah": {
-          "name": "Noah Bennett",
-          "role": "Head of Engineering, NexusAI",
-          "quote": "Live code interviews with AI feedback removed all the bias from our technical loop.",
-          "metric": "0 bias flags"
-        }
-      }
-    },
-    "pricingPreview": {
-      "eyebrow": "Pricing",
-      "title": "Plans for every stage",
-      "subtitle": "Start free, scale as you grow. Cancel anytime.",
-      "seeAll": "See full pricing",
-      "perMonth": "/mo",
-      "perYear": "/yr",
-      "mostPopular": "Most popular",
-      "fromPrefix": "from"
-    },
-    "cta": {
-      "title": "Ready to transform your hiring?",
-      "subtitle": "Join hundreds of teams already hiring smarter, faster and fairer with AI-ROS.",
-      "primary": "Start free trial",
-      "secondary": "Talk to sales"
-    }
   },
   "pricing": {
     "metaTitle": "Pricing · AI-ROS",
@@ -3973,14 +3822,13 @@
     },
     "talentPools": {
       "title": "Talent Pools",
-      "description": "Organize candidates into curated pools for specific roles or skills",
+      "description": "Description",
       "createPool": "Create pool",
       "createPoolDesc": "Build a new talent pool with custom criteria",
       "noPools": "No talent pools yet",
       "noPoolsDesc": "Create your first talent pool to start organizing candidates",
       "name": "Name",
       "namePlaceholder": "e.g. Senior React Engineers",
-      "description": "Description",
       "descriptionPlaceholder": "Pool description and criteria...",
       "criteria": "Criteria",
       "memberCount": "{count} members",
@@ -4526,7 +4374,7 @@
       "rejection": "Rejection",
       "linkedin_post": "LinkedIn Post"
     },
-      "tones": {
+    "tones": {
       "professional": "Professional",
       "friendly": "Friendly",
       "formal": "Formal"
@@ -4875,19 +4723,67 @@
       "caption": "DataTable V2 feature demonstration table",
       "ariaLabel": "Demo data table",
       "features": {
-        "sorting": { "title": "Sorting", "desc": "Click column headers to sort asc/desc/none. Tri-state cycling." },
-        "filtering": { "title": "Column Filters", "desc": "Toggle the filter button to show per-column filter inputs." },
-        "resize": { "title": "Column Resize", "desc": "Drag the right edge of any column header to resize." },
-        "reorder": { "title": "Column Reorder", "desc": "Drag column headers by the grip icon to reorder." },
-        "pin": { "title": "Column Pinning", "desc": "Use the column settings menu to pin columns left or right." },
-        "views": { "title": "Saved Views", "desc": "Save and restore column layout, filters, and sort state." },
-        "keyboard": { "title": "Keyboard Navigation", "desc": "Arrow keys, Tab, Enter to edit, Escape to cancel, Ctrl+C to copy." },
-        "edit": { "title": "Inline Editing", "desc": "Double-click editable cells to edit in place. Press Enter to commit." },
-        "export": { "title": "Export", "desc": "Export visible data to CSV or JSON via the download button." },
-        "virtual": { "title": "Virtualization", "desc": "Auto-enabled for 100+ rows using react-window for smooth scrolling." },
-        "expand": { "title": "Row Expansion", "desc": "Click the chevron to expand rows and show additional details." },
-        "dark": { "title": "Dark Mode", "desc": "Full dark mode support with surface-level color tokens." }
+        "sorting": {
+          "title": "Sorting",
+          "desc": "Click column headers to sort asc/desc/none. Tri-state cycling."
+        },
+        "filtering": {
+          "title": "Column Filters",
+          "desc": "Toggle the filter button to show per-column filter inputs."
+        },
+        "resize": {
+          "title": "Column Resize",
+          "desc": "Drag the right edge of any column header to resize."
+        },
+        "reorder": {
+          "title": "Column Reorder",
+          "desc": "Drag column headers by the grip icon to reorder."
+        },
+        "pin": {
+          "title": "Column Pinning",
+          "desc": "Use the column settings menu to pin columns left or right."
+        },
+        "views": {
+          "title": "Saved Views",
+          "desc": "Save and restore column layout, filters, and sort state."
+        },
+        "keyboard": {
+          "title": "Keyboard Navigation",
+          "desc": "Arrow keys, Tab, Enter to edit, Escape to cancel, Ctrl+C to copy."
+        },
+        "edit": {
+          "title": "Inline Editing",
+          "desc": "Double-click editable cells to edit in place. Press Enter to commit."
+        },
+        "export": {
+          "title": "Export",
+          "desc": "Export visible data to CSV or JSON via the download button."
+        },
+        "virtual": {
+          "title": "Virtualization",
+          "desc": "Auto-enabled for 100+ rows using react-window for smooth scrolling."
+        },
+        "expand": {
+          "title": "Row Expansion",
+          "desc": "Click the chevron to expand rows and show additional details."
+        },
+        "dark": {
+          "title": "Dark Mode",
+          "desc": "Full dark mode support with surface-level color tokens."
+        }
       }
     }
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "The page you are looking for does not exist or has been moved.",
+    "goHome": "Go to Dashboard",
+    "goBack": "Go back",
+    "search": "Search",
+    "searchAria": "Search the dashboard",
+    "searchPlaceholder": "Search candidates, jobs, interviews…",
+    "quickLinks": "Or jump to a common page",
+    "needHelp": "Need help? Try the",
+    "shortcutHint": "shortcut to search anywhere."
   }
 }
