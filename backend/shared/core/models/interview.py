@@ -46,6 +46,11 @@ class Interview(SQLModel, table=True):
     interviewer_id: str | None = None
     is_ai_interview: bool = False
     room_id: str | None = None
+    location: str | None = None
+    score: int | None = None
+    feedback: str | None = None
+    transcript: str | None = None
+    notes: str | None = None
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     updated_at: datetime = SQLField(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 

@@ -5,9 +5,11 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select, func
 
 from shared.auth.dependencies import require_authenticated_user, require_tenant_id
 from shared.core.database import get_db_dependency
+from shared.core.models.interview import Interview, InterviewStatus
 from shared.core.rate_limit_deps import interview_write_rate
 from shared.core.security import require_tenant
 from shared.webhooks import safe_dispatch_event
@@ -49,19 +51,6 @@ class CancelResponse(BaseModel):
     reason: str
 
 
-_INTERVIEW_DB: dict[str, dict] = {
-    "i1": {"id": "i1", "candidate_id": "c1", "job_id": "j1", "type": "pair_programming", "status": "scheduled",
-           "scheduled_at": "2025-01-20T14:00:00Z", "is_ai_interview": True, "interviewer": "PPE Agent",
-           "duration_minutes": 60},
-    "i2": {"id": "i2", "candidate_id": "c2", "job_id": "j2", "type": "system_design", "status": "completed",
-           "scheduled_at": "2025-01-19T10:00:00Z", "is_ai_interview": True, "interviewer": "System Design Agent",
-           "duration_minutes": 60},
-    "i3": {"id": "i3", "candidate_id": "c3", "job_id": "j1", "type": "hr_screening", "status": "in_progress",
-           "scheduled_at": "2025-01-20T11:00:00Z", "is_ai_interview": True, "interviewer": "HR Agent",
-           "duration_minutes": 30},
-}
-
-
 @router.get("/health")
 async def health():
     return {"status": "healthy", "service": "interview"}
@@ -72,6 +61,7 @@ async def list_interviews(
     request: Request,
     tenant_id: str = Depends(require_tenant_id),
     user: dict = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db_dependency),
     candidate_id: str | None = None,
     job_id: str | None = None,
     limit: int = Query(20, ge=1, le=100),
@@ -81,26 +71,43 @@ async def list_interviews(
     """List interviews with optional filters and pagination."""
     from shared.core.pagination import PaginationParams
 
-    items = [
-        {"id": "i1", "candidate_id": "c1", "job_id": "j1", "type": "pair_programming", "status": "scheduled",
-         "scheduled_at": "2025-01-20T14:00:00Z", "is_ai_interview": True, "interviewer": "PPE Agent",
-         "duration_minutes": 60},
-        {"id": "i2", "candidate_id": "c2", "job_id": "j2", "type": "system_design", "status": "completed",
-         "scheduled_at": "2025-01-19T10:00:00Z", "is_ai_interview": True, "interviewer": "System Design Agent",
-         "duration_minutes": 60},
-        {"id": "i3", "candidate_id": "c3", "job_id": "j1", "type": "hr_screening", "status": "in_progress",
-         "scheduled_at": "2025-01-20T11:00:00Z", "is_ai_interview": True, "interviewer": "HR Agent",
-         "duration_minutes": 30},
-    ]
+    query = select(Interview).where(Interview.tenant_id == tenant_id)
+    count_query = select(func.count()).select_from(Interview).where(Interview.tenant_id == tenant_id)
+
     if candidate_id:
-        items = [i for i in items if i["candidate_id"] == candidate_id]
+        query = query.where(Interview.candidate_id == candidate_id)
+        count_query = count_query.where(Interview.candidate_id == candidate_id)
     if job_id:
-        items = [i for i in items if i["job_id"] == job_id]
+        query = query.where(Interview.job_id == job_id)
+        count_query = count_query.where(Interview.job_id == job_id)
     if status_filter:
-        items = [i for i in items if i["status"] == status_filter]
-    total = len(items)
+        query = query.where(Interview.status == status_filter)
+        count_query = count_query.where(Interview.status == status_filter)
+
+    total_result = await db.execute(count_query)
+    total = total_result.scalar() or 0
+
+    query = query.order_by(Interview.created_at.desc()).offset(offset).limit(limit)
+    result = await db.execute(query)
+    items = result.scalars().all()
+
+    serialized = [
+        {
+            "id": i.id,
+            "candidate_id": i.candidate_id,
+            "job_id": i.job_id,
+            "type": i.interview_type,
+            "status": i.status.value if isinstance(i.status, InterviewStatus) else i.status,
+            "scheduled_at": i.scheduled_at.isoformat() + "Z" if i.scheduled_at else None,
+            "is_ai_interview": i.is_ai_interview,
+            "interviewer": i.interviewer_id,
+            "duration_minutes": i.duration_minutes,
+        }
+        for i in items
+    ]
+
     page = PaginationParams(limit=limit, offset=offset)
-    return page.build_response(items[offset : offset + limit], total=total, request=request)
+    return page.build_response(serialized, total=total, request=request)
 
 
 @router.get("/{interview_id}")
@@ -108,21 +115,31 @@ async def get_interview(
     interview_id: str,
     tenant_id: str = Depends(require_tenant_id),
     user: dict = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db_dependency),
 ):
-    record = _INTERVIEW_DB.get(interview_id)
-    if record is None:
-        record = {
-            "id": interview_id,
-            "candidate_id": "c1",
-            "job_id": "j1",
-            "type": "pair_programming",
-            "status": "scheduled",
-            "scheduled_at": "2025-01-20T14:00:00Z",
-            "is_ai_interview": True,
-            "interviewer": "PPE Agent",
-            "duration_minutes": 60,
-        }
-    return record
+    result = await db.execute(
+        select(Interview).where(
+            Interview.id == interview_id,
+            Interview.tenant_id == tenant_id,
+        )
+    )
+    interview = result.scalar_one_or_none()
+    if not interview:
+        raise HTTPException(404, "Interview not found")
+    return {
+        "id": interview.id,
+        "candidate_id": interview.candidate_id,
+        "job_id": interview.job_id,
+        "type": interview.interview_type,
+        "status": interview.status.value if isinstance(interview.status, InterviewStatus) else interview.status,
+        "scheduled_at": interview.scheduled_at.isoformat() + "Z" if interview.scheduled_at else None,
+        "is_ai_interview": interview.is_ai_interview,
+        "interviewer": interview.interviewer_id,
+        "duration_minutes": interview.duration_minutes,
+        "score": interview.score,
+        "feedback": interview.feedback,
+        "notes": interview.notes,
+    }
 
 
 @router.post("/", dependencies=[])
@@ -130,15 +147,35 @@ async def create_interview(
     data: InterviewCreate,
     tenant_id: str = Depends(require_tenant_id),
     user: dict = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db_dependency),
     _rl: None = None,
 ):
     if _rl is not None:
         pass
+
+    scheduled_at = None
+    if data.scheduled_at:
+        scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
+
+    interview = Interview(
+        tenant_id=tenant_id,
+        candidate_id=data.candidate_id,
+        job_id=data.job_id,
+        application_id="",
+        interview_type=data.interview_type,
+        scheduled_at=scheduled_at,
+        is_ai_interview=data.is_ai_interview,
+        status=InterviewStatus.SCHEDULED,
+    )
+    db.add(interview)
+    await db.commit()
+    await db.refresh(interview)
+
     return {
-        "id": "i_new",
-        "candidate_id": data.candidate_id,
-        "job_id": data.job_id,
-        "type": data.interview_type,
+        "id": interview.id,
+        "candidate_id": interview.candidate_id,
+        "job_id": interview.job_id,
+        "type": interview.interview_type,
         "status": "scheduled",
         "created": True,
     }
@@ -149,8 +186,29 @@ async def start_interview(
     interview_id: str,
     tenant_id: str = Depends(require_tenant_id),
     user: dict = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db_dependency),
 ):
-    return {"id": interview_id, "status": "in_progress", "started_at": "2025-01-20T14:00:00Z"}
+    result = await db.execute(
+        select(Interview).where(
+            Interview.id == interview_id,
+            Interview.tenant_id == tenant_id,
+        )
+    )
+    interview = result.scalar_one_or_none()
+    if not interview:
+        raise HTTPException(404, "Interview not found")
+
+    interview.status = InterviewStatus.IN_PROGRESS
+    interview.started_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    interview.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.add(interview)
+    await db.commit()
+
+    return {
+        "id": interview_id,
+        "status": "in_progress",
+        "started_at": interview.started_at.isoformat() + "Z" if interview.started_at else None,
+    }
 
 
 @router.post("/{interview_id}/complete")
@@ -158,8 +216,29 @@ async def complete_interview(
     interview_id: str,
     tenant_id: str = Depends(require_tenant_id),
     user: dict = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db_dependency),
 ):
-    return {"id": interview_id, "status": "completed", "completed_at": "2025-01-20T15:00:00Z"}
+    result = await db.execute(
+        select(Interview).where(
+            Interview.id == interview_id,
+            Interview.tenant_id == tenant_id,
+        )
+    )
+    interview = result.scalar_one_or_none()
+    if not interview:
+        raise HTTPException(404, "Interview not found")
+
+    interview.status = InterviewStatus.COMPLETED
+    interview.ended_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    interview.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.add(interview)
+    await db.commit()
+
+    return {
+        "id": interview_id,
+        "status": "completed",
+        "completed_at": interview.ended_at.isoformat() + "Z" if interview.ended_at else None,
+    }
 
 
 @router.post("/{interview_id}/feedback")
@@ -167,7 +246,18 @@ async def submit_feedback(
     interview_id: str,
     tenant_id: str = Depends(require_tenant_id),
     user: dict = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db_dependency),
 ):
+    result = await db.execute(
+        select(Interview).where(
+            Interview.id == interview_id,
+            Interview.tenant_id == tenant_id,
+        )
+    )
+    interview = result.scalar_one_or_none()
+    if not interview:
+        raise HTTPException(404, "Interview not found")
+
     return {"id": interview_id, "feedback_submitted": True, "overall_score": 8.2}
 
 
@@ -176,16 +266,22 @@ async def get_transcript(
     interview_id: str,
     tenant_id: str = Depends(require_tenant_id),
     user: dict = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db_dependency),
 ):
+    result = await db.execute(
+        select(Interview).where(
+            Interview.id == interview_id,
+            Interview.tenant_id == tenant_id,
+        )
+    )
+    interview = result.scalar_one_or_none()
+    if not interview:
+        raise HTTPException(404, "Interview not found")
+
     return {
         "interview_id": interview_id,
-        "transcript": [
-            {"role": "interviewer", "content": "Tell me about your experience with distributed systems.",
-             "timestamp": "2025-01-20T14:00:00Z"},
-            {"role": "candidate", "content": "I have 8 years of experience building scalable backend systems...",
-             "timestamp": "2025-01-20T14:01:00Z"},
-        ],
-        "total_messages": 2,
+        "transcript": interview.transcript or "",
+        "total_messages": 0,
     }
 
 
@@ -194,16 +290,24 @@ async def get_interview_analytics(
     interview_id: str,
     tenant_id: str = Depends(require_tenant_id),
     user: dict = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db_dependency),
 ):
+    result = await db.execute(
+        select(Interview).where(
+            Interview.id == interview_id,
+            Interview.tenant_id == tenant_id,
+        )
+    )
+    interview = result.scalar_one_or_none()
+    if not interview:
+        raise HTTPException(404, "Interview not found")
+
     return {
         "interview_id": interview_id,
         "analytics": {
-            "duration_minutes": 60,
-            "questions_asked": 12,
-            "candidate_talk_time": 0.65,
-            "interviewer_talk_time": 0.35,
-            "communication_score": 8.5,
-            "technical_score": 7.8,
+            "duration_minutes": interview.duration_minutes,
+            "score": interview.score,
+            "status": interview.status.value if isinstance(interview.status, InterviewStatus) else interview.status,
         },
     }
 
@@ -220,16 +324,11 @@ async def reschedule_interview(
     data: RescheduleRequest,
     tenant_id: str = Depends(require_tenant_id),
     user: dict = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db_dependency),
     _rl: None = None,
 ) -> RescheduleResponse:
-    """Reschedule an interview, returning the previous and new time.
-
-    The actual interview record would be updated in production.  Here we
-    just validate the new ISO 8601 timestamp and return a deterministic
-    response that lets the frontend update its UI.
-    """
+    """Reschedule an interview, returning the previous and new time."""
     try:
-        # Validate ISO 8601.
         datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
     except ValueError as exc:
         raise HTTPException(
@@ -237,11 +336,25 @@ async def reschedule_interview(
             detail=f"Invalid scheduled_at: {exc}",
         ) from exc
 
-    record = _INTERVIEW_DB.get(interview_id, {
-        "id": interview_id,
-        "scheduled_at": "2025-01-20T14:00:00Z",
-    })
-    previous = record.get("scheduled_at")
+    result = await db.execute(
+        select(Interview).where(
+            Interview.id == interview_id,
+            Interview.tenant_id == tenant_id,
+        )
+    )
+    interview = result.scalar_one_or_none()
+    if not interview:
+        raise HTTPException(404, "Interview not found")
+
+    previous = interview.scheduled_at.isoformat() + "Z" if interview.scheduled_at else None
+    new_scheduled = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00")).replace(tzinfo=None)
+    interview.scheduled_at = new_scheduled
+    if data.duration_minutes:
+        interview.duration_minutes = data.duration_minutes
+    interview.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.add(interview)
+    await db.commit()
+
     return RescheduleResponse(
         id=interview_id,
         previous_scheduled_at=previous,
@@ -263,17 +376,31 @@ async def cancel_interview(
     data: CancelRequest,
     tenant_id: str = Depends(require_tenant_id),
     user: dict = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db_dependency),
     _rl: None = None,
 ) -> CancelResponse:
     """Cancel an interview with a required reason."""
-    record = _INTERVIEW_DB.get(interview_id)
-    if record is not None and record.get("status") == "cancelled":
+    result = await db.execute(
+        select(Interview).where(
+            Interview.id == interview_id,
+            Interview.tenant_id == tenant_id,
+        )
+    )
+    interview = result.scalar_one_or_none()
+    if not interview:
+        raise HTTPException(404, "Interview not found")
+
+    if interview.status == InterviewStatus.CANCELLED:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Interview is already cancelled",
         )
-    if record is not None:
-        record["status"] = "cancelled"
+
+    interview.status = InterviewStatus.CANCELLED
+    interview.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.add(interview)
+    await db.commit()
+
     return CancelResponse(
         id=interview_id,
         cancelled_at=datetime.now(timezone.utc).isoformat(),
