@@ -10,7 +10,7 @@ import {
   type ReactNode,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { FixedSizeList as VirtualList, type ListChildComponentProps } from 'react-window';
+import { List as VirtualList } from 'react-window';
 import { cn } from '@/lib/utils';
 import {
   ChevronUp,
@@ -21,8 +21,8 @@ import {
   GripVertical,
   Pin,
   PinOff,
-  PinLeft,
-  PinRight,
+  ArrowLeftToLine,
+  ArrowRightToLine,
   ChevronsDownUp,
   ChevronsUpDownIcon,
   Eye,
@@ -738,10 +738,10 @@ export function DataTableV2<T extends Record<string, any>>({
   };
 
   const VirtualRow = useCallback(
-    ({ index, style }: ListChildComponentProps) => {
-      const item = searchedData[index];
+    (props: { ariaAttributes: { 'aria-posinset': number; 'aria-setsize': number; role: 'listitem' }; index: number; style: React.CSSProperties }) => {
+      const item = searchedData[props.index];
       if (!item) return null;
-      return renderRow(item, index, style);
+      return renderRow(item, props.index, props.style);
     },
     [searchedData, allVisibleColumns, colConfigs, selectedKeys, dt.editingCell, dt.focusCell, dt.expandedRows, editingValue]
   );
@@ -953,7 +953,7 @@ export function DataTableV2<T extends Record<string, any>>({
                             aria-label={`Pin ${col.label} left`}
                             title="Pin left"
                           >
-                            <PinLeft className="h-3 w-3" />
+                            <ArrowLeftToLine className="h-3 w-3" />
                           </button>
                           <button
                             onClick={() => dt.pinColumn(col.key, pinned === 'right' ? false : 'right')}
@@ -961,7 +961,7 @@ export function DataTableV2<T extends Record<string, any>>({
                             aria-label={`Pin ${col.label} right`}
                             title="Pin right"
                           >
-                            <PinRight className="h-3 w-3" />
+                            <ArrowRightToLine className="h-3 w-3" />
                           </button>
                         </div>
                       )}
@@ -1228,13 +1228,12 @@ export function DataTableV2<T extends Record<string, any>>({
                 <tr>
                   <td colSpan={allVisibleColumns.length + (selectable ? 1 : 0) + (hasExpand ? 1 : 0)} className="p-0">
                     <VirtualList
-                      height={parseInt(maxHeight) - 80}
-                      itemCount={searchedData.length}
-                      itemSize={computedRowHeight}
-                      width="100%"
-                    >
-                      {VirtualRow}
-                    </VirtualList>
+                      rowComponent={VirtualRow}
+                      rowCount={searchedData.length}
+                      rowHeight={computedRowHeight}
+                      rowProps={{}}
+                      style={{ height: parseInt(maxHeight) - 80, width: '100%' }}
+                    />
                   </td>
                 </tr>
               ) : (
