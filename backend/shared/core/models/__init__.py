@@ -104,6 +104,7 @@ from shared.core.models.integration import (
     TEAMS,
 )
 from shared.core.models.email_template import EmailTemplate
+from shared.core.models.content_template import ContentTemplate
 from shared.core.models.email_sequence import (
     EmailSequence,
     EmailSequenceStep,
@@ -285,6 +286,7 @@ __all__ = [
     "Webhook", "WebhookDelivery",
     "IntegrationConfig", "SUPPORTED_PROVIDERS", "SLACK", "TEAMS",
     "EmailTemplate",
+    "ContentTemplate",
     "EmailSequence", "EmailSequenceStep", "EmailSequenceEnrollment",
     "Tag", "TagApplication", "TagEntityType",
     "TagCreate", "TagRead", "TagUpdate",
