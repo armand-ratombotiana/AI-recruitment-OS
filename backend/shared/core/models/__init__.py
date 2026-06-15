@@ -208,6 +208,10 @@ from shared.core.models.video_interview import (
     VideoParticipant,
     ParticipantRole,
 )
+from shared.core.models.coding_assessment import (
+    CodingProblem,
+    CodingSubmission,
+)
 from shared.core.models.performance_review import (
     PerformanceReview,
     ReviewQuestion,
@@ -303,6 +307,7 @@ __all__ = [
     "AssessmentResultsResponse", "AssessmentStatus",
     "Question", "QuestionRead", "QuestionType",
     "SubmitAnswersRequest", "SubmitAnswersResponse",
+    "CodingProblem", "CodingSubmission",
     "PerformanceReview", "ReviewQuestion", "ReviewAnswer", "ReviewCycle",
     "ReviewStatus", "ReviewQuestionType", "ReviewCycleStatus",
     "PerformanceReviewCreate", "PerformanceReviewUpdate", "PerformanceReviewRead",

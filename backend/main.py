@@ -320,6 +320,7 @@ include_router_safe(app, "apps.docs_service.main", "router", "/api/v1/docs", ["D
 include_router_safe(app, "apps.observability_service.main", "router", "/api/v1/observability", ["Observability"])
 include_router_safe(app, "apps.region_service.main", "router", "/api/v1/regions", ["Regions"])
 include_router_safe(app, "apps.chat_assistant.main", "router", "/api/v1/chat", ["Chat"])
+include_router_safe(app, "apps.coding_assessment.main", "router", "/api/v1/coding", ["Coding Assessment"])
 include_router_safe(app, "apps.screening_service.main", "router", "/api/v1/screening", ["Screening"])
 include_router_safe(app, "apps.graphql_api.main", "router", "/graphql", ["GraphQL"])
 include_router_safe(app, "apps.interview_coach.main", "router", "/api/v1/interview-coach", ["Interview Coach"])
