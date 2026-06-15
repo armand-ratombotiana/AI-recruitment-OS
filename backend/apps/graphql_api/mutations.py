@@ -153,6 +153,7 @@ class Mutation:
         db.add(candidate)
         await db.flush()
         await db.refresh(candidate)
+        await db.commit()
         return _candidate_to_type(candidate)
 
     @strawberry.mutation
@@ -190,6 +191,7 @@ class Mutation:
 
         await db.flush()
         await db.refresh(candidate)
+        await db.commit()
         return _candidate_to_type(candidate)
 
     @strawberry.mutation
@@ -222,6 +224,7 @@ class Mutation:
         db.add(job)
         await db.flush()
         await db.refresh(job)
+        await db.commit()
         return _job_to_type(job)
 
     @strawberry.mutation
@@ -263,6 +266,7 @@ class Mutation:
 
         await db.flush()
         await db.refresh(job)
+        await db.commit()
         return _job_to_type(job)
 
     @strawberry.mutation
@@ -293,6 +297,7 @@ class Mutation:
         db.add(interview)
         await db.flush()
         await db.refresh(interview)
+        await db.commit()
         return _interview_to_type(interview)
 
     @strawberry.mutation
@@ -319,6 +324,7 @@ class Mutation:
 
         await db.flush()
         await db.refresh(interview)
+        await db.commit()
         return _interview_to_type(interview)
 
     @strawberry.mutation
@@ -343,6 +349,7 @@ class Mutation:
         db.add(application)
         await db.flush()
         await db.refresh(application)
+        await db.commit()
         return _application_to_type(application)
 
     @strawberry.mutation
@@ -371,4 +378,5 @@ class Mutation:
 
         await db.flush()
         await db.refresh(application)
+        await db.commit()
         return _application_to_type(application)
