@@ -60,15 +60,27 @@ def hash_api_key(key: str) -> str:
 def get_tenant_id_from_token(authorization: str | None) -> str:
     """Extract the tenant_id from a Bearer access token.
 
-    Returns "default" if no token is provided or the token is invalid.
-    Callers that require an authenticated user should use ``require_user`` instead.
+    Raises 401 if no token is provided, the token is invalid, or the
+    token has no ``tenant_id`` claim.
     """
     if not authorization or not authorization.startswith("Bearer "):
-        return "default"
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid authorization header",
+        )
     payload = decode_token(authorization[7:])
     if not payload:
-        return "default"
-    return payload.get("tenant_id") or "default"
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
+    tenant_id = payload.get("tenant_id")
+    if not tenant_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token missing tenant_id",
+        )
+    return tenant_id
 
 
 def get_user_id_from_token(authorization: str | None) -> str | None:
@@ -108,7 +120,7 @@ def require_user(authorization: str | None = Header(None)) -> dict[str, Any]:
         "id": payload["sub"],
         "email": payload.get("email"),
         "role": payload.get("role"),
-        "tenant_id": payload.get("tenant_id") or "default",
+        "tenant_id": payload.get("tenant_id"),
     }
 
 
@@ -146,4 +158,4 @@ def require_tenant(authorization: str | None = Header(None)) -> str:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
         )
-    return payload.get("tenant_id") or "default"
+    return payload.get("tenant_id")

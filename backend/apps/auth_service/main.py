@@ -1191,8 +1191,16 @@ async def update_profile(
 )
 async def enable_mfa(
     data: MFAEnableRequest,
+    authorization: str | None = Header(None),
     db: AsyncSession = Depends(get_db_dependency),
 ):
+    current_user = await _current_user(authorization, db)
+    if data.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot modify another user's MFA settings",
+        )
+
     result = await db.execute(select(User).where(User.id == data.user_id))
     user = result.scalar_one_or_none()
     if not user:
@@ -1232,8 +1240,16 @@ async def enable_mfa(
 )
 async def verify_mfa(
     data: MFAVerifyRequest,
+    authorization: str | None = Header(None),
     db: AsyncSession = Depends(get_db_dependency),
 ):
+    current_user = await _current_user(authorization, db)
+    if data.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot verify another user's MFA",
+        )
+
     result = await db.execute(select(User).where(User.id == data.user_id))
     user = result.scalar_one_or_none()
     if not user:

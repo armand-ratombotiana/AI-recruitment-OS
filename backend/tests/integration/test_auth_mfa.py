@@ -50,7 +50,7 @@ async def app_and_client(session_factory):
         ENCRYPTION_KEY="test-encryption-key-that-is-at-least-32-chars!!",
         DATABASE_URL="sqlite+aiosqlite:///:memory:",
         DEBUG=False,
-        DEMO_ENABLED=False,  # don't seed demo; we manage users explicitly
+        DEMO_ENABLED=False,
     )
 
     async def _override_db():
@@ -80,13 +80,46 @@ async def user(session_factory):
     return u.id
 
 
+@pytest_asyncio.fixture
+async def other_user(session_factory):
+    async with session_factory() as s:
+        u = User(
+            id="u-other",
+            tenant_id="acme",
+            email="other@acme.com",
+            full_name="Other User",
+            hashed_password="x",
+            role=UserRole.RECRUITER,
+            status=UserStatus.ACTIVE,
+        )
+        s.add(u)
+        await s.commit()
+    return u.id
+
+
+@pytest.fixture
+def auth_headers(user):
+    token = create_access_token(
+        {"sub": user, "email": "mfa@acme.com", "role": "admin", "tenant_id": "acme"}
+    )
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def other_auth_headers():
+    token = create_access_token(
+        {"sub": "u-other", "email": "other@acme.com", "role": "member", "tenant_id": "acme"}
+    )
+    return {"Authorization": f"Bearer {token}"}
+
+
 # ── Tests ────────────────────────────────────────────────────────────────────
 
 
 @pytest.mark.asyncio
-async def test_enable_returns_secret_and_url(app_and_client, user):
+async def test_enable_returns_secret_and_url(app_and_client, user, auth_headers):
     _, c = app_and_client
-    r = await c.post("/mfa/enable", json={"user_id": user})
+    r = await c.post("/mfa/enable", json={"user_id": user}, headers=auth_headers)
     assert r.status_code == 200
     body = r.json()
     assert len(body["secret"]) == 32
@@ -96,45 +129,58 @@ async def test_enable_returns_secret_and_url(app_and_client, user):
 
 
 @pytest.mark.asyncio
-async def test_enable_persists_secret_to_user(app_and_client, user, session_factory):
+async def test_enable_persists_secret_to_user(app_and_client, user, auth_headers, session_factory):
     _, c = app_and_client
-    r = await c.post("/mfa/enable", json={"user_id": user})
+    r = await c.post("/mfa/enable", json={"user_id": user}, headers=auth_headers)
     secret = r.json()["secret"]
     from sqlalchemy import select
     async with session_factory() as s:
         u = (await s.execute(select(User).where(User.id == user))).scalar_one()
         assert u.mfa_secret == secret
-        assert u.mfa_enabled is False  # not enabled until first successful verify
+        assert u.mfa_enabled is False
 
 
 @pytest.mark.asyncio
-async def test_enable_unknown_user_returns_404(app_and_client):
+async def test_enable_unknown_user_returns_403(app_and_client, auth_headers):
     _, c = app_and_client
-    r = await c.post("/mfa/enable", json={"user_id": "nonexistent"})
-    assert r.status_code == 404
+    r = await c.post("/mfa/enable", json={"user_id": "nonexistent"}, headers=auth_headers)
+    assert r.status_code == 403
 
 
 @pytest.mark.asyncio
-async def test_verify_rejects_invalid_code(app_and_client, user):
+async def test_enable_without_auth_returns_401(app_and_client, user):
     _, c = app_and_client
-    await c.post("/mfa/enable", json={"user_id": user})
-    r = await c.post("/mfa/verify", json={"user_id": user, "code": "000000"})
-    # "000000" may *rarely* match; test with a clearly invalid input instead
-    r = await c.post("/mfa/verify", json={"user_id": user, "code": "abcdef"})
+    r = await c.post("/mfa/enable", json={"user_id": user})
+    assert r.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_enable_another_user_returns_403(app_and_client, user, other_user, other_auth_headers):
+    _, c = app_and_client
+    r = await c.post("/mfa/enable", json={"user_id": user}, headers=other_auth_headers)
+    assert r.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_verify_rejects_invalid_code(app_and_client, user, auth_headers):
+    _, c = app_and_client
+    await c.post("/mfa/enable", json={"user_id": user}, headers=auth_headers)
+    r = await c.post("/mfa/verify", json={"user_id": user, "code": "000000"}, headers=auth_headers)
+    r = await c.post("/mfa/verify", json={"user_id": user, "code": "abcdef"}, headers=auth_headers)
     assert r.status_code == 200
     assert r.json()["verified"] is False
 
 
 @pytest.mark.asyncio
-async def test_verify_accepts_current_code_and_enables_mfa(app_and_client, user, session_factory):
+async def test_verify_accepts_current_code_and_enables_mfa(app_and_client, user, auth_headers, session_factory):
     _, c = app_and_client
-    enable = await c.post("/mfa/enable", json={"user_id": user})
+    enable = await c.post("/mfa/enable", json={"user_id": user}, headers=auth_headers)
     secret = enable.json()["secret"]
     padded = secret + "=" * ((8 - len(secret) % 8) % 8)
     key = base64.b32decode(padded.upper())
     code = TOTP(key, length=6, algorithm=hashes.SHA1(), time_step=30).generate(int(time.time())).decode("ascii")
 
-    r = await c.post("/mfa/verify", json={"user_id": user, "code": code})
+    r = await c.post("/mfa/verify", json={"user_id": user, "code": code}, headers=auth_headers)
     assert r.status_code == 200
     assert r.json()["verified"] is True
 
@@ -145,23 +191,38 @@ async def test_verify_accepts_current_code_and_enables_mfa(app_and_client, user,
 
 
 @pytest.mark.asyncio
-async def test_verify_without_enable_returns_400(app_and_client, user):
+async def test_verify_without_enable_returns_400(app_and_client, user, auth_headers):
     _, c = app_and_client
-    r = await c.post("/mfa/verify", json={"user_id": user, "code": "123456"})
+    r = await c.post("/mfa/verify", json={"user_id": user, "code": "123456"}, headers=auth_headers)
     assert r.status_code == 400
     assert "not enabled" in r.json()["detail"].lower()
 
 
 @pytest.mark.asyncio
-async def test_verify_unknown_user_returns_404(app_and_client):
+async def test_verify_unknown_user_returns_403(app_and_client, auth_headers):
     _, c = app_and_client
-    r = await c.post("/mfa/verify", json={"user_id": "missing", "code": "123456"})
-    assert r.status_code == 404
+    r = await c.post("/mfa/verify", json={"user_id": "missing", "code": "123456"}, headers=auth_headers)
+    assert r.status_code == 403
 
 
 @pytest.mark.asyncio
-async def test_verify_rejects_malformed_code(app_and_client, user):
+async def test_verify_rejects_malformed_code(app_and_client, user, auth_headers):
     _, c = app_and_client
-    await c.post("/mfa/enable", json={"user_id": user})
-    r = await c.post("/mfa/verify", json={"user_id": user, "code": "12"})  # too short
+    await c.post("/mfa/enable", json={"user_id": user}, headers=auth_headers)
+    r = await c.post("/mfa/verify", json={"user_id": user, "code": "12"}, headers=auth_headers)
     assert r.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_verify_another_user_returns_403(app_and_client, user, other_user, auth_headers, other_auth_headers):
+    _, c = app_and_client
+    await c.post("/mfa/enable", json={"user_id": user}, headers=auth_headers)
+    r = await c.post("/mfa/verify", json={"user_id": user, "code": "123456"}, headers=other_auth_headers)
+    assert r.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_verify_without_auth_returns_401(app_and_client, user):
+    _, c = app_and_client
+    r = await c.post("/mfa/verify", json={"user_id": user, "code": "123456"})
+    assert r.status_code == 401

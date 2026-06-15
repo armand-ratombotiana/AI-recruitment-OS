@@ -189,10 +189,11 @@ async def list_jobs(
     search: str | None = Query(None, description="Search by title or description"),
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     department: str | None = Query(None, description="Filter by department"),
+    tenant_id: str = Depends(require_tenant_id),
     db: AsyncSession = Depends(get_db_dependency),
 ):
-    query = select(Job)
-    count_query = select(func.count()).select_from(Job)
+    query = select(Job).where(Job.tenant_id == tenant_id)
+    count_query = select(func.count()).select_from(Job).where(Job.tenant_id == tenant_id)
 
     if search:
         search_pattern = f"%{search}%"
@@ -237,8 +238,8 @@ async def list_jobs(
 
 
 @router.get("/{job_id}", response_model=JobDetailResponse, tags=["Jobs"], summary="Get job details")
-async def get_job(job_id: str, db: AsyncSession = Depends(get_db_dependency)):
-    result = await db.execute(select(Job).where(Job.id == job_id))
+async def get_job(job_id: str, tenant_id: str = Depends(require_tenant_id), db: AsyncSession = Depends(get_db_dependency)):
+    result = await db.execute(select(Job).where(Job.id == job_id, Job.tenant_id == tenant_id))
     job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
@@ -265,7 +266,7 @@ async def get_job(job_id: str, db: AsyncSession = Depends(get_db_dependency)):
 
 
 @router.post("/", response_model=JobCreateResponse, tags=["Jobs"], summary="Create job posting")
-async def create_job(data: JobCreateRequest, db: AsyncSession = Depends(get_db_dependency), _rl: None = Depends(job_write_rate)):
+async def create_job(data: JobCreateRequest, tenant_id: str = Depends(require_tenant_id), db: AsyncSession = Depends(get_db_dependency), _rl: None = Depends(job_write_rate)):
     # Map job_type string to enum
     try:
         job_type = JobType(data.job_type)
@@ -285,13 +286,12 @@ async def create_job(data: JobCreateRequest, db: AsyncSession = Depends(get_db_d
         required_skills=json.dumps(data.required_skills),
         preferred_skills=json.dumps(data.preferred_skills),
         status=JobStatus.DRAFT,
-        tenant_id="default",
+        tenant_id=tenant_id,
     )
     db.add(job)
     await db.flush()
     await db.refresh(job)
 
-    # Fire the job.created webhook (best-effort).
     await safe_dispatch_event(
         "job.created",
         {
@@ -300,7 +300,7 @@ async def create_job(data: JobCreateRequest, db: AsyncSession = Depends(get_db_d
             "status": job.status.value if hasattr(job.status, 'value') else job.status,
             "department": job.department,
         },
-        "default",
+        tenant_id,
         db=db,
     )
 
@@ -316,10 +316,11 @@ async def create_job(data: JobCreateRequest, db: AsyncSession = Depends(get_db_d
 async def update_job(
     job_id: str,
     data: JobUpdateRequest,
+    tenant_id: str = Depends(require_tenant_id),
     db: AsyncSession = Depends(get_db_dependency),
     _rl: None = Depends(job_write_rate),
 ):
-    result = await db.execute(select(Job).where(Job.id == job_id))
+    result = await db.execute(select(Job).where(Job.id == job_id, Job.tenant_id == tenant_id))
     job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
@@ -343,7 +344,6 @@ async def update_job(
     db.add(job)
     await db.flush()
 
-    # Fire the job.updated webhook (best-effort).
     await safe_dispatch_event(
         "job.updated",
         {
@@ -351,7 +351,7 @@ async def update_job(
             "title": job.title,
             "status": job.status.value if hasattr(job.status, 'value') else job.status,
         },
-        "default",
+        tenant_id,
         db=db,
     )
 
@@ -359,8 +359,8 @@ async def update_job(
 
 
 @router.delete("/{job_id}", response_model=JobDeleteResponse, tags=["Jobs"], summary="Delete job posting")
-async def delete_job(job_id: str, db: AsyncSession = Depends(get_db_dependency), _rl: None = Depends(job_write_rate)):
-    result = await db.execute(select(Job).where(Job.id == job_id))
+async def delete_job(job_id: str, tenant_id: str = Depends(require_tenant_id), db: AsyncSession = Depends(get_db_dependency), _rl: None = Depends(job_write_rate)):
+    result = await db.execute(select(Job).where(Job.id == job_id, Job.tenant_id == tenant_id))
     job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
@@ -373,8 +373,8 @@ async def delete_job(job_id: str, db: AsyncSession = Depends(get_db_dependency),
 @router.get("/{job_id}/candidates", response_model=MatchedCandidatesResponse, tags=["Jobs"],
             summary="Get matched candidates for job",
             description="Retrieve AI-ranked candidates matched to this job posting.")
-async def get_matched_candidates(job_id: str, db: AsyncSession = Depends(get_db_dependency)):
-    result = await db.execute(select(Job).where(Job.id == job_id))
+async def get_matched_candidates(job_id: str, tenant_id: str = Depends(require_tenant_id), db: AsyncSession = Depends(get_db_dependency)):
+    result = await db.execute(select(Job).where(Job.id == job_id, Job.tenant_id == tenant_id))
     job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
@@ -433,10 +433,11 @@ class JobAnalyticsResponse(BaseModel):
 )
 async def get_job_analytics(
     job_id: str,
+    tenant_id: str = Depends(require_tenant_id),
     db: AsyncSession = Depends(get_db_dependency),
 ) -> JobAnalyticsResponse:
     """Return a deterministic per-job analytics rollup."""
-    result = await db.execute(select(Job).where(Job.id == job_id))
+    result = await db.execute(select(Job).where(Job.id == job_id, Job.tenant_id == tenant_id))
     job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")

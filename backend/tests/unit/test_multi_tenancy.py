@@ -50,12 +50,16 @@ def test_get_tenant_id_from_token_returns_tenant():
     assert get_tenant_id_from_token(f"Bearer {token}") == "tenant-42"
 
 
-def test_get_tenant_id_from_token_missing_header_defaults():
-    assert get_tenant_id_from_token(None) == "default"
+def test_get_tenant_id_from_token_missing_header_raises():
+    with pytest.raises(Exception) as exc:
+        get_tenant_id_from_token(None)
+    assert "401" in str(exc.value)
 
 
-def test_get_tenant_id_from_token_invalid_token_defaults():
-    assert get_tenant_id_from_token("Bearer not-a-real-jwt") == "default"
+def test_get_tenant_id_from_token_invalid_token_raises():
+    with pytest.raises(Exception) as exc:
+        get_tenant_id_from_token("Bearer not-a-real-jwt")
+    assert "401" in str(exc.value)
 
 
 def test_get_user_id_from_token_roundtrip():

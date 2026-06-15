@@ -125,11 +125,17 @@ def require_tenant_id(
 ) -> str:
     """Extract the tenant id from the current access token.
 
-    Returns the ``tenant_id`` claim, falling back to ``"default"`` when the
-    token has none (legacy tokens).  Raises 401 if there is no valid token.
+    Raises 403 if the token has no ``tenant_id`` claim.
+    Raises 401 if there is no valid token.
     """
     user = _require_user(authorization=authorization)
-    return user.get("tenant_id") or "default"
+    tenant_id = user.get("tenant_id")
+    if not tenant_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Token missing tenant_id claim",
+        )
+    return tenant_id
 
 
 def require_role(*allowed_roles: str):
