@@ -110,7 +110,7 @@ export default function NewAssessmentPage() {
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof StepData, string>>>({});
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const titleId = useId();
   const descId = useId();
@@ -288,10 +288,7 @@ export default function NewAssessmentPage() {
   }));
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <ToastContainer />
-
-      <div>
+    <div className="space-y-6 max-w-4xl mx-auto"><div>
         <Link
           href="/dashboard/assessments"
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"

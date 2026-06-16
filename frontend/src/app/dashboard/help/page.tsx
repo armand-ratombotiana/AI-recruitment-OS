@@ -81,7 +81,7 @@ function formatRelative(date: string | Date): string {
 }
 
 export default function HelpPage() {
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
   const [search, setSearch] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [submitting, setSubmitting] = useState(false);
@@ -133,9 +133,7 @@ export default function HelpPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <div>
+    <div className="space-y-6"><div>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <HelpCircle className="h-6 w-6 text-blue-600" />
           Help and Support

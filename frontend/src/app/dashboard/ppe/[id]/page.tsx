@@ -92,7 +92,7 @@ export default function PPESessionDetailPage({ params }: { params: { id: string 
   const [result, setResult] = useState<any | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startedAtRef = useRef<number | null>(null);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -285,8 +285,7 @@ export default function PPESessionDetailPage({ params }: { params: { id: string 
   if (loading) {
     return (
       <div className="space-y-6" aria-busy="true" aria-live="polite">
-        <ToastContainer />
-        <Skeleton height={20} width={200} />
+<Skeleton height={20} width={200} />
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-5">
@@ -318,8 +317,7 @@ export default function PPESessionDetailPage({ params }: { params: { id: string 
   if (notFound) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+<Breadcrumb />
         <Link
           href="/dashboard/ppe"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
@@ -347,8 +345,7 @@ export default function PPESessionDetailPage({ params }: { params: { id: string 
   if (error && !session) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+<Breadcrumb />
         <Link
           href="/dashboard/ppe"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
@@ -385,9 +382,7 @@ export default function PPESessionDetailPage({ params }: { params: { id: string 
 
   return (
     <div className="space-y-6">
-      <ToastContainer />
-
-      <Breadcrumb />
+<Breadcrumb />
 
       <Link
         href="/dashboard/ppe"

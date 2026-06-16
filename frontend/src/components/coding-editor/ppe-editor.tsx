@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Play, Loader2, CheckCircle2, XCircle, Sparkles, Lightbulb } from 'lucide-react';
 import { api } from '@/services/api/client';
-import { useToast } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 
 interface PPEEditorProps {
   sessionId?: string;
@@ -32,7 +32,7 @@ export function PPEEditor({ sessionId, problemId, initialCode = '', language = '
   const [isRunning, setIsRunning] = useState(false);
   const [testResults, setTestResults] = useState<any[]>([]);
   const [isHinting, setIsHinting] = useState(false);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCode(e.target.value);
@@ -85,9 +85,7 @@ export function PPEEditor({ sessionId, problemId, initialCode = '', language = '
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <ToastContainer />
-      <div className="flex items-center justify-between border-b px-4 py-2 bg-gray-50">
+    <div className="flex flex-col h-full"><div className="flex items-center justify-between border-b px-4 py-2 bg-gray-50">
         <span className="text-sm font-mono font-medium text-gray-700">solution.{FILE_EXT[language] || language || 'txt'}</span>
         <div className="flex items-center gap-2">
           <button

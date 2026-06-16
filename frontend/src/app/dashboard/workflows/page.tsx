@@ -156,7 +156,7 @@ export default function WorkflowsPage() {
   const locale = useLocaleStore((s) => s.locale);
   const t = (key: string, fb?: string) => translate(locale, key, fb);
   const { success, info } = useNotification();
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -267,9 +267,7 @@ export default function WorkflowsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="space-y-6"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
             {t('workflows.title', 'Workflows')}

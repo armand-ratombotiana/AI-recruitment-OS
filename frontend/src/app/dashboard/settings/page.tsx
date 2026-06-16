@@ -68,7 +68,7 @@ type TabId =
 interface TabDef {
   id: TabId;
   key: string;
-  Icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
+  Icon: typeof User;
 }
 
 const TABS: TabDef[] = [
@@ -1405,7 +1405,7 @@ function SecurityTab({ tt }: { tt: TFunc }) {
       const res = await api.activity.list({
         action: 'login',
         entity_type: 'login',
-        page_size: '20',
+        page_size: 20,
       });
       const entries: LoginHistoryEntry[] = (res.data || []).map((e: ActivityTypes.ActivityEntry) => ({
         id: e.id,
@@ -1644,7 +1644,7 @@ function ApiKeysTab({ tt }: { tt: TFunc }) {
   const [revokeId, setRevokeId] = useState<string | null>(null);
   const [confirmRevoke, setConfirmRevoke] = useState<ApiKeyEntry | null>(null);
   const { success, error: errorNotify } = useNotification();
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -1739,9 +1739,7 @@ function ApiKeysTab({ tt }: { tt: TFunc }) {
   };
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <Section
+    <div className="space-y-6"><Section
         title={tt('api.keys', 'API keys')}
         description={tt(
           'api.keysDesc',
@@ -1927,7 +1925,7 @@ function ApiKeysTab({ tt }: { tt: TFunc }) {
       <ConfirmDialog
         isOpen={!!confirmRevoke}
         onClose={() => setConfirmRevoke(null)}
-        onConfirm={() => confirmRevoke && revoke(confirmRevoke)}
+        onConfirm={async () => { if (confirmRevoke) await revoke(confirmRevoke); }}
         title={tt('api.revokeConfirmTitle', 'Revoke API key?')}
         description={
           confirmRevoke

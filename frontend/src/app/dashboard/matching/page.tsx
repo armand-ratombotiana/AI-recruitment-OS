@@ -28,7 +28,7 @@ export default function MatchingPage() {
   const [loading, setLoading] = useState(true);
   const [scoring, setScoring] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = async () => {
     setLoading(true);
@@ -77,9 +77,7 @@ export default function MatchingPage() {
   const list = candidates.slice(0, 10).map((c) => scored[c.id] || c);
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="space-y-6"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl font-bold flex items-center gap-2 text-gray-900 dark:text-white">
           <Sparkles className="h-6 w-6 text-blue-600 dark:text-brand-400" aria-hidden="true" />
           {t('matching.title', 'AI Matching')}

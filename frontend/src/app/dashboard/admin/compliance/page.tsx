@@ -29,6 +29,7 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  CardFooter,
   Badge,
   Skeleton,
   EmptyState,
@@ -363,7 +364,7 @@ export default function ComplianceDashboardPage() {
   const [filter, setFilter] = useState<FilterValue>('all');
   const [lastRunAt, setLastRunAt] = useState<string | null>(null);
 
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = useCallback(
     async (isRefresh = false) => {
@@ -653,9 +654,7 @@ export default function ComplianceDashboardPage() {
           : 'default';
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <Breadcrumb />
+    <div className="space-y-6"><Breadcrumb />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -761,7 +760,7 @@ export default function ComplianceDashboardPage() {
                 icon={Lock}
                 title={t('compliance.gdpr.title', 'GDPR')}
                 status={snapshot?.gdpr.status || 'unknown'}
-                lastAudit={snapshot?.gdpr.last_audit}
+                lastAudit={snapshot?.gdpr.last_audit ?? null}
                 t={t}
                 locale={locale}
               />
@@ -769,7 +768,7 @@ export default function ComplianceDashboardPage() {
                 icon={Lock}
                 title={t('compliance.ccpa.title', 'CCPA')}
                 status={snapshot?.ccpa.status || 'unknown'}
-                lastAudit={snapshot?.ccpa.last_audit}
+                lastAudit={snapshot?.ccpa.last_audit ?? null}
                 t={t}
                 locale={locale}
               />
@@ -777,7 +776,7 @@ export default function ComplianceDashboardPage() {
                 icon={Lock}
                 title={t('compliance.hipaa.title', 'HIPAA')}
                 status={snapshot?.hipaa.status || 'unknown'}
-                lastAudit={snapshot?.hipaa.last_audit}
+                lastAudit={snapshot?.hipaa.last_audit ?? null}
                 t={t}
                 locale={locale}
               />

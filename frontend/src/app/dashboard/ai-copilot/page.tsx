@@ -21,7 +21,8 @@ import {
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
 import type { AiTypes } from '@/services/api/types';
-import { useToast, useClickOutside } from '@/hooks';
+import { useClickOutside } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 import { Button, HelpButton, aiCopilotTour, ConversationSidebar, MessageBubble } from '@/components';
 import type { ConversationItem, MessageBubbleProps } from '@/components';
 import { useLocaleStore, translate, formatRelativeTime } from '@/stores/locale-store';
@@ -337,7 +338,7 @@ export default function AICopilotPage() {
   const [loading, setLoading] = useState(false);
   const [streamingId, setStreamingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -947,9 +948,7 @@ export default function AICopilotPage() {
   }, [messages]);
 
   return (
-    <div className="flex h-[calc(100vh-160px)] flex-col">
-      <ToastContainer />
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <div className="flex h-[calc(100vh-160px)] flex-col"><div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
             <Sparkles className="h-6 w-6 text-purple-500" aria-hidden="true" />

@@ -15,6 +15,7 @@ export interface Toast {
 interface ToastContextValue {
   toast: (t: Omit<Toast, 'id'>) => void;
   dismiss: (id: string) => void;
+  push: (type: ToastVariant, message: string, duration?: number) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -56,8 +57,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     }
   }, [dismiss]);
 
+  const push = useCallback(
+    (type: ToastVariant, message: string, duration?: number) => {
+      toast({ variant: type, title: message, duration });
+    },
+    [toast]
+  );
+
   return (
-    <ToastContext.Provider value={{ toast, dismiss }}>
+    <ToastContext.Provider value={{ toast, dismiss, push }}>
       {children}
       <div
         className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"

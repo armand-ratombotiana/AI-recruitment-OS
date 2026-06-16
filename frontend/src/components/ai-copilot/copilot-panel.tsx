@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { api } from '@/services/api/client';
-import { useToast } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 import { Sparkles, Bot, User as UserIcon } from 'lucide-react';
 
 interface Message {
@@ -35,7 +35,7 @@ export function CopilotPanel({ context, candidateId, jobId, systemPrompt }: Copi
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -123,9 +123,7 @@ export function CopilotPanel({ context, candidateId, jobId, systemPrompt }: Copi
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <ToastContainer />
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex flex-col h-full"><div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (
           <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'assistant' && (

@@ -33,7 +33,7 @@ import { useSavedJobs } from '@/lib/public-job-store';
 import { SaveJobButton } from '@/components/public/save-job-button';
 import { ShareMenu } from '@/components/public/share-menu';
 import { JobAlertsDialog } from '@/components/public/job-alerts-dialog';
-import { useToast } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 
 type Job = {
   id: string;
@@ -111,7 +111,7 @@ function isOpen(j: Job): boolean {
 export default function PublicJobsPage() {
   const locale = useLocaleStore((s) => s.locale);
   const t = (key: string, fb?: string) => translate(locale, key, fb);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
   const { list: savedList } = useSavedJobs();
 
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -576,9 +576,7 @@ export default function PublicJobsPage() {
         </div>
       </section>
 
-      <JobAlertsDialog open={alertsOpen} onClose={() => setAlertsOpen(false)} />
-      <ToastContainer />
-    </div>
+      <JobAlertsDialog open={alertsOpen} onClose={() => setAlertsOpen(false)} /></div>
   );
 }
 

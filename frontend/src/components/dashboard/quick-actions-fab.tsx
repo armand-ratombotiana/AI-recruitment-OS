@@ -3,7 +3,8 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Plus, UserPlus, Briefcase, Calendar, Bot, X } from 'lucide-react';
-import { useClickOutside, useToast } from '@/hooks';
+import { useClickOutside } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 
 const ACTIONS = [
   { href: '/dashboard/candidates?action=add', label: 'Add candidate', icon: UserPlus, color: 'from-blue-500 to-blue-600' },
@@ -15,7 +16,7 @@ const ACTIONS = [
 export function QuickActionsFab() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   useClickOutside(ref, () => setOpen(false));
 
@@ -27,9 +28,7 @@ export function QuickActionsFab() {
   };
 
   return (
-    <>
-      <ToastContainer />
-      <div className="fixed bottom-6 right-6 z-40" ref={ref}>
+    <><div className="fixed bottom-6 right-6 z-40" ref={ref}>
         {open && (
           <div className="absolute bottom-16 right-0 flex flex-col gap-3 items-end fade-in-scale">
             {ACTIONS.map((a) => {

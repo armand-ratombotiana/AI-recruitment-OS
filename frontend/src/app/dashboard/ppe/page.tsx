@@ -48,7 +48,7 @@ export default function PPEPage() {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   useEffect(() => {
     let cancelled = false;
@@ -179,9 +179,7 @@ export default function PPEPage() {
   const testsTotal = Array.isArray(result?.test_results) ? result.test_results.length : null;
 
   return (
-    <div className="space-y-4" style={{ height: 'calc(100vh - 140px)' }}>
-      <ToastContainer />
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="space-y-4" style={{ height: 'calc(100vh - 140px)' }}><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           <Code2 className="h-5 w-5 text-blue-600 dark:text-brand-400" aria-hidden="true" />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('ppe.title', 'Pair Programming Evaluation')}</h1>

@@ -271,7 +271,7 @@ export function ScoreCard({
 }: ScoreCardProps) {
   const locale = useLocaleStore((s) => s.locale);
   const t = (key: string, fb?: string) => translate(locale, key, fb);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const [jobs, setJobs] = useState<ScoreCardJob[]>(jobsProp || []);
   const [jobsLoading, setJobsLoading] = useState<boolean>(!jobsProp);
@@ -402,9 +402,7 @@ export function ScoreCard({
   );
 
   return (
-    <Card className={cn('overflow-hidden', className)}>
-      <ToastContainer />
-      <CardContent className="p-0">
+    <Card className={cn('overflow-hidden', className)}><CardContent className="p-0">
         <div className="flex flex-col gap-1 border-b border-gray-200 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-5 dark:border-surface-700 dark:from-brand-500/10 dark:via-accent-500/10 dark:to-purple-500/10 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/70 text-blue-600 shadow-sm dark:bg-surface-900/70 dark:text-brand-300">

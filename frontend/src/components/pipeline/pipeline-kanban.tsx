@@ -132,7 +132,7 @@ export function PipelineKanban() {
     (key: string, fb?: string) => translate(locale, key, fb),
     [locale]
   );
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const [candidates, setCandidates] = useState<CandidateApiRecord[]>([]);
   const [jobs, setJobs] = useState<JobOption[]>([]);
@@ -441,9 +441,7 @@ export function PipelineKanban() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <ToastContainer />
-        <Card>
+      <div className="space-y-4"><Card>
           <CardContent className="p-4 sm:p-5">
             <div className="flex flex-wrap items-center gap-3">
               <Skeleton height={32} width={220} />
@@ -469,9 +467,7 @@ export function PipelineKanban() {
 
   if (error && candidates.length === 0) {
     return (
-      <div className="space-y-4">
-        <ToastContainer />
-        <Card>
+      <div className="space-y-4"><Card>
           <CardContent className="p-0">
             <ErrorState
               title={t('pipeline.v2.couldntLoad', "Couldn't load the global pipeline")}
@@ -487,10 +483,7 @@ export function PipelineKanban() {
   }
 
   return (
-    <div className="space-y-4">
-      <ToastContainer />
-
-      <Card>
+    <div className="space-y-4"><Card>
         <CardContent className="p-4 sm:p-5">
           <div className="flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">

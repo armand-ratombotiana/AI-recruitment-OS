@@ -64,7 +64,7 @@ export default function JobsPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = async () => {
     setLoading(true);
@@ -458,10 +458,7 @@ export default function JobsPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="space-y-6"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">{t('jobs.title', 'Jobs')}</h1>

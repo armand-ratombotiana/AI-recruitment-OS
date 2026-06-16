@@ -12,7 +12,7 @@ import { DashboardDesigner, type DesignerWidget, type DashboardTemplate } from '
 import { DesignerToolbar, type ResponsiveBreakpoint } from '@/components/dashboards/designer-toolbar';
 import { TemplateSelector } from '@/components/dashboards/template-selector';
 import { Modal } from '@/components/ui/modal';
-import { useToast } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 import { useLocaleStore, translate } from '@/stores/locale-store';
 import { cn } from '@/lib/utils';
 
@@ -23,7 +23,7 @@ const TEMPLATES_STORAGE_KEY = 'airos_dashboard_templates_v1';
 export default function DashboardDesignerPage() {
   const locale = useLocaleStore((s) => s.locale);
   const t = useCallback((key: string, fb?: string) => translate(locale, key, fb), [locale]);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const [dashboardName, setDashboardName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -319,9 +319,6 @@ export default function DashboardDesignerPage() {
             </button>
           </div>
         </div>
-      </Modal>
-
-      <ToastContainer />
-    </>
+      </Modal></>
   );
 }

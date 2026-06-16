@@ -119,7 +119,7 @@ export default function InterviewsPage() {
   const [jobOptions, setJobOptions] = useState<InterviewOption[]>([]);
   const [interviewerOptions, setInterviewerOptions] = useState<string[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = useCallback(async (isBackground = false) => {
     if (!isBackground) setLoading(true);
@@ -489,10 +489,7 @@ export default function InterviewsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="space-y-6"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">

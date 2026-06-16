@@ -119,7 +119,7 @@ function scoreToPercent(score: number): number {
   return Math.min(100, Math.max(0, Math.round(score * 100)));
 }
 
-function buildSummary(results: ScreeningResult[]): ScreeningRun['summary'] {
+function buildSummary(results: ScreeningResult[]): NonNullable<ScreeningRun['summary']> {
   if (results.length === 0) {
     return { averageScore: 0, topScore: 0, counts: { strong_hire: 0, hire: 0, neutral: 0, no_hire: 0, strong_no_hire: 0 } };
   }
@@ -188,7 +188,7 @@ export default function AIScreeningPage() {
   const [resultsSearch, setResultsSearch] = useState('');
   const [sending, setSending] = useState<string | null>(null);
 
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const loadData = useCallback(async () => {
     setLoadingData(true);
@@ -452,9 +452,7 @@ export default function AIScreeningPage() {
 
   if (loadingData) {
     return (
-      <div className="space-y-6" aria-busy="true" aria-live="polite">
-        <ToastContainer />
-        <Breadcrumb />
+      <div className="space-y-6" aria-busy="true" aria-live="polite"><Breadcrumb />
         <Skeleton height={32} width={300} />
         <Skeleton height={20} width={500} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -469,9 +467,7 @@ export default function AIScreeningPage() {
 
   if (error && runs.length === 0) {
     return (
-      <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+      <div className="space-y-6"><Breadcrumb />
         <Card>
           <CardContent className="p-0">
             <ErrorState
@@ -488,10 +484,7 @@ export default function AIScreeningPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-
-      <Breadcrumb />
+    <div className="space-y-6"><Breadcrumb />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
@@ -541,28 +534,24 @@ export default function AIScreeningPage() {
           {activeRun && activeRun.summary && (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <StatsCard
-                label={t('aiScreening.candidateCount', 'Candidates')}
+                title={t('aiScreening.candidateCount', 'Candidates')}
                 value={formatNumber(activeRun.results.length, locale)}
-                icon={Users}
-                tone="info"
+                icon={<Users />}
               />
               <StatsCard
-                label={t('aiScreening.avgScore', 'Average score')}
+                title={t('aiScreening.avgScore', 'Average score')}
                 value={`${activeRun.summary.averageScore}%`}
-                icon={BarChart3}
-                tone="purple"
+                icon={<BarChart3 />}
               />
               <StatsCard
-                label={t('aiScreening.topScore', 'Top score')}
+                title={t('aiScreening.topScore', 'Top score')}
                 value={`${activeRun.summary.topScore}%`}
-                icon={TrendingUp}
-                tone="success"
+                icon={<TrendingUp />}
               />
               <StatsCard
-                label={t('aiScreening.strongHireCount', 'Strong hire')}
+                title={t('aiScreening.strongHireCount', 'Strong hire')}
                 value={formatNumber(activeRun.summary.counts.strong_hire, locale)}
-                icon={Star}
-                tone="warning"
+                icon={<Star />}
               />
             </div>
           )}

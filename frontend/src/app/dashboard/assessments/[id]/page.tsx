@@ -92,7 +92,7 @@ export default function AssessmentDetailPage({ params }: { params: { id: string 
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
   const cancelledRef = useRef(false);
 
   const load = useCallback(async () => {
@@ -239,9 +239,7 @@ export default function AssessmentDetailPage({ params }: { params: { id: string 
 
   return (
     <div className="space-y-6">
-      <ToastContainer />
-
-      <Link
+<Link
         href="/dashboard/assessments"
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
       >

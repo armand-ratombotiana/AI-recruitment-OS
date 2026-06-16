@@ -78,7 +78,9 @@ export {
   workflowsTour,
   ALL_TOURS,
 } from './onboarding/tours';
-export { useCountUp, useToast, useWebSocket, useDebouncedValue, useLocalStorage, useClickOutside } from '@/hooks';
+export { useCountUp, useWebSocket, useDebouncedValue, useLocalStorage, useClickOutside } from '@/hooks';
+export { useToast, ToastProvider } from '@/components/ui/toast';
+export type { Toast, ToastVariant } from '@/components/ui/toast';
 export { usePolling } from '@/hooks/use-polling';
 export type { PollingState } from '@/hooks/use-polling';
 export { LazyImage } from './performance/lazy-image';

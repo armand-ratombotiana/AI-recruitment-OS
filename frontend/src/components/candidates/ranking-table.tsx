@@ -131,6 +131,8 @@ function SortableTh({ label, sortKey, current, onSort, align = 'left', className
       ? 'ascending'
       : 'descending'
     : 'none';
+  const { locale } = useLocaleStore();
+  const t = (key: string, fb?: string) => translate(locale, key, fb);
   return (
     <th
       scope="col"
@@ -187,7 +189,7 @@ export function RankingTable({
   const locale = useLocaleStore((s) => s.locale);
   const t = (key: string, fb?: string) => translate(locale, key, fb);
   const router = useRouter();
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const [candidates, setCandidates] = useState<RankingCandidate[]>(initialCandidates || []);
   const [loading, setLoading] = useState<boolean>(!initialCandidates);
@@ -691,9 +693,7 @@ export function RankingTable({
   if (!showCard) return <div className={className}>{body}</div>;
 
   return (
-    <Card className={cn('overflow-hidden', className)}>
-      <ToastContainer />
-      <CardContent className="p-0">{body}</CardContent>
+    <Card className={cn('overflow-hidden', className)}><CardContent className="p-0">{body}</CardContent>
     </Card>
   );
 }

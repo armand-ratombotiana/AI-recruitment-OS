@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components';
 import { useLocaleStore, translate } from '@/stores/locale-store';
-import { useToast } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 
 interface ContentPreviewProps {
   content: string;

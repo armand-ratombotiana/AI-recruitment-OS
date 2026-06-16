@@ -272,7 +272,7 @@ export default function NotificationPreferencesPage() {
     [locale]
   );
   const { success, error: errorNotify } = useNotification();
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const [prefs, setPrefs] = useState<PrefsState>(() => buildDefaultPrefs());
   const [loading, setLoading] = useState(true);
@@ -414,9 +414,7 @@ export default function NotificationPreferencesPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+      <div className="space-y-6"><Breadcrumb />
         <div className="space-y-3" aria-busy="true">
           <Skeleton height={40} />
           <Skeleton height={120} />
@@ -427,9 +425,7 @@ export default function NotificationPreferencesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <Breadcrumb />
+    <div className="space-y-6"><Breadcrumb />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>

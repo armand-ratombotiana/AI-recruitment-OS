@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { api } from '@/services/api/client';
-import { useToast } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 import { Bot, User as UserIcon, Sparkles } from 'lucide-react';
 
 interface ChatMessage {
@@ -65,7 +65,7 @@ export function InterviewChat({
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -134,9 +134,7 @@ export function InterviewChat({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <ToastContainer />
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex flex-col h-full"><div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (
           <div key={msg.id} className={`flex gap-2 ${msg.role === 'candidate' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'interviewer' && (

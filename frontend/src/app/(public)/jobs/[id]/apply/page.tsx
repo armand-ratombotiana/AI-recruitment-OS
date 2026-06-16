@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
 import { useLocaleStore, translate, interpolate } from '@/stores/locale-store';
-import { useToast } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 import { FileUpload } from '@/components/ui/file-upload';
 import {
   useApplyDraft,
@@ -71,7 +71,7 @@ export default function ApplyPage() {
   const id = params?.id;
   const locale = useLocaleStore((s) => s.locale);
   const t = (key: string, fb?: string) => translate(locale, key, fb);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -431,8 +431,7 @@ export default function ApplyPage() {
           </div>
         </div>
       </div>
-      <ToastContainer />
-    </div>
+</div>
   );
 }
 

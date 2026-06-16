@@ -25,7 +25,7 @@ import {
   interpolate,
   formatRelativeTime,
 } from '@/stores/locale-store';
-import { useToast } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 import { SaveJobButton } from '@/components/public/save-job-button';
 import { ShareMenu } from '@/components/public/share-menu';
 import { JobAlertsDialog } from '@/components/public/job-alerts-dialog';
@@ -97,7 +97,7 @@ export default function PublicJobDetailPage() {
   const id = params?.id;
   const locale = useLocaleStore((s) => s.locale);
   const t = (key: string, fb?: string) => translate(locale, key, fb);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -529,8 +529,7 @@ export default function PublicJobDetailPage() {
         jobId={job.id}
         jobTitle={job.title}
       />
-      <ToastContainer />
-    </article>
+</article>
   );
 }
 

@@ -42,7 +42,7 @@ const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'danger' | 'info' |
 export default function VideoRoomDetailPage({ params }: { params: { id: string } }) {
   const locale = useLocaleStore((s) => s.locale);
   const t = useCallback((key: string, fb?: string) => translate(locale, key, fb), [locale]);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const [room, setRoom] = useState<VideoRoomTypes.VideoRoom | null>(null);
   const [notes, setNotes] = useState<VideoRoomTypes.VideoRoomNote[]>([]);
@@ -170,8 +170,7 @@ export default function VideoRoomDetailPage({ params }: { params: { id: string }
   if (loading) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Skeleton height={20} width={180} />
+<Skeleton height={20} width={180} />
         <Card><CardContent className="p-6"><div className="flex gap-5"><Skeleton variant="circular" width={64} height={64} /><div className="flex-1 space-y-3"><Skeleton height={28} width="50%" /><Skeleton height={16} width="70%" /></div></div></CardContent></Card>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><div className="lg:col-span-2 space-y-6"><Skeleton height={300} /><Skeleton height={200} /></div><div className="space-y-6"><Skeleton height={180} /><Skeleton height={160} /></div></div>
       </div>
@@ -181,8 +180,7 @@ export default function VideoRoomDetailPage({ params }: { params: { id: string }
   if (notFound) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+<Breadcrumb />
         <Link href="/dashboard/interviews/video" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           {t('interviews.video.title', 'Video Interviews')}
@@ -200,8 +198,7 @@ export default function VideoRoomDetailPage({ params }: { params: { id: string }
   if (error && !room) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+<Breadcrumb />
         <Card><CardContent className="p-0"><ErrorState title={t('interviews.couldntLoad', "Couldn't load interviews")} description={error} onRetry={load} retryLabel={t('common.retry', 'Retry')} fullHeight /></CardContent></Card>
       </div>
     );
@@ -211,9 +208,7 @@ export default function VideoRoomDetailPage({ params }: { params: { id: string }
 
   return (
     <div className="space-y-6">
-      <ToastContainer />
-
-      <Breadcrumb />
+<Breadcrumb />
 
       <Link href="/dashboard/interviews/video" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition">
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />

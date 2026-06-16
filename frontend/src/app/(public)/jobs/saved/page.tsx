@@ -24,7 +24,7 @@ import {
   formatRelativeTime,
   interpolate,
 } from '@/stores/locale-store';
-import { useToast } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 import { SaveJobButton } from '@/components/public/save-job-button';
 import { ShareMenu } from '@/components/public/share-menu';
 import { JobAlertsDialog } from '@/components/public/job-alerts-dialog';
@@ -58,7 +58,7 @@ function formatSalaryRange(
 export default function SavedJobsPage() {
   const locale = useLocaleStore((s) => s.locale);
   const t = (key: string, fb?: string) => translate(locale, key, fb);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
   const { list, clear, hydrated } = useSavedJobs();
 
   const [query, setQuery] = useState('');
@@ -263,9 +263,7 @@ export default function SavedJobsPage() {
         )}
       </div>
 
-      <JobAlertsDialog open={alertsOpen} onClose={() => setAlertsOpen(false)} />
-      <ToastContainer />
-    </div>
+      <JobAlertsDialog open={alertsOpen} onClose={() => setAlertsOpen(false)} /></div>
   );
 }
 

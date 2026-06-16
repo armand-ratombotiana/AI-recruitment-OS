@@ -263,7 +263,7 @@ export default function CandidateDetailPage({ params }: { params: { id: string }
   const [showGroupByDay, setShowGroupByDay] = useState(true);
   const [starred, setStarred] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -625,8 +625,7 @@ export default function CandidateDetailPage({ params }: { params: { id: string }
   if (loading) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Skeleton height={20} width={180} />
+<Skeleton height={20} width={180} />
         <Skeleton height={40} width={260} />
         <Card>
           <CardContent className="p-6">
@@ -662,8 +661,7 @@ export default function CandidateDetailPage({ params }: { params: { id: string }
   if (notFound) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+<Breadcrumb />
         <Link
           href="/dashboard/candidates"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition"
@@ -691,8 +689,7 @@ export default function CandidateDetailPage({ params }: { params: { id: string }
   if (error && !candidate) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+<Breadcrumb />
         <Link
           href="/dashboard/candidates"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition"
@@ -797,9 +794,7 @@ export default function CandidateDetailPage({ params }: { params: { id: string }
 
   return (
     <div className="space-y-6">
-      <ToastContainer />
-
-      <Breadcrumb />
+<Breadcrumb />
 
       <Link
         href="/dashboard/candidates"

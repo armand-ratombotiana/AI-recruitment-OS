@@ -32,7 +32,7 @@ import {
   Modal,
   ConfirmDialog,
 } from '@/components';
-import { useToast } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 import {
   useLocaleStore,
   translate,
@@ -244,7 +244,7 @@ export function JobApplicantsKanban({ jobId }: JobApplicantsKanbanProps) {
     (key: string, fb?: string) => translate(locale, key, fb),
     [locale]
   );
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const [candidates, setCandidates] = useState<Applicant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -681,9 +681,7 @@ export function JobApplicantsKanban({ jobId }: JobApplicantsKanbanProps) {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <ToastContainer />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="space-y-4"><div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Skeleton height={72} />
           <Skeleton height={72} />
           <Skeleton height={72} />
@@ -700,9 +698,7 @@ export function JobApplicantsKanban({ jobId }: JobApplicantsKanbanProps) {
 
   if (error && candidates.length === 0) {
     return (
-      <div className="space-y-4">
-        <ToastContainer />
-        <Card>
+      <div className="space-y-4"><Card>
           <CardContent className="p-0">
             <ErrorState
               title={t('jobKanban.couldntLoad', "Couldn't load applicants")}
@@ -718,10 +714,7 @@ export function JobApplicantsKanban({ jobId }: JobApplicantsKanbanProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <ToastContainer />
-
-      <Card>
+    <div className="space-y-4"><Card>
         <CardContent className="p-4 sm:p-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>

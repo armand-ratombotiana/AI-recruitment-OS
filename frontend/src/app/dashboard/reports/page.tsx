@@ -321,7 +321,7 @@ export default function ReportsPage() {
     (key: string, fallback?: string) => translate(locale, `reports.${key}`, fallback),
     [locale]
   );
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
   const filtersId = useId();
 
   const [preset, setPreset] = useState<DateRangePreset>('30d');
@@ -337,7 +337,7 @@ export default function ReportsPage() {
   const [pipeline, setPipeline] = useState<AnalyticsTypes.PipelineData | null>(null);
   const [recruiters, setRecruiters] = useState<AnalyticsTypes.RecruiterProductivity | null>(null);
   const [timeToHire, setTimeToHire] = useState<AnalyticsTypes.TimeToHire | null>(null);
-  const [jobs, setJobs] = useState<JobTypes.Job[]>([]);
+  const [jobs, setJobs] = useState<JobTypes.JobSummary[]>([]);
 
   const [recentExports, setRecentExports] = useState<RecentExport[]>([]);
   const [scheduledReports, setScheduledReports] = useState<ScheduledReport[]>([]);
@@ -391,7 +391,7 @@ export default function ReportsPage() {
         if (recruitersRes.status === 'fulfilled') setRecruiters(recruitersRes.value);
         if (timeRes.status === 'fulfilled') setTimeToHire(timeRes.value);
         if (jobsRes.status === 'fulfilled') {
-          const list = asList<JobTypes.Job>(jobsRes.value);
+          const list = asList<JobTypes.JobSummary>(jobsRes.value);
           setJobs(list);
         }
         const exList: any[] = asList(exportsRes.status === 'fulfilled' ? exportsRes.value : null);
@@ -619,7 +619,7 @@ export default function ReportsPage() {
           : await api.analytics.generateReport({
               type: type === 'hiring_funnel' ? 'funnel' : type === 'time_to_hire' ? 'time_to_hire' : 'custom',
               time_range: preset,
-              format,
+              format: format as 'csv' | 'pdf' | 'json',
             });
         const url: string | undefined =
           result?.url || result?.download_url || (result?.id ? `${API_BASE}/api/v1/exports/${result.id}/download` : undefined);
@@ -831,9 +831,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <Breadcrumb />
+    <div className="space-y-6"><Breadcrumb />
 
       <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
         <div>

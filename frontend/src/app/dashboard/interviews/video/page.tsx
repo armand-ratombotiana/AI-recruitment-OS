@@ -26,7 +26,7 @@ type StatusFilter = 'all' | 'active' | 'completed' | 'expired';
 export default function VideoInterviewsPage() {
   const locale = useLocaleStore((s) => s.locale);
   const t = useCallback((key: string, fb?: string) => translate(locale, key, fb), [locale]);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const [rooms, setRooms] = useState<VideoRoomTypes.VideoRoom[]>([]);
   const [loading, setLoading] = useState(true);
@@ -133,10 +133,7 @@ export default function VideoInterviewsPage() {
   }, [rooms]);
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="space-y-6"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
             {t('interviews.video.title', 'Video Interviews')}

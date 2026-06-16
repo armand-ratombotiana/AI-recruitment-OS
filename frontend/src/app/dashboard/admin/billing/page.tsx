@@ -94,7 +94,7 @@ export default function AdminBillingPage() {
   const [addPmModal, setAddPmModal] = useState(false);
   const [showPmDetails, setShowPmDetails] = useState<Record<string, boolean>>({});
 
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = useCallback(
     async (isRefresh = false) => {
@@ -286,9 +286,7 @@ export default function AdminBillingPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <Breadcrumb />
+    <div className="space-y-6"><Breadcrumb />
 
       <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>

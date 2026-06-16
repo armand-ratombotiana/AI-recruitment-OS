@@ -130,7 +130,7 @@ export default function InterviewDetailPage({ params }: { params: { id: string }
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -309,8 +309,7 @@ export default function InterviewDetailPage({ params }: { params: { id: string }
   if (loading) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Skeleton height={20} width={180} />
+<Skeleton height={20} width={180} />
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-5">
@@ -349,8 +348,7 @@ export default function InterviewDetailPage({ params }: { params: { id: string }
   if (notFound) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+<Breadcrumb />
         <Link
           href="/dashboard/interviews"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition"
@@ -378,8 +376,7 @@ export default function InterviewDetailPage({ params }: { params: { id: string }
   if (error && !interview) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+<Breadcrumb />
         <Link
           href="/dashboard/interviews"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition"
@@ -415,9 +412,7 @@ export default function InterviewDetailPage({ params }: { params: { id: string }
 
   return (
     <div className="space-y-6">
-      <ToastContainer />
-
-      <Breadcrumb />
+<Breadcrumb />
 
       <Link
         href="/dashboard/interviews"

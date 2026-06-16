@@ -78,7 +78,7 @@ export default function AssessmentsPage() {
   const [jobs, setJobs] = useState<Array<{ id: string; label: string }>>([]);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<AssessmentTypes.AssessmentSummary | null>(null);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
   const searchId = useId();
 
   const load = useCallback(async () => {
@@ -213,10 +213,7 @@ export default function AssessmentsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="space-y-6"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <ClipboardList className="h-6 w-6 text-blue-600 dark:text-brand-400" aria-hidden="true" />

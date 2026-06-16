@@ -77,7 +77,7 @@ const CATEGORY_KEYWORDS: Record<NotificationCategory, RegExp> = {
   system: /(system|security|alert|billing|workflow|automation|integration|update)/i,
 };
 
-const CATEGORY_ICON: Record<NotificationCategory, ComponentType<{ className?: string; 'aria-hidden'?: boolean }>> = {
+const CATEGORY_ICON: Record<NotificationCategory, typeof Calendar> = {
   interview: Calendar,
   candidate: Users,
   job: Briefcase,
@@ -197,7 +197,7 @@ export default function NotificationsPage() {
     (key: string, fallback?: string) => translate(locale, `common.${key}`, fallback),
     [locale]
   );
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const [notifications, setNotifications] = useState<UINotification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -475,7 +475,7 @@ export default function NotificationsPage() {
     }
   }, [selectedIds, push, pageT, load]);
 
-  const tabs: { key: FilterKey; label: string; icon: ComponentType<{ className?: string; 'aria-hidden'?: boolean }> }[] = [
+  const tabs: { key: FilterKey; label: string; icon: typeof Calendar }[] = [
     { key: 'all', label: pageT('filters.all', 'All'), icon: Inbox },
     { key: 'unread', label: pageT('filters.unread', 'Unread'), icon: Bell },
     { key: 'mentions', label: pageT('filters.mentions', 'Mentions'), icon: AtSign },
@@ -502,9 +502,7 @@ export default function NotificationsPage() {
   void commonT;
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <Breadcrumb />
+    <div className="space-y-6"><Breadcrumb />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -657,7 +655,7 @@ export default function NotificationsPage() {
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 )}
               >
-                {Icon && <Icon className="h-4 w-4" aria-hidden="true" />}
+                {Icon && <Icon className="h-4 w-4" aria-hidden={true} />}
                 <span>{tab.label}</span>
                 <span
                   className={cn(
@@ -882,7 +880,7 @@ interface NotificationRowProps {
   item: UINotification;
   locale: Locale;
   palette: { ring: string; bg: string; text: string };
-  Icon: ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
+  Icon: typeof Calendar;
   selected: boolean;
   onSelect: (id: string) => void;
   onOpen: (n: UINotification) => void;

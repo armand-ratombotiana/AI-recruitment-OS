@@ -8,9 +8,6 @@ export type { SelectOption } from './Select';
 
 export { Modal } from './Modal';
 
-export { ToastProvider, useToast } from './Toast';
-export type { ToastVariant, ToastData } from './Toast';
-
 export { Card, CardHeader, CardBody, CardFooter } from './Card';
 
 export { Badge } from './Badge';

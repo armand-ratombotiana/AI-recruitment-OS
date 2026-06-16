@@ -73,7 +73,7 @@ export default function TakeAssessmentPage({ params }: { params: { id: string } 
   const [submitting, setSubmitting] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const autosaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -379,9 +379,7 @@ export default function TakeAssessmentPage({ params }: { params: { id: string } 
 
   return (
     <div className="space-y-4 max-w-3xl mx-auto">
-      <ToastContainer />
-
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+<div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="min-w-0">
           <Link
             href={`/dashboard/assessments/${assessment.id}`}

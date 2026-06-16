@@ -109,7 +109,7 @@ export default function AIMatchingPage() {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const loadData = useCallback(async () => {
     setLoadingData(true);
@@ -325,9 +325,7 @@ export default function AIMatchingPage() {
 
   if (loadingData) {
     return (
-      <div className="space-y-6" aria-busy="true" aria-live="polite">
-        <ToastContainer />
-        <Breadcrumb />
+      <div className="space-y-6" aria-busy="true" aria-live="polite"><Breadcrumb />
         <Skeleton height={32} width={300} />
         <Skeleton height={20} width={500} />
         <Skeleton height={48} />
@@ -337,9 +335,7 @@ export default function AIMatchingPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <Breadcrumb />
+    <div className="space-y-6"><Breadcrumb />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">

@@ -96,7 +96,7 @@ function DashboardSkeleton() {
 export default function DashboardPage() {
   const locale = useLocaleStore((s) => s.locale);
   const t = (key: string, fb?: string) => translate(locale, key, fb);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const [storedConfig, setStoredConfig, configHydrated] = useLocalStorage<DashboardWidgetConfig>(
     STORAGE_KEY,
@@ -178,9 +178,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <>
-        <DashboardSkeleton />
-        <ToastContainer />
-      </>
+        <DashboardSkeleton /></>
     );
   }
 
@@ -514,9 +512,6 @@ export default function DashboardPage() {
           config={config}
           onSave={handleSaveConfig}
         />
-      )}
-
-      <ToastContainer />
-    </div>
+      )}</div>
   );
 }

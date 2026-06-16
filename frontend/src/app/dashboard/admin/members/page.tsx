@@ -113,7 +113,7 @@ export default function AdminMembersPage() {
   const [confirmResend, setConfirmResend] = useState<UserTypes.User | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = useCallback(
     async (isRefresh = false) => {
@@ -268,9 +268,7 @@ export default function AdminMembersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <Breadcrumb />
+    <div className="space-y-6"><Breadcrumb />
 
       <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>

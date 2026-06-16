@@ -119,7 +119,7 @@ export default function AdminTagsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<TagTypes.Tag | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = useCallback(
     async (isRefresh = false) => {
@@ -334,9 +334,7 @@ export default function AdminTagsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <Breadcrumb />
+    <div className="space-y-6"><Breadcrumb />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>

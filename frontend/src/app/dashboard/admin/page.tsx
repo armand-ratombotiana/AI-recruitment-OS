@@ -196,7 +196,7 @@ export default function AdminDashboardPage() {
   const [confirmRevokeKey, setConfirmRevokeKey] = useState<AuthTypes.APIKey | null>(null);
   const [confirmDeleteWebhook, setConfirmDeleteWebhook] = useState<WebhookConfig | null>(null);
 
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = useCallback(
     async (isRefresh = false) => {
@@ -539,9 +539,7 @@ export default function AdminDashboardPage() {
   const overall = STATUS_META[overallStatus];
 
   return (
-    <div className="space-y-6">
-      <ToastContainer />
-      <Breadcrumb />
+    <div className="space-y-6"><Breadcrumb />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>

@@ -120,7 +120,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'applicants'>('overview');
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -314,8 +314,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   if (loading) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Skeleton height={20} width={180} />
+<Skeleton height={20} width={180} />
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-5">
@@ -358,8 +357,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   if (notFound) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+<Breadcrumb />
         <Link
           href="/dashboard/jobs"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
@@ -390,8 +388,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   if (error && !job) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+<Breadcrumb />
         <Link
           href="/dashboard/jobs"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
@@ -431,9 +428,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="space-y-6">
-      <ToastContainer />
-
-      <Breadcrumb />
+<Breadcrumb />
 
       <Link
         href="/dashboard/jobs"

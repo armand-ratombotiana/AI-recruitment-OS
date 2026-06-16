@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Bell, Check, X } from 'lucide-react';
-import { useClickOutside, useToast } from '@/hooks';
+import { useClickOutside } from '@/hooks';
+import { useToast } from '@/components/ui/toast';
 import { api } from '@/services/api/client';
 
 interface Notification {
@@ -46,7 +47,7 @@ export function NotificationsBell() {
   const [items, setItems] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   useClickOutside(ref, () => setOpen(false));
 
@@ -113,9 +114,7 @@ export function NotificationsBell() {
   };
 
   return (
-    <div className="relative" ref={ref}>
-      <ToastContainer />
-      <button
+    <div className="relative" ref={ref}><button
         type="button"
         onClick={() => setOpen((s) => !s)}
         aria-label={`Notifications (${unread} unread)`}

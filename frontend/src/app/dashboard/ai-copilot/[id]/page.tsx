@@ -187,7 +187,7 @@ export default function AICopilotConversationDetailPage({ params }: { params: { 
   const [rerunLoading, setRerunLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
-  const { push, ToastContainer } = useToast();
+  const { push } = useToast();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -327,8 +327,7 @@ export default function AICopilotConversationDetailPage({ params }: { params: { 
   if (loading) {
     return (
       <div className="space-y-6" aria-busy="true" aria-live="polite">
-        <ToastContainer />
-        <Skeleton height={20} width={200} />
+<Skeleton height={20} width={200} />
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-5">
@@ -356,8 +355,7 @@ export default function AICopilotConversationDetailPage({ params }: { params: { 
   if (notFound) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+<Breadcrumb />
         <Link
           href="/dashboard/ai-copilot"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
@@ -385,8 +383,7 @@ export default function AICopilotConversationDetailPage({ params }: { params: { 
   if (error && !task) {
     return (
       <div className="space-y-6">
-        <ToastContainer />
-        <Breadcrumb />
+<Breadcrumb />
         <Link
           href="/dashboard/ai-copilot"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
@@ -418,9 +415,7 @@ export default function AICopilotConversationDetailPage({ params }: { params: { 
 
   return (
     <div className="space-y-6">
-      <ToastContainer />
-
-      <Breadcrumb />
+<Breadcrumb />
 
       <Link
         href="/dashboard/ai-copilot"
