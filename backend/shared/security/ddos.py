@@ -18,6 +18,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import logging
+import os
 import re
 import secrets
 import time
@@ -26,6 +27,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Awaitable, Callable, Deque, Optional
 
+import redis as redis_lib
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -34,6 +36,43 @@ from starlette.responses import Response
 from starlette.types import ASGIApp
 
 logger = logging.getLogger("security.ddos")
+
+
+# ── Redis DDoS Protection ─────────────────────────────────────────────────────
+
+
+class RedisDDoSProtection:
+    """DDoS IP tracking backed by Redis for horizontal scaling."""
+
+    def __init__(self, redis_url: str | None = None) -> None:
+        self.redis = redis_lib.from_url(
+            redis_url or os.getenv("REDIS_URL", "redis://localhost:6379"),
+            decode_responses=True,
+        )
+
+    def record_request(self, ip: str) -> None:
+        key = f"ddos:{ip}"
+        self.redis.incr(key)
+        self.redis.expire(key, 60)
+
+    def is_blocked(self, ip: str, threshold: int = 100) -> bool:
+        key = f"ddos:{ip}"
+        count = int(self.redis.get(key) or 0)
+        return count > threshold
+
+    def block_ip(self, ip: str, duration: int = 3600) -> None:
+        key = f"blocked:{ip}"
+        self.redis.setex(key, duration, "1")
+
+    def is_ip_blocked(self, ip: str) -> bool:
+        return self.redis.exists(f"blocked:{ip}") > 0
+
+    def unblock_ip(self, ip: str) -> bool:
+        return self.redis.delete(f"blocked:{ip}") > 0
+
+    def get_request_count(self, ip: str) -> int:
+        key = f"ddos:{ip}"
+        return int(self.redis.get(key) or 0)
 
 
 # ── Enums & data classes ──────────────────────────────────────────────────────
@@ -669,6 +708,7 @@ __all__ = [
     "DDoSProtection",
     "IPRecord",
     "IPReputation",
+    "RedisDDoSProtection",
     "RequestVerdict",
     "ThreatLevel",
     "ddos_protection",

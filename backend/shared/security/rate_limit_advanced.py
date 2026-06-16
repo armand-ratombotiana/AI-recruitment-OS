@@ -13,14 +13,42 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import time
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from typing import Any, Deque, Optional
 
+import redis as redis_lib
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 logger = logging.getLogger("security.rate_limit_advanced")
+
+
+# ── Redis Rate Limiter ─────────────────────────────────────────────────────────
+
+
+class RedisRateLimiter:
+    """Fixed-window rate limiter backed by Redis for horizontal scaling."""
+
+    def __init__(self, redis_url: str | None = None) -> None:
+        self.redis = redis_lib.from_url(
+            redis_url or os.getenv("REDIS_URL", "redis://localhost:6379"),
+            decode_responses=True,
+        )
+
+    def is_allowed(self, key: str, limit: int, window: int) -> bool:
+        current = self.redis.incr(key)
+        if current == 1:
+            self.redis.expire(key, window)
+        return current <= limit
+
+    def get_remaining(self, key: str, limit: int) -> int:
+        current = self.redis.get(key)
+        return max(0, limit - int(current or 0))
+
+    def reset(self, key: str) -> None:
+        self.redis.delete(key)
 
 
 # ── Sliding Window Limiter ────────────────────────────────────────────────────
@@ -619,6 +647,7 @@ __all__ = [
     "BurstProtector",
     "LeakyBucketLimiter",
     "RateLimitConfig",
+    "RedisRateLimiter",
     "SlidingWindowLimiter",
     "TokenBucketLimiter",
     "advanced_rate_limiter",
