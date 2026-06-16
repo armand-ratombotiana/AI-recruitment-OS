@@ -70,7 +70,7 @@ export function TemplateCard({ template, onUse, onEdit, onDelete }: TemplateCard
             <h3 className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
               {template.name}
             </h3>
-            <Badge variant="secondary" size="sm">
+            <Badge variant="default" size="sm">
               {t(`contentGenerator.types.${template.contentType}`, template.contentType.replace(/_/g, ' '))}
             </Badge>
           </div>

@@ -111,7 +111,6 @@ export const apolloClient = new ApolloClient({
     watchQuery: { fetchPolicy: 'cache-and-network' },
     query: { fetchPolicy: 'network-only' },
   },
-  connectToDevTools: process.env.NODE_ENV === 'development',
 });
 
 export function updateAuthToken(token: string | null) {

@@ -25,11 +25,12 @@ import {
   Plus,
   Sparkles,
 } from 'lucide-react';
-import ReactGridLayout from 'react-grid-layout';
+import { WidthProvider, Responsive } from 'react-grid-layout/legacy';
+import type { LayoutItem } from 'react-grid-layout';
+type RGLLayout = LayoutItem;
+type RGLLayouts = Record<string, RGLLayout[]>;
 
-const ResponsiveGridLayout = ReactGridLayout.WidthProvider(ReactGridLayout.Responsive);
-type RGLLayout = ReactGridLayout.Layout;
-type RGLLayouts = ReactGridLayout.Layouts;
+const ResponsiveGridLayout = WidthProvider(Responsive);
 import {
   LineChart,
   Line,
@@ -510,8 +511,8 @@ export function DashboardDesigner({
   );
 
   const handleLayoutChange = useCallback(
-    (_layout: RGLLayout[], allLayouts: RGLLayouts) => {
-      setLayouts(allLayouts);
+    (_layout: readonly LayoutItem[], allLayouts: Partial<Record<string, readonly LayoutItem[]>>) => {
+      setLayouts((allLayouts ?? {}) as RGLLayouts);
       setDirty(true);
     },
     [],
