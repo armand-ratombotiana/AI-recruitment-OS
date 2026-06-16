@@ -3,10 +3,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Briefcase,
-  Mail,
-  MapPin,
-  TrendingUp,
-  Calendar,
   ExternalLink,
   Loader2,
   XCircle,
@@ -16,7 +12,6 @@ import {
   X,
   Move,
   AlertTriangle,
-  CheckCircle2,
   RefreshCw,
   Search,
 } from 'lucide-react';
@@ -40,16 +35,12 @@ import {
   formatDate,
   formatRelativeTime,
   formatNumber,
-  type Locale,
 } from '@/stores/locale-store';
+import { KanbanColumn } from './kanban-column';
+import type { Applicant, JobApplicantStage } from './kanban-card';
+import { normalizeStatus } from './kanban-card';
 
-export type JobApplicantStage =
-  | 'active'
-  | 'screening'
-  | 'interview'
-  | 'offer'
-  | 'hired'
-  | 'rejected';
+export type { JobApplicantStage } from './kanban-card';
 
 interface StageDef {
   id: JobApplicantStage;
@@ -118,8 +109,6 @@ const STAGES: StageDef[] = [
   },
 ];
 
-const STAGE_ID_SET = new Set<string>(STAGES.map((s) => s.id));
-
 const REJECTION_REASONS = [
   'not_a_fit',
   'experience',
@@ -133,25 +122,6 @@ const REJECTION_REASONS = [
 ] as const;
 
 type RejectionReason = (typeof REJECTION_REASONS)[number];
-
-interface Applicant {
-  id: string;
-  full_name?: string;
-  name?: string;
-  email?: string;
-  status?: string;
-  score?: number | null;
-  created_at?: string;
-  applied_at?: string;
-  location?: string | null;
-  headline?: string | null;
-  skills?: string[];
-  experience_years?: number | null;
-  phone?: string | null;
-  linkedin?: string | null;
-  notes?: string | null;
-  rejection_reason?: string | null;
-}
 
 interface PendingMove {
   candidateId: string;
@@ -176,66 +146,6 @@ interface ConfirmBulkState {
 
 export interface JobApplicantsKanbanProps {
   jobId: string;
-}
-
-function normalizeStatus(raw: string | undefined | null): JobApplicantStage {
-  if (!raw) return 'active';
-  const s = String(raw).toLowerCase().trim();
-  if (STAGE_ID_SET.has(s)) return s as JobApplicantStage;
-  if (s === 'applied' || s === 'new' || s === 'open') return 'active';
-  if (s === 'interviewing') return 'interview';
-  if (s === 'offer_extended') return 'offer';
-  if (s === 'active') return 'active';
-  return 'active';
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .map((n) => n[0] || '')
-    .join('')
-    .slice(0, 2)
-    .toUpperCase() || '?';
-}
-
-function getScoreTone(score: number | null | undefined): {
-  label: string;
-  classes: string;
-} {
-  if (typeof score !== 'number') {
-    return {
-      label: '—',
-      classes:
-        'bg-gray-100 text-gray-600 border-gray-200 dark:bg-surface-800 dark:text-gray-400 dark:border-surface-700',
-    };
-  }
-  if (score >= 85) {
-    return {
-      label: String(Math.round(score)),
-      classes:
-        'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30',
-    };
-  }
-  if (score >= 65) {
-    return {
-      label: String(Math.round(score)),
-      classes:
-        'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30',
-    };
-  }
-  if (score >= 40) {
-    return {
-      label: String(Math.round(score)),
-      classes:
-        'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30',
-    };
-  }
-  return {
-    label: String(Math.round(score)),
-    classes:
-      'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30',
-  };
 }
 
 export function JobApplicantsKanban({ jobId }: JobApplicantsKanbanProps) {
@@ -852,101 +762,27 @@ export function JobApplicantsKanban({ jobId }: JobApplicantsKanbanProps) {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-          {STAGES.map((stage) => {
-            const list = byStage[stage.id];
-            const selectedInColumn = list.filter((c) => selected.has(c.id)).length;
-            const allSelected = list.length > 0 && selectedInColumn === list.length;
-            const isDropTarget = dragOverStage === stage.id;
-            return (
-              <div
-                key={stage.id}
-                role="region"
-                aria-label={interpolate(
-                  t('jobKanban.columnAria', 'Drop candidate to move to {stage}'),
-                  { stage: t(stage.titleKey, stage.defaultTitle) }
-                )}
-                onDragOver={(e) => onColumnDragOver(e, stage.id)}
-                onDragLeave={() => onColumnDragLeave(stage.id)}
-                onDrop={(e) => onColumnDrop(e, stage.id)}
-                className={[
-                  'flex flex-col rounded-lg border bg-white dark:bg-surface-900 transition-colors min-h-[260px]',
-                  isDropTarget
-                    ? `${stage.borderClass} ${stage.bgClass} ring-2 ring-offset-1 ring-blue-400 dark:ring-offset-surface-900`
-                    : 'border-gray-200 dark:border-surface-700',
-                ].join(' ')}
-              >
-                <header className="flex items-center gap-2 p-2.5 border-b border-gray-100 dark:border-surface-700">
-                  <span
-                    className={`h-2.5 w-2.5 rounded-full shrink-0 ${stage.color}`}
-                    aria-hidden="true"
-                  />
-                  <h3
-                    className={`text-xs font-semibold uppercase tracking-wider truncate ${stage.textClass}`}
-                  >
-                    {t(stage.titleKey, stage.defaultTitle)}
-                  </h3>
-                  <span className="ml-auto inline-flex items-center gap-1.5">
-                    {list.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => selectColumn(stage.id, list.map((c) => c.id))}
-                        className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-                        aria-label={
-                          allSelected
-                            ? interpolate(
-                                t('jobKanban.deselectAllInColumn', 'Deselect all in {stage}'),
-                                { stage: t(stage.titleKey, stage.defaultTitle) }
-                              )
-                            : interpolate(
-                                t('jobKanban.selectAllInColumn', 'Select all in {stage}'),
-                                { stage: t(stage.titleKey, stage.defaultTitle) }
-                              )
-                        }
-                        title={
-                          allSelected
-                            ? t('jobKanban.deselectAllInColumn', 'Deselect all')
-                            : t('jobKanban.selectAllInColumn', 'Select all')
-                        }
-                      >
-                        {allSelected ? (
-                          <CheckSquare className="h-3.5 w-3.5" aria-hidden="true" />
-                        ) : (
-                          <Square className="h-3.5 w-3.5" aria-hidden="true" />
-                        )}
-                      </button>
-                    )}
-                    <span className="text-[10px] font-bold bg-gray-100 dark:bg-surface-800 text-gray-700 dark:text-gray-300 rounded-full px-1.5 py-0.5">
-                      {list.length}
-                    </span>
-                  </span>
-                </header>
-
-                <div className="flex-1 p-2 space-y-2 overflow-y-auto max-h-[60vh]">
-                  {list.length === 0 ? (
-                    <p className="text-[11px] text-center text-gray-400 dark:text-gray-500 py-6">
-                      {t('jobKanban.emptyColumn', 'No candidates in this stage')}
-                    </p>
-                  ) : (
-                    list.map((c) => (
-                      <ApplicantCard
-                        key={c.id}
-                        candidate={c}
-                        isSelected={selected.has(c.id)}
-                        isDragging={draggingId === c.id}
-                        isMoving={movingId === c.id}
-                        onToggleSelect={toggleSelect}
-                        onOpen={openDetail}
-                        onDragStart={onDragStart}
-                        onDragEnd={onDragEnd}
-                        locale={locale}
-                        t={t}
-                      />
-                    ))
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {STAGES.map((stage) => (
+            <KanbanColumn
+              key={stage.id}
+              stage={stage}
+              applicants={byStage[stage.id]}
+              selectedIds={selected}
+              draggingId={draggingId}
+              movingId={movingId}
+              dragOverStage={dragOverStage}
+              onDragOver={onColumnDragOver}
+              onDragLeave={onColumnDragLeave}
+              onDrop={onColumnDrop}
+              onSelectColumn={selectColumn}
+              onToggleSelect={toggleSelect}
+              onOpenCard={openDetail}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+              locale={locale}
+              t={t}
+            />
+          ))}
         </div>
       )}
 
@@ -1295,6 +1131,16 @@ export function JobApplicantsKanban({ jobId }: JobApplicantsKanbanProps) {
   );
 }
 
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .map((n) => n[0] || '')
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || '?';
+}
+
 interface StatTileProps {
   label: string;
   value: string;
@@ -1327,140 +1173,6 @@ function DetailItem({ label, value }: { label: string; value: string }) {
       <p className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-gray-100 break-words">
         {value}
       </p>
-    </div>
-  );
-}
-
-interface ApplicantCardProps {
-  candidate: Applicant;
-  isSelected: boolean;
-  isDragging: boolean;
-  isMoving: boolean;
-  onToggleSelect: (id: string) => void;
-  onOpen: (id: string) => void;
-  onDragStart: (e: React.DragEvent, id: string) => void;
-  onDragEnd: () => void;
-  locale: Locale;
-  t: (key: string, fb?: string) => string;
-}
-
-function ApplicantCard({
-  candidate,
-  isSelected,
-  isDragging,
-  isMoving,
-  onToggleSelect,
-  onOpen,
-  onDragStart,
-  onDragEnd,
-  locale,
-  t,
-}: ApplicantCardProps) {
-  const name = candidate.full_name || candidate.name || candidate.email || t('jobKanban.unnamed', 'Unnamed');
-  const initials = getInitials(name);
-  const appliedAt = candidate.applied_at || candidate.created_at;
-  const appliedText = appliedAt
-    ? formatRelativeTime(appliedAt, locale)
-    : null;
-  const appliedAbsolute = appliedAt ? formatDate(appliedAt, locale) : null;
-  const scoreTone = getScoreTone(candidate.score);
-
-  return (
-    <div
-      draggable
-      onDragStart={(e) => onDragStart(e, candidate.id)}
-      onDragEnd={onDragEnd}
-      className={[
-        'group rounded-md border bg-white dark:bg-surface-800 p-2 shadow-sm transition cursor-grab active:cursor-grabbing',
-        isSelected
-          ? 'border-blue-400 dark:border-blue-500/50 ring-1 ring-blue-300 dark:ring-blue-500/30'
-          : 'border-gray-200 dark:border-surface-700 hover:border-blue-300 dark:hover:border-blue-500/40',
-        isDragging ? 'opacity-50' : '',
-      ].join(' ')}
-      data-applicant-id={candidate.id}
-      aria-grabbed={isDragging}
-      aria-label={`${name} — ${t(`pipeline.stages.${normalizeStatus(candidate.status)}`, normalizeStatus(candidate.status))}`}
-    >
-      <div className="flex items-start gap-2">
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleSelect(candidate.id);
-          }}
-          className="shrink-0 mt-0.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-          aria-label={
-            isSelected
-              ? t('jobKanban.deselectApplicant', 'Deselect {name}').replace('{name}', name)
-              : t('jobKanban.selectApplicant', 'Select {name}').replace('{name}', name)
-          }
-        >
-          {isSelected ? (
-            <CheckSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-          ) : (
-            <Square className="h-4 w-4" aria-hidden="true" />
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={() => onOpen(candidate.id)}
-          className="flex-1 min-w-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-          aria-label={t('jobKanban.openApplicant', 'Open {name}').replace('{name}', name)}
-        >
-          <div className="flex items-center gap-2">
-            <div
-              className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-[9px] font-bold shrink-0"
-              aria-hidden="true"
-            >
-              {initials}
-            </div>
-            <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate flex-1">
-              {name}
-            </p>
-            {isMoving && (
-              <Loader2 className="h-3 w-3 animate-spin text-gray-400 shrink-0" aria-hidden="true" />
-            )}
-          </div>
-          {candidate.email && (
-            <p className="mt-1 text-[10px] text-gray-500 dark:text-gray-400 truncate flex items-center gap-1">
-              <Mail className="h-2.5 w-2.5" aria-hidden="true" />
-              <span className="truncate">{candidate.email}</span>
-            </p>
-          )}
-          {candidate.location && (
-            <p className="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400 truncate flex items-center gap-1">
-              <MapPin className="h-2.5 w-2.5" aria-hidden="true" />
-              <span className="truncate">{candidate.location}</span>
-            </p>
-          )}
-          <div className="mt-1.5 flex items-center justify-between gap-1.5">
-            <span
-              className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border text-[10px] font-bold ${scoreTone.classes}`}
-              aria-label={interpolate(t('jobKanban.scoreAria', 'Match score {score}'), {
-                score: scoreTone.label,
-              })}
-            >
-              <TrendingUp className="h-2.5 w-2.5" aria-hidden="true" />
-              {scoreTone.label}
-            </span>
-            {appliedText && (
-              <span
-                className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-0.5 truncate"
-                title={appliedAbsolute || undefined}
-              >
-                <Calendar className="h-2.5 w-2.5 shrink-0" aria-hidden="true" />
-                <span className="truncate">{appliedText}</span>
-              </span>
-            )}
-          </div>
-          {candidate.rejection_reason && (
-            <p className="mt-1 text-[10px] text-red-600 dark:text-red-400 flex items-center gap-1 truncate">
-              <AlertTriangle className="h-2.5 w-2.5 shrink-0" aria-hidden="true" />
-              <span className="truncate">{candidate.rejection_reason}</span>
-            </p>
-          )}
-        </button>
-      </div>
     </div>
   );
 }
