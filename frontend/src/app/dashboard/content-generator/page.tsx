@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Sparkles,
   FileText,
@@ -11,11 +12,18 @@ import { api } from '@/services/api/client';
 import type { AiTypes } from '@/services/api/types';
 import { Button, useToast } from '@/components';
 import { useLocaleStore, translate } from '@/stores/locale-store';
-import {
-  GeneratorForm,
-  ContentPreview,
-} from '@/components/content-generator';
 import type { GeneratorFormData, ContentType, ToneType } from '@/components/content-generator';
+import { Skeleton } from '@/components/ui/loading';
+
+const GeneratorForm = dynamic(() => import('@/components/content-generator').then(mod => ({ default: mod.GeneratorForm })), {
+  loading: () => <Skeleton className="h-64 w-full" />,
+  ssr: false,
+});
+
+const ContentPreview = dynamic(() => import('@/components/content-generator').then(mod => ({ default: mod.ContentPreview })), {
+  loading: () => <Skeleton className="h-96 w-full" />,
+  ssr: false,
+});
 
 function buildPrompt(data: GeneratorFormData): string {
   const parts: string[] = [];

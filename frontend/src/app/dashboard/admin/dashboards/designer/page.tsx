@@ -2,19 +2,35 @@
 
 import { useState, useCallback, useRef } from 'react';
 import ReactGridLayout from 'react-grid-layout';
+import dynamic from 'next/dynamic';
 import {
   LayoutGrid,
   ChevronRight,
   Home,
 } from 'lucide-react';
 import Link from 'next/link';
-import { DashboardDesigner, type DesignerWidget, type DashboardTemplate } from '@/components/dashboards/designer';
-import { DesignerToolbar, type ResponsiveBreakpoint } from '@/components/dashboards/designer-toolbar';
-import { TemplateSelector } from '@/components/dashboards/template-selector';
+import type { DesignerWidget, DashboardTemplate } from '@/components/dashboards/designer';
+import type { ResponsiveBreakpoint } from '@/components/dashboards/designer-toolbar';
 import { Modal } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
 import { useLocaleStore, translate } from '@/stores/locale-store';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/loading';
+
+const DashboardDesigner = dynamic(() => import('@/components/dashboards/designer').then(mod => ({ default: mod.DashboardDesigner })), {
+  loading: () => <Skeleton className="h-full w-full" />,
+  ssr: false,
+});
+
+const DesignerToolbar = dynamic(() => import('@/components/dashboards/designer-toolbar').then(mod => ({ default: mod.DesignerToolbar })), {
+  loading: () => <Skeleton className="h-12 w-full" />,
+  ssr: false,
+});
+
+const TemplateSelector = dynamic(() => import('@/components/dashboards/template-selector').then(mod => ({ default: mod.TemplateSelector })), {
+  loading: () => <Skeleton className="h-96 w-96" />,
+  ssr: false,
+});
 
 type RGLLayouts = ReactGridLayout.Layouts;
 

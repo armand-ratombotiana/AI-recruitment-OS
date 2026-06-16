@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Plus,
   Search,
@@ -17,9 +18,13 @@ import {
   Breadcrumb,
   useToast,
 } from '@/components';
-import { VideoRoomCard } from '@/components/video/video-room-card';
 import type { VideoRoomTypes } from '@/services/api/types';
 import { useLocaleStore, translate } from '@/stores/locale-store';
+
+const VideoRoomCard = dynamic(() => import('@/components/video/video-room-card').then(mod => ({ default: mod.VideoRoomCard })), {
+  loading: () => <Skeleton className="h-48 w-full" />,
+  ssr: false,
+});
 
 type StatusFilter = 'all' | 'active' | 'completed' | 'expired';
 

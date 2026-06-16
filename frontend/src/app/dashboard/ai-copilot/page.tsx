@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Sparkles,
   Bot,
@@ -23,10 +24,21 @@ import { api, APIError } from '@/services/api/client';
 import type { AiTypes } from '@/services/api/types';
 import { useClickOutside } from '@/hooks';
 import { useToast } from '@/components/ui/toast';
-import { Button, HelpButton, aiCopilotTour, ConversationSidebar, MessageBubble } from '@/components';
+import { Button, HelpButton, aiCopilotTour } from '@/components';
 import type { ConversationItem, MessageBubbleProps } from '@/components';
 import { useLocaleStore, translate, formatRelativeTime } from '@/stores/locale-store';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Skeleton } from '@/components/ui/loading';
+
+const ConversationSidebar = dynamic(() => import('@/components/ai/conversation-sidebar').then(mod => ({ default: mod.ConversationSidebar })), {
+  loading: () => <Skeleton className="h-full w-64" />,
+  ssr: false,
+});
+
+const MessageBubble = dynamic(() => import('@/components/ai/message-bubble').then(mod => ({ default: mod.MessageBubble })), {
+  loading: () => <Skeleton className="h-20 w-2/3" />,
+  ssr: false,
+});
 
 interface ChatMessage {
   id: string;
