@@ -2,6 +2,8 @@
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 
+from shared.skills.taxonomy import normalize_skill
+
 
 @dataclass
 class ScoreBreakdown:
@@ -26,14 +28,14 @@ DEFAULT_WEIGHTS = {
 def _skills_score(candidate_skills, required_skills, preferred_skills=None):
     if not required_skills:
         return 1.0
-    cand = set(s.lower().strip() for s in (candidate_skills or []))
-    req = set(s.lower().strip() for s in required_skills)
+    cand = set(normalize_skill(s) for s in (candidate_skills or []))
+    req = set(normalize_skill(s) for s in required_skills)
     if not req:
         return 1.0
     matched = cand & req
     base = len(matched) / len(req)
     if preferred_skills:
-        pref = set(s.lower().strip() for s in preferred_skills)
+        pref = set(normalize_skill(s) for s in preferred_skills)
         bonus = 0.05 * (len(cand & pref) / max(len(pref), 1))
         return min(base + bonus, 1.0)
     return min(base, 1.0)

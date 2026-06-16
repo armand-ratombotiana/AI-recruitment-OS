@@ -75,20 +75,52 @@ def _semantic_similarity(candidate: Dict, job: Dict) -> float:
 
 
 def _get_embedding(text: str) -> List[float]:
-    """
-    Get embedding for text. 
-    In production, this would call an embedding model (e.g., text-embedding-3-large).
-    For now, returns a deterministic pseudo-embedding based on text hash.
-    """
-    import hashlib
-    # Deterministic pseudo-embedding for testing - replace with real embedding API
-    hash_obj = hashlib.md5(text.encode())
-    hash_bytes = hash_obj.digest()
-    # Convert to 384-dim vector (common embedding dimension)
-    embedding = []
-    for i in range(384):
-        byte_idx = i % len(hash_bytes)
-        embedding.append((hash_bytes[byte_idx] / 255.0) * 2 - 1)
+    """Get embedding vector for text using LLM router with semantic fallback."""
+    import asyncio
+    import re
+
+    try:
+        from shared.ai.llm_router import get_llm_router
+        router = get_llm_router()
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop and loop.is_running():
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                future = pool.submit(asyncio.run, router.embed(text))
+                return future.result(timeout=10)
+        else:
+            return asyncio.run(router.embed(text))
+
+    except Exception as e:
+        logger.debug("Real embedding unavailable, using semantic pseudo-embedding: %s", e)
+        return _generate_semantic_pseudo_embedding(text, dimensions=384)
+
+
+def _generate_semantic_pseudo_embedding(text: str, dimensions: int = 384) -> List[float]:
+    """Generate a pseudo-embedding that captures some semantic meaning from word patterns."""
+    import re
+
+    text = text.lower().strip()
+    words = re.findall(r'\w+', text)
+
+    embedding = [0.0] * dimensions
+
+    for i, word in enumerate(words):
+        word_hash = int(hashlib.md5(word.encode()).hexdigest(), 16)
+        idx = word_hash % dimensions
+        position_weight = 1.0 / (1.0 + i * 0.1)
+        length_weight = min(len(word) / 10.0, 1.0)
+        embedding[idx] += position_weight * length_weight
+
+    magnitude = sum(x * x for x in embedding) ** 0.5
+    if magnitude > 0:
+        embedding = [x / magnitude for x in embedding]
+
     return embedding
 
 
