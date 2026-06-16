@@ -53,10 +53,16 @@ celery_app.conf.update(
         "shared.jobs.tasks.sync_integration": {"queue": "medium", "routing_key": "medium"},
         "shared.jobs.tasks.process_ai_batch": {"queue": "low", "routing_key": "low"},
         "shared.jobs.tasks.cleanup_old_data": {"queue": "low", "routing_key": "low"},
+        "shared.jobs.tasks.scheduled_backup": {"queue": "low", "routing_key": "low"},
     },
     beat_schedule={
         "cleanup-old-data-daily": {
             "task": "shared.jobs.tasks.cleanup_old_data",
+            "schedule": crontab(hour=2, minute=0),
+            "options": {"queue": "low"},
+        },
+        "scheduled-backup-daily": {
+            "task": "shared.jobs.tasks.scheduled_backup",
             "schedule": crontab(hour=2, minute=0),
             "options": {"queue": "low"},
         },

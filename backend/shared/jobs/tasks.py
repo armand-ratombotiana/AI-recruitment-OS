@@ -14,6 +14,32 @@ from shared.jobs.celery_app import celery_app
 logger = logging.getLogger(__name__)
 
 
+def _get_all_tenant_ids() -> list[str]:
+    """Return a list of active tenant IDs.
+
+    Queries the database for distinct tenant identifiers.  Falls back to
+    an empty list so the scheduled task never crashes if the DB is
+    temporarily unreachable.
+    """
+    try:
+        import asyncio
+        from sqlalchemy import text
+        from shared.core.database import get_async_session
+
+        async def _fetch() -> list[str]:
+            async for session in get_async_session():
+                result = await session.execute(
+                    text("SELECT DISTINCT tenant_id FROM backups WHERE tenant_id IS NOT NULL")
+                )
+                return [row[0] for row in result.fetchall()]
+            return []
+
+        return asyncio.run(_fetch())
+    except Exception:
+        logger.warning("Could not fetch tenant IDs for scheduled backup", exc_info=True)
+        return []
+
+
 @celery_app.task(
     bind=True,
     name="shared.jobs.tasks.send_bulk_email",
@@ -199,6 +225,62 @@ def cleanup_old_data(self, *, tenant_id: str = "default", retention_days: int = 
         except celery_app.MaxRetriesExceededError:
             return {
                 "tenant_id": tenant_id,
+                "status": "failed",
+                "error": str(exc),
+                "completed_at": datetime.now(timezone.utc).isoformat(),
+            }
+
+
+@celery_app.task(
+    bind=True,
+    name="shared.jobs.tasks.scheduled_backup",
+    max_retries=2,
+    default_retry_delay=300,
+    acks_late=True,
+)
+def scheduled_backup(self, **kwargs: Any) -> dict[str, Any]:
+    logger.info("scheduled_backup started")
+    try:
+        import asyncio
+        from shared.core.database import get_async_session
+        from shared.backup.engine import create_backup
+
+        tenant_ids = _get_all_tenant_ids()
+        results: list[dict[str, Any]] = []
+
+        async def _run_backups() -> None:
+            async for session in get_async_session():
+                for tid in tenant_ids:
+                    try:
+                        backup_name = f"scheduled-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}"
+                        backup = await create_backup(
+                            db=session,
+                            tenant_id=tid,
+                            user_id="system",
+                            name=backup_name,
+                            type="full",
+                        )
+                        results.append({"tenant_id": tid, "backup_id": backup.id, "status": "completed"})
+                    except Exception:
+                        logger.warning("Scheduled backup failed for tenant %s", tid, exc_info=True)
+                        results.append({"tenant_id": tid, "status": "failed"})
+
+        asyncio.run(_run_backups())
+
+        summary = {
+            "task": "scheduled_backup",
+            "total_tenants": len(tenant_ids),
+            "results": results,
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+        }
+        logger.info("scheduled_backup completed: tenants=%d", len(tenant_ids))
+        return summary
+    except Exception as exc:
+        logger.error("scheduled_backup fatal error: %s", exc, exc_info=True)
+        try:
+            self.retry(exc=exc)
+        except celery_app.MaxRetriesExceededError:
+            return {
                 "status": "failed",
                 "error": str(exc),
                 "completed_at": datetime.now(timezone.utc).isoformat(),

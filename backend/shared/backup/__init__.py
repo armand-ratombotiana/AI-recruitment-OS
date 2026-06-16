@@ -1,8 +1,7 @@
 """Backup engine — tenant-scoped backup and restore operations.
 
-Backups are stored as JSON-serialisable dictionaries in a process-level
-in-memory store keyed by ``backup_id``.  The store is intentionally
-simple: it gives the API a stable, isolated place to put snapshot
-payloads while the persistent :class:`~shared.core.models.backup.Backup`
-row carries the metadata that drives the UI and audit trail.
+Backup payloads are persisted as JSON files on disk under ``BACKUP_DIR``
+(default ``/tmp/airos-backups``, configurable via environment variable).
+Each backup is stored as ``<backup_id>.json`` so payloads survive
+process restarts.
 """

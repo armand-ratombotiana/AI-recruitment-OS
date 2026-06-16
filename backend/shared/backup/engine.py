@@ -16,8 +16,10 @@ Public API:
 from __future__ import annotations
 
 import json
+import os
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Optional
 
 from sqlalchemy import select
@@ -26,9 +28,29 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from shared.core.models.backup import Backup
 
 
-# In-memory payload store, keyed by backup id.  Values are the raw
-# JSON-serialisable dicts that were captured at create-time.
-_PAYLOAD_STORE: dict[str, dict[str, Any]] = {}
+BACKUP_DIR = Path(os.getenv("BACKUP_DIR", "/tmp/airos-backups"))
+BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _save_backup_payload(backup_id: str, payload: dict[str, Any]) -> str:
+    filepath = BACKUP_DIR / f"{backup_id}.json"
+    with open(filepath, "w") as f:
+        json.dump(payload, f, default=str)
+    return str(filepath)
+
+
+def _load_backup_payload(backup_id: str) -> dict[str, Any]:
+    filepath = BACKUP_DIR / f"{backup_id}.json"
+    if not filepath.exists():
+        raise FileNotFoundError(f"Backup {backup_id} not found")
+    with open(filepath, "r") as f:
+        return json.load(f)
+
+
+def _delete_backup_payload(backup_id: str) -> None:
+    filepath = BACKUP_DIR / f"{backup_id}.json"
+    if filepath.exists():
+        filepath.unlink()
 
 
 # ── Allowed backup types ───────────────────────────────────────────────────────
@@ -182,7 +204,7 @@ async def create_backup(
     await db.commit()
     await db.refresh(backup)
 
-    _PAYLOAD_STORE[backup.id] = payload
+    _save_backup_payload(backup.id, payload)
     return backup
 
 
@@ -207,8 +229,9 @@ async def restore_backup(
     if row is None:
         return {"status": "not_found", "backup_id": backup_id}
 
-    payload = _PAYLOAD_STORE.get(backup_id)
-    if payload is None:
+    try:
+        payload = _load_backup_payload(backup_id)
+    except FileNotFoundError:
         row.status = "failed"
         await db.commit()
         return {
@@ -261,7 +284,10 @@ async def get_backup(
 
 async def get_backup_payload(backup_id: str) -> Optional[dict[str, Any]]:
     """Return the raw JSON payload for a backup, if present."""
-    return _PAYLOAD_STORE.get(backup_id)
+    try:
+        return _load_backup_payload(backup_id)
+    except FileNotFoundError:
+        return None
 
 
 async def delete_backup(
@@ -282,10 +308,11 @@ async def delete_backup(
         return False
     await db.delete(row)
     await db.commit()
-    _PAYLOAD_STORE.pop(backup_id, None)
+    _delete_backup_payload(backup_id)
     return True
 
 
 def reset_store() -> None:
-    """Clear the in-memory payload store.  Test helper only."""
-    _PAYLOAD_STORE.clear()
+    """Clear all backup payload files.  Test helper only."""
+    for f in BACKUP_DIR.glob("*.json"):
+        f.unlink()
