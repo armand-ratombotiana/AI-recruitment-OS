@@ -10,7 +10,7 @@ import math
 import re
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from shared.scoring.engine import score_candidate, ScoreBreakdown
 
@@ -211,6 +211,68 @@ def match_job_to_candidates(
     results = [_hybrid(candidate, j) for j in jobs]
     results.sort(key=lambda r: r.hybrid_score, reverse=True)
     return results[:top_n]
+
+
+# ── Skill analysis ─────────────────────────────────────────────────────────────
+
+
+def compute_matched_missing_skills(
+    candidate: Dict[str, Any], job: Dict[str, Any]
+) -> Tuple[List[str], List[str]]:
+    """Return (matched_skills, missing_skills) between candidate and job."""
+    cand_skills = set(s.lower().strip() for s in (candidate.get("skills") or []))
+    req_skills = set(s.lower().strip() for s in (job.get("required_skills") or []))
+    pref_skills = set(s.lower().strip() for s in (job.get("preferred_skills") or []))
+    all_required = req_skills | pref_skills
+    matched = sorted(cand_skills & all_required)
+    missing = sorted(all_required - cand_skills)
+    return matched, missing
+
+
+# ── Batch matching ─────────────────────────────────────────────────────────────
+
+
+@dataclass
+class BatchMatchResult:
+    """Result of batch matching across multiple candidates and jobs."""
+    matches: List[MatchResult]
+    matrix: List[List[float]]
+    candidate_ids: List[Optional[str]]
+    job_ids: List[Optional[str]]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "matches": [m.to_dict() for m in self.matches],
+            "matrix": self.matrix,
+            "candidate_ids": self.candidate_ids,
+            "job_ids": self.job_ids,
+        }
+
+
+def batch_match(
+    candidates: Sequence[Dict[str, Any]],
+    jobs: Sequence[Dict[str, Any]],
+    *,
+    semantic_w: float = SEMANTIC_WEIGHT,
+    structured_w: float = STRUCTURED_WEIGHT,
+) -> BatchMatchResult:
+    """Compute match scores for every (candidate, job) pair."""
+    matches: list[MatchResult] = []
+    matrix: list[list[float]] = []
+    for candidate in candidates:
+        row: list[float] = []
+        for job in jobs:
+            result = _hybrid(candidate, job, semantic_w=semantic_w, structured_w=structured_w)
+            matches.append(result)
+            row.append(result.hybrid_score)
+        matrix.append(row)
+    matches.sort(key=lambda r: r.hybrid_score, reverse=True)
+    return BatchMatchResult(
+        matches=matches,
+        matrix=matrix,
+        candidate_ids=[c.get("id") for c in candidates],
+        job_ids=[j.get("id") for j in jobs],
+    )
 
 
 # ── Stats ─────────────────────────────────────────────────────────────────────
