@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { api, APIError } from '@/services/api/client';
 import {
-  DataTable,
+  DataTableV2 as DataTable,
   EmptyState,
   Badge,
   Button,
@@ -33,7 +33,6 @@ import {
   Tabs,
 } from '@/components';
 import type { Tab } from '@/components/ui/tabs';
-import type { Column } from '@/components/ui/data-table';
 import { InterviewForm, type InterviewFormValues, type InterviewOption } from '@/components/forms';
 import { InterviewCalendar, type InterviewCalendarItem } from '@/components/dashboard/interview-calendar';
 import { useLocaleStore, translate, interpolate, formatDate } from '@/stores/locale-store';
@@ -322,7 +321,7 @@ export default function InterviewsPage() {
     { value: 'onsite', label: t('interviews.types.onsite', 'Onsite') },
   ];
 
-  const columns: Column<any>[] = [
+  const columns: import('@/components/ui/data-table-v2').ColumnV2<any>[] = [
     {
       key: 'candidate_name',
       label: t('interviews.table.candidate', 'Candidate'),
@@ -644,7 +643,7 @@ export default function InterviewsPage() {
         />
       ) : view === 'list' ? (
         <div data-tour="interviews-table" className="bg-white dark:bg-surface-900 rounded-xl border border-gray-200 dark:border-surface-700 overflow-hidden">
-          <DataTable columns={columns} data={filtered} searchable={false} pageSize={10} rowKey={(i) => i.id} />
+          <DataTable columns={columns} data={filtered} searchable={false} rowKey={(i) => i.id} storageKey="interviews-table" />
         </div>
       ) : (
         <div data-tour="interviews-table" className="space-y-4">
