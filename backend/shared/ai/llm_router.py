@@ -207,6 +207,86 @@ class LLMRouter:
 
         return response
 
+    async def embed(
+        self,
+        text: str,
+        *,
+        model: str | None = None,
+        tenant_id: str | None = None,
+    ) -> list[float]:
+        """Return an embedding vector for *text* using the configured model."""
+        from shared.core.config import get_settings
+
+        model = model or get_settings().OPENAI_EMBEDDING_MODEL
+        provider = _provider_for(model)
+        start = time.perf_counter()
+
+        cache_key = self._make_cache_key(model, [{"role": "user", "content": text}], 0.0, 0, None, tenant_id)
+        if self._cache is not None:
+            cached = await self._cache.get(cache_key)
+            if cached is not None and "embedding" in cached:
+                logger.info("llm.embed.cache.hit model=%s tenant=%s", model, tenant_id)
+                return cached["embedding"]
+
+        try:
+            embedding = await self._call_embed(provider, text, model)
+        except Exception as exc:
+            self.metrics[provider]["errors"] += 1
+            logger.warning("llm.embed.failed provider=%s model=%s err=%s", provider, model, exc)
+            if not self._allow_mock:
+                raise
+            embedding = self._mock_embedding(text)
+
+        if self._cache is not None:
+            try:
+                await self._cache.set(
+                    cache_key,
+                    {"embedding": embedding, "model": model, "provider": provider},
+                    ttl=3600,
+                )
+            except Exception:
+                pass
+
+        self.metrics[provider]["calls"] += 1
+        self.metrics[provider]["tokens"] += len(text) // 4
+        return embedding
+
+    async def _call_embed(self, provider: str, text: str, model: str) -> list[float]:
+        if provider == "openai":
+            return await self._call_openai_embed(text, model)
+        raise LLMUnavailable(f"Embedding not supported for provider: {provider}")
+
+    async def _call_openai_embed(self, text: str, model: str) -> list[float]:
+        if self._openai is None:
+            if not self._openai_key or self._openai_key == "sk-placeholder":
+                raise LLMUnavailable("OPENAI_API_KEY not configured")
+            if not _OPENAI_AVAILABLE:
+                raise LLMUnavailable("openai SDK not installed")
+            self._openai = AsyncOpenAI(api_key=self._openai_key)
+
+        result = await self._openai.embeddings.create(input=text, model=model)
+        return result.data[0].embedding
+
+    def _mock_embedding(self, text: str) -> list[float]:
+        """Deterministic pseudo-embedding used when no real provider is reachable."""
+        import hashlib as _hl
+        import re as _re
+
+        text_norm = text.lower().strip()
+        words = _re.findall(r'\w+', text_norm)
+        dims = 384
+        vec = [0.0] * dims
+        for i, word in enumerate(words):
+            h = int(_hl.md5(word.encode()).hexdigest(), 16)
+            idx = h % dims
+            pos_w = 1.0 / (1.0 + i * 0.1)
+            len_w = min(len(word) / 10.0, 1.0)
+            vec[idx] += pos_w * len_w
+        mag = sum(x * x for x in vec) ** 0.5
+        if mag > 0:
+            vec = [x / mag for x in vec]
+        return vec
+
     def get_metrics(self) -> dict[str, dict[str, Any]]:
         """Return a copy of the per-provider usage metrics."""
         return {provider: dict(values) for provider, values in self.metrics.items()}
