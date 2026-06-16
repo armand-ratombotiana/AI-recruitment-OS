@@ -29,7 +29,7 @@ jobs:
           severity: HIGH,CRITICAL
           format: sarif
           output: trivy-fs.sarif
-          exit-code: 0
+          exit-code: 1
 
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
@@ -60,7 +60,7 @@ jobs:
           severity: HIGH,CRITICAL
           format: sarif
           output: trivy-${{ matrix.component }}.sarif
-          exit-code: 0
+          exit-code: 1
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
@@ -123,14 +123,14 @@ jobs:
         run: |
           pip install pip-licenses
           pip install -r requirements.txt
-          pip-licenses --format=markdown --with-license-file --no-license-path > python-licenses.md || true
-          pip-licenses --fail-on="GPLv3;AGPLv3" --ignore-packages="ai-ros" || true
+          pip-licenses --format=markdown --with-license-file --no-license-path > python-licenses.md
+          pip-licenses --fail-on="GPLv3;AGPLv3" --ignore-packages="ai-ros"
 
       - name: Check npm licenses
         run: |
           cd frontend
           npm ci
-          npx license-checker --failOn "GPL-3.0;AGPL-3.0" --summary || true
+          npx license-checker --failOn "GPL-3.0;AGPL-3.0" --summary
 
       - name: Upload license report
         if: always()

@@ -165,8 +165,11 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [validate, docker-push]
-    if: needs.validate.outputs.environment == 'production'
+    needs: [validate, docker-push, deploy-staging]
+    if: >-
+      always() &&
+      needs.validate.outputs.environment == 'production' &&
+      needs.docker-push.result == 'success'
     environment:
       name: production
       url: https://ai-ros.com
