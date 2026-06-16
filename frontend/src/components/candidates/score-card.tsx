@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Star,
@@ -164,7 +164,7 @@ interface RadialProgressProps {
   ariaLabel?: string;
 }
 
-function RadialProgress({
+const RadialProgress = React.memo(function RadialProgress({
   value,
   size = 160,
   strokeWidth = 12,
@@ -216,7 +216,7 @@ function RadialProgress({
       </div>
     </div>
   );
-}
+});
 
 interface FactorBarProps {
   label: string;
@@ -224,7 +224,7 @@ interface FactorBarProps {
   icon: React.ReactNode;
 }
 
-function FactorBar({ label, value, icon }: FactorBarProps) {
+const FactorBar = React.memo(function FactorBar({ label, value, icon }: FactorBarProps) {
   const safe = Math.max(0, Math.min(100, value));
   const color =
     safe >= 80
@@ -260,7 +260,7 @@ function FactorBar({ label, value, icon }: FactorBarProps) {
       </div>
     </div>
   );
-}
+});
 
 export function ScoreCard({
   candidateId,

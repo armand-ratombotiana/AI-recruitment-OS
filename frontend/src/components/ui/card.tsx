@@ -1,3 +1,4 @@
+import React from 'react';
 import { cn } from '@/lib/utils';
 
 type CardPadding = 'none' | 'sm' | 'md' | 'lg';
@@ -14,7 +15,7 @@ const cardPadding: Record<CardPadding, string> = {
   lg: 'p-6',
 };
 
-export function Card({
+export const Card = React.memo(function Card({
   children,
   className,
   interactive = false,
@@ -36,7 +37,7 @@ export function Card({
       {children}
     </div>
   );
-}
+});
 
 interface CardSectionProps {
   children: React.ReactNode;
@@ -44,11 +45,11 @@ interface CardSectionProps {
   padding?: CardPadding;
 }
 
-export function CardHeader({ children, className, padding = 'lg' }: CardSectionProps) {
+export const CardHeader = React.memo(function CardHeader({ children, className, padding = 'lg' }: CardSectionProps) {
   return <div className={cn(cardPadding[padding], 'pb-3', className)}>{children}</div>;
-}
+});
 
-export function CardTitle({
+export const CardTitle = React.memo(function CardTitle({
   children,
   className,
   as: As = 'h3',
@@ -62,9 +63,9 @@ export function CardTitle({
       {children}
     </As>
   );
-}
+});
 
-export function CardDescription({
+export const CardDescription = React.memo(function CardDescription({
   children,
   className,
 }: {
@@ -72,13 +73,13 @@ export function CardDescription({
   className?: string;
 }) {
   return <p className={cn('mt-1 text-sm text-gray-500 dark:text-gray-400', className)}>{children}</p>;
-}
+});
 
-export function CardContent({ children, className, padding = 'lg' }: CardSectionProps) {
+export const CardContent = React.memo(function CardContent({ children, className, padding = 'lg' }: CardSectionProps) {
   return <div className={cn(cardPadding[padding], 'pt-0', className)}>{children}</div>;
-}
+});
 
-export function CardFooter({
+export const CardFooter = React.memo(function CardFooter({
   children,
   className,
   padding = 'lg',
@@ -95,12 +96,12 @@ export function CardFooter({
       {children}
     </div>
   );
-}
+});
 
-export function CardAction({ children, className }: { children: React.ReactNode; className?: string }) {
+export const CardAction = React.memo(function CardAction({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={cn('flex items-center gap-1', className)} onClick={(e) => e.stopPropagation()}>
       {children}
     </div>
   );
-}
+});

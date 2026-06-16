@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline' | 'success';
@@ -35,7 +35,7 @@ const sizes: Record<ButtonSize, string> = {
   icon: 'h-10 w-10 p-0',
 };
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+export const Button = React.memo(forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     variant = 'primary',
     size = 'md',
@@ -84,4 +84,4 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {!loading && rightIcon && <span className="inline-flex shrink-0" aria-hidden="true">{rightIcon}</span>}
     </button>
   );
-});
+}));

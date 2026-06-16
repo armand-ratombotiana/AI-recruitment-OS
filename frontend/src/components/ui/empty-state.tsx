@@ -1,3 +1,4 @@
+import React from 'react';
 import { cn } from '@/lib/utils';
 import { Inbox } from 'lucide-react';
 
@@ -30,7 +31,7 @@ const ICON_SIZE_CLASSES = {
   lg: 'h-10 w-10',
 } as const;
 
-export function EmptyState({
+export const EmptyState = React.memo(function EmptyState({
   icon,
   title,
   description,
@@ -79,4 +80,4 @@ export function EmptyState({
       )}
     </div>
   );
-}
+});

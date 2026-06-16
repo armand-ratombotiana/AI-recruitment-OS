@@ -1,3 +1,4 @@
+import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,7 +15,7 @@ interface ErrorStateProps {
   secondaryAction?: React.ReactNode;
 }
 
-export function ErrorState({
+export const ErrorState = React.memo(function ErrorState({
   title = 'Something went wrong',
   description = 'An unexpected error occurred. Please try again.',
   error,
@@ -85,4 +86,4 @@ export function ErrorState({
       )}
     </div>
   );
-}
+});

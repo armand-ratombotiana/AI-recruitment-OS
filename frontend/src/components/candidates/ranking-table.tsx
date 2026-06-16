@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -104,7 +104,7 @@ interface SortIconProps {
   dir: SortDir;
 }
 
-function SortIcon({ active, dir }: SortIconProps) {
+const SortIcon = React.memo(function SortIcon({ active, dir }: SortIconProps) {
   if (!active) {
     return <ChevronsUpDown className="h-3 w-3 opacity-50" aria-hidden="true" />;
   }
@@ -113,7 +113,7 @@ function SortIcon({ active, dir }: SortIconProps) {
   ) : (
     <ChevronDown className="h-3 w-3" aria-hidden="true" />
   );
-}
+});
 
 interface SortableThProps {
   label: string;
@@ -124,7 +124,7 @@ interface SortableThProps {
   className?: string;
 }
 
-function SortableTh({ label, sortKey, current, onSort, align = 'left', className }: SortableThProps) {
+const SortableTh = React.memo(function SortableTh({ label, sortKey, current, onSort, align = 'left', className }: SortableThProps) {
   const active = current.key === sortKey;
   const ariaSort: 'ascending' | 'descending' | 'none' = active
     ? current.dir === 'asc'
@@ -159,7 +159,7 @@ function SortableTh({ label, sortKey, current, onSort, align = 'left', className
       </button>
     </th>
   );
-}
+});
 
 function scoreColor(score: number): string {
   if (score >= 85) return 'text-emerald-600 dark:text-success-400';

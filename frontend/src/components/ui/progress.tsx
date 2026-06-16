@@ -1,3 +1,4 @@
+import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface ProgressProps {
@@ -8,7 +9,7 @@ interface ProgressProps {
   variant?: 'default' | 'success' | 'warning' | 'danger';
 }
 
-export function Progress({ value, max = 100, size = 'md', showLabel = false, variant = 'default' }: ProgressProps) {
+export const Progress = React.memo(function Progress({ value, max = 100, size = 'md', showLabel = false, variant = 'default' }: ProgressProps) {
   const percentage = Math.min((value / max) * 100, 100);
   const heights = { sm: 'h-1', md: 'h-2', lg: 'h-3' };
   const variants = {
@@ -31,4 +32,4 @@ export function Progress({ value, max = 100, size = 'md', showLabel = false, var
       )}
     </div>
   );
-}
+});

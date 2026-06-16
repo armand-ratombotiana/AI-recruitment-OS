@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback, useId } from 'react';
+import React, { useEffect, useRef, useCallback, useId } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -29,7 +29,7 @@ const SIZES = {
   full: 'sm:max-w-[95vw] sm:h-[95vh]',
 } as const;
 
-export function Modal({
+export const Modal = React.memo(function Modal({
   isOpen,
   onClose,
   title,
@@ -164,4 +164,4 @@ export function Modal({
       </div>
     </div>
   );
-}
+});

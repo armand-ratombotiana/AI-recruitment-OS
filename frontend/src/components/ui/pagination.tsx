@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect, useRef, useId } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useId } from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,7 +28,7 @@ const PAGE_BUTTON_DEFAULT =
 const PAGE_BUTTON_ICON =
   'inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-surface-600 dark:bg-surface-800 dark:text-gray-300 dark:hover:bg-surface-700 dark:focus-visible:ring-brand-400 dark:focus-visible:ring-offset-surface-900';
 
-export function Pagination({
+export const Pagination = React.memo(function Pagination({
   page,
   totalPages,
   onPageChange,
@@ -228,4 +228,4 @@ export function Pagination({
       </div>
     </nav>
   );
-}
+});

@@ -1,3 +1,4 @@
+import React from 'react';
 import { cn } from '@/lib/utils';
 
 type BadgeVariant =
@@ -70,7 +71,7 @@ const sizeClasses: Record<BadgeSize, string> = {
   lg: 'px-3 py-1 text-sm',
 };
 
-export function Badge({
+export const Badge = React.memo(function Badge({
   children,
   variant = 'default',
   size = 'md',
@@ -101,4 +102,4 @@ export function Badge({
       {children}
     </span>
   );
-}
+});

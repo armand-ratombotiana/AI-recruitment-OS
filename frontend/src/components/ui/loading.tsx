@@ -1,3 +1,4 @@
+import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface LoadingProps {
@@ -8,7 +9,7 @@ interface LoadingProps {
   label?: string;
 }
 
-export function Loading({
+export const Loading = React.memo(function Loading({
   size = 'md',
   className,
   text,
@@ -48,7 +49,7 @@ export function Loading({
     );
   }
   return content;
-}
+});
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'text' | 'circular' | 'rectangular' | 'rounded';
@@ -57,7 +58,7 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   lines?: number;
 }
 
-export function Skeleton({
+export const Skeleton = React.memo(function Skeleton({
   variant = 'text',
   width,
   height,
@@ -123,9 +124,9 @@ export function Skeleton({
       {...props}
     />
   );
-}
+});
 
-export function SkeletonCard({ className }: { className?: string }) {
+export const SkeletonCard = React.memo(function SkeletonCard({ className }: { className?: string }) {
   return (
     <div
       className={cn('rounded-xl border border-gray-200 bg-white p-6 shadow-sm', className)}
@@ -146,4 +147,4 @@ export function SkeletonCard({ className }: { className?: string }) {
       </div>
     </div>
   );
-}
+});
